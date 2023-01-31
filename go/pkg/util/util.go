@@ -15,11 +15,10 @@ func JsonPrettyPrint(in string) string {
 	return out.String()
 }
 
-func PostSlackMessage(message string) {
+func PostSlackMessage(message, webhookURL string) {
 	values := map[string]string{"text": message}
 	jsonValue, _ := json.Marshal(values)
-	url := "https://hooks.slack.com/services/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"
-	resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonValue))
+	resp, err := http.Post(webhookURL, "application/json", bytes.NewBuffer(jsonValue))
 	if err != nil {
 		Log.Error(err)
 	}

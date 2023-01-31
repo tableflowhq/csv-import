@@ -31,6 +31,8 @@ type Payload struct {
 	Table string `json:"table"`
 }
 
+var slackWebhookURL string
+
 func main() {
 	ctx := context.Background()
 	util.InitializeLogger()
@@ -39,12 +41,14 @@ func main() {
 	if envErr != nil {
 		util.Log.Fatal("Error loading .env file")
 	}
+	slackWebhookURL = os.Getenv("SLACK_HOOK_URL")
 
 	pool, poolErr := startPostgres(ctx)
 	if poolErr != nil {
 		util.Log.Fatalln(poolErr)
 	}
 	defer pool.Close()
+	util.Log.Infow("Server started, connected to database")
 
 	// Wait for interrupt signal to gracefully shut down the server with a timeout
 	quit := make(chan os.Signal)
@@ -93,7 +97,7 @@ func startPostgres(ctx context.Context) (*pgx.ConnPool, error) {
 						"payload", payload,
 					)
 					message := fmt.Sprintf("A new user has been created! \nName: %s \nEmail: %s", payload.New.Name, payload.New.Email)
-					util.PostSlackMessage(message)
+					util.PostSlackMessage(message, slackWebhookURL)
 				}
 			}()
 			return nil
