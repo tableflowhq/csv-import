@@ -39,13 +39,13 @@ func main() {
 
 	envErr := godotenv.Load()
 	if envErr != nil {
-		util.Log.Fatal("Error loading .env file")
+		util.Log.Fatalw("Error loading .env file", "error", envErr)
 	}
 	slackWebhookURL = os.Getenv("SLACK_HOOK_URL")
 
 	pool, poolErr := startPostgres(ctx)
 	if poolErr != nil {
-		util.Log.Fatalln(poolErr)
+		util.Log.Fatalw("Error starting postgres", "error", poolErr)
 	}
 	defer pool.Close()
 	util.Log.Infow("Server started, connected to database")
@@ -96,6 +96,10 @@ func startPostgres(ctx context.Context) (*pgx.ConnPool, error) {
 						//"raw", msg.Payload,
 						"payload", payload,
 					)
+
+					// TODO: Change payload struct to be generic
+					// TODO: Let users customize slack message here
+
 					message := fmt.Sprintf("A new user has been created! \nName: %s \nEmail: %s", payload.New.Name, payload.New.Email)
 					util.PostSlackMessage(message, slackWebhookURL)
 				}
