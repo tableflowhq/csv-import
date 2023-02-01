@@ -40,7 +40,51 @@ then
 fi
 
 # Start the service
-sudo systemctl start pg_auto_trigger || exit
+sudo systemctl start pg_auto_trigger || (echo 'Failed to start the service' && exit)
+echo 'service pg_auto_trigger created and started!'
+echo 'view logs:    journalctl --unit=pg_auto_trigger.service -n 32 --no-pager -f'
+echo 'view status:  sudo systemctl status pg_auto_trigger'
+echo 'restart:      sudo systemctl restart pg_auto_trigger'
+printf '\n\n'
+
+# Generate the trigger creation SQL
+echo '**** This will just generate the SQL that you will need to execute manually! ****'
+printf '\n'
+echo 'Provide the table name you want to generate the trigger on'
+read -r -p 'Table name: ' tablename
+printf '\n\n'
+printf "
+do
+\$$
+    begin
+        if not exists(select 1 from pg_proc where proname = 'trigger_notify_%s') then
+            create or replace function trigger_notify_%s() returns trigger as
+            \$FN$
+            declare
+                payload jsonb;
+            begin
+                payload = jsonb_build_object(
+                        'table', '%s',
+                        'op', to_jsonb(TG_OP),
+                        'data', to_jsonb(NEW)
+                    );
+                perform pg_notify('pg_notify_trigger_event', payload::text);
+                return NEW;
+            end;
+            \$FN$ language plpgsql;
+        end if;
+        if not exists(select 1 from pg_trigger where tgname = 'trigger_notify_%s_insert') then
+            create trigger trigger_notify_%s_insert
+                after insert
+                on %s
+                for each row
+            execute procedure trigger_notify_%s();
+        end if;
+    end
+\$$;
+" "$tablename" "$tablename" "$tablename" "$tablename" "$tablename" "$tablename" "$tablename"
+echo
+printf '\n\n'
 
 # Restart service
 #sudo systemctl restart pg_auto_trigger
@@ -58,4 +102,4 @@ sudo systemctl start pg_auto_trigger || exit
 #echo 'service removed';
 
 # Logs for the service
-#journalctl --unit=pg_auto_trigger.service -n 100 --no-pager
+#journalctl --unit=pg_auto_trigger.service -n 32 --no-pager -f

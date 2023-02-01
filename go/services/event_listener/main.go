@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"github.com/jackc/pgx"
 	"github.com/joho/godotenv"
 	"github.com/pkg/errors"
@@ -15,23 +14,14 @@ import (
 	"time"
 )
 
-type Payload struct {
-	Id  string `json:"id"`
-	Op  string `json:"op"`
-	New struct {
-		Id    string `json:"id"`
-		Name  string `json:"name"`
-		Email string `json:"email"`
-	} `json:"new"`
-	Old struct {
-		Id    string `json:"id"`
-		Name  string `json:"name"`
-		Email string `json:"email"`
-	} `json:"old"`
-	Table string `json:"table"`
+type NotifyPayload struct {
+	Table string                 `json:"table"`
+	Op    string                 `json:"op"`
+	Data  map[string]interface{} `json:"data"`
 }
 
-var slackWebhookURL string
+var postRequestURL string
+var postRequestBody string
 
 func main() {
 	ctx := context.Background()
@@ -41,7 +31,15 @@ func main() {
 	if envErr != nil {
 		util.Log.Warnw("Could not load .env file", "error", envErr)
 	}
-	slackWebhookURL = os.Getenv("SLACK_HOOK_URL")
+
+	postRequestURL = os.Getenv("POST_REQUEST_URL")
+	postRequestBody = os.Getenv("POST_REQUEST_BODY")
+
+	isPostRequestBodyValidJSON := util.IsValidJSON(postRequestBody) || len(postRequestBody) == 0
+	if !isPostRequestBodyValidJSON {
+		util.Log.Fatalw("POST_REQUEST_BODY env variable must be valid JSON or empty")
+		return
+	}
 
 	pool, poolErr := startPostgres(ctx)
 	if poolErr != nil {
@@ -75,33 +73,30 @@ func startPostgres(ctx context.Context) (*pgx.ConnPool, error) {
 	pool, err := pgx.NewConnPool(pgx.ConnPoolConfig{
 		ConnConfig: envPGConfig(),
 		AfterConnect: func(c *pgx.Conn) error {
-			// Subscribe our connection to the 'event' channel
-			err := c.Listen("event")
+			// Subscribe our connection to the 'pg_notify_trigger_event' channel
+			err := c.Listen("pg_notify_trigger_event")
 			if err != nil {
 				return err
 			}
 			go func() {
 				for {
-					// If ctx is done, err will be non-nil and this func will return
+					// If ctx is done, err will be non-nil and this function will return
 					msg, err := c.WaitForNotification(ctx)
 					if err != nil {
 						util.Log.Errorln(errors.Wrap(err, "WaitForNotification error"))
 						return
 					}
-					payload := &Payload{}
-					err = json.Unmarshal([]byte(msg.Payload), &payload)
-					util.Log.Infow("Message received from database",
+					notifyPayload := &NotifyPayload{}
+					err = json.Unmarshal([]byte(msg.Payload), &notifyPayload)
+					util.Log.Debugw("Message received from database",
 						"channel", msg.Channel,
 						"pid", msg.PID,
-						//"raw", msg.Payload,
-						"payload", payload,
+						"raw", msg.Payload,
+						"payload", notifyPayload,
 					)
 
-					// TODO: Change payload struct to be generic
-					// TODO: Let users customize slack message here
-
-					message := fmt.Sprintf("A new user has been created! \nName: %s \nEmail: %s", payload.New.Name, payload.New.Email)
-					util.PostSlackMessage(message, slackWebhookURL)
+					util.Log.Infow("Received NOTIFY event from database, performing HTTP post")
+					util.PostTriggerAction(postRequestURL, postRequestBody, notifyPayload.Data)
 				}
 			}()
 			return nil
