@@ -39,7 +39,7 @@ func main() {
 
 	envErr := godotenv.Load()
 	if envErr != nil {
-		util.Log.Fatalw("Error loading .env file", "error", envErr)
+		util.Log.Warnw("Could not load .env file", "error", envErr)
 	}
 	slackWebhookURL = os.Getenv("SLACK_HOOK_URL")
 

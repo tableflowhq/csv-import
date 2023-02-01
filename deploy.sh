@@ -26,7 +26,8 @@ then
     echo ''
     echo '[Service]'
     echo 'Type=simple'
-    echo 'ExecStart='"$HOME"'/pg_auto_trigger/event_listener &> '"$HOME"'/pg_auto_trigger/output.log &'
+    echo 'ExecStart='"$HOME"'/pg_auto_trigger/event_listener'
+    echo 'EnvironmentFile='"$HOME"'/pg_auto_trigger/.env'
     echo 'Restart=on-failure'
     echo 'RestartSec=10'
     echo 'KillMode=process'
@@ -40,9 +41,21 @@ fi
 
 # Start the service
 sudo systemctl start pg_auto_trigger || exit
-touch "$HOME"/pg_auto_trigger/output.log && tail -f "$HOME"/pg_auto_trigger/output.log
 
 # Restart service
 #sudo systemctl restart pg_auto_trigger
 # Check service status
 #sudo systemctl status pg_auto_trigger
+
+# Remove the service completely
+#sudo systemctl stop pg_auto_trigger; \
+#sudo systemctl disable pg_auto_trigger; \
+#sudo rm /etc/systemd/system/pg_auto_trigger.service; \
+#sudo rm /usr/lib/systemd/system/pg_auto_trigger; \
+#sudo rm /usr/lib/systemd/system/pg_auto_trigger; \
+#sudo systemctl daemon-reload; \
+#sudo systemctl reset-failed; \
+#echo 'service removed';
+
+# Logs for the service
+#journalctl --unit=pg_auto_trigger.service -n 100 --no-pager
