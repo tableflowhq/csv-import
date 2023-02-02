@@ -22,7 +22,7 @@ the configured webhook(s) with a JSON payload that includes specified values fro
 2. Postgres trigger notifies DB Webhooks web server via websocket message
 3. DB Webhooks formats data and sends webhook(s)
 
-![db-webhooks-flow.png](assets%2Fdb-webhooks-flow.png)
+![db-webhooks-flow.png](https://imgur.com/a/DhbmMjX)
 
 ## Get Started
 
