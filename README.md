@@ -34,13 +34,13 @@ chmod +x deploy.sh
 
 The script will:
 
-1. Download the repo and necessary dependencies
-2. Prompt you to add your environment variables to the .env file
-   3. Note: Make sure the user you add has read permissions on the specified database
-   4. Note: This is also where you'll specific the POST request URL and body, which can contain templated variables which map to
-      the column names whose values you want to include in the request
-3. Build the executable and run it as a service
-4. Create the trigger creation SQL which then has to be executed manually
+* Download the repo and necessary dependencies
+* Prompt you to add your environment variables to the .env file
+    * Note: Make sure the user you add has read permissions on the specified database
+    * Note: This is also where you'll specific the POST request URL and body, which can contain templated variables
+      which map to the column names whose values you want to include in the request
+* Build the executable and run it as a service
+* Create the trigger creation SQL which then has to be executed manually
 
 ## Roadmap
 
