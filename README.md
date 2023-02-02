@@ -9,6 +9,8 @@ DB Webhooks is a utility for Postgres that triggers webhooks when rows are inser
 database triggers that send low-latency websocket messages to a lightweight Go application. This application then calls
 the configured webhook(s) with a JSON payload that includes specified values from the database row.
 
+![DB Webhooks Flow](https://i.imgur.com/E1hK2Hc.png)
+
 ## Use Cases
 
 * **Send notifications:** Slack, Email, Text Message, Push Notification
@@ -22,11 +24,10 @@ the configured webhook(s) with a JSON payload that includes specified values fro
 2. Postgres trigger notifies DB Webhooks web server via websocket message
 3. DB Webhooks formats data and sends webhook(s)
 
-![DB Webhooks Flow](https://i.imgur.com/E1hK2Hc.png)
 
 ## Get Started
 
-```bash
+```console
 wget https://raw.githubusercontent.com/portola-labs/db-webhooks/main/deploy.sh
 chmod +x deploy.sh
 ./deploy.sh
