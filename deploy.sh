@@ -92,14 +92,14 @@ printf '\n\n'
 #sudo systemctl status db-webhooks
 
 # Remove the service completely
-sudo systemctl stop db-webhooks; \
-sudo systemctl disable db-webhooks; \
-sudo rm /etc/systemd/system/db-webhooks.service; \
-sudo rm /usr/lib/systemd/system/db-webhooks; \
-sudo rm /usr/lib/systemd/system/db-webhooks; \
-sudo systemctl daemon-reload; \
-sudo systemctl reset-failed; \
-echo 'service removed';
+#sudo systemctl stop db-webhooks; \
+#sudo systemctl disable db-webhooks; \
+#sudo rm /etc/systemd/system/db-webhooks.service; \
+#sudo rm /usr/lib/systemd/system/db-webhooks; \
+#sudo rm /usr/lib/systemd/system/db-webhooks; \
+#sudo systemctl daemon-reload; \
+#sudo systemctl reset-failed; \
+#echo 'service removed';
 
 # Logs for the service
 #journalctl --unit=db-webhooks.service -n 32 --no-pager -f
