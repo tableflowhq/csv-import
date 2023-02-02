@@ -2,13 +2,13 @@ package main
 
 import (
 	"context"
+	"db-webhooks/go/pkg/util"
 	"encoding/json"
 	"github.com/jackc/pgx"
 	"github.com/joho/godotenv"
 	"github.com/pkg/errors"
 	"os"
 	"os/signal"
-	"pg_auto_trigger/go/pkg/util"
 	"strconv"
 	"syscall"
 	"time"

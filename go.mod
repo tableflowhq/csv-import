@@ -1,4 +1,4 @@
-module pg_auto_trigger
+module db-webhooks
 
 go 1.19
 
