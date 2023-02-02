@@ -27,7 +27,7 @@ the configured webhook(s) with a JSON payload that includes specified values fro
 
 ## Get Started
 
-```shell
+```console
 wget https://raw.githubusercontent.com/portola-labs/db-webhooks/main/deploy.sh
 chmod +x deploy.sh
 ./deploy.sh
