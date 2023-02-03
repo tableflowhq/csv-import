@@ -24,13 +24,15 @@ the configured webhook(s) with a JSON payload that includes specified values fro
 2. Postgres trigger notifies DB Webhooks web server via websocket message
 3. DB Webhooks formats data and sends webhook(s)
 
-
 ## Get Started
 
+Note: This install script only supports Linux distros that use yum and systemd and will install the application as a
+service. If you want to run the program as a native executable you can download and build the repo instead.
+
 ```console
-wget https://raw.githubusercontent.com/portola-labs/db-webhooks/main/deploy.sh
-chmod +x deploy.sh
-./deploy.sh
+wget https://raw.githubusercontent.com/portola-labs/db-webhooks/main/install-linux.sh
+chmod +x install-linux.sh
+./install-linux.sh
 ```
 
 The script will:
