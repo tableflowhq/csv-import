@@ -7,7 +7,7 @@ import (
 var Log *zap.SugaredLogger
 var initialized bool
 
-func InitializeLogger() {
+func InitLogger() {
 	if initialized {
 		return
 	}
