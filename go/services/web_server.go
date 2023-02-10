@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"os"
 	"strings"
-	"sync"
 	"time"
 )
 
@@ -24,7 +23,7 @@ const (
 
 var authorizationHeaderToken string
 
-func InitWebServer(ctx context.Context, wg *sync.WaitGroup) error {
+func InitWebServer(ctx context.Context) error {
 	util.Log.Debugw("Starting API server")
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
@@ -67,7 +66,12 @@ func InitWebServer(ctx context.Context, wg *sync.WaitGroup) error {
 	}))
 	v1.Use(AuthMiddleware())
 
-	//v1.GET("/test", Health)
+	v1.POST("/connection/create", ConnectionCreate)
+	v1.DELETE("/connection/delete", ConnectionDelete)
+	v1.GET("/action/list", ActionList)
+	v1.POST("/action/create", ActionCreate)
+	v1.DELETE("/action/delete", ActionDelete)
+	v1.GET("/table/list", TableList)
 
 	// Initialize the server in a goroutine so that it won't block shutdown handling
 	go func() {
@@ -77,7 +81,7 @@ func InitWebServer(ctx context.Context, wg *sync.WaitGroup) error {
 	}()
 	util.Log.Debugw("API server started")
 	go func() {
-		defer wg.Done()
+		defer ShutdownWaitGroup.Done()
 		for {
 			select {
 			case <-ctx.Done():

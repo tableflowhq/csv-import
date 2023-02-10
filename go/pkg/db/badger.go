@@ -20,17 +20,20 @@ const (
 )
 
 var (
-	DB                   *BadgerDB
-	NamespaceConnections = "connections"
-	NamespaceActions     = "actions"
+	DB                    *BadgerDB
+	DefaultConnectionName = "postgres"
+	NamespaceConnections  = "connections"
+	NamespaceActions      = "actions"
 )
 
 type (
 	// BadgerDBInt defines an embedded key/value store database interface.
 	BadgerDBInt interface {
 		Get(namespace, key string) (value []byte, err error)
-		Set(namespace, key string, value []byte) error
 		Has(namespace, key string) (bool, error)
+		Find(namespace string) (map[string][]byte, error)
+		Set(namespace, key string, value []byte) error
+		Delete(namespace, key string) error
 		Close() error
 	}
 	// BadgerDB is a wrapper around a BadgerDB backend database that implements the BadgerDBInt interface.
@@ -162,12 +165,14 @@ func (bdb *BadgerDB) Delete(namespace, key string) error {
 }
 
 // Close closes the connection to the underlying BadgerDB database as well as invoking the context's cancel function.
-func (bdb *BadgerDB) Close() {
+func (bdb *BadgerDB) Close() error {
 	bdb.cancelFunc()
 	if err := bdb.db.Close(); err != nil {
 		util.Log.Errorw("Failed to close BadgerDB", "error", err)
+		return err
 	}
 	util.Log.Debugw("BadgerDB shutdown")
+	return nil
 }
 
 // run triggers the garbage collection for the BadgerDB backend database and listens for context cancellation.
