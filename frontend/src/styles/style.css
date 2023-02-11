@@ -168,14 +168,13 @@ body {
 }
 
 .light .color2 {
-  color: #c2cfe0;
+  color: #808080;
 }
 .light .color3 {
   color: #90a0b7;
 }
 .light hr {
   background-color: #ebeff2;
-  padding: 0.09rem 0rem;
 }
 
 .dark .color2 {
@@ -186,7 +185,6 @@ body {
 }
 .dark hr {
   background-color: rgba(235, 239, 242, 0.08);
-  padding: 0.09rem 0rem;
 }
 
 .bg-purple-light {
@@ -198,11 +196,11 @@ body {
 }
 
 .logo img {
-  max-width: 140px;
+  max-width: 200px;
 }
 
 .logo2 img {
-  max-width: 150px;
+  max-width: 200px;
 }
 
 .light .logoD {
@@ -221,7 +219,7 @@ body {
   bottom: 0%;
 }
 .light .login_container .login_form {
-  max-width: 392px;
+  max-width: 450px;
   width: 100%;
   background-color: #fff;
   border-radius: 5px;
