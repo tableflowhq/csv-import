@@ -26,32 +26,10 @@ the configured webhook(s) with a JSON payload that includes specified values fro
 
 ## Get Started
 
-Note: This install script only supports Linux distros that use yum and systemd and will install the application as a
-service. If you want to run the program as a native executable you can download and build the repo instead.
-
-```console
-wget https://raw.githubusercontent.com/portola-labs/db-webhooks/main/install-linux.sh
-chmod +x install-linux.sh
-./install-linux.sh
-```
-
-The script will:
-
-* Download the repo and necessary dependencies
-* Prompt you to add your environment variables to the .env file
-    * Note: Make sure the user you add has read permissions on the specified database
-    * Note: This is also where you'll specific the POST request URL and body, which can contain templated variables
-      which map to the column names whose values you want to include in the request
-* Build the executable and run it as a service
-* Create the trigger creation SQL which then has to be executed manually
+Docker: TODO
 
 ## Roadmap
 
-Right now the alpha version only supports monitoring INSERTS from one table and firing one webhook. We'll be adding
-support for:
-
-- Triggers on any number of tables
-- Monitoring for different operations (INSERT, UPDATE, DELETE)
 - Filters and mapping options the row data to the POST request
 
-Let us know your feedback or feature requests! You can submit and issue or contact us at eric@inquery.io
+Let us know your feedback or feature requests! You can submit an issue or contact us at eric@inquery.io
