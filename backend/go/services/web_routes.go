@@ -89,9 +89,13 @@ func ActionCreate(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "error creating action", "error": "request body must be valid JSON or empty"})
 		return
 	}
-
-	// Create db trigger if one does not already exist
-
+	// Create db trigger if one does not already exist (handled by the SQL using `if not exists`)
+	_, err = ConnPool.Exec(util.GetTriggerCreationSQL(action.Schema, action.Table))
+	if err != nil {
+		util.Log.Warnw("Could not create database trigger", "error", err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "could not create database trigger", "error": err.Error()})
+		return
+	}
 	actionId := uuid.New().String()
 	if err = db.DB.Set(db.NamespaceActions, actionId, actionJson); err != nil {
 		util.Log.Warnw("Error creating action", "error", err)
@@ -130,16 +134,57 @@ func ActionDelete(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "invalid json body", "error": err.Error()})
 		return
 	}
+
 	// Lookup action to see if exists
-
+	actionToDeleteData, err := db.DB.Get(db.NamespaceActions, id.ID)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "action does not exist", "error": err.Error()})
+		return
+	}
+	actionToDelete := TriggerAction{}
+	if jsonErr := json.Unmarshal(actionToDeleteData, &actionToDelete); jsonErr != nil {
+		util.Log.Errorw("Could no unmarshal action data", "error", jsonErr)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "could not unmarshal action data", "error": err.Error()})
+		return
+	}
 	// Get all actions
-
-	// If no other actions exist with same schema/table, delete the trigger
-
-	if err := db.DB.Delete(db.NamespaceActions, id.ID); err != nil {
+	// If this is the last action for the table, delete the underlying database trigger
+	actionsData, err := db.DB.Find(db.NamespaceActions)
+	if err != nil {
+		util.Log.Warnw("Error deleting action, could not look up existing actions", "error", err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "error deleting action, could not look up existing actions", "error": err.Error()})
+		return
+	}
+	shouldDeleteDatabaseTrigger := true
+	for key, actionData := range actionsData {
+		a := TriggerAction{}
+		if jsonErr := json.Unmarshal(actionData, &a); jsonErr != nil {
+			util.Log.Errorw("Could no unmarshal action data", "error", jsonErr)
+			continue
+		}
+		actionId := strings.Split(key, "/")[1]
+		if actionId == id.ID {
+			// Move on so the action that will be deleted is not considered for deleting the database trigger
+			continue
+		}
+		if actionToDelete.Table == a.Table && actionToDelete.Schema == a.Schema {
+			shouldDeleteDatabaseTrigger = false
+			break
+		}
+	}
+	if err = db.DB.Delete(db.NamespaceActions, id.ID); err != nil {
 		util.Log.Warnw("Error deleting action", "error", err)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "error deleting action", "error": err.Error()})
 		return
+	}
+	// If no other actions exist with same schema/table, delete the underlying database trigger
+	if shouldDeleteDatabaseTrigger {
+		_, err = ConnPool.Exec(util.GetTriggerDropSQL(actionToDelete.Schema, actionToDelete.Table))
+		if err != nil {
+			util.Log.Warnw("Could not drop database triggers", "error", err)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "could not drop database triggers", "error": err.Error()})
+			return
+		}
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"message": "action deleted",
