@@ -17,10 +17,10 @@ const ActionTable = () => {
           {[1, 1, 1, 1, 1, 1, 1, 1, 1, 1].map((value, index, array) => {
             return (
               <tr key={index}>
-                <td className="color3 ps-4 fw400">new_user_slack</td>
-                <td className="color3 fw400">users</td>
-                <td className="color3 fw400">INSERT / UPDATE / DELETE</td>
-                <td className="color3 fw400">hooks.slack.com/</td>
+                <td className="color2 ps-4 fw400">new_user_slack</td>
+                <td className="color2 fw400">users</td>
+                <td className="color2 fw400">INSERT / UPDATE / DELETE</td>
+                <td className="color2 fw400">hooks.slack.com/</td>
               </tr>
             );
           })}

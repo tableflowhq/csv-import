@@ -11,6 +11,13 @@ const ActionCreate = () => {
         <br/>
         <input type="text" placeholder="Enter Name"/>
         <div className="mt-2"/>
+        <label htmlFor="Schema">Schema</label>
+        <br/>
+        <select name="" id="">
+          <option value="Type">Public</option>
+          <option value="Type">Type</option>
+        </select>
+        <div className="mt-2"/>
         <label htmlFor="Table">Table</label>
         <br/>
         <select name="" id="">
@@ -40,7 +47,6 @@ const ActionCreate = () => {
         <br/>
         <select name="" id="">
           <option value="HTTP Request">HTTP Request</option>
-          <option value="HTTP Request">HTTP Request</option>
         </select>
         <div className="mt-2"/>
         <label htmlFor="URL">URL</label>
@@ -48,8 +54,7 @@ const ActionCreate = () => {
         <div className="mt-2"/>
         <label htmlFor="Method">Method</label>
         <select name="" id="">
-          <option value="Post">Post</option>
-          <option value="Post">Post</option>
+          <option value="POST">POST</option>
         </select>
         <div className="mt-2"/>
         <label htmlFor="Body">Body</label>
@@ -62,6 +67,10 @@ const ActionCreate = () => {
           placeholder="Enter Body"
         ></textarea>
         <hr/>
+        <div>
+          <button className="border-0 text-white w-100">Test</button>
+        </div>
+        <br/>
         <div>
           <button className="border-0 text-white w-100">Create</button>
         </div>

@@ -5,15 +5,13 @@ import ActionCreate from "../components/ActionCreate";
 const LayoutActionCreate = ({localMode}) => {
   return (
     <Layout>
-      <div className="container-fluid px-4 py-3">
-        <div className="d-flex align-items-center bg-white rounded-3 px-4 py-4">
-          <h3 className="fw600 f24 mb-1">Create Action</h3>
-        </div>
+      <div className="container-fluid py-3 px-4">
+          <h3 className="fw500 f28 mb-1">Create Action</h3>
 
         {/* BOTTOM SECTION */}
         <div className="payment_container_upper mt-4">
           <div className="row gy-4">
-            <div className="col-12 col-lg-5">
+            <div className="col-12 col-lg-6">
               <ActionCreate/>
             </div>
           </div>

@@ -87,6 +87,10 @@ body {
   font-size: 1.5rem;
 }
 
+.f28 {
+  font-size: 1.75rem;
+}
+
 .f34 {
   font-size: 2.125rem;
 }
@@ -178,10 +182,10 @@ body {
 }
 
 .dark .color2 {
-  color: #2f3036;
+  color: #d1d2d5;
 }
 .dark .color3 {
-  color: #54555f;
+  color: #aaaaaf;
 }
 .dark hr {
   background-color: rgba(235, 239, 242, 0.08);
@@ -225,17 +229,17 @@ body {
   border-radius: 5px;
 }
 .light .login_container .login_form label {
-  color: #90a0b7;
+  color: #808080;
 }
 .light .login_container .login_form input {
   background: rgba(235, 239, 242, 0.35);
   border: 1px solid #ebeff2;
   border-radius: 5px;
   height: 38px;
-  color: #90a0b7;
+  color: #808080;
 }
 .light .login_container .login_form input::-moz-placeholder {
-  color: #90a0b7;
+  color: #BCBCBC;
 }
 .light .login_container .login_form input::placeholder {
   color: #90a0b7;
@@ -473,7 +477,7 @@ body {
   border-radius: 4px;
 }
 .light .chart_container .charts .charts_btn .btn_container button {
-  font-size: 14px;
+  font-size: 16px;
   width: 80px;
   border: none;
   background: none;
@@ -574,7 +578,7 @@ body {
   height: 38px;
   width: 100%;
   color: #90a0b7;
-  font-size: 14px;
+  font-size: 16px;
   padding: 0rem 0.8rem;
 }
 .light .payment_container_upper .database_setup input:focus {
@@ -592,7 +596,7 @@ body {
   border-radius: 5px;
   width: 100%;
   color: #90a0b7;
-  font-size: 14px;
+  font-size: 16px;
   padding: 0.8rem;
   resize: none;
 }
@@ -656,11 +660,11 @@ body {
   min-width: 100px;
 }
 .light .error {
-  color: red;
+  color: #f65454;
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 14px;
+  font-size: 16px;
   padding-top: 4px;
 }
 .light select {
@@ -669,9 +673,8 @@ body {
   border-radius: 5px;
   height: 38px;
   width: 100%;
-  color: #90a0b7;
-  font-size: 14px;
-  padding: 0rem 0.8rem;
+  color: #808080;
+  padding: 0rem 0.5rem;
 }
 .light select:focus {
   outline: none;
@@ -703,7 +706,7 @@ body {
   height: 38px;
   width: 100%;
   color: #90a0b7;
-  font-size: 14px;
+  font-size: 16px;
   padding: 0rem 0.8rem;
 }
 .light .forms input:focus {
@@ -721,7 +724,7 @@ body {
   border-radius: 5px;
   width: 100%;
   color: #90a0b7;
-  font-size: 14px;
+  font-size: 16px;
   padding: 0.8rem;
   resize: none;
 }
@@ -741,7 +744,7 @@ body {
   height: 38px;
   width: 100%;
   color: #90a0b7;
-  font-size: 14px;
+  font-size: 16px;
   padding: 0rem 0.8rem;
 }
 .light .forms select:focus {
@@ -987,7 +990,7 @@ body {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 14px;
+  font-size: 16px;
   padding-top: 4px;
 }
 .dark .bg-white {
@@ -1262,7 +1265,7 @@ body {
   border-radius: 4px;
 }
 .dark .chart_container .charts .charts_btn .btn_container button {
-  font-size: 14px;
+  font-size: 16px;
   width: 80px;
   border: none;
   background: none;
@@ -1359,7 +1362,7 @@ body {
   min-width: 180px;
 }
 .dark .payment_container_upper .database_setup label {
-  color: #54555f;
+  color: #ceced3;
   margin-bottom: 0.1rem;
 }
 .dark .payment_container_upper .database_setup input {
@@ -1368,15 +1371,15 @@ body {
   border-radius: 5px;
   height: 38px;
   width: 100%;
-  color: #54555f;
-  font-size: 14px;
+  color: #ceced3;
+  font-size: 16px;
   padding: 0rem 0.8rem;
 }
 .dark .payment_container_upper .database_setup input:focus {
   outline: none;
 }
 .dark .payment_container_upper .database_setup input::-moz-placeholder {
-  color: #54555f;
+  color: #76767a;
 }
 .dark .payment_container_upper .database_setup input::placeholder {
   color: #54555f;
@@ -1386,8 +1389,8 @@ body {
   border: 1px solid #292929;
   border-radius: 5px;
   width: 100%;
-  color: #54555f;
-  font-size: 14px;
+  color: #ceced3;
+  font-size: 16px;
   padding: 0.8rem;
   resize: none;
 }
@@ -1406,8 +1409,8 @@ body {
   border-radius: 5px;
   height: 38px;
   width: 100%;
-  color: #54555f;
-  font-size: 14px;
+  color: #ceced3;
+  font-size: 16px;
   padding: 0rem 0.8rem;
 }
 .dark .payment_container_upper .database_setup select:focus {
@@ -1479,7 +1482,7 @@ body {
   height: 38px;
   width: 100%;
   color: #54555f;
-  font-size: 14px;
+  font-size: 16px;
   padding: 0rem 0.8rem;
 }
 .dark select:focus {
@@ -1512,7 +1515,7 @@ body {
   height: 38px;
   width: 100%;
   color: #54555f;
-  font-size: 14px;
+  font-size: 16px;
   padding: 0rem 0.8rem;
 }
 .dark .forms input:focus {
@@ -1530,7 +1533,7 @@ body {
   border-radius: 5px;
   width: 100%;
   color: #54555f;
-  font-size: 14px;
+  font-size: 16px;
   padding: 0.8rem;
   resize: none;
 }
@@ -1550,7 +1553,7 @@ body {
   height: 38px;
   width: 100%;
   color: #54555f;
-  font-size: 14px;
+  font-size: 16px;
   padding: 0rem 0.8rem;
 }
 .dark .forms select:focus {
@@ -1780,6 +1783,11 @@ body {
   border: 1px solid #8961de;
   border-radius: 5px;
   color: #8961de;
+}
+.action_create {
+  height: 38px;
+  border-radius: 5px;
+  background-color: #8961de;
 }
 
 input[type=number] {

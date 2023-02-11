@@ -7,14 +7,15 @@ const ConnectDatabase = () => {
     <div className="login_container d-flex justify-content-center align-items-center">
       {/* LOGIN FORM START */}
       <div className="login_form pb-3">
+        <div className="container-fluid">
         <div className="px-4">
-          <h4 className="f24 pt-4 fw600">Connect to your Database</h4>
+          <h4 className="f24 pt-4 fw500">Connect to Your Database</h4>
         </div>
         <hr/>
 
         <div className="database_setup pb-3 bg-white rounded-3">
           <form>
-            <div className="px-4">
+            <div className="px-3">
               <label htmlFor="Type">Database Type</label>
               <br/>
               <select name="" id="">
@@ -29,16 +30,17 @@ const ConnectDatabase = () => {
                 className="w-100 px-2"
               />
               <div className="mt-2"/>
-              <div className="row gx-3">
+              <div className="row gx-5">
                 <div className="col-3">
                   <label htmlFor="Port">Port</label>
                   <br/>
                   <input
-                    className="w-100 text-center"
+                    className="w-100 px-2"
                     type="number"
                     name=""
                     id=""
                     placeholder="0000"
+                    defaultValue="5432"
                   />
                 </div>
               </div>
@@ -72,7 +74,7 @@ const ConnectDatabase = () => {
 
             <div className="px-4">
               <NavLink to="/actions">
-                <button className="w-100 border-0 text-white f14">
+                <button className="w-100 border-0 text-white f16">
                   Connect
                 </button>
               </NavLink>
@@ -83,6 +85,7 @@ const ConnectDatabase = () => {
             </p>
           </form>
         </div>
+      </div>
       </div>
       {/* <Welcome /> */}
       {/* LOGIN FORM END */}

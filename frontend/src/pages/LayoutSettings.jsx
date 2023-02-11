@@ -14,9 +14,7 @@ const LayoutSettings = ({setMode, mode, localMode}) => {
   return (
     <Layout>
       <div className="container-fluid px-4 py-3">
-        <div className="d-flex align-items-center bg-white rounded-3 px-4 py-4">
-          <h3 className="fw600 f24 mb-0">Settings</h3>
-        </div>
+        <h3 className="fw500 f28 mb-1">Settings</h3>
 
         {/* BOTTOM SECTION */}
         <div className="user_container_upper mt-4">

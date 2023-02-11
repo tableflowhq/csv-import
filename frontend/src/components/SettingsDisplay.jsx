@@ -73,8 +73,6 @@ export const DisplaySettings = ({setMode, mode, localMode}) => {
         </div>
         <br /> */}
         <div>
-          <label htmlFor="Trial Days">Dashboard Appearance</label>
-          <br/>
           <span className="d-flex">
             <button
               style={{

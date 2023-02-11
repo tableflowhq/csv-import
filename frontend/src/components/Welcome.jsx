@@ -13,8 +13,8 @@ const Welcome = () => {
         </div>
         <hr/>
         <div className="px-4">
-          <h4 className="f34 text-center pt-2 fw600">Welcome to Inquery!</h4>
-          <p className="color2 text-center pb-2 f18">
+          <h4 className="f24 text-center pt-2 fw500">Welcome to Inquery!</h4>
+          <p className="color2 text-center pb-2 f16">
             Looks like everything's working. Let's connect to your database and
             start triggering actions.
           </p>
@@ -22,7 +22,7 @@ const Welcome = () => {
         <hr/>
         <div className="px-4">
           <NavLink to="/connect-database">
-            <button className="w-100 border-0 text-white f14">
+            <button className="w-100 border-0 text-white f16">
               Get Started
             </button>
           </NavLink>
