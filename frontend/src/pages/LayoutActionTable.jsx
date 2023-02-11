@@ -11,7 +11,7 @@ const LayoutActionTable = () => {
           <h3 className="fw500 f28 mb-1">Actions</h3>
           <Link to="/create-action">
             {/*<button className="ms-4 bg-purple-light border-0 px-3 py-2 rounded-3 color1 fw500 f20">*/}
-            <button className="w-100 border-0 text-white f16 action_create px-2">
+            <button className="w-100 border-0 text-white f16 action_create px-4">
               Create
             </button>
           </Link>
