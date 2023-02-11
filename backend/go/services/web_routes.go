@@ -147,23 +147,20 @@ func ActionDelete(c *gin.Context) {
 }
 
 func TableList(c *gin.Context) {
-	type pgTable struct {
-		Schema string `json:"schema"`
-		Table  string `json:"table"`
-	}
-	tables := make([]pgTable, 0)
-	rows, err := ConnPool.Query("select tablename, schemaname from pg_catalog.pg_tables where schemaname not in ('pg_catalog', 'information_schema');")
+	tables := make(map[string][]string)
+	rows, err := ConnPool.Query("select schemaname, tablename from pg_catalog.pg_tables where schemaname not in ('pg_catalog', 'information_schema');")
 	if err != nil {
 		util.Log.Warnw("Error listing tables", "error", err)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "could not list tables", "error": err.Error()})
 		return
 	}
 	for rows.Next() {
-		var table pgTable
-		if err := rows.Scan(&table.Table, &table.Schema); err != nil {
+		var schemaName string
+		var tableName string
+		if err := rows.Scan(&schemaName, &tableName); err != nil {
 			continue
 		}
-		tables = append(tables, table)
+		tables[schemaName] = append(tables[schemaName], tableName)
 	}
 	c.JSON(http.StatusOK, tables)
 }

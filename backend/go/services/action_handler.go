@@ -1,10 +1,20 @@
 package services
 
 import (
+	"bytes"
 	"context"
 	"db-webhooks/go/pkg/db"
 	"db-webhooks/go/pkg/util"
 	"encoding/json"
+	"fmt"
+	"net/http"
+)
+
+const (
+	triggerActionHTTP  = "HTTP"
+	triggerEventInsert = "INSERT"
+	triggerEventUpdate = "UPDATE"
+	triggerEventDelete = "DELETE"
 )
 
 type TriggerAction struct {
@@ -69,8 +79,63 @@ func HandleNotifyEventReceived(payload NotifyPayload) {
 			}
 		}
 	}
+	columnTemplateValues := mergeColumnTemplateValues(payload)
 	for _, action := range matchedActions {
-		util.Log.Infow("Found matched action!", "action", action)
-		// TODO: *****
+		switch action.Action.Type {
+		case triggerActionHTTP:
+			triggerActionHTTPPOST(action, columnTemplateValues)
+			break
+		default:
+			util.Log.Debugw("Attempted to fire unsupported trigger action", "type", action.Action.Type)
+		}
+	}
+}
+
+// mergeColumnTemplateValues creates a merged map of all available template values.
+// The prefixes "new." and "old." can be used if a new (INSERT, UPDATE) or old (UPDATE, DELETE) row is available.
+// If a prefix is not specified, the new or old values will be used depending on the event:
+// INSERT: ${name} == ${new.name}
+// UPDATE: ${name} == ${new.name}
+// DELETE: ${name} == ${old.name}
+func mergeColumnTemplateValues(payload NotifyPayload) map[string]interface{} {
+	columnTemplateValues := make(map[string]interface{})
+	if payload.New != nil {
+		for k, v := range payload.New {
+			columnTemplateValues[fmt.Sprintf("new.%v", k)] = v
+		}
+	}
+	if payload.Old != nil {
+		for k, v := range payload.Old {
+			columnTemplateValues[fmt.Sprintf("old.%v", k)] = v
+		}
+	}
+	switch payload.Event {
+	case triggerEventInsert, triggerEventUpdate:
+		for k, v := range payload.New {
+			columnTemplateValues[k] = v
+		}
+		break
+	case triggerEventDelete:
+		for k, v := range payload.Old {
+			columnTemplateValues[k] = v
+		}
+		break
+	}
+	// Add metadata values
+	columnTemplateValues["meta.table"] = payload.Table
+	columnTemplateValues["meta.schema"] = payload.Schema
+	columnTemplateValues["meta.event"] = payload.Event
+	return columnTemplateValues
+}
+
+func triggerActionHTTPPOST(action TriggerAction, templateValues map[string]interface{}) {
+	postRequestBody := util.FillTemplateValues(action.Action.Body, templateValues)
+	resp, err := http.Post(action.Action.URL, "application/json", bytes.NewBuffer([]byte(postRequestBody)))
+	defer resp.Body.Close()
+	if err != nil {
+		util.Log.Errorw("An error occurred making a trigger action POST request",
+			"url", action.Action.URL,
+			"error", err,
+		)
 	}
 }

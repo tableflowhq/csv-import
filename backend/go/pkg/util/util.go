@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"net/http"
 	"regexp"
 	"strings"
 )
@@ -23,9 +22,11 @@ func IsValidJSON(str string) bool {
 	return json.Unmarshal([]byte(str), &js) == nil
 }
 
+// FillTemplateValues replaces template keys with the provided values
+// Format examples: ${name} ${new.name} ${old.name}
 func FillTemplateValues(template string, values map[string]interface{}) string {
 	result := template
-	rex := regexp.MustCompile(`\${(\w+)}`)
+	rex := regexp.MustCompile(`\${(\w+|\w+\.\w+)}`)
 	matches := rex.FindAllStringSubmatch(template, -1)
 	for _, match := range matches {
 		token := match[0]
@@ -38,16 +39,4 @@ func FillTemplateValues(template string, values map[string]interface{}) string {
 		result = strings.ReplaceAll(result, token, fmt.Sprintf("%v", value))
 	}
 	return result
-}
-
-func PostTriggerAction(postRequestURL, postRequestBodyTemplate string, templateValues map[string]interface{}) {
-	postRequestBody := FillTemplateValues(postRequestBodyTemplate, templateValues)
-	resp, err := http.Post(postRequestURL, "application/json", bytes.NewBuffer([]byte(postRequestBody)))
-	if err != nil {
-		Log.Errorw("An error occurred making the POST request",
-			"url", postRequestURL,
-			"error", err,
-		)
-	}
-	defer resp.Body.Close()
 }
