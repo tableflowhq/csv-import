@@ -33,7 +33,6 @@ const ActionCreate = ({setLoading}) => {
   useEffect(() => {
     httpGet("table/list", (data) => {
       setTables(data)
-      console.log(data)
     }, (data) => {
       console.log(data)
       // TODO: Return error page in case of failure here
@@ -67,7 +66,6 @@ const ActionCreate = ({setLoading}) => {
         setError("An unknown error occurred")
       }
     })
-    console.log(formData)
   }
 
   return (
