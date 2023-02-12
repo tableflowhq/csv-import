@@ -4,6 +4,7 @@ import (
 	"db-webhooks/go/pkg/db"
 	"db-webhooks/go/pkg/util"
 	"encoding/json"
+	"github.com/dgraph-io/badger/v3"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"net/http"
@@ -18,6 +19,20 @@ func Health(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "ok",
 	})
+}
+
+func ConnectionGet(c *gin.Context) {
+	connConfig, err := GetDatabaseConnectionConfig()
+	if err != nil {
+		if err != badger.ErrKeyNotFound {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "error retrieving connection", "error": err.Error()})
+			return
+		}
+	}
+	if connConfig == nil {
+		connConfig = &ConnConfig{}
+	}
+	c.JSON(http.StatusOK, connConfig)
 }
 
 func ConnectionCreate(c *gin.Context) {
@@ -35,7 +50,7 @@ func ConnectionCreate(c *gin.Context) {
 	}
 	if ok, _ := db.DB.Has(db.NamespaceConnections, db.DefaultConnectionName); ok {
 		util.Log.Warnw("Attempted to create connection that already exists")
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "connection already exists"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "connection already exists", "error": "connection already exists"})
 		return
 	}
 	if err = TestDatabaseConnection(&connConfig); err != nil {
@@ -87,6 +102,22 @@ func ActionCreate(c *gin.Context) {
 	if !isPostRequestBodyValidJSON {
 		util.Log.Infow("Invalid request body JSON when creating action")
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "error creating action", "error": "request body must be valid JSON or empty"})
+		return
+	}
+	if len(action.Table) == 0 {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "no table provided", "error": "no table provided"})
+		return
+	}
+	if len(action.Schema) == 0 {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "no schema provided", "error": "no schema provided"})
+		return
+	}
+	if len(action.TriggerEvents) == 0 {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "no trigger events provided", "error": "no trigger events provided"})
+		return
+	}
+	if len(action.Action.URL) == 0 {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "no URL provided", "error": "no URL provided"})
 		return
 	}
 	// Create db trigger if one does not already exist (handled by the SQL using `if not exists`)

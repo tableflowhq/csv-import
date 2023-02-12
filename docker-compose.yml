@@ -1,0 +1,35 @@
+version: "3"
+
+services:
+  backend:
+    build: "./backend" # Comment image option
+    # image: <IMAGE_NAME> # Replace image name and comment build option
+    # IMAGE_NAME should be inquery/backend
+    container_name: backend
+    stop_signal: SIGTERM
+    stop_grace_period: 30s
+    ports:
+      - "3003:3003"
+    networks:
+      - inquery
+    volumes:
+      - inquery:/tmp/badger
+    environment:
+      - DISK_DB_ENCRYPTION_KEY=${DISK_DB_ENCRYPTION_KEY}
+      - DISK_DB_LOCATION=/tmp/badger
+      - HTTP_API_SERVER_PORT=3003
+      - HTTP_API_SERVER_CORS_ALLOW_ORIGINS=${HTTP_API_SERVER_CORS_ALLOW_ORIGINS}
+      - HTTP_API_SERVER_AUTHORIZATION_HEADER_TOKEN=${HTTP_API_SERVER_AUTHORIZATION_HEADER_TOKEN}
+  frontend:
+    build: "./frontend" # Comment image option
+    # image: <IMAGE_NAME> # Replace image name and comment build option
+    # IMAGE_NAME should be inquery/frontend
+    container_name: frontend
+    ports:
+      - "3000:80"
+    networks:
+      - inquery
+volumes:
+  inquery:
+networks:
+  inquery:

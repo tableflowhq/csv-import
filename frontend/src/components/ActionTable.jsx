@@ -1,6 +1,28 @@
-import React from "react";
+import React, {useEffect, useState} from "react";
+import {httpDelete, httpGet} from "../util/api";
+import {RiDeleteBinLine} from "react-icons/all";
 
 const ActionTable = () => {
+  const [actions, setActions] = useState({});
+
+  useEffect(() => {
+    httpGet("action/list", (data) => {
+      setActions(data)
+    }, (data) => {
+      console.log(data)
+      // TODO: Return error page in case of failure here
+    })
+  }, []);
+
+  const deleteAction = (id) => {
+    httpDelete("action", {"id": id}, (data) => {
+      window.location.reload()
+    }, (data) => {
+      console.log(data)
+      // TODO: Return error page in case of failure here
+    })
+  }
+
   return (
     <div className="bg-white rounded-3">
       <div className="user_table">
@@ -11,16 +33,24 @@ const ActionTable = () => {
             <th className="color2 fw500">Table</th>
             <th className="color2 fw500">Events</th>
             <th className="color2 fw500">URL</th>
+            <th className="color2 fw500"></th>
           </tr>
           </thead>
           <tbody>
-          {[1, 1, 1, 1, 1, 1, 1, 1, 1, 1].map((value, index, array) => {
+          {Object.entries(actions).map(([id, action]) => {
             return (
-              <tr key={index}>
-                <td className="color2 ps-4 fw400">new_user_slack</td>
-                <td className="color2 fw400">users</td>
-                <td className="color2 fw400">INSERT / UPDATE / DELETE</td>
-                <td className="color2 fw400">hooks.slack.com/</td>
+              <tr key={id}>
+                <td className="color2 ps-4 fw400">{action.name}</td>
+                <td className="color2 fw400">{action.table}</td>
+                <td className="color2 fw400">{action.trigger_events.join(", ")}</td>
+                <td className="color2 fw400 action-list-td" title={action.action.url}>{action.action.url}</td>
+                <td className="color2 fw400 action-list-td">
+                  <RiDeleteBinLine
+                    className="ms-0 ms-md-4 pointer color3"
+                    fontSize="1.5rem"
+                    onClick={() => deleteAction(id)}
+                  />
+                </td>
               </tr>
             );
           })}

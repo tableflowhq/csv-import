@@ -28,6 +28,18 @@ func InitWebServer(ctx context.Context) error {
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
 
+	allowOrigins := strings.Split(os.Getenv("HTTP_API_SERVER_CORS_ALLOW_ORIGINS"), ",")
+	if len(allowOrigins[0]) == 0 {
+		allowOrigins = []string{httpDefaultAllowOrigins}
+	}
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     allowOrigins,
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "Authorization", "Accept"},
+		AllowCredentials: true,
+		AllowWildcard:    true,
+		MaxAge:           12 * time.Hour,
+	}))
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
 	port := os.Getenv("HTTP_API_SERVER_PORT")
@@ -51,26 +63,17 @@ func InitWebServer(ctx context.Context) error {
 	/* ---------------------------  Private routes  --------------------------- */
 
 	v1 := router.Group("/api/v1")
-
-	allowOrigins := strings.Split(os.Getenv("HTTP_API_SERVER_CORS_ALLOW_ORIGINS"), ",")
-	if len(allowOrigins) == 0 {
-		allowOrigins = []string{httpDefaultAllowOrigins}
-	}
-	v1.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"*"},
-		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "Authorization"},
-		AllowCredentials: true,
-		AllowWildcard:    true,
-		MaxAge:           12 * time.Hour,
-	}))
 	v1.Use(AuthMiddleware())
 
-	v1.POST("/connection/create", ConnectionCreate)
-	v1.DELETE("/connection/delete", ConnectionDelete)
+	/* Connection */
+	v1.GET("/connection", ConnectionGet)
+	v1.POST("/connection", ConnectionCreate)
+	v1.DELETE("/connection", ConnectionDelete)
+	/* Action */
 	v1.GET("/action/list", ActionList)
-	v1.POST("/action/create", ActionCreate)
-	v1.DELETE("/action/delete", ActionDelete)
+	v1.POST("/action", ActionCreate)
+	v1.DELETE("/action", ActionDelete)
+	/* Table */
 	v1.GET("/table/list", TableList)
 
 	// Initialize the server in a goroutine so that it won't block shutdown handling

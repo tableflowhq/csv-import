@@ -2,7 +2,7 @@ import React from "react";
 import Layout from "../layout";
 import ActionCreate from "../components/ActionCreate";
 
-const LayoutActionCreate = ({localMode}) => {
+const LayoutActionCreate = ({localMode, setLoading}) => {
   return (
     <Layout>
       <div className="container-fluid py-3 px-4">
@@ -12,7 +12,7 @@ const LayoutActionCreate = ({localMode}) => {
         <div className="payment_container_upper mt-4">
           <div className="row gy-4">
             <div className="col-12 col-lg-6">
-              <ActionCreate/>
+              <ActionCreate setLoading={setLoading}/>
             </div>
           </div>
         </div>

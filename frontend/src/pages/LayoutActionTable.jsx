@@ -1,9 +1,29 @@
-import React from "react";
+import React, {useEffect, useState} from "react";
 import Layout from "../layout";
 import ActionTable from "../components/ActionTable";
-import {Link} from "react-router-dom";
+import {Link, Redirect} from "react-router-dom";
+import {httpGet} from "../util/api";
 
 const LayoutActionTable = () => {
+  const [data, setData] = useState({});
+  const [isLoading, setLoading] = useState(true);
+
+  useEffect(() => {
+    httpGet("connection", (data) => {
+      setData(data);
+      setLoading(false);
+    }, (data) => {
+      // TODO: Return error page in case of failure here
+      setLoading(false);
+    })
+  }, []);
+
+  if(isLoading) {
+    return null
+  }
+  if(!data.host) {
+    return (<Redirect to="/welcome"/>)
+  }
   return (
     <Layout>
       <div className="container-fluid px-4 py-3">

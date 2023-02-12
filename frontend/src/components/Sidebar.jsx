@@ -44,7 +44,7 @@ const Sidebar = ({sideBar, setSideBar}) => {
       <hr/>
       <div className="manage_side px-3 pt-2 pb-1">
         <p className="fw600 color2 ps-3 mb-3">Manage</p>
-        <NavLink to="/actions" activeClassName="activeNav">
+        <NavLink to="/" activeClassName="activeNav">
           <div className="d-flex align-items-center position-relative">
             <div className="img2"></div>
             <p className="mb-0">Actions</p>

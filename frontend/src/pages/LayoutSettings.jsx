@@ -1,12 +1,6 @@
 import React, {useEffect} from "react";
 import Layout from "../layout";
-import {
-  //   AccountSettings,
-  DisplaySettings,
-  //   LicenseTransferSettings,
-  //   StripeInformation,
-  //   UsefulLinks,
-} from "../components/SettingsDisplay";
+import {DisplaySettings,} from "../components/SettingsDisplay";
 
 const LayoutSettings = ({setMode, mode, localMode}) => {
   useEffect(() => {

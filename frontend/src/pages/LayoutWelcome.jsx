@@ -1,11 +1,10 @@
 import React from "react";
 import wave from "../assets/wave.svg";
 
-
 // COMPONENTS
 import Welcome from "../components/Welcome";
 
-const Home = () => {
+const LayoutWelcome = () => {
   return (
     <div className="login_container d-flex justify-content-center align-items-center">
       {/* LOGIN FORM START */}
@@ -21,4 +20,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default LayoutWelcome;

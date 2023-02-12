@@ -8,7 +8,7 @@
 *.test
 *.out
 *.log
-backend/.env
+.env
 .env.*
 
 npm-debug.log*

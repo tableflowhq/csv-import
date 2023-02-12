@@ -1,18 +1,20 @@
 // IMPORTING CSS
 import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
-import Home from "./pages/Home";
+import LayoutWelcome from "./pages/LayoutWelcome";
 import "./styles/style.css";
 
 // IMPORTING ROUTER AND SWITCH
-import {Switch, Route} from "react-router-dom";
+import {Route, Switch} from "react-router-dom";
 import {useEffect, useState} from "react";
 import LayoutActionCreate from "./pages/LayoutActionCreate";
 import LayoutActionTable from "./pages/LayoutActionTable";
+import LoadingOverlay from "react-loading-overlay";
 import ConnectDatabase from "./pages/ConnectDatabase";
 import LayoutSettings from "./pages/LayoutSettings";
 
 function App() {
   const [mode, setMode] = useState(1);
+  const [loading, setLoading] = useState(false);
 
   let localMode = localStorage.getItem("modeLocal");
 
@@ -36,17 +38,27 @@ function App() {
         (!localMode && "light") || (localMode === "1" && "light") || "dark"
       }`}
     >
-      <Switch>
-        <Route exact path="/" component={Home}/>
-        <Route exact path="/actions" component={LayoutActionTable}/>
-        <Route exact path="/connect-database" component={ConnectDatabase}/>
-        <Route exact path="/settings">
-          <LayoutSettings localMode={localMode} mode={mode} setMode={setMode}/>
-        </Route>
-        <Route exact path="/create-action">
-          <LayoutActionCreate localMode={localMode}/>
-        </Route>
-      </Switch>
+      <LoadingOverlay
+        active={loading}
+        // spinner={<BounceLoader />}
+        spinner={true}
+        text="Loading..."
+      >
+        <Switch>
+          <Route exact path="/" component={LayoutActionTable}/>
+          <Route exact path="/welcome" component={LayoutWelcome}/>
+          <Route exact path="/connect-database">
+            <ConnectDatabase setLoading={setLoading}/>
+          </Route>
+          <Route exact path="/settings">
+            <LayoutSettings localMode={localMode} mode={mode} setMode={setMode}/>
+          </Route>
+          <Route exact path="/create-action">
+            <LayoutActionCreate localMode={localMode} setLoading={setLoading}/>
+          </Route>
+        </Switch>
+      </LoadingOverlay>
+
     </div>
   );
 }
