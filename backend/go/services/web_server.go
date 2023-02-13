@@ -14,9 +14,9 @@ import (
 )
 
 const (
-	httpServerShutdownGracePeriod = 10 * time.Second
 	httpServerReadTimeout         = 30 * time.Second
 	httpServerWriteTimeout        = 30 * time.Second
+	httpDefaultAuthorizationToken = "inquery"
 	httpDefaultServerPort         = "3003"
 	httpDefaultAllowOrigins       = "*"
 )
@@ -46,7 +46,10 @@ func InitWebServer(ctx context.Context) error {
 	if len(port) == 0 {
 		port = httpDefaultServerPort
 	}
-	authorizationHeaderToken = os.Getenv("HTTP_API_SERVER_AUTHORIZATION_HEADER_TOKEN")
+	authorizationHeaderToken = os.Getenv("HTTP_API_SERVER_AUTH_TOKEN")
+	if len(authorizationHeaderToken) == 0 {
+		authorizationHeaderToken = httpDefaultAuthorizationToken
+	}
 	server := &http.Server{
 		Addr:           fmt.Sprintf(":%s", port),
 		Handler:        router,

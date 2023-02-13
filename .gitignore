@@ -8,8 +8,6 @@
 *.test
 *.out
 *.log
-.env
-.env.*
 
 npm-debug.log*
 yarn-debug.log*

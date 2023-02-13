@@ -19,7 +19,7 @@ func main() {
 	util.InitLogger()
 	envErr := godotenv.Load()
 	if envErr != nil {
-		util.Log.Warnw("Could not load .env file", "error", envErr)
+		util.Log.Warnw("Could not load .env file", "error", envErr.Error())
 	}
 
 	/* BadgerDB */

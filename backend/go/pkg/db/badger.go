@@ -16,7 +16,7 @@ const (
 	badgerDiscardRatio = 0.5
 	// Default BadgerDB GC interval
 	badgerGCInterval = 10 * time.Minute
-	defaultDir       = "/tmp/badger"
+	badgerDefaultDir = "/tmp/badger"
 )
 
 var (
@@ -49,7 +49,7 @@ type (
 func InitBadgerDB(ctx context.Context, wg *sync.WaitGroup) error {
 	dir := os.Getenv("DISK_DB_LOCATION")
 	if len(dir) == 0 {
-		dir = defaultDir
+		dir = badgerDefaultDir
 	}
 	if err := os.MkdirAll(dir, 0774); err != nil {
 		return err

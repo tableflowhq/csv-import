@@ -1,12 +1,20 @@
 const baseURL = "http://localhost:3003/api/v1/"
-const accessToken = "e0624335df269dc1537fde96248a931d"
+const authToken = getHttpAuthToken()
+
+function getHttpAuthToken() {
+  let token = process.env.HTTP_API_SERVER_AUTH_TOKEN
+  if(!token) {
+    token = "inquery"
+  }
+  return token
+}
 
 export function httpGet(path, success, failure) {
   const requestOptions = {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": accessToken
+      "Authorization": authToken
     },
   };
   apiRequest(path, requestOptions, success, failure)
@@ -25,7 +33,7 @@ function getRequestOptions(method, body) {
     method: method,
     headers: {
       "Content-Type": "application/json",
-      "Authorization": accessToken
+      "Authorization": authToken
     },
     body: body ? JSON.stringify(body) : ""
   }
