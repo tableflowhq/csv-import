@@ -2,8 +2,8 @@ version: "3"
 
 services:
   backend:
-    build: "./backend"
-#    image: inqueryio/backend
+    #build: "./backend"
+    image: inqueryio/backend:latest
     container_name: backend
     stop_signal: SIGTERM
     stop_grace_period: 30s
@@ -20,8 +20,8 @@ services:
       - HTTP_API_SERVER_CORS_ALLOW_ORIGINS=${HTTP_API_SERVER_CORS_ALLOW_ORIGINS}
       - HTTP_API_SERVER_AUTH_TOKEN=${HTTP_API_SERVER_AUTH_TOKEN}
   frontend:
-    build: "./frontend"
-#    image: inqueryio/frontend
+    #build: "./frontend"
+    image: inqueryio/frontend:latest
     container_name: frontend
     ports:
       - "3000:80"
