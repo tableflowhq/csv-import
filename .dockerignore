@@ -1,0 +1,8 @@
+.dockerignore
+.git
+.idea
+**/build
+**/node_modules
+**/*.md
+Dockerfile.*
+docker-compose*.yaml
