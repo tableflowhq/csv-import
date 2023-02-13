@@ -131,11 +131,14 @@ func mergeColumnTemplateValues(payload NotifyPayload) map[string]interface{} {
 func triggerActionHTTPPOST(action TriggerAction, templateValues map[string]interface{}) {
 	postRequestBody := util.FillTemplateValues(action.Action.Body, templateValues)
 	resp, err := http.Post(action.Action.URL, "application/json", bytes.NewBuffer([]byte(postRequestBody)))
-	defer resp.Body.Close()
 	if err != nil {
 		util.Log.Errorw("An error occurred making a trigger action POST request",
 			"url", action.Action.URL,
 			"error", err,
 		)
+		return
+	}
+	if resp != nil {
+		defer resp.Body.Close()
 	}
 }
