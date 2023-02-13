@@ -154,9 +154,7 @@ const ActionCreate = ({setLoading}) => {
           rows="6"
           value={body}
           onChange={handleChange}
-          placeholder="{
-            'data': 'test'
-          }"
+          placeholder="{&quot;data&quot;: &quot;test&quot;}"
         ></textarea>
         <hr/>
         {error ? (
@@ -164,10 +162,6 @@ const ActionCreate = ({setLoading}) => {
             <strong>Error:</strong>&nbsp;{error}
           </p>
         ) : null}
-        <div>
-          <button className="border-0 text-white w-100">Test</button>
-        </div>
-        <br/>
         <div>
           <button
             onClick={createAction}
