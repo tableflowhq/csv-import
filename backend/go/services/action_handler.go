@@ -3,10 +3,10 @@ package services
 import (
 	"bytes"
 	"context"
-	"db-webhooks/go/pkg/db"
-	"db-webhooks/go/pkg/util"
 	"encoding/json"
 	"fmt"
+	"inquery/go/pkg/db"
+	"inquery/go/pkg/util"
 	"net/http"
 )
 

@@ -2,9 +2,9 @@ package db
 
 import (
 	"context"
-	"db-webhooks/go/pkg/util"
 	"fmt"
 	"github.com/dgraph-io/badger/v3"
+	"inquery/go/pkg/util"
 	"os"
 	"sync"
 	"time"

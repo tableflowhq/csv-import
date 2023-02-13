@@ -2,11 +2,11 @@ package services
 
 import (
 	"context"
-	"db-webhooks/go/pkg/db"
-	"db-webhooks/go/pkg/util"
 	"encoding/json"
 	"errors"
 	"github.com/jackc/pgx"
+	"inquery/go/pkg/db"
+	"inquery/go/pkg/util"
 	"time"
 )
 

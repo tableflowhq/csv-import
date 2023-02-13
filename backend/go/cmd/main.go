@@ -2,11 +2,11 @@ package main
 
 import (
 	"context"
-	"db-webhooks/go/pkg/db"
-	"db-webhooks/go/pkg/util"
-	"db-webhooks/go/services"
 	"github.com/dgraph-io/badger/v3"
 	"github.com/joho/godotenv"
+	"inquery/go/pkg/db"
+	"inquery/go/pkg/util"
+	"inquery/go/services"
 	"os"
 	"os/signal"
 	"syscall"

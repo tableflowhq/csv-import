@@ -1,12 +1,12 @@
 package services
 
 import (
-	"db-webhooks/go/pkg/db"
-	"db-webhooks/go/pkg/util"
 	"encoding/json"
 	"github.com/dgraph-io/badger/v3"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"inquery/go/pkg/db"
+	"inquery/go/pkg/util"
 	"net/http"
 	"strings"
 )

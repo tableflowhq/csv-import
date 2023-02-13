@@ -2,9 +2,8 @@ version: "3"
 
 services:
   backend:
-    build: "./backend" # Comment image option
-    # image: <IMAGE_NAME> # Replace image name and comment build option
-    # IMAGE_NAME should be inquery/backend
+    build: "./backend"
+#    image: inqueryio/backend
     container_name: backend
     stop_signal: SIGTERM
     stop_grace_period: 30s
@@ -21,9 +20,8 @@ services:
       - HTTP_API_SERVER_CORS_ALLOW_ORIGINS=${HTTP_API_SERVER_CORS_ALLOW_ORIGINS}
       - HTTP_API_SERVER_AUTH_TOKEN=${HTTP_API_SERVER_AUTH_TOKEN}
   frontend:
-    build: "./frontend" # Comment image option
-    # image: <IMAGE_NAME> # Replace image name and comment build option
-    # IMAGE_NAME should be inquery/frontend
+    build: "./frontend"
+#    image: inqueryio/frontend
     container_name: frontend
     ports:
       - "3000:80"

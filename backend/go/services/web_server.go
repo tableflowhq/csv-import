@@ -2,11 +2,11 @@ package services
 
 import (
 	"context"
-	"db-webhooks/go/pkg/util"
 	"errors"
 	"fmt"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"inquery/go/pkg/util"
 	"net/http"
 	"os"
 	"strings"
