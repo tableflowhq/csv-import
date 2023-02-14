@@ -14,7 +14,8 @@ database triggers that send low-latency websocket messages to a Go application. 
 the configured webhook(s) with a JSON payload that includes specified values from the database row.
 
 ![DB Webhooks Flow](https://i.imgur.com/BgR5lbo.png)
-\## Use Cases
+
+## Use Cases
 
 * **Send notifications:** Slack, Email, Text Message, Push Notification
 * **Call serverless functions:** AWS Lambda, Google Cloud Functions, Azure Functions
