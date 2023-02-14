@@ -1,13 +1,9 @@
-const baseURL = "http://localhost:3003/api/v1/"
-const authToken = getHttpAuthToken()
-
-function getHttpAuthToken() {
-  let token = process.env.HTTP_API_SERVER_AUTH_TOKEN
-  if(!token) {
-    token = "inquery"
-  }
-  return token
+const env = {
+  ...process?.env,
+  ...window?.__RUNTIME_CONFIG__,
 }
+const baseURL = env.REACT_APP_API_URL
+const authToken = env.REACT_APP_API_AUTH_TOKEN
 
 export function httpGet(path, success, failure) {
   const requestOptions = {
