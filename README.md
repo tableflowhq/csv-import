@@ -47,7 +47,7 @@ NOTE: When connecting your database, if your Postgres host is `localhost`, you m
 
 ### Run Inquery on AWS (EC2)
 
-NOTE: Make sure this instance is only accessible within your VPC.
+NOTE: Make sure this instance is only accessible within your VPC.\
 NOTE: These instructions are for Amazon Linux 2 AMI (HVM).
 
 1. To install Docker, run the following command in your SSH session on the instance terminal:
