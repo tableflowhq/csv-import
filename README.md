@@ -31,10 +31,47 @@ the configured webhook(s) with a JSON payload that includes specified values fro
 
 ## Get Started
 
-Docker: TODO
+### Run Inquery locally
+
+You can run Inquery locally with Docker.
+
+```bash
+git clone --depth 1 https://github.com/inqueryio/inquery.git
+cd inquery
+docker-compose up -d
+```
+
+Then open [http://localhost:3000](http://localhost:3000) to access Inquery.\
+NOTE: When connecting your database, if your Postgres host is `localhost`, you must use `host.docker.internal` instead to access it when running with Docker.
+
+### Run Inquery on AWS (EC2)
+
+NOTE: Make sure this instance is only accessible within your VPC.\
+NOTE: These instructions are for Amazon Linux 2 AMI (HVM).
+
+1. To install Docker, run the following command in your SSH session on the instance terminal:
+```bash
+sudo yum update -y
+sudo yum install -y docker
+sudo service docker start
+sudo usermod -a -G docker $USER
+```
+2. To install `docker-compose`, run the following command in your ssh session on the instance terminal:
+```bash
+sudo curl -L "https://github.com/docker/compose/releases/download/v2.16.0/docker-compose-$(uname -s)-$(uname -m)"  -o /usr/local/bin/docker-compose
+sudo mv /usr/local/bin/docker-compose /usr/bin/docker-compose
+sudo chmod +x /usr/bin/docker-compose
+docker-compose version
+```
+3. Install and run Inquery
+```bash
+mkdir inquery && cd inquery
+wget https://raw.githubusercontent.com/inqueryio/inquery/main/{.env,docker-compose.yml,.dockerignore}
+sudo docker-compose up -d
+```
 
 ## Roadmap
 
 - Filters and mapping options the row data to the POST request
 
-Let us know your feedback or feature requests! You can submit an issue or contact us at hello@inquery.io
+Let us know your feedback or feature requests! You can submit a GitHub issue or contact us at hello@inquery.io

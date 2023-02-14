@@ -10,6 +10,7 @@ services:
     container_name: backend
     stop_signal: SIGTERM
     stop_grace_period: 30s
+    restart: on-failure
     ports:
       - "3003:3003"
     networks:
