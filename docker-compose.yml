@@ -2,8 +2,11 @@ version: "3"
 
 services:
   backend:
-    build: "./backend"
-#    image: inqueryio/backend
+    #build: "./backend"
+    image: inqueryio/backend:latest
+    platform: linux/amd64
+    # Un-comment if using Apple silicon
+    #platform: linux/arm64
     container_name: backend
     stop_signal: SIGTERM
     stop_grace_period: 30s
@@ -20,8 +23,11 @@ services:
       - HTTP_API_SERVER_CORS_ALLOW_ORIGINS=${HTTP_API_SERVER_CORS_ALLOW_ORIGINS}
       - HTTP_API_SERVER_AUTH_TOKEN=${HTTP_API_SERVER_AUTH_TOKEN}
   frontend:
-    build: "./frontend"
-#    image: inqueryio/frontend
+    #build: "./frontend"
+    image: inqueryio/frontend:latest
+    platform: linux/amd64
+    # Un-comment if using Apple silicon
+    #platform: linux/arm64
     container_name: frontend
     ports:
       - "3000:80"
