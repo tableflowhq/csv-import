@@ -13,9 +13,8 @@ Inquery is a utility for Postgres that triggers webhooks when rows are inserted,
 database triggers that send low-latency websocket messages to a Go application. This application then calls
 the configured webhook(s) with a JSON payload that includes specified values from the database row.
 
-![DB Webhooks Flow](https://i.imgur.com/BsTskld.png)
-
-## Use Cases
+![DB Webhooks Flow](https://i.imgur.com/BgR5lbo.png)
+\## Use Cases
 
 * **Send notifications:** Slack, Email, Text Message, Push Notification
 * **Call serverless functions:** AWS Lambda, Google Cloud Functions, Azure Functions
