@@ -2,8 +2,8 @@ version: "3"
 
 services:
   backend:
-    #build: "./backend"
-    image: inqueryio/backend:latest
+    build: "./backend"
+    #    image: inqueryio/backend:latest
     platform: linux/amd64
     # Un-comment if using Apple silicon
     #platform: linux/arm64
@@ -24,8 +24,8 @@ services:
       - HTTP_API_SERVER_CORS_ALLOW_ORIGINS=${HTTP_API_SERVER_CORS_ALLOW_ORIGINS}
       - HTTP_API_SERVER_AUTH_TOKEN=${HTTP_API_SERVER_AUTH_TOKEN}
   frontend:
-    #build: "./frontend"
-    image: inqueryio/frontend:latest
+    build: "./frontend"
+    #    image: inqueryio/frontend:latest
     platform: linux/amd64
     # Un-comment if using Apple silicon
     #platform: linux/arm64
@@ -34,8 +34,8 @@ services:
       - "3000:80"
     networks:
       - inquery
-    environment:
-      - HTTP_API_SERVER_AUTH_TOKEN=${HTTP_API_SERVER_AUTH_TOKEN}
+    volumes:
+      - ${PWD}/frontend.env:/usr/share/nginx/html/.env
 volumes:
   inquery:
 networks:
