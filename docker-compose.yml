@@ -35,7 +35,6 @@ services:
       - -c
       - |
         ./env.sh
-        echo "docker"
         NODE_ENV=development runtime-env-cra 
         nginx -g "daemon off;"
     ports:
