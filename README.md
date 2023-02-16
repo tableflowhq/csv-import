@@ -58,6 +58,7 @@ sudo yum update -y
 sudo yum install -y docker
 sudo service docker start
 sudo usermod -a -G docker $USER
+logout # Needed to close the SSH session so Docker does not have to be run as root
 ```
 2. To install `docker-compose`, run the following command in your ssh session on the instance terminal:
 ```bash
@@ -70,7 +71,7 @@ docker-compose version
 ```bash
 mkdir inquery && cd inquery
 wget https://raw.githubusercontent.com/inqueryio/inquery/main/{.env,docker-compose.yml,.dockerignore,frontend.env}
-sudo docker-compose up -d
+docker-compose up -d
 ```
 
 ## Features
