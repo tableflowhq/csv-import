@@ -3,7 +3,7 @@ version: "3"
 services:
   backend:
     #build: "./backend"
-    image: inqueryio/backend:latest
+    #image: inqueryio/backend:latest
     platform: linux/amd64
     # Un-comment if using Apple silicon
     #platform: linux/arm64
@@ -25,17 +25,26 @@ services:
       - HTTP_API_SERVER_AUTH_TOKEN=${HTTP_API_SERVER_AUTH_TOKEN}
   frontend:
     #build: "./frontend"
-    image: inqueryio/frontend:latest
+    #image: inqueryio/frontend:latest
     platform: linux/amd64
     # Un-comment if using Apple silicon
     #platform: linux/arm64
     container_name: frontend
+    command:
+      - /bin/sh
+      - -c
+      - |
+        ./env.sh
+        echo "docker"
+        NODE_ENV=development runtime-env-cra 
+        nginx -g "daemon off;"
     ports:
       - "3000:80"
     networks:
       - inquery
     volumes:
       - ${PWD}/frontend.env:/usr/share/nginx/html/.env
+      - ${PWD}/env.sh:/usr/share/nginx/html/env.sh
 volumes:
   inquery:
 networks:
