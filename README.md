@@ -13,7 +13,15 @@ Inquery is a utility for Postgres that triggers webhooks when rows are inserted,
 database triggers that send low-latency websocket messages to a Go application. This application then calls
 the configured webhook(s) with a JSON payload that includes specified values from the database row.
 
-![DB Webhooks Flow](https://i.imgur.com/BgR5lbo.png)
+![Inquery Flow](https://i.imgur.com/BgR5lbo.png)
+
+## How It Works
+
+1. Data is modified in Postgres table (INSERT, UPDATE, DELETE)
+2. Postgres trigger notifies the Inquery web server via a websocket message
+3. Inquery formats the data and sends the webhook(s)
+
+![Inquery Create Slack Notification](https://i.imgur.com/Nv7MfQV.gif)
 
 ## Use Cases
 
@@ -21,14 +29,6 @@ the configured webhook(s) with a JSON payload that includes specified values fro
 * **Call serverless functions:** AWS Lambda, Google Cloud Functions, Azure Functions
 * **Trigger analytics events:** Segment, Mixpanel, Amplitude
 * **Stream data real-time:** Snowflake, BigQuery, Clickhouse, Redshift
-
-![Inquery Create Slack Notification](https://i.imgur.com/Nv7MfQV.gif)
-
-## Steps
-
-1. Data modified in Postgres table (INSERT, UPDATE, DELETE)
-2. Postgres trigger notifies DB Webhooks web server via websocket message
-3. DB Webhooks formats data and sends webhook(s)
 
 ## Get Started
 
@@ -42,13 +42,15 @@ cd inquery
 docker-compose up -d
 ```
 
-Then open [http://localhost:3000](http://localhost:3000) to access Inquery.\
-NOTE: When connecting your database, if your Postgres host is `localhost`, you must use `host.docker.internal` instead to access it when running with Docker.
+Then open [http://localhost:3000](http://localhost:3000) to access Inquery.
+<br>
+<br>
+**Note**: When connecting your database, if your Postgres host is `localhost`, you must use `host.docker.internal` instead to access it when running with Docker.
 
 ### Run Inquery on AWS (EC2)
 
-NOTE: Make sure this instance is only accessible within your VPC.\
-NOTE: These instructions are for Amazon Linux 2 AMI (HVM).
+**Note**: Make sure this instance is only accessible within your VPC.\
+**Note**: These instructions are for Amazon Linux 2 AMI (HVM).
 
 1. To install Docker, run the following command in your SSH session on the instance terminal:
 ```bash
@@ -71,8 +73,22 @@ wget https://raw.githubusercontent.com/inqueryio/inquery/main/{.env,docker-compo
 sudo docker-compose up -d
 ```
 
+## Features
+
+### Template Strings
+
+When adding an action, you can insert data from the row into the response body of the POST request by using template strings.
+<br>
+For instance, if your table has a column called `email`, you would put the value `${email}` in the request body: `{"text":"User created: ${email}!"}`
+<br>
+<br>
+The prefixes `new.` and `old.` can be used if a new (INSERT, UPDATE) or old (UPDATE, DELETE) row is available. If a prefix is not specified, the new or old values will be used depending on the event. Example: `{"text":"User updated: ${old.email} is now ${new.email}!"}`
+<br>
+<br>
+The meta values `meta.table` (table name), `meta.schema` (schema name), `meta.event` (INSERT, UPDATE, or DELETE) can also be used.
+
 ## Roadmap
 
-- Filters and mapping options the row data to the POST request
+- Filters and mapping options for row data when sending a POST request
 
-Let us know your feedback or feature requests! You can submit a GitHub issue or contact us at hello@inquery.io
+Let us know your feedback or feature requests! You can submit a GitHub issue or contact us at [hey@inquery.io](mailto:hey@inquery.io).

@@ -34,8 +34,8 @@ services:
       - "3000:80"
     networks:
       - inquery
-    environment:
-      - HTTP_API_SERVER_AUTH_TOKEN=${HTTP_API_SERVER_AUTH_TOKEN}
+    volumes:
+      - ${PWD}/frontend.env:/usr/share/nginx/html/.env
 volumes:
   inquery:
 networks:
