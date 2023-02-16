@@ -69,7 +69,7 @@ docker-compose version
 3. Install and run Inquery
 ```bash
 mkdir inquery && cd inquery
-wget https://raw.githubusercontent.com/inqueryio/inquery/main/{.env,docker-compose.yml,.dockerignore}
+wget https://raw.githubusercontent.com/inqueryio/inquery/main/{.env,docker-compose.yml,.dockerignore,frontend.env}
 sudo docker-compose up -d
 ```
 
