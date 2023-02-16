@@ -22,8 +22,6 @@ function getAPIAuthToken() {
 }
 
 export function httpGet(path, success, failure) {
-  console.log("base URL", baseURL)
-  console.log("auth token", authToken)
   const requestOptions = {
     method: "GET",
     headers: {
