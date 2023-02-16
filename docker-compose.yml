@@ -3,7 +3,7 @@ version: "3"
 services:
   backend:
     #build: "./backend"
-    #image: inqueryio/backend:latest
+    image: inqueryio/backend:latest
     platform: linux/amd64
     # Un-comment if using Apple silicon
     #platform: linux/arm64
@@ -25,7 +25,7 @@ services:
       - HTTP_API_SERVER_AUTH_TOKEN=${HTTP_API_SERVER_AUTH_TOKEN}
   frontend:
     #build: "./frontend"
-    #image: inqueryio/frontend:latest
+    image: inqueryio/frontend:latest
     platform: linux/amd64
     # Un-comment if using Apple silicon
     #platform: linux/arm64
