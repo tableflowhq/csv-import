@@ -154,7 +154,7 @@ const ActionCreate = ({setLoading}) => {
           rows="6"
           value={body}
           onChange={handleChange}
-          placeholder="{&quot;data&quot;: &quot;test&quot;}"
+          placeholder="{&quot;data&quot;: &quot;Row inserted: ${column_name}&quot;}"
         ></textarea>
         <hr/>
         {error ? (
