@@ -20,7 +20,7 @@ const ConnectDatabase = ({setLoading}) => {
   const handleSubmit = (event) => {
     setError(null)
     setLoading(true)
-
+    databaseInfo.port = Number(databaseInfo.port)
     httpPost("connection", databaseInfo,
       (data) => {
         setTimeout(function() {
