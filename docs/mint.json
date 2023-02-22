@@ -1,0 +1,51 @@
+{
+  "$schema": "https://mintlify.com/schema.json",
+  "name": "Inquery",
+  "logo": {
+    "light": "/logo/light.png",
+    "dark": "/logo/dark.png"
+  },
+  "favicon": "/favicon.png",
+  "colors": {
+    "primary": "#4D32E4",
+    "light": "#A393FE",
+    "dark": "#4D32E4",
+    "anchors": { "from": "#BA27BA", "to": "#4D32E4" }
+  },
+  "topbarCtaButton": {
+    "type": "github",
+    "url": "https://github.com/inqueryio/inquery"
+  },
+  "anchors": [
+    {
+      "name": "GitHub",
+      "icon": "github",
+      "url": "https://github.com/inqueryio/inquery"
+    },
+    {
+      "name": "Twitter",
+      "icon": "twitter",
+      "url": "https://twitter.com/inqueryio"
+    },
+    {
+      "name": "Contact Us",
+      "icon": "envelope",
+      "url": "mailto:hey@inquery.io"
+    }
+  ],
+  "navigation": [
+    {
+      "group": "Get Started",
+      "pages": [
+        "introduction"
+      ]
+    }
+  ],
+  "footerSocials": {
+    "website": "https://inquery.io",
+    "twitter": "https://twitter.com/inqueryio",
+    "github": "https://github.com/inqueryio",
+    "linkedin": "https://www.linkedin.com/company/inqueryio"
+  },
+  "backgroundImage": "background.png"
+}
