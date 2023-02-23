@@ -74,6 +74,10 @@ wget https://raw.githubusercontent.com/inqueryio/inquery/main/{.env,docker-compo
 docker-compose up -d
 ```
 
+### Run Inquery Cloud (Beta)
+
+Sign up for [Inquery Cloud](https://www.inquery.io/sign-up) early access and get a managed, cloud-hosted instance.
+
 ## Features
 
 ### Template Strings
@@ -91,5 +95,7 @@ The meta values `meta.table` (table name), `meta.schema` (schema name), `meta.ev
 ## Roadmap
 
 - Filters and mapping options for row data when sending a POST request
+- Support for row sizes over 8000 bytes via chunking
+- Persistent event queue
 
 Let us know your feedback or feature requests! You can submit a GitHub issue or contact us at [hey@inquery.io](mailto:hey@inquery.io).
