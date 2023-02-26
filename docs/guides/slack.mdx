@@ -1,0 +1,64 @@
+---
+title: "Slack Messages"
+sidebarTitle: "Slack Messages"
+description: "Send Slack messages every time data is changed"
+---
+
+A common request engineers receive is to notify other team members when a specific action occurs. The most obvious example is "send a Slack message when a new user is created." With Inquery, you can set this up quickly and without writing any code. First you'll need to prepare Slack to receive incoming webhooks. Then you'll create an action in Inquery that triggers this newly created webhook in Slack.
+
+## Setup Slack Webhook
+
+Slack offers a very handy feature that enables developers to use webhooks to send messages. Slack calls these "apps", but in this case they're really just lightweight actions.
+
+#### 1. Create Slack App
+Follow [this link](https://api.slack.com/apps?new_app) and click the "Create New App" button to get started. Then select "From scratch" to continue to the configuration page.
+![Slack Create New App](/assets/slack-create-app.png)
+
+
+#### 2. Congifure App
+You can name the app anything you like, but we suggest "Inquery". Then select the Slack Workspace where the messages will be sent.
+![Slack Configure App](/assets/slack-configure-app.png)
+
+#### 3. Add Webhook Functionality
+Under the "Features and functionality" section, find and click on the "Incoming Webhooks" option.
+![Slack Add Webhook](/assets/slack-add-webhook.png)
+
+#### 4. Activate Webhooks
+Find the "Activate Incoming Webhooks" setting and switch the toggle to "On".
+![Slack Activate Webhook](/assets/slack-activate-webhooks.png)
+
+#### 5. Add New Webhook
+Scroll to the bottom of the page and select "Add New Webhook to Workspace".
+![Slack Add New Webhook](/assets/slack-add-new-webhook.png)
+
+#### 6. Select Slack Channel
+Using the dropdown, select the channel that you would like messages to be delivered.
+![Slack Select Channel](/assets/slack-select-channel.png)
+
+#### 7. Copy Webhook URL
+Great, now you've got a Slack App that's ready to receive incoming webhooks. Scroll to the bottom of the "Incoming Webhooks" page and use the "Copy" button to copy the webhook URL.
+![Slack Copy Webhook URL](/assets/slack-copy-webhook-url.png)
+
+## Create Inquery Action
+
+Now that you've got the incoming webhook ready in Slack, you can now trigger it with an Inquery action.
+
+#### 1. Create Inquery Action
+Navigate to the "Actions" section of the Inquery web app and click the "Create" button.
+![Inquery Create Action](/assets/inquery-create-action.png)
+
+#### 2. Configure Inquery Action
+Name the new action (ex: "New User Slack Message"). Then select the appropriate schema and table. Check the "INSERT" box to trigger a message for every new row added to the specified table.
+![Inquery Configure Action](/assets/inquery-configure-action.png)
+
+#### 3. Specify Slack Message
+First paste the Slack Webhook URL from the section above into the URL field. Then specify the Slack message contents. You can use template strings with the column name as the variable.
+```javascript
+{
+  "text": "New User Created: ${email}"
+}
+```
+![Inquery Specify Slack](/assets/inquery-specify-message.png)
+
+## Try It Out 🎉
+That's it! If everything's set up correctly, you should be good to go. As soon as a new row is added to the specificed table, you'll receive a message to the specified Slack Channel.

@@ -2,10 +2,11 @@
   "$schema": "https://mintlify.com/schema.json",
   "name": "Inquery",
   "logo": {
-    "light": "/logo/light.png",
-    "dark": "/logo/dark.png"
+    "light": "/assets/light.png",
+    "dark": "/assets/dark.png",
+    "href": "https://www.inquery.io"
   },
-  "favicon": "/favicon.png",
+  "favicon": "/assets/favicon.png",
   "colors": {
     "primary": "#4D32E4",
     "light": "#A393FE",
@@ -23,29 +24,36 @@
       "url": "https://github.com/inqueryio/inquery"
     },
     {
-      "name": "Twitter",
-      "icon": "twitter",
-      "url": "https://twitter.com/inqueryio"
-    },
-    {
-      "name": "Contact Us",
-      "icon": "envelope",
-      "url": "mailto:hey@inquery.io"
+      "name": "Community",
+      "icon": "slack",
+      "url": "https://join.slack.com/t/inqueryio/shared_invite/zt-1psu47idh-vnItf_BaWcIWih8flGZ0fw"
     }
   ],
   "navigation": [
     {
-      "group": "Get Started",
+      "group": "Overview",
       "pages": [
-        "introduction"
+        "overview/introduction",
+        "overview/get-started"
+      ]
+    },
+    {
+      "group": "Features",
+      "pages": [
+        "features/template-strings"
+      ]
+    },
+    {
+      "group": "Guides",
+      "pages": [
+        "guides/slack"
       ]
     }
   ],
   "footerSocials": {
-    "website": "https://inquery.io",
     "twitter": "https://twitter.com/inqueryio",
     "github": "https://github.com/inqueryio",
     "linkedin": "https://www.linkedin.com/company/inqueryio"
   },
-  "backgroundImage": "background.png"
+  "backgroundImage": "/assets/background.png"
 }
