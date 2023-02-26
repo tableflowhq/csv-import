@@ -3,11 +3,10 @@ title: Introduction
 description: Real-time events platform for Postgres
 ---
 
-Inquery is a utility for Postgres that triggers webhooks when rows are inserted, updated, or deleted. It uses
-database triggers that send low-latency websocket messages to a Go application. This application then calls
-the configured webhook(s) with a JSON payload that includes specified values from the database row.
+Inquery is an open source tool for Postgres that triggers webhooks when rows are inserted, updated, or deleted. This includes firing serverless functions, sending notifications, transferring data real-time, or anything else that can be triggered by firing a webhook.
 
-<Frame>![Inquery Flow](https://i.imgur.com/BgR5lbo.png)</Frame>
+
+<Frame>![Inquery Flow](/assets/introduction-basic-flow.png)</Frame>
 
 ## How It Works
 
