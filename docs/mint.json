@@ -33,7 +33,14 @@
     {
       "group": "Overview",
       "pages": [
-        "introduction"
+        "overview/introduction",
+        "overview/get-started"
+      ]
+    },
+    {
+      "group": "Features",
+      "pages": [
+        "features/template-strings"
       ]
     },
     {

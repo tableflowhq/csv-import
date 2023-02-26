@@ -1,0 +1,32 @@
+---
+title: Introduction
+description: Real-time events platform for Postgres
+---
+
+Inquery is an open source tool for Postgres that triggers webhooks when rows are inserted, updated, or deleted. This includes firing serverless functions, sending notifications, transferring data real-time, or anything else that can be triggered by firing a webhook.
+
+
+<Frame>![Inquery Flow](/assets/introduction-basic-flow.png)</Frame>
+
+## How It Works
+
+1. Data is modified in Postgres table (INSERT, UPDATE, DELETE)
+2. Postgres trigger notifies the Inquery web server via a websocket message
+3. Inquery formats the data and sends the webhook(s)
+
+<Frame>
+  ![Inquery Create Slack Notification](https://i.imgur.com/Nv7MfQV.gif)
+</Frame>
+
+## Use Cases
+
+- **Send notifications:** Slack, Email, Text Message, Push Notification
+- **Call serverless functions:** AWS Lambda, Google Cloud Functions, Azure Functions
+- **Trigger analytics events:** Segment, Mixpanel, Amplitude
+- **Stream data real-time:** Snowflake, BigQuery, Clickhouse, Redshift
+
+## Roadmap
+
+- Filters and mapping options for row data when sending a POST request
+
+Let us know your feedback or feature requests! You can submit a GitHub issue or contact us at [hey@inquery.io](mailto:hey@inquery.io).
