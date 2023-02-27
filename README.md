@@ -6,6 +6,12 @@
 [![Twitter](https://img.shields.io/twitter/url/https/twitter.com/inqueryio.svg?style=social&label=Follow%20%40inqueryio)](https://twitter.com/inqueryio) 
 [![GitHub Repo stars](https://img.shields.io/github/stars/inqueryio/inquery?style=social)](https://github.com/inqueryio/inquery)
 
+<h3>
+    <a href="https://docs.inquery.io">Docs</a> |
+    <a href="https://join.slack.com/t/inqueryio/shared_invite/zt-1psu47idh-vnItf_BaWcIWih8flGZ0fw">Slack</a> |
+    <a href="https://inquery.io">Website</a> 
+</h3>
+
 </div>
 
 
