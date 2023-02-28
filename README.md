@@ -1,7 +1,7 @@
 <div align="center">
 <a href="https://inquery.io"><img src="https://svgshare.com/i/qHg.svg" alt="Inquery"></a>
 
-<em>Real-time events platform for Postgres</em>
+<em>Real-time events for Postgres</em>
 
 [![Twitter](https://img.shields.io/twitter/url/https/twitter.com/inqueryio.svg?style=social&label=Follow%20%40inqueryio)](https://twitter.com/inqueryio) 
 [![GitHub Repo stars](https://img.shields.io/github/stars/inqueryio/inquery?style=social)](https://github.com/inqueryio/inquery)
