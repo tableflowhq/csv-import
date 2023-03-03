@@ -75,7 +75,8 @@ func GetTriggerCreationSQL(schema, table string) string {
 	                payload = jsonb_build_object(
 	                        'table', TG_TABLE_NAME,
 	                        'schema', TG_TABLE_SCHEMA,
-	                        'event', to_jsonb(TG_OP)
+	                        'event', to_jsonb(TG_OP),
+	                        'user', current_user
 	                    );
 	                if hasNew then
 	                    payload = jsonb_set(payload, '{new}', to_jsonb(NEW), true);

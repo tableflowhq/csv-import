@@ -28,6 +28,7 @@ type NotifyPayload struct {
 	Event  string                 `json:"event"`
 	New    map[string]interface{} `json:"new"`
 	Old    map[string]interface{} `json:"old"`
+	User   string                 `json:"user"`
 }
 
 var ConnPool *pgx.ConnPool
