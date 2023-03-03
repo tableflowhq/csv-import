@@ -125,6 +125,7 @@ func mergeColumnTemplateValues(payload NotifyPayload) map[string]interface{} {
 	columnTemplateValues["meta.table"] = payload.Table
 	columnTemplateValues["meta.schema"] = payload.Schema
 	columnTemplateValues["meta.event"] = payload.Event
+	columnTemplateValues["meta.user"] = payload.User
 	return columnTemplateValues
 }
 

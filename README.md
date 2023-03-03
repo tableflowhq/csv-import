@@ -3,7 +3,7 @@
 
 <em>Real-time events for Postgres</em>
 
-[![Twitter](https://img.shields.io/twitter/url/https/twitter.com/inqueryio.svg?style=social&label=Follow%20%40inqueryio)](https://twitter.com/inqueryio) 
+[![Twitter](https://img.shields.io/twitter/url/https/twitter.com/inqueryio.svg?style=social&label=Follow%20%40inqueryio)](https://twitter.com/inqueryio)
 [![GitHub Repo stars](https://img.shields.io/github/stars/inqueryio/inquery?style=social)](https://github.com/inqueryio/inquery)
 
 <h3>
@@ -51,7 +51,8 @@ docker-compose up -d
 Then open [http://localhost:3000](http://localhost:3000) to access Inquery.
 <br>
 <br>
-**Note**: When connecting your database, if your Postgres host is `localhost`, you must use `host.docker.internal` instead to access it when running with Docker.
+**Note**: When connecting your database, if your Postgres host is `localhost`, you must use `host.docker.internal`
+instead to access it when running with Docker.
 
 ### Run Inquery on AWS (EC2)
 
@@ -59,6 +60,7 @@ Then open [http://localhost:3000](http://localhost:3000) to access Inquery.
 **Note**: These instructions are for Amazon Linux 2 AMI (HVM).
 
 1. To install Docker, run the following command in your SSH session on the instance terminal:
+
 ```bash
 sudo yum update -y
 sudo yum install -y docker
@@ -66,14 +68,18 @@ sudo service docker start
 sudo usermod -a -G docker $USER
 logout # Needed to close the SSH session so Docker does not have to be run as root
 ```
+
 2. To install `docker-compose`, run the following command in your ssh session on the instance terminal:
+
 ```bash
 sudo curl -L "https://github.com/docker/compose/releases/download/v2.16.0/docker-compose-$(uname -s)-$(uname -m)"  -o /usr/local/bin/docker-compose
 sudo mv /usr/local/bin/docker-compose /usr/bin/docker-compose
 sudo chmod +x /usr/bin/docker-compose
 docker-compose version
 ```
+
 3. Install and run Inquery
+
 ```bash
 mkdir inquery && cd inquery
 wget https://raw.githubusercontent.com/inqueryio/inquery/main/{.env,docker-compose.yml,.dockerignore,frontend.env}
@@ -88,15 +94,24 @@ Sign up for [Inquery Cloud](https://www.inquery.io/sign-up) early access and get
 
 ### Template Strings
 
-When adding an action, you can insert data from the row into the response body of the POST request by using template strings.
+When adding an action, you can insert data from the row into the response body of the POST request by using template
+strings.
 <br>
-For instance, if your table has a column called `email`, you would put the value `${email}` in the request body: `{"text":"User created: ${email}!"}`
+For instance, if your table has a column called `email`, you would put the value `${email}` in the request
+body: `{"text":"User created: ${email}!"}`
 <br>
 <br>
-The prefixes `new.` and `old.` can be used if a new (INSERT, UPDATE) or old (UPDATE, DELETE) row is available. If a prefix is not specified, the new or old values will be used depending on the event. Example: `{"text":"User updated: ${old.email} is now ${new.email}!"}`
+The prefixes `new.` and `old.` can be used if a new (INSERT, UPDATE) or old (UPDATE, DELETE) row is available. If a
+prefix is not specified, the new or old values will be used depending on the event.
+Example: `{"text":"User updated: ${old.email} is now ${new.email}!"}`
 <br>
 <br>
-The meta values `meta.table` (table name), `meta.schema` (schema name), `meta.event` (INSERT, UPDATE, or DELETE) can also be used.
+Meta values can also be used to get more query information. The following are available:
+
+1. `meta.table` (table name)
+2. `meta.schema` (schema name)
+3. `meta.event` (INSERT, UPDATE, or DELETE)
+4. `meta.user` (the Postgres user who ran the query that triggered the trigger)
 
 ## Roadmap
 
@@ -104,4 +119,5 @@ The meta values `meta.table` (table name), `meta.schema` (schema name), `meta.ev
 - Support for row sizes over 8000 bytes via chunking
 - Persistent event queue
 
-Let us know your feedback or feature requests! You can submit a GitHub issue or contact us at [hey@inquery.io](mailto:hey@inquery.io).
+Let us know your feedback or feature requests! You can submit a GitHub issue or contact us
+at [hey@inquery.io](mailto:hey@inquery.io).
