@@ -240,3 +240,21 @@ func TableList(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, tables)
 }
+
+func DatabaseUserList(c *gin.Context) {
+	users := make([]string, 0)
+	rows, err := ConnPool.Query("select usename from pg_catalog.pg_user;")
+	if err != nil {
+		util.Log.Warnw("Error listing users", "error", err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "could not list users", "error": err.Error()})
+		return
+	}
+	for rows.Next() {
+		var useName string
+		if err := rows.Scan(&useName); err != nil {
+			continue
+		}
+		users = append(users, useName)
+	}
+	c.JSON(http.StatusOK, users)
+}

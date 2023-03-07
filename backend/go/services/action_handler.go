@@ -8,6 +8,7 @@ import (
 	"inquery/go/pkg/db"
 	"inquery/go/pkg/util"
 	"net/http"
+	"strings"
 )
 
 const (
@@ -28,6 +29,9 @@ type TriggerAction struct {
 		Method string `json:"method"`
 		Body   string `json:"body"`
 	} `json:"action"`
+	Filters struct {
+		ExcludeUsers []string `json:"exclude_users"`
+	}
 }
 
 func InitActionHandler(ctx context.Context) error {
@@ -71,6 +75,20 @@ func HandleNotifyEventReceived(payload NotifyPayload) {
 		if action.Schema != payload.Schema {
 			continue
 		}
+		// Check action filters
+		filterAction := false
+		for _, user := range action.Filters.ExcludeUsers {
+			if user == payload.User {
+				util.Log.Debugw("Not executing action due to filter match",
+					"filter", "exclude_users",
+					"user", payload.User,
+				)
+				filterAction = true
+			}
+		}
+		if filterAction {
+			continue
+		}
 		// Add the action if the matching table and schema contains a trigger event matching the trigger operation
 		for _, triggerEvent := range action.TriggerEvents {
 			if payload.Event == triggerEvent {
@@ -109,6 +127,27 @@ func mergeColumnTemplateValues(payload NotifyPayload) map[string]interface{} {
 			columnTemplateValues[fmt.Sprintf("old.%v", k)] = v
 		}
 	}
+	// Find the changed columns
+	changedValuesStr := make([]string, 0)
+	if payload.Event == triggerEventUpdate && payload.New != nil && payload.Old != nil {
+		// TODO: Use a map here instead
+		for ok, ov := range payload.Old {
+			for nk, nv := range payload.New {
+				if nk == ok && nv != ov {
+					changedValuesStr = append(changedValuesStr, fmt.Sprintf("-- %v --\\nold: %v\\nnew: %v\\n", nk, ov, nv))
+				}
+			}
+		}
+	}
+	var actionStr string
+	switch payload.Event {
+	case triggerEventDelete, triggerEventUpdate:
+		actionStr = fmt.Sprintf("%vd", strings.ToLower(payload.Event))
+		break
+	case triggerEventInsert:
+		actionStr = fmt.Sprintf("%ved", strings.ToLower(payload.Event))
+		break
+	}
 	switch payload.Event {
 	case triggerEventInsert, triggerEventUpdate:
 		for k, v := range payload.New {
@@ -126,6 +165,8 @@ func mergeColumnTemplateValues(payload NotifyPayload) map[string]interface{} {
 	columnTemplateValues["meta.schema"] = payload.Schema
 	columnTemplateValues["meta.event"] = payload.Event
 	columnTemplateValues["meta.user"] = payload.User
+	columnTemplateValues["meta.event_summary"] = fmt.Sprintf("User *%v* %v a row in table `%v`", payload.User, actionStr, payload.Table)
+	columnTemplateValues["meta.changed"] = strings.Join(changedValuesStr, "\\n")
 	return columnTemplateValues
 }
 
