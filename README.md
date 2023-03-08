@@ -17,9 +17,9 @@
 ## Inquery is an open-source toolkit for safeguarding PostgreSQL databases
 
 * **[Alerts](#alerts):** Receive notifications when a change occurs
-* **[Audit History](#audit-history--beta-):** View all historical manual changes with context
-* **[Query Preview](#query-preview--coming-soon-):** Preview affected rows and query plan prior to running changes
-* **[Approval Flow](#approval-flow--coming-soon-):** Require query review before a change can be run
+* **[Audit History](#audit-history-beta):** View all historical manual changes with context
+* **[Query Preview](#query-preview-coming-soon):** Preview affected rows and query plan prior to running changes
+* **[Approval Flow](#approval-flow-coming-soon):** Require query review before a change can be run
 
 ## Alerts
 
