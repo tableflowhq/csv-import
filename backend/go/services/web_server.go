@@ -78,6 +78,8 @@ func InitWebServer(ctx context.Context) error {
 	v1.DELETE("/action", ActionDelete)
 	/* Table */
 	v1.GET("/table/list", TableList)
+	/* Database User */
+	v1.GET("/db-user/list", DatabaseUserList)
 
 	// Initialize the server in a goroutine so that it won't block shutdown handling
 	go func() {
