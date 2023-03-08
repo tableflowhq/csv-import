@@ -1,5 +1,5 @@
 <div align="center">
-<a href="https://inquery.io"><img src="https://svgshare.com/i/qHg.svg" alt="Inquery"></a>
+<a href="https://inquery.io"><img src="https://svgshare.com/i/qxX.svg" alt="Inquery"></a>
 
 <em>Safeguard your Postgres database</em>
 
