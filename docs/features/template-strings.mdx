@@ -9,4 +9,11 @@ For instance, if your table has a column called `email`, you would put the value
 
 The prefixes `new.` and `old.` can be used if a new (INSERT, UPDATE) or old (UPDATE, DELETE) row is available. If a prefix is not specified, the new or old values will be used depending on the event. Example: `{"text":"User updated: ${old.email} is now ${new.email}!"}`
 
-The meta values `meta.table` (table name), `meta.schema` (schema name), `meta.event` (INSERT, UPDATE, or DELETE) can also be used.
+Meta values can also be used to get more query information. The following are available:
+
+1. `meta.table` (table name)
+2. `meta.schema` (schema name)
+3. `meta.event` (INSERT, UPDATE, or DELETE)
+4. `meta.user` (the Postgres user who ran the query that triggered the trigger)
+5. `meta.event_summary` (a formatted summary of the user, table, and event)
+6. `meta.changed` (the values changed for an UPDATE)
