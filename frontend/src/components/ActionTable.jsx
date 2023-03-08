@@ -20,6 +20,7 @@ const ActionTable = () => {
     }, (data) => {
       console.log(data)
       // TODO: Return error page in case of failure here
+      window.location.reload()
     })
   }
 

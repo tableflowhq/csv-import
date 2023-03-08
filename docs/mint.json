@@ -46,7 +46,8 @@
     {
       "group": "Guides",
       "pages": [
-        "guides/slack"
+        "guides/slack",
+        "guides/database-user"
       ]
     }
   ],
