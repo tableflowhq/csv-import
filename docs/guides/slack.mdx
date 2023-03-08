@@ -61,7 +61,7 @@ First paste the Slack Webhook URL from the section above into the URL field. The
 Use the body text below to receive a Slack message summarizing any manual data update.
 ```javascript
 {
-  "text": "${meta.event_summary}```-- id --\n${id}\n\n${meta.changed}```"
+  "text": "${meta.event_summary} ```-- id --\n${id}\n\n${meta.changed}```"
 }
 ```
 ![Inquery Specify Slack](/assets/slack-manual-data-example.png)
