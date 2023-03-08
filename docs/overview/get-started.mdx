@@ -22,6 +22,21 @@ Then open [http://localhost:3000](http://localhost:3000) to access Inquery.
 **Note**: Make sure this instance is only accessible within your VPC.\
 **Note**: These instructions are for Amazon Linux 2 AMI (HVM).
 
+### One-line Install (Option 1)
+```bash
+sudo yum update -y && \
+sudo yum install -y docker && \
+sudo service docker start && \
+sudo usermod -a -G docker $USER && \
+sudo curl -L "https://github.com/docker/compose/releases/download/v2.16.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && \
+sudo mv /usr/local/bin/docker-compose /usr/bin/docker-compose && \
+sudo chmod +x /usr/bin/docker-compose && \
+mkdir inquery && cd inquery && \
+wget https://raw.githubusercontent.com/inqueryio/inquery/main/{.env,docker-compose.yml,.dockerignore,frontend.env} && \
+sg docker -c 'docker-compose up -d'
+```
+
+### Guided Install (Option 2)
 1. To install Docker, run the following command in your SSH session on the instance terminal:
 
 ```bash

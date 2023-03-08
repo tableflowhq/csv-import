@@ -1,7 +1,7 @@
 <div align="center">
 <a href="https://inquery.io"><img src="https://svgshare.com/i/qHg.svg" alt="Inquery"></a>
 
-<em>Real-time events for Postgres</em>
+<em>Safeguard your Postgres database</em>
 
 [![Twitter](https://img.shields.io/twitter/url/https/twitter.com/inqueryio.svg?style=social&label=Follow%20%40inqueryio)](https://twitter.com/inqueryio)
 [![GitHub Repo stars](https://img.shields.io/github/stars/inqueryio/inquery?style=social)](https://github.com/inqueryio/inquery)
@@ -14,27 +14,43 @@
 
 </div>
 
+## Inquery is an open-source toolkit for safeguarding PostgreSQL databases
 
-Inquery is a utility for Postgres that triggers webhooks when rows are inserted, updated, or deleted. It uses
-database triggers that send low-latency websocket messages to a Go application. This application then calls
-the configured webhook(s) with a JSON payload that includes specified values from the database row.
+* **[Alerts](#alerts):** Receive notifications when a change occurs
+* **[Audit History](#audit-history--beta-):** View all historical manual changes with context
+* **[Query Preview](#query-preview--coming-soon-):** Preview affected rows and query plan prior to running changes
+* **[Approval Flow](#approval-flow--coming-soon-):** Require query review before a change can be run
 
-![Inquery Flow](https://i.imgur.com/BgR5lbo.png)
+## Alerts
 
-## How It Works
+Alerts can be used to send notifications when a database change is made (INSERT, UPDATE, DELETE).
 
-1. Data is modified in Postgres table (INSERT, UPDATE, DELETE)
-2. Postgres trigger notifies the Inquery web server via a websocket message
-3. Inquery formats the data and sends the webhook(s)
+* Send notifications to Slack, email, or any other webhook
+* Filter-out changes made by application users to only see manual updates
+* Use template strings (column values, user, etc.) to see what was changed and by who
 
-![Inquery Create Slack Notification](https://i.imgur.com/Nv7MfQV.gif)
+### How It Works
 
-## Use Cases
+1. Data is modified in a Postgres table (INSERT, UPDATE, DELETE)
+2. A Postgres trigger notifies the Inquery web server via a websocket message
+3. Inquery formats, filters, and sends the data to configured webhook(s)
 
-* **Send notifications:** Slack, Email, Text Message, Push Notification
-* **Call serverless functions:** AWS Lambda, Google Cloud Functions, Azure Functions
-* **Trigger analytics events:** Segment, Mixpanel, Amplitude
-* **Stream data real-time:** Snowflake, BigQuery, Clickhouse, Redshift
+![Inquery Create Slack Notification](https://i.imgur.com/1xoorz9.gif)
+
+## Audit History (beta)
+
+View all manual data updates that occurred in your Postgres database, even those that weren't initiated through the
+Inquery UI.
+
+## Query Preview (coming soon)
+
+Before executing a query, check which tables and rows will be affected. View exactly which columns will be updated and
+their new value. Explore the visual query plan generated from EXPLAIN.
+
+## Approval Flow (coming soon)
+
+Submit a query for approval by teammates instead of running them directly against the production database. Auto-approval
+rules can be configured based on the number of rows changed, the table being updated, or the user's role.
 
 ## Get Started
 
@@ -90,34 +106,7 @@ docker-compose up -d
 
 Sign up for [Inquery Cloud](https://www.inquery.io/sign-up) early access and get a managed, cloud-hosted instance.
 
-## Features
 
-### Template Strings
-
-When adding an action, you can insert data from the row into the response body of the POST request by using template
-strings.
-<br>
-For instance, if your table has a column called `email`, you would put the value `${email}` in the request
-body: `{"text":"User created: ${email}!"}`
-<br>
-<br>
-The prefixes `new.` and `old.` can be used if a new (INSERT, UPDATE) or old (UPDATE, DELETE) row is available. If a
-prefix is not specified, the new or old values will be used depending on the event.
-Example: `{"text":"User updated: ${old.email} is now ${new.email}!"}`
-<br>
-<br>
-Meta values can also be used to get more query information. The following are available:
-
-1. `meta.table` (table name)
-2. `meta.schema` (schema name)
-3. `meta.event` (INSERT, UPDATE, or DELETE)
-4. `meta.user` (the Postgres user who ran the query that triggered the trigger)
-
-## Roadmap
-
-- Filters and mapping options for row data when sending a POST request
-- Support for row sizes over 8000 bytes via chunking
-- Persistent event queue
-
+## Get In Touch
 Let us know your feedback or feature requests! You can submit a GitHub issue or contact us
 at [hey@inquery.io](mailto:hey@inquery.io).
