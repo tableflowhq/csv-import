@@ -19,6 +19,9 @@ const (
 	httpDefaultAuthorizationToken = "inquery"
 	httpDefaultServerPort         = "3003"
 	httpDefaultAllowOrigins       = "*"
+
+	tlsCertPath = "/etc/tls/tls.crt"
+	tlsKeyPath  = "/etc/tls/tls.key"
 )
 
 var authorizationHeaderToken string
@@ -46,6 +49,7 @@ func InitWebServer(ctx context.Context) error {
 	if len(port) == 0 {
 		port = httpDefaultServerPort
 	}
+
 	authorizationHeaderToken = os.Getenv("HTTP_API_SERVER_AUTH_TOKEN")
 	if len(authorizationHeaderToken) == 0 {
 		authorizationHeaderToken = httpDefaultAuthorizationToken
@@ -83,7 +87,7 @@ func InitWebServer(ctx context.Context) error {
 
 	// Initialize the server in a goroutine so that it won't block shutdown handling
 	go func() {
-		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		if err := server.ListenAndServeTLS(tlsCertPath, tlsKeyPath); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			util.Log.Debugw("HTTP server closed", "error", err)
 		}
 	}()
