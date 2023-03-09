@@ -49,17 +49,17 @@ const ActionTable = () => {
                 <td className="color2 fw400">{action.trigger_events.join(", ")}</td>
                 <td className="color2 fw400 action-list-td" title={action.action.url}>{action.action.url}</td>
                 <td className="color2 fw400 action-list-td">
-                  <RiDeleteBinLine
-                    className="ms-0 ms-md-4 pointer color3"
-                    fontSize="1.5rem"
-                    onClick={() => deleteAction(id)}
-                  />
-                </td>
-                <td className="color2 fw400 action-list-td">
                   <RiEditBoxLine
                     className="ms-0 ms-md-4 pointer color3"
                     fontSize="1.5rem"
                     onClick={() => history.push(`/edit-action?id=${id}`)}
+                  />
+                </td>
+                <td className="color2 fw400 action-list-td">
+                  <RiDeleteBinLine
+                    className="ms-0 ms-md-4 pointer color3"
+                    fontSize="1.5rem"
+                    onClick={() => deleteAction(id)}
                   />
                 </td>
               </tr>
