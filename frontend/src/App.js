@@ -6,7 +6,7 @@ import "./styles/style.css";
 // IMPORTING ROUTER AND SWITCH
 import {Route, Switch} from "react-router-dom";
 import {useEffect, useState} from "react";
-import LayoutActionCreate from "./pages/LayoutActionCreate";
+import LayoutAction from "./pages/LayoutAction";
 import LayoutActionTable from "./pages/LayoutActionTable";
 import LoadingOverlay from "react-loading-overlay";
 import ConnectDatabase from "./pages/ConnectDatabase";
@@ -54,7 +54,10 @@ function App() {
             <LayoutSettings localMode={localMode} mode={mode} setMode={setMode}/>
           </Route>
           <Route exact path="/create-action">
-            <LayoutActionCreate localMode={localMode} setLoading={setLoading}/>
+            <LayoutAction localMode={localMode} setLoading={setLoading} type="Create"/>
+          </Route>
+          <Route exact path="/edit-action">
+            <LayoutAction localMode={localMode} setLoading={setLoading} type="Edit"/>
           </Route>
         </Switch>
       </LoadingOverlay>

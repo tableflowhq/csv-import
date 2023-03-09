@@ -24,13 +24,6 @@ const LayoutSettings = ({setMode, mode, localMode}) => {
                     localMode={localMode}
                   />
                 </div>
-                {/* <div className="col-12 col-md-6">
-                  <StripeInformation />
-                  <br />
-                  <UsefulLinks />
-                  <br />
-                  <LicenseTransferSettings />
-                </div> */}
               </div>
             </div>
           </div>

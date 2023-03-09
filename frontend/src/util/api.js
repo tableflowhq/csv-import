@@ -6,6 +6,13 @@ const baseURL = getAPIBaseURL()
 const authToken = getAPIAuthToken()
 
 function getAPIBaseURL() {
+  let url = process.env.REACT_APP_API_BASE_URL
+  if(url) {
+    if(!url.endsWith("/")) {
+      url = url + "/"
+    }
+    return url + "api/v1/"
+  }
   let host = window.location.host
   if(host.indexOf(":") > 0) {
     host = host.substring(0, host.indexOf(":"))
