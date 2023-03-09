@@ -52,6 +52,8 @@ their new value. Explore the visual query plan generated from EXPLAIN.
 Submit a query for approval by teammates instead of running them directly against the production database. Auto-approval
 rules can be configured based on the number of rows changed, the table being updated, or the user's role.
 
+![Inquery Approval Flow Mockup](https://i.imgur.com/5I3Nl6p.png)
+
 ## Get Started
 
 ### Run Inquery locally
