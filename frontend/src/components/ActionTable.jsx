@@ -1,9 +1,11 @@
 import React, {useEffect, useState} from "react";
 import {httpDelete, httpGet} from "../util/api";
-import {RiDeleteBinLine} from "react-icons/all";
+import {RiDeleteBinLine, RiEditBoxLine} from "react-icons/all";
+import {useHistory} from "react-router-dom";
 
 const ActionTable = () => {
   const [actions, setActions] = useState({});
+  const history = useHistory();
 
   useEffect(() => {
     httpGet("action/list", (data) => {
@@ -35,6 +37,7 @@ const ActionTable = () => {
             <th className="color2 fw500">Events</th>
             <th className="color2 fw500">URL</th>
             <th className="color2 fw500"></th>
+            <th className="color2 fw500"></th>
           </tr>
           </thead>
           <tbody>
@@ -52,21 +55,19 @@ const ActionTable = () => {
                     onClick={() => deleteAction(id)}
                   />
                 </td>
+                <td className="color2 fw400 action-list-td">
+                  <RiEditBoxLine
+                    className="ms-0 ms-md-4 pointer color3"
+                    fontSize="1.5rem"
+                    onClick={() => history.push(`/edit-action?id=${id}`)}
+                  />
+                </td>
               </tr>
             );
           })}
           </tbody>
         </table>
       </div>
-      {/*<div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center px-4 pb-3">*/}
-      {/*  <p className="mb-0 color2">Page 1 of 37</p>*/}
-      {/*  <div className="user_btn_container">*/}
-      {/*    <button className="border-0 color2">Previous</button>*/}
-      {/*    <button className="ms-3 border-0 text-white mt-3 mt-md-0">*/}
-      {/*      Next*/}
-      {/*    </button>*/}
-      {/*  </div>*/}
-      {/*</div>*/}
     </div>
   );
 };

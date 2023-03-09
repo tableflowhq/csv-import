@@ -4,8 +4,7 @@ import {useHistory} from "react-router-dom";
 import {BsChevronDown, BsChevronUp} from "react-icons/all";
 import {MultiSelect} from "react-multi-select-component";
 
-const ActionCreate = ({setLoading}) => {
-  const history = useHistory();
+const Action = ({setLoading, type}) => {
   const [error, setError] = useState(null)
   const [formData, setFormData] = useState({
     name: "",
@@ -16,8 +15,13 @@ const ActionCreate = ({setLoading}) => {
     body: "",
   });
   const [collapse, setCollapse] = useState(true)
-  const {name, schema, table, url, body} = formData;
-  const events = ["INSERT", "UPDATE", "DELETE"];
+  const [tables, setTables] = useState({})
+  const [users, setUsers] = useState([]);
+  const [selectedUser, setSelectedUser] = useState([]);
+  const history = useHistory()
+  const queryParams = new URLSearchParams(window.location.search)
+  const id = queryParams.get("id")
+  const events = ["INSERT", "UPDATE", "DELETE"]
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -32,26 +36,46 @@ const ActionCreate = ({setLoading}) => {
         : [...formData.events, i],
     });
   };
-  const [tables, setTables] = useState({});
+  // TODO: Clean this up
   useEffect(() => {
     httpGet("table/list", (data) => {
       setTables(data)
+      httpGet("db-user/list", (data) => {
+        setUsers(data.map((userName) => {
+          return {label: userName, value: userName}
+        }))
+        if(!id) {
+          return
+        }
+        httpGet(`action?id=${id}`, (data) => {
+          setFormData({
+            ...formData,
+            name: data.name,
+            schema: data.schema,
+            table: data.table,
+            events: data.trigger_events,
+            url: data.action.url,
+            body: data.action.body,
+          })
+          if(data.filters && data.filters.exclude_users) {
+            setSelectedUser(data.filters.exclude_users.map((userName) => {
+              return {label: userName, value: userName}
+            }))
+          }
+        }, (data) => {
+          console.log(data)
+          history.push("/")
+          // TODO: Return error page in case of failure here
+        })
+      }, (data) => {
+        console.log(data)
+      })
     }, (data) => {
       console.log(data)
       // TODO: Return error page in case of failure here
     })
   }, []);
-  const [users, setUsers] = useState([]);
-  const [selectedUser, setSelectedUser] = useState([]);
-  useEffect(() => {
-    httpGet("db-user/list", (data) => {
-      setUsers(data.map((userName) => {
-        return {label: userName, value: userName}
-      }))
-    }, (data) => {
-      console.log(data)
-    })
-  }, []);
+
   const createAction = () => {
     setError(null)
     // setLoading(true)
@@ -70,11 +94,15 @@ const ActionCreate = ({setLoading}) => {
         "exclude_users": selectedUser.map(u => u.value)
       }
     }
-    httpPost("action", body, (data) => {
+    let path = "action"
+    if(id) {
+      path = path + "?id=" + id
+    }
+    httpPost(path, body, (data) => {
       setTimeout(function() {
         // setLoading(false);
         history.push("/")
-      }, 500);
+      }, 250);
     }, (data) => {
       // setLoading(false);
       if(data.error) {
@@ -95,13 +123,13 @@ const ActionCreate = ({setLoading}) => {
             type="text"
             placeholder="Enter Name"
             name="name"
-            value={name}
+            value={formData.name}
             onChange={handleChange}
           />
           <div className="mt-2"/>
           <label htmlFor="Schema">Schema</label>
           <br/>
-          <select value={schema} name="schema" id="" onChange={handleChange} defaultValue="">
+          <select value={formData.schema} name="schema" id="" onChange={handleChange} defaultValue="">
             <option value=""></option>
             {Object.entries(tables).map(([key, tables]) => {
               return (
@@ -112,10 +140,11 @@ const ActionCreate = ({setLoading}) => {
           <div className="mt-2"/>
           <label htmlFor="Table">Table</label>
           <br/>
-          <select value={table} disabled={schema === ""} name="table" id="" onChange={handleChange} defaultValue="">
+          <select value={formData.table} disabled={formData.schema === ""} name="table" id="" onChange={handleChange}
+                  defaultValue="">
             <option value=""></option>
-            {schema === "" ? null :
-              tables[schema].map(table => {
+            {formData.schema === "" ? null :
+              tables[formData.schema].map(table => {
                 return (
                   <option key={table} value={table}>{table}</option>
                 );
@@ -159,7 +188,7 @@ const ActionCreate = ({setLoading}) => {
             type="text"
             placeholder="Enter URL"
             name="url"
-            value={url}
+            value={formData.url}
             onChange={handleChange}
           />
           <div className="mt-2"/>
@@ -170,7 +199,7 @@ const ActionCreate = ({setLoading}) => {
             name="body"
             cols="30"
             rows="6"
-            value={body}
+            value={formData.body}
             onChange={handleChange}
             placeholder="{&quot;data&quot;: &quot;Row inserted: ${column_name}&quot;}"
           ></textarea>
@@ -206,7 +235,7 @@ const ActionCreate = ({setLoading}) => {
             onClick={createAction}
             className="border-0 text-white w-100"
           >
-            Create
+            {type === "Edit" ? "Save" : type}
           </button>
         </div>
       </div>
@@ -214,4 +243,4 @@ const ActionCreate = ({setLoading}) => {
   );
 };
 
-export default ActionCreate;
+export default Action;

@@ -74,6 +74,7 @@ func InitWebServer(ctx context.Context) error {
 	v1.DELETE("/connection", ConnectionDelete)
 	/* Action */
 	v1.GET("/action/list", ActionList)
+	v1.GET("/action", ActionGet)
 	v1.POST("/action", ActionCreate)
 	v1.DELETE("/action", ActionDelete)
 	/* Table */

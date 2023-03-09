@@ -32,15 +32,6 @@ const Sidebar = ({sideBar, setSideBar}) => {
           className="pointer hamb color3"
         />
       </div>
-      {/* <div className="home_side px-3 pt-3 pb-1">
-        <p className="fw600 color2 ps-3 mb-3">Home</p>
-        <NavLink to="/dashboard" activeClassName="activeNav">
-          <div className="d-flex align-items-center position-relative">
-            <div className="img1"></div>
-            <p className="mb-0">Overview</p>
-          </div>
-        </NavLink>
-      </div> */}
       <hr/>
       <div className="manage_side px-3 pt-2 pb-1">
         <p className="fw600 color2 ps-3 mb-3">Manage</p>
@@ -50,18 +41,6 @@ const Sidebar = ({sideBar, setSideBar}) => {
             <p className="mb-0">Actions</p>
           </div>
         </NavLink>
-        {/* <NavLink to="/connect-database" activeClassName="activeNav">
-          <div className="mt-1 d-flex align-items-center position-relative">
-            <div className="img3"></div>
-            <p className="mb-0">Connect Database</p>
-          </div>
-        </NavLink> */}
-        {/* <NavLink to="/releases" activeClassName="activeNav">
-          <div className="mt-1 d-flex align-items-center position-relative">
-            <div className="img4"></div>
-            <p className="mb-0">Releases</p>
-          </div>
-        </NavLink> */}
       </div>
       <hr/>
       <div className="maintenence_side px-3 pt-2 pb-1">

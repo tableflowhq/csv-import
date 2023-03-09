@@ -127,7 +127,17 @@ func ActionCreate(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "could not create database trigger", "error": err.Error()})
 		return
 	}
+	// If an ID is provided as a request param, check if the action exists and update it if so
 	actionId := uuid.New().String()
+	id := c.Query("id")
+	if len(id) != 0 {
+		_, existsErr := db.DB.Get(db.NamespaceActions, id)
+		if existsErr != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "action does not exist", "error": err.Error()})
+			return
+		}
+		actionId = id
+	}
 	if err = db.DB.Set(db.NamespaceActions, actionId, actionJson); err != nil {
 		util.Log.Warnw("Error creating action", "error", err)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "error creating action", "error": err.Error()})
@@ -156,6 +166,26 @@ func ActionList(c *gin.Context) {
 		actions[id] = action
 	}
 	c.JSON(http.StatusOK, actions)
+}
+
+func ActionGet(c *gin.Context) {
+	id := c.Query("id")
+	if len(id) == 0 {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "no id provided"})
+		return
+	}
+	actionData, err := db.DB.Get(db.NamespaceActions, id)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "action does not exist", "error": err.Error()})
+		return
+	}
+	action := TriggerAction{}
+	if jsonErr := json.Unmarshal(actionData, &action); jsonErr != nil {
+		util.Log.Errorw("Could no unmarshal action data", "error", jsonErr)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "could not unmarshal action data", "error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, action)
 }
 
 func ActionDelete(c *gin.Context) {

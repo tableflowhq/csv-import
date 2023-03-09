@@ -31,7 +31,7 @@ type TriggerAction struct {
 	} `json:"action"`
 	Filters struct {
 		ExcludeUsers []string `json:"exclude_users"`
-	}
+	} `json:"filters"`
 }
 
 func InitActionHandler(ctx context.Context) error {
