@@ -24,6 +24,7 @@ var (
 	DefaultConnectionName = "postgres"
 	NamespaceConnections  = "connections"
 	NamespaceActions      = "actions"
+	NamespaceAudit        = "audit"
 )
 
 type (
@@ -186,9 +187,9 @@ func (bdb *BadgerDB) run(wg *sync.WaitGroup) {
 			if err != nil {
 				// Don't report an error when GC didn't result in any cleanup
 				if err == badger.ErrNoRewrite {
-					util.Log.Debugw("No BadgerDB GC occurred", "error", err)
+					//util.Log.Debugw("No BadgerDB GC occurred", "error", err)
 				} else {
-					util.Log.Debugw("Failed to GC BadgerDB", "error", err)
+					//util.Log.Debugw("Failed to GC BadgerDB", "error", err)
 				}
 			}
 		case <-bdb.ctx.Done():
