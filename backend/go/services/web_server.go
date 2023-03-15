@@ -81,6 +81,8 @@ func InitWebServer(ctx context.Context) error {
 	v1.GET("/table/list", TableList)
 	/* Database User */
 	v1.GET("/db-user/list", DatabaseUserList)
+	/* Audit */
+	v1.GET("/audit/list", AuditList)
 
 	// Initialize the server in a goroutine so that it won't block shutdown handling
 	go func() {

@@ -75,6 +75,7 @@ instead to access it when running with Docker.
 ### Run Inquery on AWS (EC2)
 
 **Note**: Make sure this instance is only accessible within your VPC.\
+**Note**: Make sure your local machine is able to connect to the server on port 3000 (the web server) and 3003 (the API server) over HTTP.\
 **Note**: These instructions are for Amazon Linux 2 AMI (HVM).
 
 1. To install Docker, run the following command in your SSH session on the instance terminal:

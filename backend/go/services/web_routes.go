@@ -98,12 +98,6 @@ func ActionCreate(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "could not marshal connection object", "error": err.Error()})
 		return
 	}
-	isPostRequestBodyValidJSON := util.IsValidJSON(action.Action.Body) || len(action.Action.Body) == 0
-	if !isPostRequestBodyValidJSON {
-		util.Log.Infow("Invalid request body JSON when creating action")
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "error creating action", "error": "request body must be valid JSON or empty"})
-		return
-	}
 	if len(action.Table) == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "no table provided", "error": "no table provided"})
 		return
@@ -116,9 +110,21 @@ func ActionCreate(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "no trigger events provided", "error": "no trigger events provided"})
 		return
 	}
-	if len(action.Action.URL) == 0 {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "no URL provided", "error": "no URL provided"})
+	if len(action.Action.Type) == 0 {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "no action type provided", "error": "no action type provided"})
 		return
+	}
+	if action.Action.Type == TriggerActionHTTP {
+		isPostRequestBodyValidJSON := util.IsValidJSON(action.Action.Body) || len(action.Action.Body) == 0
+		if !isPostRequestBodyValidJSON {
+			util.Log.Infow("Invalid request body JSON when creating action")
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "error creating action", "error": "request body must be valid JSON or empty"})
+			return
+		}
+		if len(action.Action.URL) == 0 {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "no URL provided", "error": "no URL provided"})
+			return
+		}
 	}
 	// Create db trigger if one does not already exist (handled by the SQL using `if not exists`)
 	_, err = ConnPool.Exec(util.GetTriggerCreationSQL(action.Schema, action.Table))
@@ -166,6 +172,25 @@ func ActionList(c *gin.Context) {
 		actions[id] = action
 	}
 	c.JSON(http.StatusOK, actions)
+}
+
+func AuditList(c *gin.Context) {
+	audits := make(map[string]Audit)
+	auditsData, err := db.DB.Find(db.NamespaceAudit)
+	if err != nil {
+		c.JSON(http.StatusOK, audits)
+		return
+	}
+	for key, auditData := range auditsData {
+		audit := Audit{}
+		if jsonErr := json.Unmarshal(auditData, &audit); jsonErr != nil {
+			util.Log.Errorw("Could no unmarshal audit data", "error", jsonErr)
+			continue
+		}
+		id := strings.Split(key, "/")[1]
+		audits[id] = audit
+	}
+	c.JSON(http.StatusOK, audits)
 }
 
 func ActionGet(c *gin.Context) {

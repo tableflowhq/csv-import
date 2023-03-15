@@ -10,6 +10,7 @@ const Action = ({setLoading, type}) => {
     name: "",
     schema: "",
     table: "",
+    type: "HTTP",
     events: [],
     url: "",
     body: "",
@@ -22,6 +23,7 @@ const Action = ({setLoading, type}) => {
   const queryParams = new URLSearchParams(window.location.search)
   const id = queryParams.get("id")
   const events = ["INSERT", "UPDATE", "DELETE"]
+  const typeAudit = "AUDIT"
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -54,6 +56,7 @@ const Action = ({setLoading, type}) => {
             schema: data.schema,
             table: data.table,
             events: data.trigger_events,
+            type: data.action.type,
             url: data.action.url,
             body: data.action.body,
           })
@@ -79,16 +82,17 @@ const Action = ({setLoading, type}) => {
   const createAction = () => {
     setError(null)
     // setLoading(true)
+    console.log(formData)
     const body = {
       "name": formData.name,
       "table": formData.table,
       "schema": formData.schema,
-      "trigger_events": formData.events,
+      "trigger_events": formData.type === typeAudit ? events : formData.events,
       "action": {
-        "type": "HTTP",
-        "url": formData.url,
-        "method": "POST",
-        "body": formData.body
+        "type": formData.type,
+        "url": formData.type === typeAudit ? "" : formData.url,
+        "method": formData.type === typeAudit ? "" : "POST",
+        "body": formData.type === typeAudit ? "" : formData.body
       },
       "filters": {
         "exclude_users": selectedUser.map(u => u.value)
@@ -99,10 +103,10 @@ const Action = ({setLoading, type}) => {
       path = path + "?id=" + id
     }
     httpPost(path, body, (data) => {
-      setTimeout(function() {
-        // setLoading(false);
-        history.push("/")
-      }, 250);
+      history.push("/")
+      // setTimeout(function() {
+      //   // setLoading(false);
+      // }, 100);
     }, (data) => {
       // setLoading(false);
       if(data.error) {
@@ -152,57 +156,62 @@ const Action = ({setLoading, type}) => {
             }
           </select>
           <div className="mt-2"/>
-          <label htmlFor="Events">Events</label>
-          <br/>
-          <div className="d-flex align-items-center gap-4">
-            {events.map((content) => {
-              return (
-                <div key={content}
-                     onClick={() => handleEvents(content)}
-                     className="d-flex align-items-center pointer"
-                >
-                  {formData.events.includes(content) ? (
-                    <div className="active_"></div>
-                  ) : (
-                    <div className="unactive_"></div>
-                  )}
-                  <label htmlFor="Events">{content}</label>
-                </div>
-              );
-            })}
+          <div hidden={formData.type === typeAudit}>
+            <label htmlFor="Events">Events</label>
+            <br/>
+            <div className="d-flex align-items-center gap-4">
+              {events.map((content) => {
+                return (
+                  <div key={content}
+                       onClick={() => handleEvents(content)}
+                       className="d-flex align-items-center pointer"
+                  >
+                    {formData.events.includes(content) ? (
+                      <div className="active_"></div>
+                    ) : (
+                      <div className="unactive_"></div>
+                    )}
+                    <label htmlFor="Events">{content}</label>
+                  </div>
+                );
+              })}
+            </div>
           </div>
           <div className="mt-2"/>
-          <label htmlFor="Action">Action</label>
+          <label htmlFor="type">Action</label>
           <br/>
-          <select name="action">
-            <option value="HTTP" selected disabled>HTTP Request</option>
+          <select name="type" value={formData.type} onChange={handleChange}>
+            <option value="HTTP" selected>HTTP Request</option>
+            <option value="AUDIT">Audit Log</option>
           </select>
           <div className="mt-2"/>
-          <label htmlFor="Method">Method</label>
-          <select name="method">
-            <option value="POST" selected disabled>POST</option>
-          </select>
-          <div className="mt-2"/>
-          <label htmlFor="URL">URL</label>
-          <input
-            type="text"
-            placeholder="Enter URL"
-            name="url"
-            value={formData.url}
-            onChange={handleChange}
-          />
-          <div className="mt-2"/>
-          <label htmlFor="Body">Body</label>
-          <br/>
-          <textarea
-            style={{fontFamily: "monospace"}}
-            name="body"
-            cols="30"
-            rows="6"
-            value={formData.body}
-            onChange={handleChange}
-            placeholder="{&quot;data&quot;: &quot;Row inserted: ${column_name}&quot;}"
-          ></textarea>
+          <div hidden={formData.type === typeAudit}>
+            <label htmlFor="Method">Method</label>
+            <select name="method">
+              <option value="POST" selected disabled>POST</option>
+            </select>
+            <div className="mt-2"/>
+            <label htmlFor="URL">URL</label>
+            <input
+              type="text"
+              placeholder="Enter URL"
+              name="url"
+              value={formData.url}
+              onChange={handleChange}
+            />
+            <div className="mt-2"/>
+            <label htmlFor="Body">Body</label>
+            <br/>
+            <textarea
+              style={{fontFamily: "monospace"}}
+              name="body"
+              cols="30"
+              rows="6"
+              value={formData.body}
+              onChange={handleChange}
+              placeholder="{&quot;text&quot;: &quot;Row ${id} changed in ${meta.table}&quot;}"
+            ></textarea>
+          </div>
           <br/>
         </div>
         <div className="d-flex pointer" style={{color: "#00a7ff"}} onClick={() => setCollapse(!collapse)}>

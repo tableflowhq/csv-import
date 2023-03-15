@@ -2,22 +2,22 @@ const env = {
   ...process?.env,
   ...window?.__RUNTIME_CONFIG__,
 }
-const baseURL = getAPIBaseURL()
+const defaultBaseURL = getAPIBaseURL("v1")
 const authToken = getAPIAuthToken()
 
-function getAPIBaseURL() {
+export function getAPIBaseURL(version) {
   let url = process.env.REACT_APP_API_BASE_URL
   if(url) {
     if(!url.endsWith("/")) {
       url = url + "/"
     }
-    return url + "api/v1/"
+    return url + "api/" + (version ? version + "/" : "")
   }
   let host = window.location.host
   if(host.indexOf(":") > 0) {
     host = host.substring(0, host.indexOf(":"))
   }
-  return `${window.location.protocol}//${host}:3003/api/v1/`
+  return `${window.location.protocol}//${host}:3003/api/${version ? version + "/" : ""}`
 }
 
 function getAPIAuthToken() {
@@ -28,6 +28,16 @@ function getAPIAuthToken() {
   return token
 }
 
+export function healthCheck(success, failure) {
+  const requestOptions = {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  };
+  apiRequest(getAPIBaseURL(), "health", requestOptions, success, failure)
+}
+
 export function httpGet(path, success, failure) {
   const requestOptions = {
     method: "GET",
@@ -36,15 +46,15 @@ export function httpGet(path, success, failure) {
       "Authorization": authToken
     },
   };
-  apiRequest(path, requestOptions, success, failure)
+  apiRequest(defaultBaseURL, path, requestOptions, success, failure)
 }
 
 export function httpPost(path, body, success, failure) {
-  apiRequest(path, getRequestOptions("POST", body), success, failure)
+  apiRequest(defaultBaseURL, path, getRequestOptions("POST", body), success, failure)
 }
 
 export function httpDelete(path, body, success, failure) {
-  apiRequest(path, getRequestOptions("DELETE", body), success, failure)
+  apiRequest(defaultBaseURL, path, getRequestOptions("DELETE", body), success, failure)
 }
 
 function getRequestOptions(method, body) {
@@ -58,8 +68,8 @@ function getRequestOptions(method, body) {
   }
 }
 
-function apiRequest(path, requestOptions, success, failure) {
-  fetch(`${baseURL}${path}`, requestOptions)
+function apiRequest(baseURL, path, requestOptions, success, failure) {
+  fetchWithTimeout(`${baseURL}${path}`, requestOptions)
     .then(response => {
       if(!response.ok) {
         return Promise.reject(response);
@@ -87,4 +97,16 @@ function apiRequest(path, requestOptions, success, failure) {
         failure(error)
       }
     });
+}
+
+async function fetchWithTimeout(resource, options = {}) {
+  const {timeout = 8000} = options;
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+  const response = await fetch(resource, {
+    ...options,
+    signal: controller.signal
+  });
+  clearTimeout(id);
+  return response;
 }

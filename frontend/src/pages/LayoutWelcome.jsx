@@ -4,11 +4,11 @@ import wave from "../assets/wave.svg";
 // COMPONENTS
 import Welcome from "../components/Welcome";
 
-const LayoutWelcome = () => {
+const LayoutWelcome = ({setLoading}) => {
   return (
     <div className="login_container d-flex justify-content-center align-items-center">
       {/* LOGIN FORM START */}
-      <Welcome/>
+      <Welcome setLoading={setLoading}/>
       {/* LOGIN FORM END */}
 
       {/* BOTTOM IMAGE START */}

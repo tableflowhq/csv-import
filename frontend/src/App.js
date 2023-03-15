@@ -4,13 +4,15 @@ import LayoutWelcome from "./pages/LayoutWelcome";
 import "./styles/style.css";
 
 // IMPORTING ROUTER AND SWITCH
-import {Route, Switch} from "react-router-dom";
+import {Redirect, Route, Switch} from "react-router-dom";
 import {useEffect, useState} from "react";
 import LayoutAction from "./pages/LayoutAction";
 import LayoutActionTable from "./pages/LayoutActionTable";
 import LoadingOverlay from "react-loading-overlay";
 import ConnectDatabase from "./pages/ConnectDatabase";
 import LayoutSettings from "./pages/LayoutSettings";
+import LayoutAuditTable from "./pages/LayoutAuditTable";
+import NotFound from "./pages/NotFound";
 
 function App() {
   const [mode, setMode] = useState(1);
@@ -46,7 +48,10 @@ function App() {
       >
         <Switch>
           <Route exact path="/" component={LayoutActionTable}/>
-          <Route exact path="/welcome" component={LayoutWelcome}/>
+          <Route exact path="/audit" component={LayoutAuditTable}/>
+          <Route exact path="/welcome">
+            <LayoutWelcome setLoading={setLoading}/>
+          </Route>
           <Route exact path="/connect-database">
             <ConnectDatabase setLoading={setLoading}/>
           </Route>
@@ -59,6 +64,8 @@ function App() {
           <Route exact path="/edit-action">
             <LayoutAction localMode={localMode} setLoading={setLoading} type="Edit"/>
           </Route>
+          <Route path="/404" component={NotFound}/>
+          <Redirect to="/404"/>
         </Switch>
       </LoadingOverlay>
 

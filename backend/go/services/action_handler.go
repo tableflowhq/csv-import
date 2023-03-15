@@ -9,10 +9,12 @@ import (
 	"inquery/go/pkg/util"
 	"net/http"
 	"strings"
+	"time"
 )
 
 const (
-	triggerActionHTTP  = "HTTP"
+	TriggerActionHTTP  = "HTTP"
+	TriggerActionAudit = "AUDIT"
 	triggerEventInsert = "INSERT"
 	triggerEventUpdate = "UPDATE"
 	triggerEventDelete = "DELETE"
@@ -32,6 +34,19 @@ type TriggerAction struct {
 	Filters struct {
 		ExcludeUsers []string `json:"exclude_users"`
 	} `json:"filters"`
+}
+
+type Audit struct {
+	Table   string                `json:"table"`
+	Schema  string                `json:"schema"`
+	User    string                `json:"user"`
+	Event   string                `json:"event"`
+	Changed map[string]ChangedRow `json:"changed"`
+}
+
+type ChangedRow struct {
+	Old interface{} `json:"old"`
+	New interface{} `json:"new"`
 }
 
 func InitActionHandler(ctx context.Context) error {
@@ -100,8 +115,11 @@ func HandleNotifyEventReceived(payload NotifyPayload) {
 	columnTemplateValues := mergeColumnTemplateValues(payload)
 	for _, action := range matchedActions {
 		switch action.Action.Type {
-		case triggerActionHTTP:
+		case TriggerActionHTTP:
 			triggerActionHTTPPOST(action, columnTemplateValues)
+			break
+		case TriggerActionAudit:
+			triggerActionAuditLog(action, columnTemplateValues)
 			break
 		default:
 			util.Log.Debugw("Attempted to fire unsupported trigger action", "type", action.Action.Type)
@@ -129,12 +147,18 @@ func mergeColumnTemplateValues(payload NotifyPayload) map[string]interface{} {
 	}
 	// Find the changed columns
 	changedValuesStr := make([]string, 0)
+	changedValuesMap := make(map[string]ChangedRow)
 	if payload.Event == triggerEventUpdate && payload.New != nil && payload.Old != nil {
-		// TODO: Use a map here instead
-		for ok, ov := range payload.Old {
-			for nk, nv := range payload.New {
-				if nk == ok && nv != ov {
-					changedValuesStr = append(changedValuesStr, fmt.Sprintf("-- %v --\\nold: %v\\nnew: %v\\n", nk, ov, nv))
+		oldValueMap := make(map[string]interface{}, len(payload.Old))
+		for k, v := range payload.Old {
+			oldValueMap[k] = v
+		}
+		for k, newVal := range payload.New {
+			if oldVal, exists := oldValueMap[k]; exists && oldVal != newVal {
+				changedValuesStr = append(changedValuesStr, fmt.Sprintf("-- %v --\\nold: %v\\nnew: %v\\n", k, oldVal, newVal))
+				changedValuesMap[k] = ChangedRow{
+					Old: oldVal,
+					New: newVal,
 				}
 			}
 		}
@@ -167,6 +191,7 @@ func mergeColumnTemplateValues(payload NotifyPayload) map[string]interface{} {
 	columnTemplateValues["meta.user"] = payload.User
 	columnTemplateValues["meta.event_summary"] = fmt.Sprintf("User *%v* %v a row in table `%v`", payload.User, actionStr, payload.Table)
 	columnTemplateValues["meta.changed"] = strings.Join(changedValuesStr, "\\n")
+	columnTemplateValues["meta.changed_raw"] = changedValuesMap
 	return columnTemplateValues
 }
 
@@ -182,5 +207,25 @@ func triggerActionHTTPPOST(action TriggerAction, templateValues map[string]inter
 	}
 	if resp != nil {
 		defer resp.Body.Close()
+	}
+}
+
+func triggerActionAuditLog(action TriggerAction, templateValues map[string]interface{}) {
+	audit := Audit{
+		Table:   action.Table,
+		Schema:  action.Schema,
+		User:    templateValues["meta.user"].(string),
+		Event:   templateValues["meta.event"].(string),
+		Changed: templateValues["meta.changed_raw"].(map[string]ChangedRow),
+	}
+	auditJson, err := json.Marshal(&audit)
+	if err != nil {
+		util.Log.Warnw("Error creating audit log. Could not marshal JSON", "error", err)
+		return
+	}
+	key := fmt.Sprintf("%v", time.Now().UnixMicro())
+	if err = db.DB.Set(db.NamespaceAudit, key, auditJson); err != nil {
+		util.Log.Warnw("Error creating audit log", "error", err)
+		return
 	}
 }
