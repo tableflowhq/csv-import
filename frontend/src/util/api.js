@@ -17,7 +17,7 @@ export function getAPIBaseURL(version) {
   if(host.indexOf(":") > 0) {
     host = host.substring(0, host.indexOf(":"))
   }
-  if(host.indexOf("inquery") !== -1) {
+  if(host.indexOf("inquery.io") !== -1) {
     return `${window.location.protocol}//${host.slice(0, host.indexOf('.'))}-api${host.slice(host.indexOf('.'))}/api/v1/`;
   }
   return `${window.location.protocol}//${host}:3003/api/${version ? version + "/" : ""}`
