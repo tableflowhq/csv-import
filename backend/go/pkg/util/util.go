@@ -114,3 +114,195 @@ func GetTriggerCreationSQL(schema, table string) string {
 	$$;`, schema, table)
 	return template
 }
+
+func GetTriggerCreationSQLV2(schema, table string) string {
+	template := fmt.Sprintf(`
+	do
+	$$
+	    begin
+	        if not exists(select 1 from pg_proc where proname = 'pg_notify_trigger_event_%[1]s_%[2]s') then
+	            create or replace function pg_notify_trigger_event_%[1]s_%[2]s() returns trigger as
+	            $FN$
+	            declare
+	                hasNew  bool = false;
+	                hasOld  bool = false;
+	                payload jsonb;
+	            begin
+	                if TG_OP = 'INSERT' then
+	                    hasNew = true;
+	                elseif TG_OP = 'UPDATE' then
+	                    hasNew = true;
+	                    hasOld = true;
+	                else
+	                    hasOld = true;
+	                end if;
+	                payload = jsonb_build_object(
+	                        'table', TG_TABLE_NAME,
+	                        'schema', TG_TABLE_SCHEMA,
+	                        'event', to_jsonb(TG_OP),
+	                        'user', current_user
+	                    );
+	                if hasNew then
+	                    payload = jsonb_set(payload, '{new}', to_jsonb(NEW), true);
+	                end if;
+	                if hasOld then
+	                    payload = jsonb_set(payload, '{old}', to_jsonb(OLD), true);
+	                end if;
+	                perform pg_notify('pg_notify_trigger_event', payload::text);
+	                return NEW;
+	            end;
+	            $FN$ language plpgsql;
+	        end if;
+	        if not exists(select 1 from pg_trigger where tgname = 'pg_notify_trigger_event_%[1]s_%[2]s_update') then
+	            create trigger pg_notify_trigger_event_%[1]s_%[2]s_update
+	                after update
+	                on %[1]s.%[2]s
+	                for each row
+	            execute procedure pg_notify_trigger_event_%[1]s_%[2]s();
+	        end if;
+	        if not exists(select 1 from pg_trigger where tgname = 'pg_notify_trigger_event_%[1]s_%[2]s_insert') then
+	            create trigger pg_notify_trigger_event_%[1]s_%[2]s_insert
+	                after insert
+	                on %[1]s.%[2]s
+	                for each row
+	            execute procedure pg_notify_trigger_event_%[1]s_%[2]s();
+	        end if;
+	        if not exists(select 1 from pg_trigger where tgname = 'pg_notify_trigger_event_%[1]s_%[2]s_delete') then
+	            create trigger pg_notify_trigger_event_%[1]s_%[2]s_delete
+	                after delete
+	                on %[1]s.%[2]s
+	                for each row
+	            execute procedure pg_notify_trigger_event_%[1]s_%[2]s();
+	        end if;
+	    end
+	$$;`, schema, table)
+	return template
+}
+
+func GetTriggerCreationSQLV3(schema, table string) string {
+	template := fmt.Sprintf(`
+	do
+	$$
+	    begin
+	        if not exists(select 1 from pg_proc where proname = 'pg_notify_trigger_event_%[1]s_%[2]s') then
+	            create or replace function pg_notify_trigger_event_%[1]s_%[2]s() returns trigger as
+	            $FN$
+	            declare
+	                hasNew  bool = false;
+	                hasOld  bool = false;
+	                payload jsonb;
+	            begin
+	                if TG_OP = 'INSERT' then
+	                    hasNew = true;
+	                elseif TG_OP = 'UPDATE' then
+	                    hasNew = true;
+	                    hasOld = true;
+	                else
+	                    hasOld = true;
+	                end if;
+	                payload = jsonb_build_object(
+	                        'table', TG_TABLE_NAME,
+	                        'schema', TG_TABLE_SCHEMA,
+	                        'event', to_jsonb(TG_OP),
+	                        'user', current_user
+	                    );
+	                if hasNew then
+	                    payload = jsonb_set(payload, '{new}', to_jsonb(NEW), true);
+	                end if;
+	                if hasOld then
+	                    payload = jsonb_set(payload, '{old}', to_jsonb(OLD), true);
+	                end if;
+	                perform pg_notify('pg_notify_trigger_event', payload::text);
+	                return NEW;
+	            end;
+	            $FN$ language plpgsql;
+	        end if;
+	        if not exists(select 1 from pg_trigger where tgname = 'pg_notify_trigger_event_%[1]s_%[2]s_update') then
+	            create trigger pg_notify_trigger_event_%[1]s_%[2]s_update
+	                after update
+	                on %[1]s.%[2]s
+	                for each row
+	            execute procedure pg_notify_trigger_event_%[1]s_%[2]s();
+	        end if;
+	        if not exists(select 1 from pg_trigger where tgname = 'pg_notify_trigger_event_%[1]s_%[2]s_insert') then
+	            create trigger pg_notify_trigger_event_%[1]s_%[2]s_insert
+	                after insert
+	                on %[1]s.%[2]s
+	                for each row
+	            execute procedure pg_notify_trigger_event_%[1]s_%[2]s();
+	        end if;
+	        if not exists(select 1 from pg_trigger where tgname = 'pg_notify_trigger_event_%[1]s_%[2]s_delete') then
+	            create trigger pg_notify_trigger_event_%[1]s_%[2]s_delete
+	                after delete
+	                on %[1]s.%[2]s
+	                for each row
+	            execute procedure pg_notify_trigger_event_%[1]s_%[2]s();
+	        end if;
+	    end
+	$$;`, schema, table)
+	return template
+}
+
+func GetTriggerCreationSQLV4(schema, table string) string {
+	template := fmt.Sprintf(`
+	do
+	$$
+	    begin
+	        if not exists(select 1 from pg_proc where proname = 'pg_notify_trigger_event_%[1]s_%[2]s') then
+	            create or replace function pg_notify_trigger_event_%[1]s_%[2]s() returns trigger as
+	            $FN$
+	            declare
+	                hasNew  bool = false;
+	                hasOld  bool = false;
+	                payload jsonb;
+	            begin
+	                if TG_OP = 'INSERT' then
+	                    hasNew = true;
+	                elseif TG_OP = 'UPDATE' then
+	                    hasNew = true;
+	                    hasOld = true;
+	                else
+	                    hasOld = true;
+	                end if;
+	                payload = jsonb_build_object(
+	                        'table', TG_TABLE_NAME,
+	                        'schema', TG_TABLE_SCHEMA,
+	                        'event', to_jsonb(TG_OP),
+	                        'user', current_user
+	                    );
+	                if hasNew then
+	                    payload = jsonb_set(payload, '{new}', to_jsonb(NEW), true);
+	                end if;
+	                if hasOld then
+	                    payload = jsonb_set(payload, '{old}', to_jsonb(OLD), true);
+	                end if;
+	                perform pg_notify('pg_notify_trigger_event', payload::text);
+	                return NEW;
+	            end;
+	            $FN$ language plpgsql;
+	        end if;
+	        if not exists(select 1 from pg_trigger where tgname = 'pg_notify_trigger_event_%[1]s_%[2]s_update') then
+	            create trigger pg_notify_trigger_event_%[1]s_%[2]s_update
+	                after update
+	                on %[1]s.%[2]s
+	                for each row
+	            execute procedure pg_notify_trigger_event_%[1]s_%[2]s();
+	        end if;
+	        if not exists(select 1 from pg_trigger where tgname = 'pg_notify_trigger_event_%[1]s_%[2]s_insert') then
+	            create trigger pg_notify_trigger_event_%[1]s_%[2]s_insert
+	                after insert
+	                on %[1]s.%[2]s
+	                for each row
+	            execute procedure pg_notify_trigger_event_%[1]s_%[2]s();
+	        end if;
+	        if not exists(select 1 from pg_trigger where tgname = 'pg_notify_trigger_event_%[1]s_%[2]s_delete') then
+	            create trigger pg_notify_trigger_event_%[1]s_%[2]s_delete
+	                after delete
+	                on %[1]s.%[2]s
+	                for each row
+	            execute procedure pg_notify_trigger_event_%[1]s_%[2]s();
+	        end if;
+	    end
+	$$;`, schema, table)
+	return template
+}
