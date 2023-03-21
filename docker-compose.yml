@@ -1,15 +1,16 @@
 version: "3"
 
 services:
-  postgres:
-    image: postgres
-    container_name: postgres
-    ports:
-      - "5432:5432"
-    networks:
-      - inquery
-    environment:
-      - POSTGRES_PASSWORD=postgres
+# Un-comment if you want use below postgres.
+  #postgres:
+  #  image: postgres
+  #  container_name: postgres
+  # ports:
+  #   - "5432:5432"
+  # networks:
+  #   - inquery
+  # environment:
+  #   - POSTGRES_PASSWORD=postgres
   backend:
     #build: "./backend"
     image: inqueryio/backend:latest
