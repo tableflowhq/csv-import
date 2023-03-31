@@ -1,7 +1,7 @@
 <div align="center">
 <a href="https://inquery.io"><img src="https://svgshare.com/i/qxX.svg" alt="Inquery"></a>
 
-<em>Safeguard your Postgres database</em>
+<em>Superpowers for your SQL database</em>
 
 [![Twitter](https://img.shields.io/twitter/url/https/twitter.com/inqueryio.svg?style=social&label=Follow%20%40inqueryio)](https://twitter.com/inqueryio)
 [![GitHub Repo stars](https://img.shields.io/github/stars/inqueryio/inquery?style=social)](https://github.com/inqueryio/inquery)
@@ -14,12 +14,14 @@
 
 </div>
 
-## Inquery is an open-source toolkit for safeguarding PostgreSQL databases
+## Inquery is an open-source toolkit for SQL databases, starting with PostgreSQL
 
 * **[Alerts](#alerts):** Receive notifications when a change occurs
-* **[Audit History](#audit-history-beta):** View all historical manual changes with context
+* **[Audit History](#audit-history-beta):** View all historical changes with context
 * **[Query Preview](#query-preview-coming-soon):** Preview affected rows and query plan prior to running changes
 * **[Approval Flow](#approval-flow-coming-soon):** Require query review before a change can be run
+* **[Branching](#):** Git-like version control
+* **[Instant Rollback](#):** Instantly rollback to any commit
 
 ## Alerts
 
