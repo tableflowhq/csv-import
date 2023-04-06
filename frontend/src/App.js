@@ -14,6 +14,7 @@ import LayoutSettings from "./pages/LayoutSettings";
 import LayoutAuditTable from "./pages/LayoutAuditTable";
 import NotFound from "./pages/NotFound";
 
+// import the health check component, serivng as a protection guard to ensure BE uptime
 import CheckBEHealth from "./util/HealthCheck";
 
 function App() {
@@ -52,6 +53,7 @@ function App() {
           <Route exact path="/" component={LayoutActionTable} />
           <Route exact path="/audit" component={LayoutAuditTable} />
           <Route exact path="/welcome">
+            {/* CheckBEHealth to ensure uptime before routing, pass in the component as props */}
             <CheckBEHealth>
               <LayoutWelcome setLoading={setLoading} />
             </CheckBEHealth>
