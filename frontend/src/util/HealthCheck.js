@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import LoadingOverlay from "react-loading-overlay";
+
 import logoD from "../assets/logoD.svg";
 import logoW from "../assets/logoW.svg";
 
@@ -41,30 +43,12 @@ const CheckBEHealth = ({ children }) => {
   if (loading) {
     return (
       <div className="container-fluid vw-100 vh-100 align-items-center d-flex justify-content-center">
-        <div className="spinner-grow text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
-        <div className="spinner-grow text-secondary" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
-        <div className="spinner-grow text-success" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
-        <div className="spinner-grow text-danger" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
-        <div className="spinner-grow text-warning" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
-        <div className="spinner-grow text-info" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
-        <div className="spinner-grow text-light" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
-        <div className="spinner-grow text-dark" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
+        <LoadingOverlay
+          active={loading}
+          // spinner={<BounceLoader />}
+          spinner={true}
+          text="Loading..."
+        />
       </div>
     );
   }

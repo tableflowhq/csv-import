@@ -52,7 +52,9 @@ function App() {
           <Route exact path="/" component={LayoutActionTable} />
           <Route exact path="/audit" component={LayoutAuditTable} />
           <Route exact path="/welcome">
-            <LayoutWelcome setLoading={setLoading} />
+            <CheckBEHealth>
+              <LayoutWelcome setLoading={setLoading} />
+            </CheckBEHealth>
           </Route>
           <Route exact path="/connect-database">
             <CheckBEHealth>
