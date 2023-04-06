@@ -42,17 +42,19 @@ const CheckBEHealth = ({ children }) => {
 
   if (loading) {
     return (
-      <div className="container-fluid vw-100 vh-100 align-items-center d-flex justify-content-center">
-        <LoadingOverlay
-          active={loading}
-          // spinner={<BounceLoader />}
-          spinner={true}
-          text="Loading..."
-        />
+      <div
+        className="container-fluid vw-100 vh-100 align-items-center d-flex justify-content-center"
+        style={{
+          background: "rgba(0,0,0,0.4)",
+          // opacity: 0.4,
+        }}
+      >
+        <LoadingOverlay active={loading} spinner={true} text="Loading..." />
       </div>
     );
   }
-  if (error) {
+
+  if (error || !render) {
     return (
       <div className="login_form pb-3">
         <div className="container-fluid vw-100 vh-100  align-items-center d-flex justify-content-center flex-column ">
