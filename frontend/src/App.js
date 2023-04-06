@@ -4,8 +4,8 @@ import LayoutWelcome from "./pages/LayoutWelcome";
 import "./styles/style.css";
 
 // IMPORTING ROUTER AND SWITCH
-import {Redirect, Route, Switch} from "react-router-dom";
-import {useEffect, useState} from "react";
+import { Redirect, Route, Switch } from "react-router-dom";
+import { useEffect, useState } from "react";
 import LayoutAction from "./pages/LayoutAction";
 import LayoutActionTable from "./pages/LayoutActionTable";
 import LoadingOverlay from "react-loading-overlay";
@@ -14,6 +14,8 @@ import LayoutSettings from "./pages/LayoutSettings";
 import LayoutAuditTable from "./pages/LayoutAuditTable";
 import NotFound from "./pages/NotFound";
 
+import CheckBEHealth from "./util/HealthCheck";
+
 function App() {
   const [mode, setMode] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -21,15 +23,15 @@ function App() {
   let localMode = localStorage.getItem("modeLocal");
 
   useEffect(() => {
-    if(!localMode) {
+    if (!localMode) {
       localStorage.setItem("modeLocal", "1");
       setMode(1);
     }
-    if(!localMode) {
+    if (!localMode) {
       document.body.style.background = "#f5f6f8";
-    } else if(localMode === "1") {
+    } else if (localMode === "1") {
       document.body.style.background = "#f5f6f8";
-    } else if(localMode && localMode === "2") {
+    } else if (localMode && localMode === "2") {
       document.body.style.background = "#212121";
     }
   }, [localMode, mode]);
@@ -47,28 +49,45 @@ function App() {
         text="Loading..."
       >
         <Switch>
-          <Route exact path="/" component={LayoutActionTable}/>
-          <Route exact path="/audit" component={LayoutAuditTable}/>
+          <Route exact path="/" component={LayoutActionTable} />
+          <Route exact path="/audit" component={LayoutAuditTable} />
           <Route exact path="/welcome">
-            <LayoutWelcome setLoading={setLoading}/>
+            <LayoutWelcome setLoading={setLoading} />
           </Route>
           <Route exact path="/connect-database">
-            <ConnectDatabase setLoading={setLoading}/>
+            <CheckBEHealth>
+              <ConnectDatabase setLoading={setLoading} />
+            </CheckBEHealth>
           </Route>
           <Route exact path="/settings">
-            <LayoutSettings localMode={localMode} mode={mode} setMode={setMode}/>
+            <LayoutSettings
+              localMode={localMode}
+              mode={mode}
+              setMode={setMode}
+            />
           </Route>
           <Route exact path="/create-action">
-            <LayoutAction localMode={localMode} setLoading={setLoading} type="Create"/>
+            <CheckBEHealth>
+              <LayoutAction
+                localMode={localMode}
+                setLoading={setLoading}
+                type="Create"
+              />
+            </CheckBEHealth>
           </Route>
           <Route exact path="/edit-action">
-            <LayoutAction localMode={localMode} setLoading={setLoading} type="Edit"/>
+            <CheckBEHealth>
+              <LayoutAction
+                localMode={localMode}
+                setLoading={setLoading}
+                type="Edit"
+              />
+            </CheckBEHealth>
           </Route>
-          <Route path="/404" component={NotFound}/>
-          <Redirect to="/404"/>
+          <Route path="/404" component={NotFound} />
+          <Redirect to="/404" />
         </Switch>
       </LoadingOverlay>
-
     </div>
   );
 }
