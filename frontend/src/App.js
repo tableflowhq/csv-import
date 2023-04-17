@@ -50,8 +50,16 @@ function App() {
         text="Loading..."
       >
         <Switch>
-          <Route exact path="/" component={LayoutActionTable} />
-          <Route exact path="/audit" component={LayoutAuditTable} />
+          <Route exact path="/">
+            <CheckBEHealth>
+              <LayoutActionTable />
+            </CheckBEHealth>
+          </Route>
+          <Route exact path="/">
+            <CheckBEHealth>
+              <LayoutAuditTable />
+            </CheckBEHealth>
+          </Route>
           <Route exact path="/welcome">
             {/* CheckBEHealth to ensure uptime before routing, pass in the component as props */}
             <CheckBEHealth>
