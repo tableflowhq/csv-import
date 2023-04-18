@@ -55,7 +55,7 @@ function App() {
               <LayoutActionTable />
             </CheckBEHealth>
           </Route>
-          <Route exact path="/">
+          <Route exact path="/audit">
             <CheckBEHealth>
               <LayoutAuditTable />
             </CheckBEHealth>
