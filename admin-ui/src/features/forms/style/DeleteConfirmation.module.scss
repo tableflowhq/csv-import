@@ -1,0 +1,38 @@
+@import "./Form.module.scss";
+
+.top {
+  display: flex;
+  gap: var(--m-s);
+  text-align: left;
+  align-items: flex-start;
+
+  .icon {
+    width: var(--m-xxl);
+    height: var(--m-xxl);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-background-error-soft);
+    border-radius: var(--border-radius-r);
+    flex: 0 0 var(--m-xxl);
+    border: 5px solid var(--color-background-menu-hover);
+
+    svg {
+      display: block;
+    }
+  }
+
+  .texts {
+    flex-grow: 1;
+  }
+
+  h3 {
+    font-size: var(--font-size-xl);
+    font-weight: 500;
+    margin: var(--m-xs) 0 var(--m-s);
+  }
+}
+
+.actions {
+  gap: var(--m);
+}

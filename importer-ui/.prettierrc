@@ -1,0 +1,25 @@
+{
+  "semi": true,
+  "singleQuote": false,
+  "tabWidth": 2,
+  "jsxSingleQuote": false,
+  "bracketSameLine": true,
+  "printWidth": 150,
+  "endOfLine": "auto",
+  "importOrder": [
+    "^[^/.]+$",
+    "^@.+$",
+    "^\\.\\./(.*)/[A-Z]((?!\\.)(?!types.).)+$",
+    "^\\.\\./(.*)/((?!\\.)(?!types.).)+$",
+    "^\\.$",
+    "^\\./(.*)/[A-Z]((?!\\.)(?!types.).)+$",
+    "^\\./(.*)/((?!\\.)(?!types.).)+$",
+    "/types$",
+    "\\.(css|scss)$",
+    "\\.(svg|png|jpg|jpeg|gif)$",
+    ".*"
+  ],
+  "importOrderSeparation": false,
+  "importOrderSortSpecifiers": true,
+  "importOrderCaseInsensitive": true
+}

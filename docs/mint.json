@@ -1,27 +1,33 @@
 {
   "$schema": "https://mintlify.com/schema.json",
-  "name": "Inquery",
+  "name": "TableFlow",
   "logo": {
-    "light": "/assets/light.png",
-    "dark": "/assets/dark.png",
-    "href": "https://www.inquery.io"
+    "light": "/assets/logo-purple.svg",
+    "dark": "/assets/logo-white.svg",
+    "href": "https://tableflow.com"
   },
   "favicon": "/assets/favicon.png",
   "colors": {
-    "primary": "#4D32E4",
-    "light": "#A393FE",
-    "dark": "#4D32E4",
-    "anchors": { "from": "#BA27BA", "to": "#4D32E4" }
+    "primary": "#5F2EE5",
+    "light": "#9371EE",
+    "dark": "#4018AF",
+    "anchors": { "from": "#7044E8", "to": "#5F2EE5" }
   },
+  "topbarLinks": [
+    {
+      "name": "Login",
+      "url": "https://app.tableflow.com"
+    }
+  ],
   "topbarCtaButton": {
-    "type": "github",
-    "url": "https://github.com/inqueryio/inquery"
+    "name": "Get Started",
+    "url": "https://app.tableflow.com/singup"
   },
   "anchors": [
     {
       "name": "GitHub",
       "icon": "github",
-      "url": "https://github.com/inqueryio/inquery"
+      "url": "https://github.com/tableflowhq/tableflow"
     },
     {
       "name": "Community",
@@ -31,30 +37,21 @@
   ],
   "navigation": [
     {
-      "group": "Overview",
+      "group": "Get Started",
       "pages": [
-        "overview/introduction",
-        "overview/get-started"
-      ]
-    },
-    {
-      "group": "Features",
-      "pages": [
-        "features/template-strings"
-      ]
-    },
-    {
-      "group": "Guides",
-      "pages": [
-        "guides/slack",
-        "guides/database-user"
+        "introduction"
       ]
     }
   ],
   "footerSocials": {
-    "twitter": "https://twitter.com/inqueryio",
-    "github": "https://github.com/inqueryio",
+    "twitter": "https://twitter.com/tableflow",
+    "github": "https://github.com/tableflowhq",
     "linkedin": "https://www.linkedin.com/company/inqueryio"
+  },
+  "analytics": {
+    "posthog": {
+      "apiKey": "phc_1HJDEiGGYvelCScGE8206eICthSEmJmIUMsCMFh8nN8"
+    }
   },
   "backgroundImage": "/assets/background.png"
 }

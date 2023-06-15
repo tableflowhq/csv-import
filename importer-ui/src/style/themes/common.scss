@@ -1,0 +1,30 @@
+:root {
+  // BACKGROUND
+
+  --color-primary: #{$primary-600};
+  --color-primary-hover: #{$primary-700};
+  --color-primary-focus: #{$primary-600};
+  --color-primary-disabled: #{$primary-200};
+
+  --color-secondary: #{$gray-800};
+  --color-secondary-hover: #{$gray-600};
+  --color-secondary-focus: #{$gray-800};
+  --color-secondary-disabled: #{$gray-700};
+
+  // TEXT
+
+  --color-text-on-primary: #{$base-white};
+  --color-text-on-primary-disabled: #{$gray-500};
+
+  --color-text-on-secondary: #{$gray-100};
+  --color-text-on-secondary-disabled: #{$gray-600};
+
+  --blue-light-500: #{$blue-light-500};
+
+  --color-green-ui: #{$green-600};
+
+  --color-green: (18, 183, 106, 0.88);
+  --color-blue: #{$blue-light-500};
+  --color-red: rgba(252, 93, 93, 0.88);
+  --color-yellow: rgba(248, 203, 44, 0.88);
+}

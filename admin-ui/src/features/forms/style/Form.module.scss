@@ -1,0 +1,136 @@
+.logo {
+  margin: var(--m) 0;
+
+  svg {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+.container {
+  min-width: 340px;
+}
+
+.formTop {
+  display: flex;
+  justify-content: space-between;
+
+  .action {
+    cursor: pointer;
+    padding: var(--m-xxs);
+    margin: calc(var(--m-xxs) * -1) calc(var(--m-xxs) * -1) 0 0;
+
+    svg {
+      stroke: var(--color-text-soft);
+    }
+
+    &:hover {
+      svg {
+        stroke: var(--color-text);
+      }
+    }
+  }
+}
+
+.title {
+  font-weight: 600;
+  margin: 0 0 var(--m);
+  color: var(--color-text);
+  font-size: var(--font-size-xl);
+
+  & + :not(.intro) {
+    margin-top: var(--m-l);
+  }
+
+  &.smallSpace {
+    margin: 0 0 var(--m-xs);
+  }
+}
+
+.welcome {
+  margin: 0 0 var(--m-mm);
+  text-align: center;
+  font-weight: 400;
+  color: var(--color-text-soft);
+}
+
+.intro {
+  line-height: 1.6;
+  margin: 0 0 var(--m-l);
+  font-weight: 400;
+}
+
+.sectionTitle {
+  display: block;
+  margin-bottom: var(--m-xxxs);
+  text-align: left;
+}
+
+.texts {
+  p {
+    margin-bottom: var(--m);
+  }
+}
+
+.errors {
+  color: var(--color-text-error);
+  margin-top: var(--m-l);
+
+  p {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--m-xxs);
+    text-align: left;
+  }
+}
+
+.actions {
+  margin-top: 0;
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--m-xl);
+
+  &.compact {
+    margin-top: 0;
+  }
+}
+
+.actionsVertical {
+  display: flex;
+  flex-direction: column;
+  gap: var(--m);
+}
+
+.footer {
+  text-align: center;
+  margin-top: var(--m-l);
+  color: var(--color-text-soft);
+
+  a {
+    color: var(--color-primary);
+  }
+}
+
+.doubleLine {
+  display: flex;
+  gap: var(--m);
+
+  & > * {
+    flex: 1 1 1px;
+  }
+}
+
+.codeLine {
+  margin-bottom: var(--m);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: var(--m-s);
+  background-color: rgba(black, 0.1);
+  border-radius: var(--border-radius-1);
+  font-family: monospace;
+  border: 1px solid rgba(black, 0.2);
+  white-space: nowrap;
+}

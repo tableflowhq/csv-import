@@ -1,0 +1,98 @@
+import { Importer } from "../types";
+
+const importers: Importer[] = [
+  {
+    id: "4",
+    name: "Importer 1",
+    allowed_domains: ["example.com"],
+    created_at: 1682366228,
+    created_by: {
+      email: "test@example.com",
+      id: "249ac073-0fe8-4705-82ff-73e3df491b04",
+      recipe: "github",
+      role: "user",
+      time_joined: 1682366228,
+    },
+    template: {
+      created_at: 1682366228,
+      created_by: {
+        email: "test@example.com",
+        id: "249ac073-0fe8-4705-82ff-73e3df491b04",
+        recipe: "github",
+        role: "user",
+        time_joined: 1682366228,
+      },
+      id: "f0797968-becc-422a-b135-19de1d8c5d46",
+      importer_id: "1",
+      name: "Template 1",
+      template_columns: [],
+      updated_at: 1682366228,
+      updated_by: {
+        email: "test@example.com",
+        id: "249ac073-0fe8-4705-82ff-73e3df491b04",
+        recipe: "github",
+        role: "user",
+        time_joined: 1682366228,
+      },
+      workspace_id: "b2079476-261a-41fe-8019-46eb51c537f7",
+    },
+    updated_at: 1682366228,
+    updated_by: {
+      email: "test@example.com",
+      id: "249ac073-0fe8-4705-82ff-73e3df491b04",
+      recipe: "github",
+      role: "user",
+      time_joined: 1682366228,
+    },
+    webhook_url: "https://example.com/webhook",
+    workspace_id: "b2079476-261a-41fe-8019-46eb51c537f7",
+  },
+  {
+    id: "3",
+    name: "Importer 2",
+    allowed_domains: ["example.com"],
+    created_at: 1682366228,
+    created_by: {
+      email: "test@example.com",
+      id: "249ac073-0fe8-4705-82ff-73e3df491b04",
+      recipe: "github",
+      role: "user",
+      time_joined: 1682366228,
+    },
+    template: {
+      created_at: 1682366228,
+      created_by: {
+        email: "test@example.com",
+        id: "249ac073-0fe8-4705-82ff-73e3df491b04",
+        recipe: "github",
+        role: "user",
+        time_joined: 1682366228,
+      },
+      id: "c56a4180-65aa-42ec-a945-5fd21dec0538",
+      importer_id: "2",
+      name: "Template 2",
+      template_columns: [],
+      updated_at: 1682366228,
+      updated_by: {
+        email: "test@example.com",
+        id: "249ac073-0fe8-4705-82ff-73e3df491b04",
+        recipe: "github",
+        role: "user",
+        time_joined: 1682366228,
+      },
+      workspace_id: "b2079476-261a-41fe-8019-46eb51c537f7",
+    },
+    updated_at: 1682366228,
+    updated_by: {
+      email: "test@example.com",
+      id: "249ac073-0fe8-4705-82ff-73e3df491b04",
+      recipe: "github",
+      role: "user",
+      time_joined: 1682366228,
+    },
+    webhook_url: "https://example.com/webhook",
+    workspace_id: "b2079476-261a-41fe-8019-46eb51c537f7",
+  },
+];
+
+export default importers;

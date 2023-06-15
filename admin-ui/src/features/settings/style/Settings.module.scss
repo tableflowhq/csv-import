@@ -1,0 +1,23 @@
+.container {
+  display: flex;
+  gap: var(--m-xl);
+  margin-top: var(--m-l);
+}
+
+.column {
+  flex: 1 1 100px;
+
+  h3 {
+    font-size: var(--font-size-l);
+  }
+
+  & > p {
+    color: var(--color-text-soft);
+  }
+}
+
+.box {
+  flex: 1 1 100px;
+  margin: 0;
+  padding: var(--m-l);
+}

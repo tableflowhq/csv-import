@@ -1,0 +1,39 @@
+.content {
+  max-width: 1000px;
+  padding-top: var(--m);
+  flex-grow: 1;
+  height: 100%;
+
+  form {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    gap: var(--m);
+
+    .tableWrapper {
+    }
+
+    .actions {
+      display: flex;
+      justify-content: space-between;
+    }
+  }
+}
+
+.samples {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1;
+
+  & > small {
+    background-color: var(--color-input-background);
+    font-family: monospace;
+    padding: var(--m-xxxxs);
+    border-radius: var(--border-radius-1);
+    font-size: var(--font-size-xs);
+
+    & + small {
+      margin-left: var(--m-xxxxs);
+    }
+  }
+}

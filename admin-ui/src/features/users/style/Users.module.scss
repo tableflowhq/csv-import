@@ -1,0 +1,30 @@
+.menu {
+  display: flex;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin: 0 0 var(--m-s) 0;
+}
+
+.title {
+  h1 {
+    margin-bottom: var(--m-xxxxs);
+  }
+
+  small {
+    display: block;
+  }
+}
+
+.actions {
+  display: flex;
+  gap: var(--m-s);
+  align-items: center;
+}
+
+.searchInput.searchInput {
+  margin-bottom: 0;
+}

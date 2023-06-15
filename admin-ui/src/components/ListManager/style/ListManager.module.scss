@@ -1,0 +1,29 @@
+.list {
+  margin-top: var(--m);
+}
+
+.item {
+  display: flex;
+  border: 1px solid transparent;
+  border-radius: var(--border-radius-1);
+  padding: var(--m-xxs) var(--m-xs);
+  align-items: center;
+
+  &:hover,
+  &:focus-within {
+    border-color: var(--color-border);
+  }
+
+  & > *:first-child {
+    flex-grow: 1;
+  }
+}
+
+.icon {
+  padding: var(--m-xxxs);
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+}

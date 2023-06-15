@@ -8,6 +8,7 @@
 *.test
 *.out
 *.log
+*.env
 
 npm-debug.log*
 yarn-debug.log*
@@ -16,7 +17,37 @@ yarn-error.log*
 node_modules/
 vendor/
 build/
+.yarn/
+.pnp*
 
 .DS_Store
 .idea
 .vscode
+.yarnrc.yml
+
+/admin-server/build
+
+/coverage
+/.next/
+/out/
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# local env files
+.env*.local
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+!ui-library/build

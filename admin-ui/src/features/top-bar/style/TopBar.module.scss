@@ -1,0 +1,15 @@
+.topBar {
+  padding: var(--m-xs) var(--m);
+  border-bottom: 1px solid var(--color-border-soft);
+
+  & > * {
+    display: flex;
+    gap: var(--m-l);
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+.separator {
+  margin: 0 auto;
+}

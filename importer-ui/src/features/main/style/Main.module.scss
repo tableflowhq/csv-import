@@ -1,0 +1,28 @@
+.wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  height: 100%;
+}
+
+.header {
+  margin-bottom: var(--m);
+}
+
+.content {
+  width: 1000px;
+  height: 600px;
+  max-height: 80vh;
+  max-width: 80vw;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  margin: 0 var(--m);
+}
+
+.prov {
+  position: absolute;
+  right: 2rem;
+  bottom: 2rem;
+}

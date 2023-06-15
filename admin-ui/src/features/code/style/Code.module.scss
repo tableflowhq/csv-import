@@ -1,0 +1,23 @@
+.container {
+  margin-top: var(--m);
+
+  .top {
+    background-color: var(--color-background-modal);
+    border: 1px solid var(--color-border);
+    border-bottom: none;
+    border-radius: var(--border-radius-2) var(--border-radius-2) 0 0;
+    padding: var(--m-s) var(--m);
+  }
+
+  textarea {
+    resize: none;
+    height: 470px;
+    background-color: var(--color-background-modal);
+    display: block;
+    width: 100%;
+    padding: var(--m);
+    font-family: monospace;
+    border: 1px solid var(--color-border);
+    border-radius: 0 0 var(--border-radius-2) var(--border-radius-2);
+  }
+}

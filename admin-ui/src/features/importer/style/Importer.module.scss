@@ -1,0 +1,50 @@
+.importer {
+  h1 {
+    margin: var(--m-xxl) 0;
+  }
+}
+
+.top.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--m-xs);
+  gap: var(--m-xs);
+  align-items: center;
+
+  h1 {
+    margin: 0;
+    flex-grow: 1;
+
+    input {
+      width: 100%;
+      padding: var(--m-xxxs) 0;
+      border-radius: var(--border-radius-2);
+
+      &:hover,
+      &:focus {
+        background-color: var(--color-background-modal);
+      }
+
+      &:focus {
+        padding: var(--m-xxxs) var(--m-xs);
+      }
+    }
+  }
+}
+
+.actions {
+  display: flex;
+  gap: var(--m-xs);
+  align-items: center;
+}
+
+.sqlTextarea {
+  textarea {
+    height: 450px;
+    font-family: courier, monospace;
+    line-height: 1.5;
+    padding: var(--m-s);
+    font-weight: 600;
+  }
+}

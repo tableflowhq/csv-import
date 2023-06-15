@@ -1,0 +1,12 @@
+.content {
+  display: flex;
+  gap: var(--m);
+  align-items: flex-start;
+  align-self: center;
+
+  & > * {
+    &:first-of-type {
+      width: 62%;
+    }
+  }
+}

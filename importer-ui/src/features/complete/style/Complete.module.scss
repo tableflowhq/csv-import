@@ -1,0 +1,47 @@
+.content {
+  max-width: 1000px;
+  padding-top: var(--m);
+  height: 100%;
+  flex: 1 0 100px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-3);
+  box-shadow: none;
+  background-color: var(--color-background);
+  align-self: center;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-xl);
+  flex-direction: column;
+  gap: var(--m);
+  text-align: center;
+
+  .icon {
+    width: 64px;
+    height: 64px;
+    isolation: isolate;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background-color: var(--color-green-ui);
+      z-index: -1;
+    }
+
+    svg {
+      width: 38%;
+      height: 38%;
+      display: block;
+      object-fit: contain;
+      fill: var(--color-text-on-primary);
+      stroke: none;
+    }
+  }
+}
