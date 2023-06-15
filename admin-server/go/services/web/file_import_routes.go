@@ -216,10 +216,6 @@ func getUploadForImportService(c *gin.Context) {
 		return
 	}
 	// Check if there are limits on the workspace
-	if 1 == 1 {
-		c.AbortWithStatusJSON(http.StatusBadRequest, Res{Err: "Test error"})
-		return
-	}
 	if err = checkWorkspaceLimitsForUpload(upload); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, Res{Err: err.Error()})
 		return
