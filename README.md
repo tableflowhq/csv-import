@@ -25,7 +25,7 @@
 
 1. Create an Importer and define the columns your users can import
 2. Embed the TableFlow Importer in your app
-3. Your users upload CSV file and set the column mapping through the modal
+3. Your users can upload CSV files and set the column mapping through the Importer modal
 4. Download the clean, mapped data from TableFlow via the API or from the admin app
 
 ![TableFlow Importer Modal](https://tableflow-assets-cdn.s3.amazonaws.com/importer-modal-20230613b.png)
