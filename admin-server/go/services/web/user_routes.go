@@ -8,17 +8,7 @@ import (
 	"tableflow/go/pkg/util"
 )
 
-// TODO: ********** UPDATE THIS TEST FUNCTION TO ACTUALLY RETURN IF THE USER IS IN THE WORKSPACE **********
-// TODO: ********** UPDATE THIS TEST FUNCTION TO ACTUALLY RETURN IF THE USER IS IN THE WORKSPACE **********
-// TODO: ********** UPDATE THIS TEST FUNCTION TO ACTUALLY RETURN IF THE USER IS IN THE WORKSPACE **********
-// TODO: ********** UPDATE THIS TEST FUNCTION TO ACTUALLY RETURN IF THE USER IS IN THE WORKSPACE **********
-// TODO: ********** UPDATE THIS TEST FUNCTION TO ACTUALLY RETURN IF THE USER IS IN THE WORKSPACE **********
-// TODO: ********** UPDATE THIS TEST FUNCTION TO ACTUALLY RETURN IF THE USER IS IN THE WORKSPACE **********
-// TODO: ********** UPDATE THIS TEST FUNCTION TO ACTUALLY RETURN IF THE USER IS IN THE WORKSPACE **********
 func validateUserInWorkspace(c *gin.Context, workspaceID string) (string, error) {
-	if 1 == 1 {
-		return "6356de69-df45-4271-ba19-e03671fe2b91", nil
-	}
 	if len(workspaceID) == 0 {
 		return "", errors.New("Invalid workspace ID")
 	}
