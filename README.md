@@ -38,7 +38,7 @@ The quickest way to get started with TableFlow is signing up for free to [TableF
 
 ### Self-hosted deploy
 
-Coming soon!
+Deploy TableFlow within your VPC. Coming soon!
 
 ## Get in touch
 Let us know your feedback or feature requests! You can submit a GitHub issue or contact us
