@@ -4,4 +4,5 @@ export type ReviewProps = {
   upload: Upload;
   template: Template;
   onSuccess: (uploadId: string) => void;
+  onCancel: () => void;
 };

@@ -5,7 +5,7 @@ import useReviewTable from "./hooks/useReviewTable";
 import { ReviewProps } from "./types";
 import style from "./style/Review.module.scss";
 
-export default function Review({ upload, template, onSuccess }: ReviewProps) {
+export default function Review({ upload, template, onSuccess, onCancel }: ReviewProps) {
   const { rows, formValues } = useReviewTable(upload?.upload_columns, template?.template_columns);
 
   const { mutate, error, isSuccess, isLoading } = usePostUpload(upload?.id || "");
@@ -37,7 +37,7 @@ export default function Review({ upload, template, onSuccess }: ReviewProps) {
         </div>
 
         <div className={style.actions}>
-          <Button type="button" variants={["secondary"]}>
+          <Button type="button" variants={["secondary"]} onClick={onCancel}>
             Back
           </Button>
           <Button variants={["primary"]} disabled={isLoading}>

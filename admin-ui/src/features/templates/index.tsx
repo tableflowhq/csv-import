@@ -37,7 +37,7 @@ export default function Templates({ importer }: TemplatesProps) {
         </Box>
       ) : action === "delete" ? (
         <Box variants={["wide", "space-mid"]}>
-          <TemplateColumnDelete column={column} onSuccess={modal.handleClose} />
+          <TemplateColumnDelete column={column} onSuccess={modal.handleClose} context={{ templateId: template?.id }} />{" "}
         </Box>
       ) : null,
     [modal.openDelayed]

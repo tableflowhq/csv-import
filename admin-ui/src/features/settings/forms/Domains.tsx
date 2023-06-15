@@ -11,7 +11,7 @@ export default function Domains({ importer }: { importer: Importer }) {
   const { mutate, isLoading, error } = usePostImporter(importer.id);
 
   useEffect(() => {
-    mutate({ id: importer.id, allowed_domains });
+    if (allowed_domains !== importer.allowed_domains) mutate({ id: importer.id, allowed_domains });
   }, [allowed_domains]);
 
   return (

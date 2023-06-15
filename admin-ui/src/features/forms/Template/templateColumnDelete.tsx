@@ -4,8 +4,8 @@ import useDeleteTemplateColumn from "../../../api/useDeleteTemplateColumn";
 import { TemplateDeleteProps } from "../types";
 import style from "../style/DeleteConfirmation.module.scss";
 
-export default function TemplateColumnDelete({ column, onSuccess = () => null }: TemplateDeleteProps) {
-  const { mutate, isLoading, isSuccess } = useDeleteTemplateColumn();
+export default function TemplateColumnDelete({ column, onSuccess = () => null, context }: TemplateDeleteProps) {
+  const { mutate, isLoading, isSuccess } = useDeleteTemplateColumn(context?.templateId);
 
   const onDeleteConfirm = () => {
     mutate(column?.id);

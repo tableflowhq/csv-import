@@ -2,13 +2,12 @@ import { useMutation, UseMutationResult, useQueryClient } from "react-query";
 import { ApiResponse, TemplateColumnFormFields } from "./types";
 import { post } from "./api";
 
-export default function usePostTemplateColumn(): UseMutationResult<ApiResponse<any>> {
+export default function usePostTemplateColumn(templateId?: string): UseMutationResult<ApiResponse<any>> {
   const queryClient = useQueryClient();
 
   return useMutation((values) => postTemplateColumn(values as TemplateColumnFormFields), {
     onSettled: () => {
-      // queryClient.removeQueries("templates");
-      // if (id) queryClient.invalidateQueries(["template", id]);
+      queryClient.invalidateQueries(["template", templateId]);
     },
   });
 }

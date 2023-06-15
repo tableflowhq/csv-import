@@ -3021,16 +3021,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tableflowhq/ui-library@npm:^1.12.0":
-  version: 1.12.0
-  resolution: "@tableflowhq/ui-library@npm:1.12.0::__archiveUrl=https%3A%2F%2Fnpm.pkg.github.com%2Fdownload%2F%40tableflowhq%2Fui-library%2F1.12.0%2F0e2c1241aafbaa630096a58359e36f4b7d27148e"
+"@tableflowhq/ui-library@npm:^1.13.0":
+  version: 1.13.0
+  resolution: "@tableflowhq/ui-library@npm:1.13.0::__archiveUrl=https%3A%2F%2Fnpm.pkg.github.com%2Fdownload%2F%40tableflowhq%2Fui-library%2F1.13.0%2Ff1d1b0b9a96bda8ad2f36c29f1d8689be0cfbf4f"
   dependencies:
     tslib: ^2.5.3
   peerDependencies:
     react: ">=18.2.0"
     react-dom: ">=18.2.0"
     zustand: ^4.3.8
-  checksum: 6a0b83b182d1913e78e4acf230648f24cba1835703dd9fc40ced124e3c0b5bd7f2795b0ec27433f24130d31a1f939bec8e20e74e28c23cbb44e17c5fac2833df
+  checksum: 4ec1f0a02cb19dddc63bb60f088e9e5ac5d610e4256335f5ee42847a09769b5c9a6fefe3dc793f857f97b14380de9803766f6a3ee43b38a2b05e5bdd2706ed26
   languageName: node
   linkType: hard
 
@@ -3976,7 +3976,7 @@ __metadata:
     "@mantine/form": ^6.0.4
     "@mantine/hooks": ^6.0.10
     "@mantine/notifications": ^6.0.10
-    "@tableflowhq/ui-library": ^1.12.0
+    "@tableflowhq/ui-library": ^1.13.0
     "@testing-library/jest-dom": ^5.14.1
     "@testing-library/react": ^13.0.0
     "@testing-library/user-event": ^13.2.1

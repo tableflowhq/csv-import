@@ -1,5 +1,5 @@
 import { PropsWithChildren } from "react";
-import useThemeStore from "../../stores/theme";
+import { useThemeStore } from "@tableflowhq/ui-library";
 import style from "./style/Hello.module.scss";
 import { ReactComponent as ResetDark } from "../../assets/illos/dark/plane.svg";
 import { ReactComponent as ResetLight } from "../../assets/illos/light/plane.svg";

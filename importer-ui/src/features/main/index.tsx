@@ -33,7 +33,7 @@ export default function Main() {
   const { template = {} as Template } = importer;
 
   // Load upload for the second step
-  const { data: upload = {} as Upload } = useGetUpload(tusId);
+  const { data: upload = {} as Upload, error: uploadError } = useGetUpload(tusId);
   const { is_parsed } = upload;
 
   // Delay jump to the second step
@@ -65,10 +65,22 @@ export default function Main() {
 
       <div className={style.content}>
         {step === "upload" && <Uploader template={template} onSuccess={setTusId} />}
-        {step === "review" && <Review template={template} upload={upload} onSuccess={() => stepper.setCurrent(2)} />}
+        {step === "review" && (
+          <Review
+            template={template}
+            upload={upload}
+            onSuccess={() => stepper.setCurrent(2)}
+            onCancel={() => {
+              stepper.setCurrent(0);
+              setTusId("");
+            }}
+          />
+        )}
         {step === "complete" && <Complete />}
         {step === "done" && <div>All done</div>}
       </div>
+
+      {!!uploadError && <Errors error={uploadError.toString()} />}
     </div>
   );
 }

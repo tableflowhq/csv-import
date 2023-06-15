@@ -77,6 +77,9 @@ func UploadCompleteHandler(event handler.HookEvent) {
 
 	// Parse the column headers and sample data
 	err = createUploadColumns(upload, file)
+
+	// TODO: Save errors to the upload object and have the upload endpoint from the file-importer return a 400 with the error if it exists
+
 	if err != nil {
 		util.Log.Errorw("Could not parse upload", "error", err, "upload_id", upload.ID)
 		removeUploadFileFromDisk(fileName, upload.ID.String())
