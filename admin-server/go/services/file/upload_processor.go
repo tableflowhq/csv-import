@@ -2,6 +2,7 @@ package file
 
 import (
 	"encoding/csv"
+	"errors"
 	"fmt"
 	"github.com/guregu/null"
 	"github.com/tus/tusd/pkg/handler"
@@ -16,10 +17,6 @@ import (
 )
 
 func UploadCompleteHandler(event handler.HookEvent) {
-	// TODO: Add metadata to TUS request with the template ID
-	// TODO: Add endpoint to retrieve file or file data by ID
-	// TODO: Have client call uploads endpoint to check processing status
-
 	uploadFileName := event.Upload.MetaData["filename"]
 	uploadFileType := event.Upload.MetaData["filetype"]
 	uploadFileExtension := ""
@@ -71,29 +68,41 @@ func UploadCompleteHandler(event handler.HookEvent) {
 	defer file.Close()
 	if err != nil {
 		util.Log.Errorw("Could not open temp upload file from disk", "error", err, "upload_id", upload.ID)
+		saveUploadError(upload, "An error occurred while processing your upload. Please try again.")
 		removeUploadFileFromDisk(fileName, upload.ID.String())
 		return
 	}
 
 	// Parse the column headers and sample data
 	err = createUploadColumns(upload, file)
-
-	// TODO: Save errors to the upload object and have the upload endpoint from the file-importer return a 400 with the error if it exists
-
 	if err != nil {
 		util.Log.Errorw("Could not parse upload", "error", err, "upload_id", upload.ID)
+		saveUploadError(upload, "An error occurred determining the columns in your file. Please check the file and try again.")
 		removeUploadFileFromDisk(fileName, upload.ID.String())
 		return
 	}
-	upload.IsParsed = true
 	fileSize, err := util.GetFileSize(file)
 	upload.FileSize = null.NewInt(fileSize, err == nil)
 	numRows, err := getCSVRowCount(file)
+	// Subtract 1 to remove the header row
+	upload.NumRows = null.IntFrom(int64(math.Max(float64(numRows-1), 0)))
 	if err != nil {
 		util.Log.Errorw("Could not get row count for upload", "error", err, "upload_id", upload.ID)
 	}
-	// Subtract 1 to remove the header row
-	upload.NumRows = null.IntFrom(int64(math.Max(float64(numRows-1), 0)))
+	if numRows == 0 {
+		util.Log.Debugw("A file was uploaded with no rows or an error occurred during processing", "upload_id", upload.ID)
+		saveUploadError(upload, "No rows were found in your file, please try again with a different file.")
+		removeUploadFileFromDisk(fileName, upload.ID.String())
+		return
+	}
+	if numRows == 1 {
+		util.Log.Debugw("A file was uploaded with only one row", "upload_id", upload.ID)
+		saveUploadError(upload, "Only one row was found in your file, please try again with a different file.")
+		removeUploadFileFromDisk(fileName, upload.ID.String())
+		return
+	}
+
+	upload.IsParsed = true
 	err = db.DB.Save(upload).Error
 	if err != nil {
 		util.Log.Errorw("Could not update upload in database", "error", err)
@@ -120,6 +129,13 @@ func UploadCompleteHandler(event handler.HookEvent) {
 	util.Log.Debugw("File upload complete", "upload_id", upload.ID)
 }
 
+func saveUploadError(upload *model.Upload, errorStr string) {
+	upload.Error = null.StringFrom(errorStr)
+	if err := db.DB.Save(upload).Error; err != nil {
+		util.Log.Errorw("Could not update upload in database", "error", err, "upload_id", upload.ID)
+	}
+}
+
 func removeUploadFileFromDisk(fileName, uploadID string) {
 	err := os.Remove(fileName)
 	if err != nil {
@@ -140,6 +156,9 @@ func createUploadColumns(upload *model.Upload, file *os.File) error {
 		return err
 	}
 	upload.NumColumns = null.IntFrom(int64(len(uploadColumns)))
+	if len(uploadColumns) == 0 {
+		return errors.New("no columns could be determined from the upload")
+	}
 	err = db.DB.Create(&uploadColumns).Error
 	if err != nil {
 		util.Log.Errorw("Could not create upload columns in database")

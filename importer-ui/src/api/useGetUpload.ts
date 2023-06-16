@@ -20,10 +20,13 @@ export default function useGetUpload(tusId: string): UseQueryResult<Upload> {
   const isParsed = query?.data?.is_parsed;
   const { error } = query;
 
+  // TODO: Add the ability to re-upload if there is an error here
   useEffect(() => {
     if (isParsed) {
       setConfigOverrides({ enabled: false });
     } else if (tusId && !error) {
+      // TODO: Show an error if this reaches the max refetch count
+      // "The upload could not be processed. Please try again."
       if (refetchCount <= 25) setConfigOverrides({ refetchInterval: 200, enabled: true });
       else setConfigOverrides({ enabled: false });
     } else {

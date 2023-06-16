@@ -212,7 +212,11 @@ func getUploadForImportService(c *gin.Context) {
 	}
 	upload, err := db.GetUploadByTusID(id)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusNotFound, Res{Err: err.Error()})
+		c.AbortWithStatusJSON(http.StatusOK, gin.H{})
+		return
+	}
+	if upload.Error.Valid {
+		c.AbortWithStatusJSON(http.StatusBadRequest, Res{Err: upload.Error.String})
 		return
 	}
 	// Check if there are limits on the workspace

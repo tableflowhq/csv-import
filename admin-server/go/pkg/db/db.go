@@ -197,6 +197,7 @@ func getDatabaseInitSQL() string {
 		    is_parsed      bool             not null default false,       -- Are the upload_columns created and ready for the user to map?
 		    is_stored      bool             not null default false,       -- Has the file been uploaded to S3?
 		    storage_bucket text,
+		    error          text,
 		    created_at     timestamptz      not null default now(),
 		    constraint fk_importer_id
 		        foreign key (importer_id)
