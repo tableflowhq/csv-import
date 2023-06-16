@@ -9,7 +9,7 @@ import (
 	"tableflow/go/services"
 )
 
-const tempDir = "/tmp/rowdash-files"
+const tempDir = "/tmp/tableflow-files"
 const dirMode = 0774
 
 var tempStorageInitialized bool

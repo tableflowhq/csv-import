@@ -62,7 +62,7 @@ services:
       - AWS_IAM_FILE_SECRET_KEY=${AWS_IAM_FILE_SECRET_KEY}
     volumes:
       - ${PWD}/../.env:/.env
-      - tmp:/tmp/rowdash-files
+      - tmp:/tmp/tableflow-files
     stop_signal: SIGTERM
     stop_grace_period: 30s
     restart: on-failure
