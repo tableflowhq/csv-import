@@ -11,7 +11,7 @@ type Importer struct {
 	WorkspaceID    ID             `json:"workspace_id" swaggertype:"string" example:"b2079476-261a-41fe-8019-46eb51c537f7"`
 	Name           string         `json:"name" example:"Test Importer"`
 	AllowedDomains pq.StringArray `json:"allowed_domains" gorm:"type:text[]" swaggertype:"array,string" example:"example.com"`
-	WebhookURL     null.String    `json:"webhook_url" swaggertype:"string" example:"https://rowdash.io/hooks"`
+	WebhookURL     null.String    `json:"webhook_url" swaggertype:"string" example:"https://api.tableflow.com/hooks"`
 	CreatedBy      ID             `json:"-"`
 	CreatedByUser  *User          `json:"created_by,omitempty" gorm:"foreignKey:ID;references:CreatedBy"`
 	CreatedAt      NullTime       `json:"created_at" swaggertype:"integer" example:"1682366228"`

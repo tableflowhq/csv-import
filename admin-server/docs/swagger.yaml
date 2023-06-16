@@ -68,7 +68,7 @@ definitions:
       updated_by:
         $ref: '#/definitions/model.User'
       webhook_url:
-        example: https://rowdash.io/hooks
+        example: https://api.tableflow.com/hooks
         type: string
       workspace_id:
         example: b2079476-261a-41fe-8019-46eb51c537f7

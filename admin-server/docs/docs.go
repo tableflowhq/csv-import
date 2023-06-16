@@ -804,7 +804,7 @@ const docTemplate = `{
                 },
                 "webhook_url": {
                     "type": "string",
-                    "example": "https://rowdash.io/hooks"
+                    "example": "https://api.tableflow.com/hooks"
                 },
                 "workspace_id": {
                     "type": "string",
