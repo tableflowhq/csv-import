@@ -1,5 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import arrowUp from "./assets/arrowUp";
+import { useEffect, useRef } from "react";
 import cross from "./assets/cross";
 import { TableFlowImporterProps } from "./types";
 import "./style/button.css";
@@ -38,7 +37,8 @@ export default function TableFlowImporter({
         metadata,
     };
     const searchParams = new URLSearchParams(urlParams);
-    const uploaderUrl = `${hostUrl}?${searchParams}`;
+    const defaultImporterUrl = "https://importer.tableflow.com";
+    const uploaderUrl = `${hostUrl ? hostUrl : defaultImporterUrl}?${searchParams}`;
     const backdropClick = (e: any) => closeOnClickOutside && onRequestClose();
 
     useEffect(() => {

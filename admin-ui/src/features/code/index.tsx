@@ -6,7 +6,7 @@ export default function Code(props: CodeProps) {
   return (
     <div className={style.container}>
       <div className={style.top}>
-        <p>Copy and paste the code below in your app</p>
+        <p>Copy and paste the code below into your application:</p>
       </div>
       <textarea defaultValue={getCode(props)} readOnly />
     </div>
