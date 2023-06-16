@@ -34,7 +34,7 @@ Create an importer, define your template, and retrieve data at https://app.table
 
 ```javascript
 import { useState } from "react";
-import { TableFlowImporter } from "@tableflow/react-sdk;
+import { TableFlowImporter } from "@tableflow/react-sdk";
 
 function MyComponent(){
   const [isOpen, setIsOpen] = useState(false);
