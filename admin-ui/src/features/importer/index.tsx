@@ -31,8 +31,6 @@ export default function ImporterPage({ importer }: ImporterViewProps) {
   }, [tab]);
 
   const { mutate } = usePostImporter(importerId);
-  // TODO: Have this get picked up by the importer so custom hosts can be configured
-  const defaultHostUrl = "https://api.tableflow.com"
 
   return (
     <div className="container">
@@ -54,7 +52,7 @@ export default function ImporterPage({ importer }: ImporterViewProps) {
             {tab === "template" ? (
               <Templates importer={importer} />
             ) : tab === "code" ? (
-              <Code importerId={importerId} hostUrl={defaultHostUrl} />
+              <Code importerId={importerId} />
             ) : tab === "settings" ? (
               <Settings importer={importer} />
             ) : null}

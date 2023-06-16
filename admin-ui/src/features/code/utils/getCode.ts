@@ -15,7 +15,6 @@ function MyComponent(){
       isOpen={isOpen}
       onRequestClose={() => setIsOpen(false)}
       importerId={"${props.importerId || "YOUR_IMPORTER_ID"}"}
-      hostUrl={"${props.hostUrl || "YOUR_HOST_URL"}"}
       darkMode={true}
       primaryColor="#999900"
       closeOnClickOutside={true}
