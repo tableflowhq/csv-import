@@ -47,7 +47,7 @@ function MyComponent(){
       onRequestClose={() => setIsOpen(false)}
       importerId={"53a84496-819d-4ec6-93b7-b4b56fb676ad"} // Replace with your importer ID from https://app.tableflow.com/importers
       darkMode={true}
-      primaryColor="#999900"
+      primaryColor="#7A5EF8"
       closeOnClickOutside={true}
       metadata={"{\"userId\": 1234, \"userEmail\": \"test@example.com\"}"}
     />

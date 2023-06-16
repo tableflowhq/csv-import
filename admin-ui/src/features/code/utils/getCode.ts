@@ -16,7 +16,7 @@ function MyComponent(){
       onRequestClose={() => setIsOpen(false)}
       importerId={"${props.importerId || "YOUR_IMPORTER_ID"}"}
       darkMode={true}
-      primaryColor="#999900"
+      primaryColor="#7A5EF8"
       closeOnClickOutside={true}
       metadata={"{\\"userId\\": 1234, \\"userEmail\\": \\"test@example.com\\"}"}
     />
