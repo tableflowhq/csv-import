@@ -1,12 +1,30 @@
 {
   "name": "@tableflow/react",
   "version": "1.0.0",
-  "description": "",
+  "description": "The react SDK for TableFlow. Embed an importer to collect and transform CSV files in your application.",
   "main": "build/index.js",
   "module": "build/index.esm.js",
   "files": [
     "build"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tableflowhq/tableflow.git"
+  },
+  "keywords": [
+    "csv",
+    "import",
+    "excel",
+    "data",
+    "importer",
+    "react"
+  ],
+  "author": "TableFlow",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tableflowhq/tableflow/issues"
+  },
+  "homepage": "https://github.com/tableflowhq/tableflow#readme",
   "types": "build/index.d.ts",
   "scripts": {
     "build": "rollup -c",
