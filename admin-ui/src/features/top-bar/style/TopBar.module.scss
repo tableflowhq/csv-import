@@ -4,7 +4,7 @@
 
   & > * {
     display: flex;
-    gap: var(--m-l);
+    gap: var(--m);
     justify-content: space-between;
     align-items: center;
   }
@@ -12,4 +12,19 @@
 
 .separator {
   margin: 0 auto;
+}
+
+.settingsButton,
+.profileButton {
+  align-self: normal;
+  aspect-ratio: 1;
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.profileButton {
+  border-radius: 50%;
 }

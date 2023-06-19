@@ -109,3 +109,19 @@ export type Template = {
   updated_by: User;
   workspace_id: string;
 };
+
+export type Import = {
+  created_at: number;
+  file_extension: string;
+  file_size: number;
+  file_type: string;
+  id: string;
+  importer_id: string;
+  is_stored: boolean;
+  metadata: Record<string, any>;
+  num_columns: number;
+  num_processed_values: number;
+  num_rows: number;
+  upload_id: string;
+  workspace_id: string;
+};

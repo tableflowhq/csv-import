@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
-import { Button, Tableflow, ThemeToggle } from "@tableflowhq/ui-library";
+import { Button, Dialog, Tableflow, ThemeToggle } from "@tableflowhq/ui-library";
+import { DialogItem } from "@tableflowhq/ui-library/build/Dialog/types";
 import MainMenu from "./components/MainMenu";
 import { SessionContextUpdate } from "supertokens-auth-react/lib/build/recipe/session/types";
 import style from "./style/TopBar.module.scss";
@@ -16,6 +17,21 @@ export default function TopBar() {
     navigate("/");
   }
 
+  const userMenu: DialogItem[] = [
+    {
+      children: "My profile",
+      action: () => navigate("/profile"),
+      icon: "userSimple",
+      iconPosition: "left",
+    },
+    {
+      children: "Log out",
+      onClick: () => onLogout(),
+      icon: "cross",
+      iconPosition: "left",
+    },
+  ];
+
   return (
     <div className={style.topBar}>
       <div className="container">
@@ -27,13 +43,13 @@ export default function TopBar() {
 
         <div className={style.separator} />
 
+        <ThemeToggle />
+
         {doesSessionExist === true && (
-          <Button variants={["bare", "small"]} onClick={onLogout}>
-            Log out
-          </Button>
+          <Button icon="gear" variants={["tertiary", "small"]} onClick={() => navigate("/settings")} className={style.settingsButton} />
         )}
 
-        <ThemeToggle />
+        {doesSessionExist === true && <Dialog items={userMenu} icon="userSimple" variants={["tertiary", "small"]} className={style.profileButton} />}
       </div>
     </div>
   );

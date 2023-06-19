@@ -1,7 +1,10 @@
 import { Navigate, Routes } from "react-router-dom";
+import ApiKey from "../features/forms/ApiKey";
 import Invite from "../features/forms/Invite";
+import Imports from "../features/imports";
 import Frame from "../features/layouts/frame";
 import Main from "../features/layouts/main";
+import Profile from "../features/profile";
 import Users from "../features/users";
 import parseRoutes from "./utils/parseRoutes";
 import { RoutesType } from "./types";
@@ -15,11 +18,17 @@ const routes: RoutesType = [
   {
     paths: "data",
     layout: Main,
-    children: (
-      <div>
-        <h1>Data</h1>
-      </div>
-    ),
+    children: <Imports />,
+  },
+  {
+    paths: "profile",
+    layout: Main,
+    children: <Profile />,
+  },
+  {
+    paths: "settings",
+    layout: Main,
+    children: <ApiKey />,
   },
   {
     paths: "users",
