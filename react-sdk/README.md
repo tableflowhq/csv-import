@@ -16,13 +16,13 @@
 
 ### 1. Install the TableFlow React SDK
 
-NPM
+**NPM**
 
 ```bash
-npm i --save @tableflow/react
+npm install @tableflow/react
 ```
 
-Yarn
+**Yarn**
 
 ```bash
 yarn add @tableflow/react
@@ -34,7 +34,7 @@ Create an importer, define your template, and retrieve data at https://app.table
 
 ```javascript
 import { useState } from "react";
-import { TableFlowImporter } from "@tableflow/react-sdk";
+import { TableFlowImporter } from "@tableflow/react";
 
 function MyComponent(){
   const [isOpen, setIsOpen] = useState(false);

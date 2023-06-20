@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -93,6 +94,14 @@ func HTTPRequest(url, method string, body interface{}, headers map[string]string
 	if err != nil {
 		Log.Errorw("Error executing HTTP request", "error", err, "url", url)
 		return err
+	}
+	if response.StatusCode < 200 || response.StatusCode > 299 {
+		bodyBytes, err := io.ReadAll(response.Body)
+		if err != nil {
+			Log.Errorw("Could not read response body on unsuccessful status during HTTP request", "error", err, "url", url)
+		}
+		Log.Warnw("Received non-200 status code while executing http request", "status", response.StatusCode, "body", string(bodyBytes))
+		return errors.New("received non-200 status code while executing http request")
 	}
 	defer response.Body.Close()
 	return nil

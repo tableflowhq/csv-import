@@ -1,6 +1,7 @@
 import { Route, Routes } from "react-router-dom";
 import SuperTokens from "supertokens-auth-react";
 import { superTokensConfig } from "../settings/supertokens";
+import checkIsEmailVerified from "../utils/verification";
 import AnonymousRoutes from "./AnonymousRoutes";
 import ApplicationRoutes from "./ApplicationRoutes";
 import InvalidUserRoutes from "./InvalidUserRoutes";
@@ -13,7 +14,7 @@ export default function AppRoutes() {
 
   const { doesSessionExist, invalidClaims, loading } = sessionContext;
 
-  const isEmailverified = !(invalidClaims?.length > 0);
+  const isEmailVerified = checkIsEmailVerified(doesSessionExist, invalidClaims);
 
   if (loading) return null;
 
@@ -21,7 +22,7 @@ export default function AppRoutes() {
     <Routes>
       {!doesSessionExist && <Route path="*" element={<AnonymousRoutes />} />}
 
-      {!isEmailverified && <Route path="*" element={<InvalidUserRoutes />} />}
+      {!isEmailVerified && <Route path="*" element={<InvalidUserRoutes />} />}
 
       <Route
         path="*"

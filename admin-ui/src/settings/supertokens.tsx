@@ -1,9 +1,7 @@
-// import EmailPassword from "supertokens-auth-react/recipe/emailpassword";
 import { getAPIBaseURL } from "../api/api";
+import EmailVerification from "supertokens-auth-react/recipe/emailverification";
 import Session from "supertokens-auth-react/recipe/session";
 import ThirdPartyEmailPassword, { Github, Google } from "supertokens-auth-react/recipe/thirdpartyemailpassword";
-
-// import ThirdPartyEmailPassword from "supertokens-web-js/recipe/thirdpartyemailpassword";
 
 export function getApiDomain() {
   return getAPIBaseURL("v1");
@@ -28,6 +26,7 @@ export const superTokensConfig = {
         disableDefaultUI: true,
       },
     }),
+    EmailVerification.init({ mode: "REQUIRED", disableDefaultUI: true }),
     Session.init(),
   ],
 };
