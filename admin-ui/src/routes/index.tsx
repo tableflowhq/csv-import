@@ -11,19 +11,31 @@ SuperTokens.init(superTokensConfig);
 
 export default function AppRoutes() {
   const sessionContext = useSessionContext() as any;
-
   const { doesSessionExist, invalidClaims, loading } = sessionContext;
-
   const isEmailVerified = checkIsEmailVerified(doesSessionExist, invalidClaims);
 
-  if (loading) return null;
+  if (loading) {
+    return null;
+  }
+
+  if (!doesSessionExist) {
+    return (
+      <Routes>
+        <Route path="*" element={<AnonymousRoutes />} />
+      </Routes>
+    );
+  }
+
+  if (!isEmailVerified) {
+    return (
+      <Routes>
+        <Route path="*" element={<InvalidUserRoutes />} />
+      </Routes>
+    );
+  }
 
   return (
     <Routes>
-      {!doesSessionExist && <Route path="*" element={<AnonymousRoutes />} />}
-
-      {!isEmailVerified && <Route path="*" element={<InvalidUserRoutes />} />}
-
       <Route
         path="*"
         element={
