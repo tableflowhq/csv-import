@@ -9,7 +9,7 @@ export function importsTable(imports: Import[] = [], apiKey: string): TableData 
       "File ID": importItem.id,
       Importer: importItem.importer?.name,
       Rows: importItem.num_rows,
-      "Created At": timeToText(importItem.created_at),
+      "Created": timeToText(importItem.created_at),
       _actions: {
         raw: importItem.id,
         content: <Download importItem={importItem} apiKey={apiKey} />,
