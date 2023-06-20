@@ -13,8 +13,6 @@ export default function ApiKey() {
 
   const password = usePassword();
 
-  console.log("apiKey", apiKey);
-
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     notification({ type: "success", message: "Copied to clipboard" });

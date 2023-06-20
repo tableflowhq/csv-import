@@ -48,3 +48,18 @@
     font-weight: 600;
   }
 }
+
+.subTitle {
+  margin-left: -11px;
+  gap: 0;
+  display: flex;
+  align-items: center;
+  padding-top: 3px;
+}
+
+.button {
+  svg {
+    color: var(--color-text-soft);
+    width: 13px;
+  }
+}
