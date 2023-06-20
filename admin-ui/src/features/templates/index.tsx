@@ -49,7 +49,7 @@ export default function Templates({ importer }: TemplatesProps) {
 
   const { dataFiltered, setFilter } = useFilter<TemplateColumn[]>(["name"], columns || []);
 
-  const itemsPerPage = 10;
+  const itemsPerPage = 25;
   const { dataPage, page, paginate, totalItems } = useSyncPagination(dataFiltered as any, itemsPerPage);
 
   // Data to table format
