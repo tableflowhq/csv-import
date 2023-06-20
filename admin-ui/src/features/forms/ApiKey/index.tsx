@@ -32,8 +32,8 @@ export default function ApiKey() {
       <div className="container">
         <div className={style.header}>
           <div className={classes([style.title, style.smallInnerSpace])}>
-            <h1>Api Key</h1>
-            <small>You can set and update the API Key.</small>
+            <h1>API Key</h1>
+            <small>View and update your API key used to access the data from your imports</small>
           </div>
         </div>
         <Box>
