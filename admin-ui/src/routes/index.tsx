@@ -18,12 +18,24 @@ export default function AppRoutes() {
     return null;
   }
 
+  if (!doesSessionExist) {
+    return (
+      <Routes>
+        <Route path="*" element={<AnonymousRoutes />} />
+      </Routes>
+    );
+  }
+
+  if (!isEmailVerified) {
+    return (
+      <Routes>
+        <Route path="*" element={<InvalidUserRoutes />} />
+      </Routes>
+    );
+  }
+
   return (
     <Routes>
-      {!doesSessionExist && <Route path="*" element={<AnonymousRoutes />} />}
-
-      {!isEmailVerified && <Route path="*" element={<InvalidUserRoutes />} />}
-
       <Route
         path="*"
         element={
