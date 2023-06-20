@@ -14,6 +14,10 @@ export default function AppRoutes() {
   const { doesSessionExist, invalidClaims } = sessionContext;
   const isEmailVerified = checkIsEmailVerified(doesSessionExist, invalidClaims);
 
+  if (sessionContext.loading) {
+    return null;
+  }
+
   return (
     <Routes>
       {!doesSessionExist && <Route path="*" element={<AnonymousRoutes />} />}
