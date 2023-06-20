@@ -155,3 +155,11 @@
     padding: var(--m-xxs);
   }
 }
+
+.passwordResetSubtitle {
+  margin-top: -16px !important;
+  margin-bottom: 33px !important;
+  text-align: center;
+  font-weight: 400;
+  color: var(--color-text-soft);
+}

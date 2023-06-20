@@ -45,7 +45,7 @@ async function handleSendVerificationEmail() {
       window.location.assign("/");
     } else {
       // Email was sent successfully.
-      notification({ title: "Verification Email Sent", message: "Please check your email and click the link to verify your account." });
+      notification({ title: "Email Sent", message: "Please check your email and click the link to verify your account." });
     }
   } catch (err: any) {
     console.error(err);
