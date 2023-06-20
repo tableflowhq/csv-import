@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
-import { Badge, Icon, Tabs, timestampDisplay, useTabs } from "@tableflowhq/ui-library";
-import usePostImporter from "../../api/usePostImporter";
+import { Icon, Tabs, timestampDisplay, useTabs } from "@tableflowhq/ui-library";
 import { ImporterViewProps } from "./types";
 import style from "./style/Importer.module.scss";
 import Code from "../code";
@@ -12,8 +11,6 @@ export default function ImporterPage({ importer }: ImporterViewProps) {
   const importerId = importer.id;
 
   const { importerTab } = useParams();
-
-  console.log(importer);
 
   const templateCount = importer?.template?.template_columns?.length;
 
@@ -27,10 +24,12 @@ export default function ImporterPage({ importer }: ImporterViewProps) {
   const { tab } = tabs;
 
   useEffect(() => {
-    navigate(`/importers/${importerId}/${tab}`);
-  }, [tab]);
+    if (importerTab !== tab) navigate(`/importers/${importerId}/${tab}`);
+  }, [tab]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const { mutate } = usePostImporter(importerId);
+  useEffect(() => {
+    if (importerTab !== tab) tabs.setTab(importerTab);
+  }, [importerTab]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="container">

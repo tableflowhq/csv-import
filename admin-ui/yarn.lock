@@ -3021,16 +3021,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tableflowhq/ui-library@npm:^1.13.0":
-  version: 1.13.0
-  resolution: "@tableflowhq/ui-library@npm:1.13.0::__archiveUrl=https%3A%2F%2Fnpm.pkg.github.com%2Fdownload%2F%40tableflowhq%2Fui-library%2F1.13.0%2Ff1d1b0b9a96bda8ad2f36c29f1d8689be0cfbf4f"
+"@tableflowhq/ui-library@npm:^1.14.0":
+  version: 1.14.0
+  resolution: "@tableflowhq/ui-library@npm:1.14.0::__archiveUrl=https%3A%2F%2Fnpm.pkg.github.com%2Fdownload%2F%40tableflowhq%2Fui-library%2F1.14.0%2F54f14376776a47cb4dce2cdbb7c3ccb1ed593d93"
   dependencies:
     tslib: ^2.5.3
   peerDependencies:
     react: ">=18.2.0"
     react-dom: ">=18.2.0"
     zustand: ^4.3.8
-  checksum: 4ec1f0a02cb19dddc63bb60f088e9e5ac5d610e4256335f5ee42847a09769b5c9a6fefe3dc793f857f97b14380de9803766f6a3ee43b38a2b05e5bdd2706ed26
+  checksum: 4f8a4a5c9b076807a3a6dc8f2dd734f32aef82e24087a500c9132e90e6ac579774451c3771cdce0d7e8c4ab4b01b908eccd038b6f35f926296ed7bd38bec79ce
   languageName: node
   linkType: hard
 
@@ -3274,6 +3274,13 @@ __metadata:
     "@types/qs": "*"
     "@types/serve-static": "*"
   checksum: 0196dacc275ac3ce89d7364885cb08e7fb61f53ca101f65886dbf1daf9b7eb05c0943e2e4bbd01b0cc5e50f37e0eea7e4cbe97d0304094411ac73e1b7998f4da
+  languageName: node
+  linkType: hard
+
+"@types/file-saver@npm:^2.0.5":
+  version: 2.0.5
+  resolution: "@types/file-saver@npm:2.0.5"
+  checksum: a31d6ee2abf99598647139f8f35b37b6e1bacf6c7ddf05c66651b9b0e6e53381aa0e8ed13f37faa6e496e0eb1da87c97e6c70fd589d5b83b0c95c57cb64ce92a
   languageName: node
   linkType: hard
 
@@ -3976,11 +3983,12 @@ __metadata:
     "@mantine/form": ^6.0.4
     "@mantine/hooks": ^6.0.10
     "@mantine/notifications": ^6.0.10
-    "@tableflowhq/ui-library": ^1.13.0
+    "@tableflowhq/ui-library": ^1.14.0
     "@testing-library/jest-dom": ^5.14.1
     "@testing-library/react": ^13.0.0
     "@testing-library/user-event": ^13.2.1
     "@trivago/prettier-plugin-sort-imports": ^4.1.1
+    "@types/file-saver": ^2.0.5
     "@types/jest": ^27.0.1
     "@types/node": ^16.7.13
     "@types/react": ^18.0.0
@@ -3992,6 +4000,7 @@ __metadata:
     eslint-config-prettier: ^8.8.0
     eslint-plugin-prettier: ^4.2.1
     eslint-plugin-react: ^7.32.2
+    file-saver: ^2.0.5
     prettier: ^2.8.6
     prop-types: ^15.8.1
     react: ^18.2.0
@@ -6844,6 +6853,13 @@ __metadata:
   peerDependencies:
     webpack: ^4.0.0 || ^5.0.0
   checksum: faf43eecf233f4897b0150aaa874eeeac214e4f9de49738a9e0ef734a30b5260059e85b7edadf852b98e415f875bd5f12587768a93fd52aaf2e479ecf95fab20
+  languageName: node
+  linkType: hard
+
+"file-saver@npm:^2.0.5":
+  version: 2.0.5
+  resolution: "file-saver@npm:2.0.5"
+  checksum: c62d96e5cebc58b4bdf3ae8a60d5cf9607ad82f75f798c33a4ee63435ac2203002584d5256a2a780eda7feb5e19dc3b6351c2212e58b3f529e63d265a7cc79f7
   languageName: node
   linkType: hard
 

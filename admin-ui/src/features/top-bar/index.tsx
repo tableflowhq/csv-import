@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
-import { Button, Tableflow, ThemeToggle } from "@tableflowhq/ui-library";
+import { Button, Dialog, Tableflow, ThemeToggle } from "@tableflowhq/ui-library";
+import { DialogItem } from "@tableflowhq/ui-library/build/Dialog/types";
 import checkIsEmailVerified from "../../utils/verification";
 import MainMenu from "./components/MainMenu";
 import style from "./style/TopBar.module.scss";
@@ -18,6 +19,23 @@ export default function TopBar() {
     navigate("/");
   }
 
+  const userMenu: DialogItem[] = [
+    {
+      children: "Log out",
+      onClick: () => onLogout(),
+      icon: "cross",
+      iconPosition: "left",
+    },
+  ];
+  if (doesSessionExist && isEmailVerified) {
+    userMenu.unshift({
+      children: "My profile",
+      action: () => navigate("/profile"),
+      icon: "userSimple",
+      iconPosition: "left",
+    });
+  }
+
   return (
     <div className={style.topBar}>
       <div className="container">
@@ -29,13 +47,13 @@ export default function TopBar() {
 
         <div className={style.separator} />
 
-        {doesSessionExist === true && (
-          <Button variants={["bare", "small"]} onClick={onLogout}>
-            Log out
-          </Button>
+        <ThemeToggle />
+
+        {doesSessionExist === true && isEmailVerified && (
+          <Button icon="gear" variants={["tertiary", "small"]} onClick={() => navigate("/settings")} className={style.settingsButton} />
         )}
 
-        <ThemeToggle />
+        {doesSessionExist === true && <Dialog items={userMenu} icon="userSimple" variants={["tertiary", "small"]} className={style.profileButton} />}
       </div>
     </div>
   );
