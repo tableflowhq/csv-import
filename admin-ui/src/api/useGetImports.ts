@@ -1,5 +1,4 @@
 import { useQuery, UseQueryResult } from "react-query";
-import imports from "./demo/imports";
 import { Import } from "./types";
 import { get } from "./api";
 

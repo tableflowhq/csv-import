@@ -10,7 +10,7 @@ export default function ThemeProvider({ children }: ThemeProps): React.ReactElem
 
   useEffect(() => {
     setTheme(theme);
-  }, [setTheme, theme]);
+  }, [setTheme, theme]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <MantineProvider>
