@@ -70,14 +70,14 @@ func InitAuth() error {
 	websiteBasePath := "/auth"
 	_, websiteDomain, _ := strings.Cut(env.WebAppURL, "://")
 	tpepConfig := &tpepmodels.TypeInput{
-		//EmailDelivery: &emaildelivery.TypeInput{
-		//	Override: func(originalImplementation emaildelivery.EmailDeliveryInterface) emaildelivery.EmailDeliveryInterface {
-		//		*originalImplementation.SendEmail = func(input emaildelivery.EmailType, userContext supertokens.UserContext) error {
-		//			return sendAccountEmail(input)
-		//		}
-		//		return originalImplementation
-		//	},
-		//},
+		EmailDelivery: &emaildelivery.TypeInput{
+			Override: func(originalImplementation emaildelivery.EmailDeliveryInterface) emaildelivery.EmailDeliveryInterface {
+				*originalImplementation.SendEmail = func(input emaildelivery.EmailType, userContext supertokens.UserContext) error {
+					return sendResetOrInviteEmail(input)
+				}
+				return originalImplementation
+			},
+		},
 		Override: &tpepmodels.OverrideStruct{
 			APIs: func(originalImplementation tpepmodels.APIInterface) tpepmodels.APIInterface {
 				originalEmailPasswordSignUpPOST := *originalImplementation.EmailPasswordSignUpPOST
@@ -175,7 +175,7 @@ func InitAuth() error {
 		//EmailDelivery: &emaildelivery.TypeInput{
 		//	Override: func(originalImplementation emaildelivery.EmailDeliveryInterface) emaildelivery.EmailDeliveryInterface {
 		//		*originalImplementation.SendEmail = func(input emaildelivery.EmailType, userContext supertokens.UserContext) error {
-		//			return sendAccountEmail(input)
+		//			return sendResetOrInviteEmail(input)
 		//		}
 		//		return originalImplementation
 		//	},
@@ -397,7 +397,7 @@ type emailAPIRequest struct {
 	Type       string `json:"type"`
 }
 
-func sendAccountEmail(input emaildelivery.EmailType) error {
+func sendResetOrInviteEmail(input emaildelivery.EmailType) error {
 	u, err := url.ParseRequestURI(input.PasswordReset.PasswordResetLink)
 	if err != nil {
 		util.Log.Errorw("Could not parse email link URL", "error", err)
@@ -408,7 +408,7 @@ func sendAccountEmail(input emaildelivery.EmailType) error {
 	isUserInvite := false
 	if q.Has(inviteKey) {
 		isUserInvite, _ = strconv.ParseBool(q.Get(inviteKey))
-		q.Del(inviteKey)
+		q.Del(inviteKey) // TODO: If you want to use a different form on the frontend when invitations are implements, keep this param?
 		u.RawQuery = q.Encode()
 	}
 	input.PasswordReset.PasswordResetLink = u.String()

@@ -1,6 +1,6 @@
 import { useMutation, UseMutationResult } from "react-query";
 import { ApiResponse } from "./types";
-import { submitNewPassword } from "supertokens-auth-react/recipe/emailpassword";
+import { submitNewPassword } from "supertokens-auth-react/recipe/thirdpartyemailpassword";
 
 export default function usePasswordReset(): UseMutationResult<ApiResponse<any>> {
   return useMutation(({ password }: any) => resetPassword(password));
