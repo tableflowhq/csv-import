@@ -13,6 +13,12 @@
     "dark": "#4018AF",
     "anchors": { "from": "#7044E8", "to": "#5F2EE5" }
   },
+  "api": {
+    "baseUrl": "https://api.tableflow.com",
+    "auth": {
+      "method": "bearer"
+    }
+  },
   "topbarLinks": [
     {
       "name": "Login",
@@ -24,6 +30,11 @@
     "url": "https://app.tableflow.com/signup"
   },
   "anchors": [
+    {
+      "name": "API Reference",
+      "icon": "square-terminal",
+      "url": "api-reference"
+    },
     {
       "name": "GitHub",
       "icon": "github",
@@ -41,6 +52,19 @@
       "pages": [
         "introduction",
         "embed"
+      ]
+    },
+    {
+      "group": "API Reference",
+      "pages": [
+        "api-reference/overview"
+      ]
+    },
+    {
+      "group": "Imports",
+      "pages": [
+        "api-reference/imports/get-import",
+        "api-reference/imports/download-import"
       ]
     }
   ],

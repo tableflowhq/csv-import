@@ -1,0 +1,57 @@
+openapi: 3.0.0
+info:
+  title: TableFlow API
+  version: 0.1.1
+servers:
+  - url: http://api.tableflow.com/v1
+paths:
+  /import/{id}:
+    get:
+      summary: Returns an import.
+      parameters:
+      - description: Import ID
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+          minimum: 1
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /import/{id}/download:
+    get:
+      summary: Downloads the import as a CSV file.
+      parameters:
+        - description: Import ID
+          in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+            minimum: 1
+      responses:
+        '200':
+          description: OK
+          content:
+            text/csv:
+              schema:
+                type: string
+        "400":
+          description: Bad Request
