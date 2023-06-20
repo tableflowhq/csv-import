@@ -11,9 +11,11 @@ SuperTokens.init(superTokensConfig);
 export default function AppRoutes() {
   const sessionContext = useSessionContext() as any;
 
-  const { doesSessionExist, invalidClaims } = sessionContext;
+  const { doesSessionExist, invalidClaims, loading } = sessionContext;
 
   const isEmailverified = !(invalidClaims?.length > 0);
+
+  if (loading) return null;
 
   return (
     <Routes>

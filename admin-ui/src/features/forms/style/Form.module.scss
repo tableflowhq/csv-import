@@ -47,6 +47,12 @@
   &.smallSpace {
     margin: 0 0 var(--m-xs);
   }
+
+  &.smallInnerSpace {
+    h1 {
+      margin-bottom: 0;
+    }
+  }
 }
 
 .welcome {
@@ -133,4 +139,19 @@
   font-family: monospace;
   border: 1px solid rgba(black, 0.2);
   white-space: nowrap;
+}
+
+.inputWithIcon {
+  display: flex;
+  align-items: center;
+  gap: var(--m-xs);
+
+  & > *:first-child {
+    flex: 1 1 1px;
+  }
+
+  & > * + * {
+    aspect-ratio: 1;
+    padding: var(--m-xxs);
+  }
 }

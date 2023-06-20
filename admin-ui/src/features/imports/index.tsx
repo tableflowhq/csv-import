@@ -1,5 +1,6 @@
 import { collectionCountLabel, Input, Pagination, Table, useFilter, useSyncPagination } from "@tableflowhq/ui-library";
 import { Import } from "../../api/types";
+import useApiKey from "../../api/useApiKey";
 import useGetImports from "../../api/useGetImports";
 import useGetOrganization from "../../api/useGetOrganization";
 import { importsTable } from "./utils/importsTable";
@@ -10,6 +11,8 @@ export default function Imports() {
 
   const workspaceId = organization?.workspaces?.[0]?.id || "";
 
+  const { data: apiKey } = useApiKey(workspaceId);
+
   const { isLoading, data: imports } = useGetImports(workspaceId);
 
   const { dataFiltered, setFilter } = useFilter<Import[]>(["name"], imports || []);
@@ -17,7 +20,7 @@ export default function Imports() {
   const itemsPerPage = 10;
   const { dataPage, page, paginate, totalItems } = useSyncPagination(dataFiltered as any, itemsPerPage);
 
-  const tableData = importsTable(dataPage as any);
+  const tableData = importsTable(dataPage as any, apiKey);
 
   if (isLoading) return null;
 

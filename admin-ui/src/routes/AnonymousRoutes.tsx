@@ -34,10 +34,11 @@ const routes: RoutesType = [
     layout: Frame,
     children: <EmailVerification />,
   },
-  // {
-  //   paths: "*",
-  //   children: <Navigate to={"/"} />,
-  // },
+  {
+    paths: "*",
+    layout: Frame,
+    children: <Login />,
+  },
 ];
 
 export default function AnonymousRoutes() {

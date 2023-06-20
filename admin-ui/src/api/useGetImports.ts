@@ -8,7 +8,7 @@ export default function useGetImports(workspaceId: string): UseQueryResult<Impor
 }
 
 async function getImports(workspaceId: string): Promise<Import[]> {
-  return imports;
+  // return imports;
 
   const response = await get(`imports/${workspaceId}`);
 

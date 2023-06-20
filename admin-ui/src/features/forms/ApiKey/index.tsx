@@ -1,30 +1,56 @@
-import { Box, Button, Input, usePassword } from "@tableflowhq/ui-library";
+import { Box, Button, classes, Errors, Input, usePassword } from "@tableflowhq/ui-library";
+import useApiKey from "../../../api/useApiKey";
+import useGetOrganization from "../../../api/useGetOrganization";
+import notification from "../../../utils/notification";
 import style from "../style/Form.module.scss";
 
 export default function ApiKey() {
+  const { data: organization } = useGetOrganization();
+
+  const workspaceId = organization?.workspaces?.[0]?.id || "";
+
+  const { data: apiKey, isLoading, error, update } = useApiKey(workspaceId);
+
   const password = usePassword();
+
+  console.log("apiKey", apiKey);
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    notification({ type: "success", message: "Copied to clipboard" });
+  };
+
+  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    update && update();
+  };
+
+  if (isLoading) return null;
 
   return (
     <div className={style.apiKey}>
       <div className="container">
         <div className={style.header}>
-          <div className={style.title}>
+          <div className={classes([style.title, style.smallInnerSpace])}>
             <h1>Api Key</h1>
             <small>You can set and update the API Key.</small>
           </div>
         </div>
         <Box>
-          <form>
-            <Input label="API Key" {...password} />
+          <form onSubmit={onSubmit}>
+            <div className={style.inputWithIcon}>
+              <Input label="API Key" {...password} value={apiKey} />
+
+              {apiKey && <Button icon="insert" type="button" variants={["bare"]} onClick={() => copyToClipboard(apiKey)} title="Copy to clipboard" />}
+            </div>
 
             <div className={style.actions}>
-              <Button type="button" variants={["tertiary"]} className={style.button}>
-                Cancel
-              </Button>
-              <Button type="submit" variants={["primary"]} className={style.button}>
-                Login
+              <Button type="submit" variants={["primary", "small"]} className={style.button}>
+                Regenerate Key
               </Button>
             </div>
+
+            {error && <Errors error={error} />}
           </form>
         </Box>
       </div>
