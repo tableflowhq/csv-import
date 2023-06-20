@@ -10,6 +10,8 @@ import (
 	"github.com/supertokens/supertokens-golang/recipe/dashboard"
 	"github.com/supertokens/supertokens-golang/recipe/dashboard/dashboardmodels"
 	"github.com/supertokens/supertokens-golang/recipe/emailpassword/epmodels"
+	"github.com/supertokens/supertokens-golang/recipe/emailverification"
+	"github.com/supertokens/supertokens-golang/recipe/emailverification/evmodels"
 	"github.com/supertokens/supertokens-golang/recipe/session"
 	"github.com/supertokens/supertokens-golang/recipe/thirdparty"
 	"github.com/supertokens/supertokens-golang/recipe/thirdparty/tpmodels"
@@ -110,7 +112,7 @@ func InitAuth() error {
 					}
 					return resp, err
 				}
-				// Override the thirdparty sign in / up API
+				// Override the thirdparty sign in/up API
 				*originalImplementation.ThirdPartySignInUpPOST = func(p tpmodels.TypeProvider, code string, authCodeResponse interface{}, redirectURI string, o tpmodels.APIOptions, uc supertokens.UserContext) (tpepmodels.ThirdPartyOutput, error) {
 					// Add pre sign in / up logic here
 					resp, err := originalThirdPartySignInUpPOST(p, code, authCodeResponse, redirectURI, o, uc)
@@ -153,30 +155,22 @@ func InitAuth() error {
 	}
 	recipeList := []supertokens.Recipe{
 		thirdpartyemailpassword.Init(tpepConfig),
-		//emailverification.Init(evmodels.TypeInput{
-		//	Mode: evmodels.ModeRequired,
-		//	// TODO: Add email delivery override here once we support it for verifications
-		//	Override: &evmodels.OverrideStruct{
-		//		APIs: func(originalImplementation evmodels.APIInterface) evmodels.APIInterface {
-		//			ogVerifyEmailPOST := *originalImplementation.VerifyEmailPOST
-		//			*originalImplementation.VerifyEmailPOST = func(token string, sc sessmodels.SessionContainer, o evmodels.APIOptions, uc supertokens.UserContext) (evmodels.VerifyEmailPOSTResponse, error) {
-		//				resp, err := ogVerifyEmailPOST(token, sc, o, uc)
-		//				if err != nil {
-		//					return evmodels.VerifyEmailPOSTResponse{}, err
-		//				}
-		//				if resp.OK != nil {
-		//					id := resp.OK.User.ID
-		//					email := resp.OK.User.Email
-		//					fmt.Println(id)
-		//					fmt.Println(email)
-		//					// TODO: post email verification logic
-		//				}
-		//				return resp, nil
-		//			}
-		//			return originalImplementation
-		//		},
-		//	},
-		//}),
+		emailverification.Init(evmodels.TypeInput{
+			Mode: evmodels.ModeRequired,
+			EmailDelivery: &emaildelivery.TypeInput{
+				Override: func(originalImplementation emaildelivery.EmailDeliveryInterface) emaildelivery.EmailDeliveryInterface {
+					*originalImplementation.SendEmail = func(input emaildelivery.EmailType, userContext supertokens.UserContext) error {
+						return sendEmail(emailAPIRequest{
+							Email:  input.EmailVerification.User.Email,
+							UserId: input.EmailVerification.User.ID,
+							Link:   input.EmailVerification.EmailVerifyLink,
+							Type:   "verification",
+						})
+					}
+					return originalImplementation
+				},
+			},
+		}),
 		//emailpassword.Init(&epmodels.TypeInput{
 		//EmailDelivery: &emaildelivery.TypeInput{
 		//	Override: func(originalImplementation emaildelivery.EmailDeliveryInterface) emaildelivery.EmailDeliveryInterface {
@@ -359,19 +353,23 @@ func sendAccountEmail(input emaildelivery.EmailType) error {
 	}
 	input.PasswordReset.PasswordResetLink = u.String()
 
+	request := emailAPIRequest{
+		Email:  input.PasswordReset.User.Email,
+		UserId: input.PasswordReset.User.ID,
+		Link:   input.PasswordReset.PasswordResetLink,
+		Type:   lo.Ternary(isUserInvite, "invite", "reset"),
+	}
+	return sendEmail(request)
+}
+
+func sendEmail(request emailAPIRequest) error {
 	instanceID, err := db.GetInstanceID()
 	if err != nil {
 		// Non-fatal, move on
 		util.Log.Errorw("Could not retrieve instance ID", "error", err)
 	}
-	// TODO: Support other email types with our email service
-	request := emailAPIRequest{
-		Email:      input.PasswordReset.User.Email,
-		UserId:     input.PasswordReset.User.ID,
-		InstanceId: instanceID,
-		Link:       input.PasswordReset.PasswordResetLink,
-		Type:       lo.Ternary(isUserInvite, "invite", "reset"),
-	}
+	request.InstanceId = instanceID
+	util.Log.Debugw("Sending email", "type", request.Type, "email", request.Email, "user_id", request.UserId)
 	err = util.HTTPRequest("https://mail.tableflow.com/v1/email", "POST", request, map[string]string{"x-api-key": env.EmailServiceAPIKey})
 	if err != nil {
 		util.Log.Errorw("Error sending account email", "error", err)

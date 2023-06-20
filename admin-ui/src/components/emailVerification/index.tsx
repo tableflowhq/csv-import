@@ -10,11 +10,7 @@ export default function EmailVerification() {
     return () => clearTimeout(timer);
   }, []);
 
-  if (isLoading) return <p>Verifying token...</p>;
-
   if (error) return <Errors error={error} />;
 
-  if (data) return <p>{data.toString()}</p>;
-
-  return null;
+  return <p>Verifying email...</p>;
 }
