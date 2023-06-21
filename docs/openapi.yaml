@@ -21,17 +21,13 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: string
+                type: object
         "400":
           description: Bad Request
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: string
+                type: object
   /import/{id}/download:
     get:
       summary: Downloads the import as a CSV file.
@@ -48,8 +44,10 @@ paths:
         '200':
           description: OK
           content:
-            text/csv:
-              schema:
-                type: string
+            text/csv: {}
         "400":
           description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
