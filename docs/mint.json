@@ -14,7 +14,7 @@
     "anchors": { "from": "#7044E8", "to": "#5F2EE5" }
   },
   "api": {
-    "baseUrl": "https://api.tableflow.com",
+    "baseUrl": "https://api.tableflow.com/v1",
     "auth": {
       "method": "bearer"
     }

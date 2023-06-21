@@ -2,8 +2,6 @@ openapi: 3.0.0
 info:
   title: TableFlow API
   version: 0.1.1
-servers:
-  - url: http://api.tableflow.com/v1
 paths:
   /import/{id}:
     get:
