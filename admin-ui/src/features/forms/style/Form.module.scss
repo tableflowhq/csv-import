@@ -66,6 +66,7 @@
   line-height: 1.6;
   margin: 0 0 var(--m-l);
   font-weight: 400;
+  color: var(--color-text-soft);
 }
 
 .sectionTitle {
@@ -115,7 +116,7 @@
   align-items: center;
   text-align: center;
   color: var(--color-text-soft);
-  padding-bottom: 20px;
+  padding-bottom: var(--m);
 }
 
 .separator::before,
@@ -179,12 +180,12 @@
   }
 }
 
-.passwordResetSubtitle {
-  margin-top: -16px !important;
-  margin-bottom: 33px !important;
-  text-align: left;
-  font-weight: 400;
-  color: var(--color-text-soft);
+// This should be removed when the UI library is updated
+.iconFix.iconFix {
+  path {
+    stroke: none !important;
+    fill: var(--color-text-soft);
+  }
 }
 
 .disabledLink {
@@ -192,33 +193,25 @@
   color: var(--color-text-soft) !important;
 }
 
-.blockContainer {
-  display: flex;
-  align-items: center;
-}
-
 .oauthButtons {
-  padding-bottom: 20px;
+  padding: var(--m) 0 var(--m-mm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--m-s);
 }
 
-.oauthButtonContainer {
-  padding-top: 10px;
+.oauthButton.oauthButton {
+  background-color: transparent;
+
+  svg {
+    path {
+      stroke: none;
+    }
+  }
 }
 
-.oauthButton {
-  height: 39px;
-  border: 1px solid var(--color-text-soft) !important;
-}
-
-.oauthButton:hover:enabled {
-  background-color: #202939;
-  border: 1px solid #9095a0 !important;
-}
-
-.oauthButtonText {
-  padding-left: 12px;
-}
-
-.oauthButtonSvg {
-  width: 22px;
+[data-theme="light"] {
+  .oauthButtonSvg path {
+    fill: var(--color-text);
+  }
 }

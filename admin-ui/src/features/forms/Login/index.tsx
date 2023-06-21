@@ -1,15 +1,11 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { isEmail, useForm } from "@mantine/form";
-import { Button, Errors, Input, Modal, Tableflow, useModal, usePassword, useThemeStore, validatePassword } from "@tableflowhq/ui-library";
+import { Button, capitalize, Errors, Input, Modal, Tableflow, useModal, usePassword, useThemeStore, validatePassword } from "@tableflowhq/ui-library";
 import NoPassword from "../../messages/NoPassword";
 import oauthSignInUpHandler from "../../../api/oauthSignInUpHandler";
 import useLogin from "../../../api/useLogin";
 import style from "../style/Form.module.scss";
-import { ReactComponent as GitHubLogoDark } from "../../../assets/illos/dark/github.svg";
-import { ReactComponent as GoogleLogoDark } from "../../../assets/illos/dark/google.svg";
-import { ReactComponent as GitHubLogoLight } from "../../../assets/illos/light/github.svg";
-import { ReactComponent as GoogleLogoLight } from "../../../assets/illos/light/google.svg";
 
 export default function Login() {
   const form = useForm({
@@ -46,39 +42,23 @@ export default function Login() {
       <div className={style.oauthButtons}>
         {["google", "github"].map((provider) => {
           return (
-            <div className={style.oauthButtonContainer} key={provider}>
-              <Button
-                variants={["bare", "fullWidth"]}
-                className={style.oauthButton}
-                disabled={isLoading || isLoadingSSO}
-                onClick={() => {
-                  setIsLoadingSSO(true);
-                  oauthSignInUpHandler(provider).then((err) => {
-                    if (err) {
-                      setSsoError(err);
-                      setIsLoadingSSO(false);
-                    }
-                  });
-                }}>
-                <div className={style.blockContainer}>
-                  {provider === "github" ? (
-                    theme === "light" ? (
-                      <GitHubLogoLight className={style.oauthButtonSvg} />
-                    ) : (
-                      <GitHubLogoDark className={style.oauthButtonSvg} />
-                    )
-                  ) : null}
-                  {provider === "google" ? (
-                    theme === "light" ? (
-                      <GoogleLogoLight className={style.oauthButtonSvg} />
-                    ) : (
-                      <GoogleLogoDark className={style.oauthButtonSvg} />
-                    )
-                  ) : null}
-                  <span className={style.oauthButtonText}> Login with {provider.charAt(0).toUpperCase() + provider.slice(1)}</span>
-                </div>
-              </Button>
-            </div>
+            <Button
+              key={provider}
+              icon={provider as any}
+              variants={["tertiary", "fullWidth"]}
+              className={style.oauthButton}
+              disabled={isLoading || isLoadingSSO}
+              onClick={() => {
+                setIsLoadingSSO(true);
+                oauthSignInUpHandler(provider).then((err) => {
+                  if (err) {
+                    setSsoError(err);
+                    setIsLoadingSSO(false);
+                  }
+                });
+              }}>
+              Login with {capitalize(provider)}
+            </Button>
           );
         })}
       </div>

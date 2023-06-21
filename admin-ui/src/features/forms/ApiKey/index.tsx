@@ -1,17 +1,22 @@
-import { Box, Button, classes, Errors, Input, usePassword } from "@tableflowhq/ui-library";
+import { useMemo } from "react";
+import { Box, Button, classes, Errors, Icon, Input, Modal, useEntitySelection, useModal, usePassword } from "@tableflowhq/ui-library";
+import ImporterDelete from "../Importer/ImporterDelete";
 import useApiKey from "../../../api/useApiKey";
 import useGetOrganization from "../../../api/useGetOrganization";
 import notification from "../../../utils/notification";
 import style from "../style/Form.module.scss";
+import ApiKeyConfirmation from "./ApiKeyConfirmation";
 
 export default function ApiKey() {
   const { data: organization } = useGetOrganization();
 
   const workspaceId = organization?.workspaces?.[0]?.id || "";
 
-  const { data: apiKey, isLoading, error, update } = useApiKey(workspaceId);
+  const { data: apiKey, isLoading, error, update: updateApiKey } = useApiKey(workspaceId);
 
   const password = usePassword();
+
+  const modal = useModal();
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -20,7 +25,12 @@ export default function ApiKey() {
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    update && update();
+    modal.setOpen(true);
+  };
+
+  const onConfirm = () => {
+    updateApiKey && updateApiKey();
+    modal.setOpen(false);
   };
 
   if (isLoading) return null;
@@ -38,7 +48,12 @@ export default function ApiKey() {
           <form onSubmit={onSubmit}>
             <div className={style.inputWithIcon}>
               <Input label="API Key" {...password} value={apiKey} readOnly />
-              {apiKey && <Button icon="insert" type="button" variants={["bare"]} onClick={() => copyToClipboard(apiKey)} title="Copy to clipboard" />}
+
+              {apiKey && (
+                <Button type="button" variants={["bare", "square"]} onClick={() => copyToClipboard(apiKey)} title="Copy to clipboard">
+                  <Icon icon="copy" size="m" className={style.iconFix} />
+                </Button>
+              )}
             </div>
 
             <div className={style.actions}>
@@ -51,6 +66,14 @@ export default function ApiKey() {
           </form>
         </Box>
       </div>
+
+      {modal.openDelayed && (
+        <Modal {...modal} useBox={false} useCloseButton>
+          <Box variants={["wide", "space-mid"]}>
+            <ApiKeyConfirmation onCancel={() => modal.setOpen(false)} onConfirm={onConfirm} />
+          </Box>
+        </Modal>
+      )}
     </div>
   );
 }

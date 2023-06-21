@@ -475,67 +475,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/import/{id}": {
-            "get": {
-                "description": "Get an individual import",
-                "tags": [
-                    "External API"
-                ],
-                "summary": "Get import",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Import ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.Import"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/web.Res"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/import/{id}/download": {
-            "get": {
-                "description": "Download the import as a file",
-                "tags": [
-                    "External API"
-                ],
-                "summary": "Download import",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Import ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/web.Res"
-                        }
-                    }
-                }
-            }
-        },
         "/file-import/v1/files": {
             "post": {
                 "description": "Creates a new file upload after validating the length and parsing the metadata",
@@ -700,6 +639,67 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/web.Res"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/import/{id}": {
+            "get": {
+                "description": "Get an individual import",
+                "tags": [
+                    "External API"
+                ],
+                "summary": "Get import",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Import ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Import"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/web.Res"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/import/{id}/download": {
+            "get": {
+                "description": "Download the import as a file",
+                "tags": [
+                    "External API"
+                ],
+                "summary": "Download import",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Import ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/web.Res"
                         }

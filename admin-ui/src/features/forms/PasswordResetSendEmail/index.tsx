@@ -26,7 +26,7 @@ export default function PasswordResetSendEmail() {
     return (
       <div className={style.container}>
         <h2 className={style.title}>Reset Password</h2>
-        <p role="heading" className={style.passwordResetSubtitle}>
+        <p role="heading" className={style.intro}>
           Request received successfully! If an account with the provided email address exists, you'll receive and email with a reset link soon.
         </p>
         <div className={style.actions}>
@@ -40,11 +40,13 @@ export default function PasswordResetSendEmail() {
 
   return (
     <div className={style.container}>
-      <h2 className={style.title}>Reset Password</h2>
+      <div className={style.top}>
+        <h2>Reset Password</h2>
 
-      <p role="heading" className={style.passwordResetSubtitle}>
-        Enter your email address to reset your password
-      </p>
+        <p role="heading" className={style.intro}>
+          Enter your email address to reset your password
+        </p>
+      </div>
 
       <form onSubmit={form.onSubmit(onSubmit)} aria-disabled={isLoading}>
         <Input label="Email" placeholder="your@email.com" name="email" {...form.getInputProps("email")} required />

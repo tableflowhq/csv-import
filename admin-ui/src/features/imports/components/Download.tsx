@@ -7,5 +7,5 @@ export default function Download({ importItem, apiKey }: { importItem: Import; a
     downloadFile(importItem.id, apiKey, `${importItem.id}.${importItem.file_extension}`);
   };
 
-  return <Button icon="arrowDown" type="button" onClick={onClick} variants={["bare"]} />;
+  return <Button icon="download" type="button" onClick={onClick} variants={["bare", "square"]} />;
 }

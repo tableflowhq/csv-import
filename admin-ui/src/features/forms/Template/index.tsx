@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useForm } from "@mantine/form";
-import { Button, classes, Errors, Input } from "@tableflowhq/ui-library";
+import { Button, classes, Errors, Input, Switch } from "@tableflowhq/ui-library";
 import { TemplateColumn } from "../../../api/types";
 import usePostTemplateColumn from "../../../api/usePostTemplateColumn";
 import { TemplateColumnProps } from "../types";
@@ -59,7 +59,11 @@ export default function TemplateColumnForm({
 
   return (
     <div className={style.container}>
-      {title && <h2>{title}</h2>}
+      {title && (
+        <div className={style.title}>
+          <h2>{title}</h2>
+        </div>
+      )}
       <form onSubmit={form.onSubmit(onSubmit)} aria-disabled={isLoading}>
         <fieldset disabled={isLoading}>
           <Input
@@ -79,7 +83,7 @@ export default function TemplateColumnForm({
             required
           />
           <label>
-            <input type="checkbox" name="required" {...form.getInputProps("required")} /> Required
+            <Switch name="required" {...form.getInputProps("required")} label="Required" inputFirst />
           </label>
         </fieldset>
 

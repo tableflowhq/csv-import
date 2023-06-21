@@ -22,7 +22,7 @@ const routes: RoutesType = [
   },
   {
     paths: "profile",
-    layout: Main,
+    layout: Frame,
     children: <Profile />,
   },
   {
