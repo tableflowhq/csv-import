@@ -31,11 +31,6 @@
   },
   "anchors": [
     {
-      "name": "API Reference",
-      "icon": "square-terminal",
-      "url": "api-reference"
-    },
-    {
       "name": "GitHub",
       "icon": "github",
       "url": "https://github.com/tableflowhq/tableflow"
