@@ -21,7 +21,7 @@ export default function OAuthCallback() {
 
   if (error) {
     return (
-      <div>
+      <div className={style.container}>
         <Errors error={error} />
         <br />
         <div className={style.actions}>

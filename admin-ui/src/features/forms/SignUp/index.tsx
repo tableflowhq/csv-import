@@ -1,10 +1,14 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { isEmail, useForm } from "@mantine/form";
-import { Button, Errors, Input, Tableflow, usePassword, validatePassword } from "@tableflowhq/ui-library";
+import { Button, Errors, Input, Tableflow, usePassword, useThemeStore, validatePassword } from "@tableflowhq/ui-library";
 import oauthSignInUpHandler from "../../../api/oauthSignInUpHandler";
 import useSignUp from "../../../api/useSignUp";
 import style from "../style/Form.module.scss";
+import { ReactComponent as GitHubLogoDark } from "../../../assets/illos/dark/github.svg";
+import { ReactComponent as GoogleLogoDark } from "../../../assets/illos/dark/google.svg";
+import { ReactComponent as GitHubLogoLight } from "../../../assets/illos/light/github.svg";
+import { ReactComponent as GoogleLogoLight } from "../../../assets/illos/light/google.svg";
 
 export default function SignUp() {
   const form = useForm({
@@ -18,15 +22,12 @@ export default function SignUp() {
       password: (value) => (value && !validatePassword(value)[0] ? validatePassword(value)[1] : null),
     },
   });
-
   const { mutate, isLoading, error } = useSignUp();
-
   const onSubmit = (values: any) => {
     mutate(values);
   };
-
   const passwordProps = usePassword();
-
+  const theme = useThemeStore((state) => state.theme);
   const [isLoadingSSO, setIsLoadingSSO] = useState(false);
   const [ssoError, setSsoError] = useState("");
 
@@ -57,7 +58,23 @@ export default function SignUp() {
                     }
                   });
                 }}>
-                Sign up with {provider.charAt(0).toUpperCase() + provider.slice(1)}
+                <div className={style.blockContainer}>
+                  {provider === "github" ? (
+                    theme === "light" ? (
+                      <GitHubLogoLight className={style.oauthButtonSvg} />
+                    ) : (
+                      <GitHubLogoDark className={style.oauthButtonSvg} />
+                    )
+                  ) : null}
+                  {provider === "google" ? (
+                    theme === "light" ? (
+                      <GoogleLogoLight className={style.oauthButtonSvg} />
+                    ) : (
+                      <GoogleLogoDark className={style.oauthButtonSvg} />
+                    )
+                  ) : null}
+                  <span className={style.oauthButtonText}> Sign up with {provider.charAt(0).toUpperCase() + provider.slice(1)}</span>
+                </div>
               </Button>
             </div>
           );

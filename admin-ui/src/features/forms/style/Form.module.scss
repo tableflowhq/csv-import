@@ -110,18 +110,6 @@
   gap: var(--m);
 }
 
-.oauthButtons {
-  padding-bottom: 20px;
-}
-
-.oauthButtonContainer {
-  padding-top: 10px;
-}
-
-.oauthButton {
-  border: 1px solid var(--color-text-soft) !important;
-}
-
 .separator {
   display: flex;
   align-items: center;
@@ -202,4 +190,35 @@
 .disabledLink {
   pointer-events: none;
   color: var(--color-text-soft) !important;
+}
+
+.blockContainer {
+  display: flex;
+  align-items: center;
+}
+
+.oauthButtons {
+  padding-bottom: 20px;
+}
+
+.oauthButtonContainer {
+  padding-top: 10px;
+}
+
+.oauthButton {
+  height: 39px;
+  border: 1px solid var(--color-text-soft) !important;
+}
+
+.oauthButton:hover:enabled {
+  background-color: #202939;
+  border: 1px solid #9095a0 !important;
+}
+
+.oauthButtonText {
+  padding-left: 12px;
+}
+
+.oauthButtonSvg {
+  width: 22px;
 }
