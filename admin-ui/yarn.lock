@@ -3021,16 +3021,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tableflowhq/ui-library@npm:^1.14.0":
-  version: 1.14.0
-  resolution: "@tableflowhq/ui-library@npm:1.14.0::__archiveUrl=https%3A%2F%2Fnpm.pkg.github.com%2Fdownload%2F%40tableflowhq%2Fui-library%2F1.14.0%2F54f14376776a47cb4dce2cdbb7c3ccb1ed593d93"
+"@tableflowhq/ui-library@npm:^1.16.0":
+  version: 1.16.0
+  resolution: "@tableflowhq/ui-library@npm:1.16.0::__archiveUrl=https%3A%2F%2Fnpm.pkg.github.com%2Fdownload%2F%40tableflowhq%2Fui-library%2F1.16.0%2F42937cfc079b342a868ec8e462df4b30bdf9101a"
   dependencies:
     tslib: ^2.5.3
   peerDependencies:
     react: ">=18.2.0"
     react-dom: ">=18.2.0"
     zustand: ^4.3.8
-  checksum: 4f8a4a5c9b076807a3a6dc8f2dd734f32aef82e24087a500c9132e90e6ac579774451c3771cdce0d7e8c4ab4b01b908eccd038b6f35f926296ed7bd38bec79ce
+  checksum: aac08db7f3ebc9911976250e1c509156ee8efd3a83bfef810981d03764345f78a1ccaa048b6912c26419e86bee127d64dc2f1b2e2ce7ff22790a6b797b674ee4
   languageName: node
   linkType: hard
 
@@ -3983,7 +3983,7 @@ __metadata:
     "@mantine/form": ^6.0.4
     "@mantine/hooks": ^6.0.10
     "@mantine/notifications": ^6.0.10
-    "@tableflowhq/ui-library": ^1.14.0
+    "@tableflowhq/ui-library": ^1.16.0
     "@testing-library/jest-dom": ^5.14.1
     "@testing-library/react": ^13.0.0
     "@testing-library/user-event": ^13.2.1
@@ -13398,11 +13398,11 @@ __metadata:
 
 "typescript@patch:typescript@^5.0.2#~builtin<compat/typescript>":
   version: 5.1.3
-  resolution: "typescript@patch:typescript@npm%3A5.1.3#~builtin<compat/typescript>::version=5.1.3&hash=85af82"
+  resolution: "typescript@patch:typescript@npm%3A5.1.3#~builtin<compat/typescript>::version=5.1.3&hash=5da071"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 32a25b2e128a4616f999d4ee502aabb1525d5647bc8955e6edf05d7fbc53af8aa98252e2f6ba80bcedfc0260c982b885f3c09cfac8bb65d2924f3133ad1e1e62
+  checksum: 6f0a9dca6bf4ce9dcaf4e282aade55ef4c56ecb5fb98d0a4a5c0113398815aea66d871b5611e83353e5953a19ed9ef103cf5a76ac0f276d550d1e7cd5344f61e
   languageName: node
   linkType: hard
 

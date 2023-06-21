@@ -167,3 +167,11 @@
   font-weight: 400;
   color: var(--color-text-soft);
 }
+
+// This should be removed when the UI library is updated
+.iconFix.iconFix {
+  path {
+    stroke: none !important;
+    fill: var(--color-text-soft);
+  }
+}

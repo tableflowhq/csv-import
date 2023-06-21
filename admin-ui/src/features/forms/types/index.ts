@@ -32,3 +32,8 @@ export type TemplateDeleteProps = TemplateColumnProps;
 export type PasswordResetProps = {
   token: string;
 };
+
+export type ApiKeyConfirmationProps = {
+  onCancel: () => void;
+  onConfirm: () => void;
+};

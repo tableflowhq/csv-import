@@ -11,6 +11,18 @@
   margin-bottom: var(--m-xs);
   gap: var(--m-xs);
   align-items: center;
+  display: flex;
+  align-items: center;
+  gap: var(--m-xs);
+
+  .heading {
+    display: flex;
+    gap: var(--m-s);
+
+    .icon {
+      margin-top: var(--m-xxs);
+    }
+  }
 
   h1 {
     margin: 0;
@@ -33,6 +45,21 @@
   }
 }
 
+// This should be removed when the UI library is updated
+.miniBadge.miniBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--m-xxxs);
+  border-radius: 50%;
+  background-color: var(--color-background-modal);
+  aspect-ratio: 1;
+  position: relative;
+  font-weight: bold;
+  font-size: var(--font-size-xs);
+  line-height: 0;
+  color: currentColor;
+}
+
 .actions {
   display: flex;
   gap: var(--m-xs);
@@ -50,16 +77,15 @@
 }
 
 .subTitle {
-  margin-left: -11px;
-  gap: 0;
+  gap: var(--m-xxxs);
   display: flex;
   align-items: center;
-  padding-top: 3px;
 }
 
-.button {
-  svg {
-    color: var(--color-text-soft);
-    width: 13px;
+// This should be removed when the UI library is updated
+.iconFix.iconFix {
+  path {
+    stroke: none !important;
+    fill: var(--color-text-soft);
   }
 }

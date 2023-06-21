@@ -23,7 +23,7 @@ export default function TopBar() {
     {
       children: "Log out",
       onClick: () => onLogout(),
-      icon: "cross",
+      icon: "logOut",
       iconPosition: "left",
     },
   ];

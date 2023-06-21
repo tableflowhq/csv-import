@@ -1,4 +1,4 @@
-import { Dialog, Icon } from "@tableflowhq/ui-library";
+import { Badge, Dialog, Icon } from "@tableflowhq/ui-library";
 import { DialogItem } from "@tableflowhq/ui-library/build/Dialog/types";
 import { EntityId, Update } from "@tableflowhq/ui-library/build/hooks/useEntitySelection";
 import { TableData } from "@tableflowhq/ui-library/build/Table/types";
@@ -12,7 +12,18 @@ export function columnsTable(columns: TemplateColumn[] = [], update: Update): Ta
       id: column.id,
       "Column Name": column.name,
       Key: column.key,
-      Required: { raw: column.required, content: column.required ? "Yes" : "No" },
+      Required: {
+        raw: column.required,
+        content: column.required ? (
+          <span>
+            <Badge variants={["success"]}>Yes</Badge>
+          </span>
+        ) : (
+          <span>
+            <Badge variants={["neutral"]}>No</Badge>
+          </span>
+        ),
+      },
       _actions: {
         raw: column.id,
         content: <Dialog items={actionMenu.map((e) => ({ ...e, id: column.id }))} />,
