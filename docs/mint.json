@@ -13,6 +13,12 @@
     "dark": "#4018AF",
     "anchors": { "from": "#7044E8", "to": "#5F2EE5" }
   },
+  "api": {
+    "baseUrl": "https://api.tableflow.com/v1",
+    "auth": {
+      "method": "bearer"
+    }
+  },
   "topbarLinks": [
     {
       "name": "Login",
@@ -41,6 +47,19 @@
       "pages": [
         "introduction",
         "embed"
+      ]
+    },
+    {
+      "group": "API Reference",
+      "pages": [
+        "api-reference/overview"
+      ]
+    },
+    {
+      "group": "Imports",
+      "pages": [
+        "api-reference/imports/get-import",
+        "api-reference/imports/download-import"
       ]
     }
   ],
