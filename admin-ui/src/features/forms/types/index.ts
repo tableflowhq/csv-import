@@ -28,3 +28,7 @@ export type TemplateColumnProps = FormProps & {
 };
 
 export type TemplateDeleteProps = TemplateColumnProps;
+
+export type PasswordResetProps = {
+  token: string;
+};

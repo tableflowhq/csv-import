@@ -70,14 +70,14 @@ func InitAuth() error {
 	websiteBasePath := "/auth"
 	_, websiteDomain, _ := strings.Cut(env.WebAppURL, "://")
 	tpepConfig := &tpepmodels.TypeInput{
-		//EmailDelivery: &emaildelivery.TypeInput{
-		//	Override: func(originalImplementation emaildelivery.EmailDeliveryInterface) emaildelivery.EmailDeliveryInterface {
-		//		*originalImplementation.SendEmail = func(input emaildelivery.EmailType, userContext supertokens.UserContext) error {
-		//			return sendAccountEmail(input)
-		//		}
-		//		return originalImplementation
-		//	},
-		//},
+		EmailDelivery: &emaildelivery.TypeInput{
+			Override: func(originalImplementation emaildelivery.EmailDeliveryInterface) emaildelivery.EmailDeliveryInterface {
+				*originalImplementation.SendEmail = func(input emaildelivery.EmailType, userContext supertokens.UserContext) error {
+					return sendResetOrInviteEmail(input)
+				}
+				return originalImplementation
+			},
+		},
 		Override: &tpepmodels.OverrideStruct{
 			APIs: func(originalImplementation tpepmodels.APIInterface) tpepmodels.APIInterface {
 				originalEmailPasswordSignUpPOST := *originalImplementation.EmailPasswordSignUpPOST
@@ -175,7 +175,7 @@ func InitAuth() error {
 		//EmailDelivery: &emaildelivery.TypeInput{
 		//	Override: func(originalImplementation emaildelivery.EmailDeliveryInterface) emaildelivery.EmailDeliveryInterface {
 		//		*originalImplementation.SendEmail = func(input emaildelivery.EmailType, userContext supertokens.UserContext) error {
-		//			return sendAccountEmail(input)
+		//			return sendResetOrInviteEmail(input)
 		//		}
 		//		return originalImplementation
 		//	},
@@ -286,6 +286,51 @@ func postSignUpAccountSetup(userID string) error {
 		RowsPerImport:   null.IntFrom(10000),
 		ProcessedValues: null.IntFromPtr(nil),
 	}
+	importer := &model.Importer{
+		ID:          model.NewID(),
+		WorkspaceID: workspace.ID,
+		Name:        "Example Importer",
+		CreatedBy:   user.ID,
+		UpdatedBy:   user.ID,
+		Template:    nil,
+	}
+	template := &model.Template{
+		ID:          model.NewID(),
+		WorkspaceID: workspace.ID,
+		ImporterID:  importer.ID,
+		Name:        "Default Template",
+		CreatedBy:   user.ID,
+		UpdatedBy:   user.ID,
+	}
+	templateColumns := &[]*model.TemplateColumn{
+		{
+			ID:         model.NewID(),
+			TemplateID: template.ID,
+			Name:       "First Name",
+			Key:        "first_name",
+			Required:   false,
+			CreatedBy:  user.ID,
+			UpdatedBy:  user.ID,
+		},
+		{
+			ID:         model.NewID(),
+			TemplateID: template.ID,
+			Name:       "Last Name",
+			Key:        "last_name",
+			Required:   false,
+			CreatedBy:  user.ID,
+			UpdatedBy:  user.ID,
+		},
+		{
+			ID:         model.NewID(),
+			TemplateID: template.ID,
+			Name:       "Email",
+			Key:        "email",
+			Required:   true,
+			CreatedBy:  user.ID,
+			UpdatedBy:  user.ID,
+		},
+	}
 	err = db.DB.Create(organization).Error
 	if err != nil {
 		util.Log.Errorw("Error creating organization after sign up", "user_id", userID, "organization_id", organization.ID)
@@ -309,6 +354,21 @@ func postSignUpAccountSetup(userID string) error {
 	err = db.DB.Exec("insert into workspace_users (workspace_id, user_id) values (?, ?);", workspace.ID, user.ID).Error
 	if err != nil {
 		util.Log.Errorw("Error adding user to workspace after sign up", "user_id", userID, "workspace_id", workspace.ID)
+		return err
+	}
+	err = db.DB.Create(importer).Error
+	if err != nil {
+		util.Log.Errorw("Error creating importer after sign up", "user_id", userID, "workspace_id", workspace.ID)
+		return err
+	}
+	err = db.DB.Create(template).Error
+	if err != nil {
+		util.Log.Errorw("Error creating template after sign up", "user_id", userID, "workspace_id", workspace.ID)
+		return err
+	}
+	err = db.DB.Create(templateColumns).Error
+	if err != nil {
+		util.Log.Errorw("Error creating template columns after sign up", "user_id", userID, "workspace_id", workspace.ID)
 		return err
 	}
 	return nil
@@ -337,7 +397,7 @@ type emailAPIRequest struct {
 	Type       string `json:"type"`
 }
 
-func sendAccountEmail(input emaildelivery.EmailType) error {
+func sendResetOrInviteEmail(input emaildelivery.EmailType) error {
 	u, err := url.ParseRequestURI(input.PasswordReset.PasswordResetLink)
 	if err != nil {
 		util.Log.Errorw("Could not parse email link URL", "error", err)
@@ -348,7 +408,7 @@ func sendAccountEmail(input emaildelivery.EmailType) error {
 	isUserInvite := false
 	if q.Has(inviteKey) {
 		isUserInvite, _ = strconv.ParseBool(q.Get(inviteKey))
-		q.Del(inviteKey)
+		q.Del(inviteKey) // TODO: If you want to use a different form on the frontend when invitations are implements, keep this param?
 		u.RawQuery = q.Encode()
 	}
 	input.PasswordReset.PasswordResetLink = u.String()

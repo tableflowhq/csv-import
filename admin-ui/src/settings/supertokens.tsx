@@ -21,6 +21,10 @@ export const superTokensConfig = {
   // use from SuperTokens. See the full list here: https://supertokens.com/docs/guides
   recipeList: [
     ThirdPartyEmailPassword.init({
+      useShadowDom: false,
+      resetPasswordUsingTokenFeature: {
+        disableDefaultUI: true
+      },
       signInAndUpFeature: {
         providers: [Github.init(), Google.init()],
         disableDefaultUI: true,

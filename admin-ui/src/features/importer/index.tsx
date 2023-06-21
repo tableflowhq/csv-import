@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
-import { Icon, Tabs, timestampDisplay, useTabs } from "@tableflowhq/ui-library";
+import { Button, Tabs, useTabs } from "@tableflowhq/ui-library";
+import notification from "../../utils/notification";
 import { ImporterViewProps } from "./types";
 import style from "./style/Importer.module.scss";
 import Code from "../code";
@@ -21,6 +22,11 @@ export default function ImporterPage({ importer }: ImporterViewProps) {
 
   const navigate = useNavigate();
 
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    notification({ type: "success", message: "Copied to clipboard" });
+  };
+
   const { tab } = tabs;
 
   useEffect(() => {
@@ -38,9 +44,16 @@ export default function ImporterPage({ importer }: ImporterViewProps) {
           <div className={style.top}>
             <div className={style.title}>
               <h1>{importer.name}</h1>
-              <div className={style.actions}>
-                <Icon icon="clock" />
-                {timestampDisplay(importer.created_at)}
+              <div className={style.subTitle}>
+                <Button
+                  className={style.button}
+                  icon="insert"
+                  type="button"
+                  variants={["bare", "small"]}
+                  onClick={() => copyToClipboard(importer.id)}
+                  title="Copy to clipboard"
+                />
+                <small>{importer.id}</small>
               </div>
             </div>
           </div>

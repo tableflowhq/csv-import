@@ -17,7 +17,7 @@ export default function Imports() {
 
   const { dataFiltered, setFilter } = useFilter<Import[]>(["name"], imports || []);
 
-  const itemsPerPage = 10;
+  const itemsPerPage = 25;
   const { dataPage, page, paginate, totalItems } = useSyncPagination(dataFiltered as any, itemsPerPage);
 
   const tableData = importsTable(dataPage as any, apiKey);

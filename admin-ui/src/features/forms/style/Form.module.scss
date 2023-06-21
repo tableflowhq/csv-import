@@ -155,3 +155,15 @@
     padding: var(--m-xxs);
   }
 }
+
+.passwordResetContainer {
+  max-width: 500px;
+}
+
+.passwordResetSubtitle {
+  margin-top: -16px !important;
+  margin-bottom: 33px !important;
+  text-align: left;
+  font-weight: 400;
+  color: var(--color-text-soft);
+}

@@ -16,7 +16,7 @@ export function importersTable(importers: Importer[] = [], update: Update): Tabl
       id: importer.id,
       Name: { raw: importer.name, content: <Link to={`/importers/${importer.id}/template`}>{importer.name}</Link> },
       "Template Columns": importer.template?.template_columns.length,
-      "Created At": timeToText(importer.created_at),
+      "Created": timeToText(importer.created_at),
       _actions: {
         raw: importer.id,
         content: <Dialog items={actionMenu.map((e) => ({ ...e, id: importer.id }))} />,

@@ -43,7 +43,7 @@ export default function Login() {
           <Input label="Email" placeholder="your@email.com" name="email" {...form.getInputProps("email")} />
 
           <Input label="Password" name="password" {...form.getInputProps("password")} {...passwordProps}>
-            <a onClick={() => modal.setOpen(true)}>Forgot password?</a>
+            <Link to="/auth/reset-password">Forgot password?</Link>
           </Input>
         </fieldset>
 
