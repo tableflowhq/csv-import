@@ -61,17 +61,7 @@ export default function ImporterPage({ importer }: ImporterViewProps) {
             </div>
             <div>
               <Button
-                className={style.copyIconFix}
-                icon="copy"
-                type="button"
-                variants={theme === "light" ? [] : ["secondary"]}
-                onClick={() => copyToClipboard(getImporterUrl())}
-                title="Copy to clipboard">
-                Copy URL
-              </Button>
-              <Button
-                className={style.previewIconFix}
-                icon="arrowRight"
+                icon="share"
                 type="button"
                 variants={theme === "light" ? [] : ["secondary"]}
                 onClick={() => window.open(getImporterUrl(), "_blank")}
