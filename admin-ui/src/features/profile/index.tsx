@@ -1,3 +1,3 @@
 export default function Profile() {
-  return <div>Profile</div>;
+  return <div>Coming soon...</div>;
 }

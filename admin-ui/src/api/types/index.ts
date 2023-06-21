@@ -124,4 +124,5 @@ export type Import = {
   num_rows: number;
   upload_id: string;
   workspace_id: string;
+  importer?: Importer;
 };
