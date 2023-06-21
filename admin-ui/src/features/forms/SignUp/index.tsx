@@ -1,31 +1,16 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Button, Errors, Input, Tableflow, usePassword, validatePassword } from "@tableflowhq/ui-library";
 import { isEmail, useForm } from "@mantine/form";
+import { Button, Errors, Input, Tableflow, usePassword, useThemeStore, validatePassword } from "@tableflowhq/ui-library";
+import oauthSignInUpHandler from "../../../api/oauthSignInUpHandler";
 import useSignUp from "../../../api/useSignUp";
 import style from "../style/Form.module.scss";
+import { ReactComponent as GitHubLogoDark } from "../../../assets/illos/dark/github.svg";
+import { ReactComponent as GoogleLogoDark } from "../../../assets/illos/dark/google.svg";
+import { ReactComponent as GitHubLogoLight } from "../../../assets/illos/light/github.svg";
+import { ReactComponent as GoogleLogoLight } from "../../../assets/illos/light/google.svg";
 
 export default function SignUp() {
-  // const form = useForm({
-  //   initialValues: {
-  //     email: "",
-  //     password: "",
-  //   },
-
-  //   validate: {
-  //     email: isEmail("Invalid email"),
-  //   },
-  // });
-
-  // const { mutate, isLoading, error } = useSignUp();
-
-  // const onSubmit = (values: any) => {
-  //   mutate(values);
-  // };
-
-  // const formErrors = Object.keys(form.errors).map((k) => ({ field: k, message: form.errors[k] }));
-
-  // const errors = [...formErrors, error && (error as any)?.message && { message: (error as any).message }].filter((e) => e);
-
   const form = useForm({
     initialValues: {
       email: "",
@@ -37,14 +22,14 @@ export default function SignUp() {
       password: (value) => (value && !validatePassword(value)[0] ? validatePassword(value)[1] : null),
     },
   });
-
   const { mutate, isLoading, error } = useSignUp();
-
   const onSubmit = (values: any) => {
     mutate(values);
   };
-
   const passwordProps = usePassword();
+  const theme = useThemeStore((state) => state.theme);
+  const [isLoadingSSO, setIsLoadingSSO] = useState(false);
+  const [ssoError, setSsoError] = useState("");
 
   return (
     <div className={style.container}>
@@ -53,27 +38,74 @@ export default function SignUp() {
       </div>
 
       <p role="heading" className={style.welcome}>
-        Create an account
+        Create an account to get started.
       </p>
 
-      <form onSubmit={form.onSubmit((values) => onSubmit(values))}>
-        <Input label="Email" placeholder="your@email.com" {...form.getInputProps("email")} required />
+      <div className={style.oauthButtons}>
+        {["google", "github"].map((provider) => {
+          return (
+            <div className={style.oauthButtonContainer}>
+              <Button
+                variants={["bare", "fullWidth"]}
+                className={style.oauthButton}
+                disabled={isLoading || isLoadingSSO}
+                onClick={() => {
+                  setIsLoadingSSO(true);
+                  oauthSignInUpHandler(provider).then((err) => {
+                    if (err) {
+                      setSsoError(err);
+                      setIsLoadingSSO(false);
+                    }
+                  });
+                }}>
+                <div className={style.blockContainer}>
+                  {provider === "github" ? (
+                    theme === "light" ? (
+                      <GitHubLogoLight className={style.oauthButtonSvg} />
+                    ) : (
+                      <GitHubLogoDark className={style.oauthButtonSvg} />
+                    )
+                  ) : null}
+                  {provider === "google" ? (
+                    theme === "light" ? (
+                      <GoogleLogoLight className={style.oauthButtonSvg} />
+                    ) : (
+                      <GoogleLogoDark className={style.oauthButtonSvg} />
+                    )
+                  ) : null}
+                  <span className={style.oauthButtonText}> Sign up with {provider.charAt(0).toUpperCase() + provider.slice(1)}</span>
+                </div>
+              </Button>
+            </div>
+          );
+        })}
+      </div>
 
-        <Input label="Password" name="password" {...form.getInputProps("password")} {...passwordProps}>
-          <>At least 8 characters long</>
-        </Input>
+      <div className={style.separator}>Or</div>
+
+      <form onSubmit={form.onSubmit((values) => onSubmit(values))}>
+        <fieldset disabled={isLoading || isLoadingSSO}>
+          <Input label="Email" placeholder="your@email.com" {...form.getInputProps("email")} required />
+
+          <Input label="Password" name="password" {...form.getInputProps("password")} {...passwordProps}>
+            <>At least 8 characters long</>
+          </Input>
+        </fieldset>
 
         <div className={style.actions}>
-          <Button type="submit" variants={["primary"]} className={style.button} disabled={isLoading}>
+          <Button type="submit" variants={["primary", "fullWidth"]} className={style.button} disabled={isLoading || isLoadingSSO}>
             Get started
           </Button>
         </div>
 
-        <Errors error={error} />
+        <Errors error={error || ssoError} />
       </form>
 
       <p className={style.footer}>
-        Already have an account? <Link to="/">Login</Link>
+        Already have an account?{" "}
+        <Link className={isLoading || isLoadingSSO ? style.disabledLink : ""} to="/">
+          Login
+        </Link>
       </p>
     </div>
   );

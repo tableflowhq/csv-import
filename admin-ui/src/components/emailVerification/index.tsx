@@ -6,7 +6,7 @@ export default function EmailVerification() {
   const { mutate, isLoading, error } = useVerifyEmail();
 
   useEffect(() => {
-    const timer = setTimeout(() => mutate(null), 1000);
+    const timer = setTimeout(() => mutate(null), 500);
     return () => clearTimeout(timer);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
