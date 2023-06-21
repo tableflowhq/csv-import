@@ -47,7 +47,7 @@ export default function ApiKey() {
         <Box>
           <form onSubmit={onSubmit}>
             <div className={style.inputWithIcon}>
-              <Input label="API Key" {...password} value={apiKey} />
+              <Input label="API Key" {...password} value={apiKey} readOnly />
 
               {apiKey && (
                 <Button type="button" variants={["bare", "square"]} onClick={() => copyToClipboard(apiKey)} title="Copy to clipboard">

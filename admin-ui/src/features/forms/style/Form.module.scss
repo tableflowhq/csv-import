@@ -10,7 +10,7 @@
 }
 
 .container {
-  min-width: 340px;
+  width: 360px;
 }
 
 .formTop {
@@ -66,6 +66,7 @@
   line-height: 1.6;
   margin: 0 0 var(--m-l);
   font-weight: 400;
+  color: var(--color-text-soft);
 }
 
 .sectionTitle {
@@ -108,6 +109,29 @@
   display: flex;
   flex-direction: column;
   gap: var(--m);
+}
+
+.separator {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: var(--color-text-soft);
+  padding-bottom: var(--m);
+}
+
+.separator::before,
+.separator::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid var(--color-text-soft);
+}
+
+.separator:not(:empty)::before {
+  margin-right: 0.5em;
+}
+
+.separator:not(:empty)::after {
+  margin-left: 0.5em;
 }
 
 .footer {
@@ -156,22 +180,38 @@
   }
 }
 
-.passwordResetContainer {
-  max-width: 500px;
-}
-
-.passwordResetSubtitle {
-  margin-top: -16px !important;
-  margin-bottom: 33px !important;
-  text-align: left;
-  font-weight: 400;
-  color: var(--color-text-soft);
-}
-
 // This should be removed when the UI library is updated
 .iconFix.iconFix {
   path {
     stroke: none !important;
     fill: var(--color-text-soft);
+  }
+}
+
+.disabledLink {
+  pointer-events: none;
+  color: var(--color-text-soft) !important;
+}
+
+.oauthButtons {
+  padding: var(--m) 0 var(--m-mm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--m-s);
+}
+
+.oauthButton.oauthButton {
+  background-color: transparent;
+
+  svg {
+    path {
+      stroke: none;
+    }
+  }
+}
+
+[data-theme="light"] {
+  .oauthButtonSvg path {
+    fill: var(--color-text);
   }
 }

@@ -1,4 +1,5 @@
 import { Routes } from "react-router-dom";
+import OAuthCallback from "../components/OAuthCallback";
 import Login from "../features/forms/Login";
 import PasswordReset from "../features/forms/PasswordReset";
 import SignUp from "../features/forms/SignUp";
@@ -15,9 +16,19 @@ const routes: RoutesType = [
     children: <PasswordReset />,
   },
   {
+    paths: "auth/verify-email",
+    layout: Frame,
+    children: <EmailVerification />,
+  },
+  {
     paths: "email-verification",
     layout: Frame,
     children: <VerifyEmail />,
+  },
+  {
+    paths: ["auth/callback/google", "auth/callback/github"],
+    layout: Frame,
+    children: <OAuthCallback />,
   },
   {
     paths: "signup",
@@ -28,11 +39,6 @@ const routes: RoutesType = [
     paths: "/",
     layout: Frame,
     children: <Login />,
-  },
-  {
-    paths: "auth/verify-email",
-    layout: Frame,
-    children: <EmailVerification />,
   },
   {
     paths: "*",
