@@ -20,7 +20,7 @@ import (
 //	@Tags			External API
 //	@Success		200	{object}	model.Import
 //	@Failure		400	{object}	Res
-//	@Router			/api/v1/import/{id} [get]
+//	@Router			/v1/import/{id} [get]
 //	@Param			id	path	string	true	"Import ID"
 func getImportForExternalAPI(c *gin.Context) {
 	id := c.Param("id")
@@ -50,7 +50,7 @@ func getImportForExternalAPI(c *gin.Context) {
 //	@Tags			External API
 //	@Success		200
 //	@Failure		400	{object}	Res
-//	@Router			/api/v1/import/{id}/download [get]
+//	@Router			/v1/import/{id}/download [get]
 //	@Param			id	path	string	true	"Import ID"
 func downloadImportForExternalAPI(c *gin.Context) {
 	id := c.Param("id")

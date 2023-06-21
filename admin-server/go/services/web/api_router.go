@@ -12,7 +12,7 @@ func initializeAPIRoutes(router *gin.Engine) {
 
 	/* ---------------------------  API routes  --------------------------- */
 
-	api := router.Group("/api/v1")
+	api := router.Group("/v1")
 	api.Use(apiKeyAuthMiddleware())
 
 	/* Import */
