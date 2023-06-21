@@ -58,8 +58,8 @@
     {
       "group": "Imports",
       "pages": [
-        "api-reference/imports/get-import",
-        "api-reference/imports/download-import"
+        "api-reference/get-import",
+        "api-reference/download-import"
       ]
     }
   ],
