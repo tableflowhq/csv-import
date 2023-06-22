@@ -43,8 +43,7 @@ export default function SignUp() {
             <Button
               key={provider}
               icon={provider as any}
-              variants={["tertiary", "fullWidth"]}
-              className={style.oauthButton}
+              variants={["noFill", "fullWidth"]}
               disabled={isLoading || isLoadingSSO}
               onClick={() => {
                 setIsLoadingSSO(true);

@@ -14,9 +14,7 @@ export default function NoPassword({ handleClose }: NoPasswordProps) {
   return (
     <div className={style.box}>
       <div className={style.top}>
-        <a onClick={handleClose}>
-          <Icon icon="cross" />
-        </a>
+        <Button onClick={handleClose} icon="cross" variants={["square"]} />
       </div>
 
       {theme === "light" ? <SofaLight /> : <SofaDark />}

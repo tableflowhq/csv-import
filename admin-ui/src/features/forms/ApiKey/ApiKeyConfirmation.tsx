@@ -7,7 +7,7 @@ export default function ApiKeyConfirmation({ onCancel, onConfirm = () => null }:
     <>
       <div className={style.top}>
         <div className={style.icon}>
-          <Icon icon="error" size="m" />
+          <Icon icon="error" size="m" className={style.iconRed} />
         </div>
         <div className={style.texts}>
           <h3>Regenerate API Key</h3>

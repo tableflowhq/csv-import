@@ -68,6 +68,7 @@ export default function TemplateColumnForm({
         <fieldset disabled={isLoading}>
           <Input
             placeholder={!isEditForm ? "name" : `${column?.name}`}
+            label="Column name"
             name="name"
             {...form.getInputProps("name")}
             autoFocus={!isEditForm}
@@ -76,6 +77,7 @@ export default function TemplateColumnForm({
           />
           <Input
             placeholder={!isEditForm ? "key" : `${column?.key}`}
+            label="Column key"
             name="key"
             {...form.getInputProps("key")}
             autoFocus={!isEditForm}

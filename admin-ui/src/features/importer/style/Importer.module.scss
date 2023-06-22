@@ -8,7 +8,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: var(--m-xs);
+  margin-bottom: var(--m);
   gap: var(--m-xs);
   align-items: center;
   display: flex;
@@ -18,10 +18,12 @@
   .heading {
     display: flex;
     gap: var(--m-s);
+  }
 
-    .icon {
-      margin-top: var(--m-xxs);
-    }
+  .title {
+    display: flex;
+    align-items: center;
+    gap: var(--m-xs);
   }
 
   h1 {

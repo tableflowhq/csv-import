@@ -20,7 +20,7 @@ export default function ImporterDelete({ importer, onSuccess = () => null, conte
     <>
       <div className={style.top}>
         <div className={style.icon}>
-          <Icon icon="trash" />
+          <Icon icon="trash" size="m" className={style.iconRed} />
         </div>
         <div className={style.texts}>
           <h3>Delete Importer</h3>

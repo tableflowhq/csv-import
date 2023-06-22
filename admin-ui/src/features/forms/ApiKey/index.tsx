@@ -44,7 +44,7 @@ export default function ApiKey() {
             <small>View and update your API key used to access the data from your imports</small>
           </div>
         </div>
-        <Box>
+        <Box variants={["bg-shade"]}>
           <form onSubmit={onSubmit}>
             <div className={style.inputWithIcon}>
               <Input label="API Key" {...password} value={apiKey} readOnly />

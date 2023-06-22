@@ -20,7 +20,7 @@ export default function TemplateColumnDelete({ column, onSuccess = () => null, c
     <>
       <div className={style.top}>
         <div className={style.icon}>
-          <Icon icon="trash" />
+          <Icon icon="trash" size="m" className={style.iconRed} />
         </div>
         <div className={style.texts}>
           <h3>Delete Column</h3>
