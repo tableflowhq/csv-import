@@ -788,46 +788,6 @@ paths:
       summary: Get workspace usage
       tags:
       - Workspace
-  /api/v1/import/{id}:
-    get:
-      description: Get an individual import
-      parameters:
-      - description: Import ID
-        in: path
-        name: id
-        required: true
-        type: string
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/model.Import'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/web.Res'
-      summary: Get import
-      tags:
-      - External API
-  /api/v1/import/{id}/download:
-    get:
-      description: Download the import as a file
-      parameters:
-      - description: Import ID
-        in: path
-        name: id
-        required: true
-        type: string
-      responses:
-        "200":
-          description: OK
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/web.Res'
-      summary: Download import
-      tags:
-      - External API
   /file-import/v1/files:
     post:
       description: Creates a new file upload after validating the length and parsing
@@ -947,6 +907,46 @@ paths:
       summary: Health
       tags:
       - Public
+  /v1/import/{id}:
+    get:
+      description: Get an individual import
+      parameters:
+      - description: Import ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Import'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/web.Res'
+      summary: Get import
+      tags:
+      - External API
+  /v1/import/{id}/download:
+    get:
+      description: Download the import as a file
+      parameters:
+      - description: Import ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/web.Res'
+      summary: Download import
+      tags:
+      - External API
 securityDefinitions:
   ApiKeyAuth:
     in: header

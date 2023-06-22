@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
-import { Button, Icon, Tabs, useTabs } from "@tableflowhq/ui-library";
+import { Button, Icon, Tabs, useTabs, useThemeStore } from "@tableflowhq/ui-library";
 import notification from "../../utils/notification";
 import { ImporterViewProps } from "./types";
 import style from "./style/Importer.module.scss";
@@ -10,24 +10,27 @@ import Templates from "../templates";
 
 export default function ImporterPage({ importer }: ImporterViewProps) {
   const importerId = importer.id;
-
   const { importerTab } = useParams();
-
   const templateCount = importer?.template?.template_columns?.length;
-
   const tabs = useTabs(
     { template: <>Template {!!templateCount && <small className={style.miniBadge}>{templateCount}</small>}</>, code: "Code", settings: "Settings" },
     importerTab || "template"
   );
-
   const navigate = useNavigate();
-
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     notification({ type: "success", message: "Copied to clipboard" });
   };
-
   const { tab } = tabs;
+  const theme = useThemeStore((state) => state.theme);
+  const getImporterUrl = (): string => {
+    let importerUrl = "https://importer.tableflow.com";
+    // Update when using other port for importer
+    // if (window.location.hostname === "localhost") {
+    //   importerUrl = "http://localhost:3000";
+    // }
+    return `${importerUrl}?importerId=${importerId}&darkMode=${theme === "light" ? "false" : "true"}`;
+  };
 
   useEffect(() => {
     if (importerTab !== tab) navigate(`/importers/${importerId}/${tab}`);
@@ -56,6 +59,26 @@ export default function ImporterPage({ importer }: ImporterViewProps) {
                   <small>{importer.id}</small>
                 </div>
               </div>
+            </div>
+            <div>
+              <Button
+                className={style.copyIconFix}
+                icon="copy"
+                type="button"
+                variants={theme === "light" ? [] : ["secondary"]}
+                onClick={() => copyToClipboard(getImporterUrl())}
+                title="Copy to clipboard">
+                Copy URL
+              </Button>
+              <Button
+                className={style.previewIconFix}
+                icon="arrowRight"
+                type="button"
+                variants={theme === "light" ? [] : ["secondary"]}
+                onClick={() => window.open(getImporterUrl(), "_blank")}
+                title="Open the importer in a new tab to preview">
+                Preview
+              </Button>
             </div>
           </div>
 

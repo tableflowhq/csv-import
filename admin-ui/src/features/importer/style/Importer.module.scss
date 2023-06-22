@@ -79,6 +79,7 @@
 }
 
 .subTitle {
+  margin-left: -44px;
   gap: var(--m-xxxs);
   display: flex;
   align-items: center;
@@ -89,5 +90,25 @@
   path {
     stroke: none !important;
     fill: var(--color-text-soft);
+  }
+}
+
+// This should be removed when the UI library is updated
+.copyIconFix {
+  margin-right: 12px;
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+  path {
+    stroke: none !important;
+    fill: var(--color-text-soft);
+  }
+}
+
+// This should be removed when the UI library is updated
+.previewIconFix {
+  path {
+    stroke: var(--color-text-soft) !important;
   }
 }

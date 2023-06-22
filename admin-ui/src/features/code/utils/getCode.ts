@@ -1,9 +1,8 @@
 import { CodeProps } from "../types";
 
-
 export default function getCode(props: CodeProps) {
   return `import { useState } from "react";
-import { TableFlowImporter } from "@tableflow/react-sdk";
+import { TableFlowImporter } from "@tableflow/react";
 
 function MyComponent(){
   const [isOpen, setIsOpen] = useState(false);
@@ -24,5 +23,3 @@ function MyComponent(){
 }
   `;
 }
-
-
