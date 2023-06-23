@@ -79,7 +79,7 @@
 }
 
 .subTitle {
-  margin-left: -44px;
+  margin-left: calc(var(--m-xxxxs) * -1);
   gap: var(--m-xxxs);
   display: flex;
   align-items: center;
