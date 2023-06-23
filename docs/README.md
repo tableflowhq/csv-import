@@ -1,6 +1,6 @@
-# Inquery Documentation
+# TableFlow Documentation
 
-The content and configuration powering the documentation available at [docs.inquery.io](https://docs.inquery.io)
+The content and configuration powering the documentation available at [tableflow.com/docs](https://tableflow.com/docs)
 
 ### Development
 

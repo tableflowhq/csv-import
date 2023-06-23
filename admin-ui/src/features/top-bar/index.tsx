@@ -16,6 +16,11 @@ export default function TopBar() {
 
   async function onLogout() {
     await signOut();
+    // @ts-ignore
+    if (window["posthog"]) {
+      // @ts-ignore
+      window["posthog"].reset();
+    }
     navigate("/");
   }
 

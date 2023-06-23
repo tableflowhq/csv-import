@@ -12,23 +12,25 @@ const defaultAPIHost = "api.tableflow.com";
 
 // Authenticated routes will use the path /api/v1
 const baseURL = getAPIBaseURL("v1");
-export const baseURLExternal = getAPIBaseURL("v1", "api");
+export const baseURLExternal = getAPIBaseURL("v1", "");
 
 export function getAPIBaseURL(version?: string, api = "admin"): string {
   // If an API URL is provided in the environment, use that
   let url = env.API_BASE_URL;
   const versionSlug = version ? version + "/" : "";
-
+  if (api) {
+    api += "/";
+  }
   if (url) {
     if (!url.endsWith("/")) {
       url = url + "/";
     }
-    return `${url}${api}/${versionSlug}`;
+    return `${url}${api}${versionSlug}`;
   }
   // Check if the importer is being hosted on TableFlow
   let host = window.location.host;
   if (host.indexOf(defaultAppHost) === 0) {
-    return `https://${defaultAPIHost}/${api}/${versionSlug}`;
+    return `https://${defaultAPIHost}/${api}${versionSlug}`;
   }
   // If no API URL is provided and the importer is not being hosted on TableFlow, use the current host and replace the
   // port with the default API port. This is mostly used for development.
@@ -36,7 +38,7 @@ export function getAPIBaseURL(version?: string, api = "admin"): string {
     // If the host contains a port, remove it
     host = host.substring(0, host.indexOf(":"));
   }
-  return `${window.location.protocol}//${host}:3003/${api}/${versionSlug}`;
+  return `${window.location.protocol}//${host}:3003/${api}${versionSlug}`;
 }
 
 const successHandler = (notificationVars?: Notification) => {

@@ -38,7 +38,7 @@
     {
       "name": "Community",
       "icon": "slack",
-      "url": "https://join.slack.com/t/inqueryio/shared_invite/zt-1psu47idh-vnItf_BaWcIWih8flGZ0fw"
+      "url": "https://join.slack.com/t/tableflow/shared_invite/zt-1psu47idh-vnItf_BaWcIWih8flGZ0fw"
     }
   ],
   "navigation": [
@@ -58,15 +58,15 @@
     {
       "group": "Imports",
       "pages": [
-        "api-reference/imports/get-import",
-        "api-reference/imports/download-import"
+        "api-reference/get-import",
+        "api-reference/download-import"
       ]
     }
   ],
   "footerSocials": {
     "twitter": "https://twitter.com/tableflow",
     "github": "https://github.com/tableflowhq",
-    "linkedin": "https://www.linkedin.com/company/inqueryio"
+    "linkedin": "https://www.linkedin.com/company/tableflowhq"
   },
   "analytics": {
     "posthog": {
