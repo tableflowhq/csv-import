@@ -2880,16 +2880,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tableflowhq/ui-library@npm:^1.13.0":
-  version: 1.13.0
-  resolution: "@tableflowhq/ui-library@npm:1.13.0::__archiveUrl=https%3A%2F%2Fnpm.pkg.github.com%2Fdownload%2F%40tableflowhq%2Fui-library%2F1.13.0%2Ff1d1b0b9a96bda8ad2f36c29f1d8689be0cfbf4f"
+"@tableflowhq/ui-library@npm:^1.22.0":
+  version: 1.22.0
+  resolution: "@tableflowhq/ui-library@npm:1.22.0::__archiveUrl=https%3A%2F%2Fnpm.pkg.github.com%2Fdownload%2F%40tableflowhq%2Fui-library%2F1.22.0%2F135ce3631d1b4722a2967db7b1bc793c19ac2e76"
   dependencies:
     tslib: ^2.5.3
   peerDependencies:
     react: ">=18.2.0"
     react-dom: ">=18.2.0"
     zustand: ^4.3.8
-  checksum: 4ec1f0a02cb19dddc63bb60f088e9e5ac5d610e4256335f5ee42847a09769b5c9a6fefe3dc793f857f97b14380de9803766f6a3ee43b38a2b05e5bdd2706ed26
+  checksum: 95321c27edf9e2b4cf53c9af46a49856639cf9f1c5486e133233683dd3c51b3fc0b7b051a83c56eac3b85514bc5579378109fd2ef5d6d2a601befe3ee53008d6
   languageName: node
   linkType: hard
 
@@ -7831,7 +7831,7 @@ __metadata:
   dependencies:
     "@mantine/core": ^6.0.10
     "@mantine/form": ^6.0.4
-    "@tableflowhq/ui-library": ^1.13.0
+    "@tableflowhq/ui-library": ^1.22.0
     "@testing-library/jest-dom": ^5.14.1
     "@testing-library/react": ^13.0.0
     "@testing-library/user-event": ^13.2.1
@@ -13540,11 +13540,11 @@ __metadata:
 
 "typescript@patch:typescript@^5.0.2#~builtin<compat/typescript>":
   version: 5.1.3
-  resolution: "typescript@patch:typescript@npm%3A5.1.3#~builtin<compat/typescript>::version=5.1.3&hash=85af82"
+  resolution: "typescript@patch:typescript@npm%3A5.1.3#~builtin<compat/typescript>::version=5.1.3&hash=5da071"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 32a25b2e128a4616f999d4ee502aabb1525d5647bc8955e6edf05d7fbc53af8aa98252e2f6ba80bcedfc0260c982b885f3c09cfac8bb65d2924f3133ad1e1e62
+  checksum: 6f0a9dca6bf4ce9dcaf4e282aade55ef4c56ecb5fb98d0a4a5c0113398815aea66d871b5611e83353e5953a19ed9ef103cf5a76ac0f276d550d1e7cd5344f61e
   languageName: node
   linkType: hard
 

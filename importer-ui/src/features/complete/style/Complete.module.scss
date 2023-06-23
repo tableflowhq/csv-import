@@ -44,4 +44,12 @@
       stroke: none;
     }
   }
+
+  .actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--m-xl);
+    align-items: center;
+    justify-content: center;
+  }
 }

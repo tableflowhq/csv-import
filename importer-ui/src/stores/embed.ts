@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-type EmbedParams = Record<"importerId" | "metadata", string>;
+type EmbedParams = { importerId: string; metadata: string; isOpen: boolean };
 
 type ParamsStore = {
   embedParams: EmbedParams;
@@ -8,7 +8,7 @@ type ParamsStore = {
 };
 
 const useEmbedStore = create<ParamsStore>()((set) => ({
-  embedParams: { importerId: "", metadata: "{}" },
+  embedParams: { importerId: "", metadata: "{}", isOpen: false },
   setEmbedParams: (embedParams) => set({ embedParams }),
 }));
 

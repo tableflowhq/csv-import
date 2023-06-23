@@ -35,6 +35,7 @@ export default function TableFlowImporter({
         darkMode: darkMode.toString(),
         primaryColor,
         metadata,
+        isOpen: isOpen.toString(),
     };
     const searchParams = new URLSearchParams(urlParams);
     const defaultImporterUrl = "https://importer.tableflow.com";
@@ -48,6 +49,14 @@ export default function TableFlowImporter({
             console.error('The "metadata" prop is not a valid JSON string. Please check the documentation for more details.');
         }
     }, [metadata]);
+
+    useEffect(() => {
+        window.onmessage = function (e) {
+            if (e.data == "close") {
+                onRequestClose();
+            }
+        };
+    }, []);
 
     return (
         <dialog ref={ref} className={dialogClass} onClick={backdropClick} {...props}>

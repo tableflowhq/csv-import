@@ -1,9 +1,7 @@
-import { useEffect, useState } from "react";
-import { Errors, Stepper, useStepper } from "@tableflowhq/ui-library";
-import { Importer, Template, Upload } from "../../api/types";
-import useGetImporter from "../../api/useGetImporter";
-import useGetUpload from "../../api/useGetUpload";
+import { useEffect } from "react";
+import { Button, Errors, Stepper, useLocalStorage, useStepper } from "@tableflowhq/ui-library";
 import useEmbedStore from "../../stores/embed";
+import useApi from "./hooks/useApi";
 import style from "./style/Main.module.scss";
 import Complete from "../complete";
 import Review from "../review";
@@ -19,27 +17,50 @@ export let ImporterID = "";
 export let Metadata = "";
 
 export default function Main() {
-  const { importerId, metadata } = useEmbedStore((state) => state.embedParams);
+  const { importerId, metadata, isOpen } = useEmbedStore((state) => state.embedParams);
   ImporterID = importerId;
   Metadata = metadata;
 
-  const stepper = useStepper(steps, 0);
-  const step = stepper?.step?.id || "done";
+  const [stepStore, setStepStore] = useLocalStorage("stepStored", "upload");
+  const stepper = useStepper(
+    steps,
+    steps.reduce((_, step, i) => (step.id === stepStore ? i : 0), 0) // default value is index of step from local storage
+  );
+  const step = stepper?.step?.id;
 
-  const [tusId, setTusId] = useState("");
+  const { isLoadingImporter, importerError, template, upload, uploadError, isParsed, setTusId } = useApi(importerId);
 
-  // Load importer & template for the first step
-  const { data: importer = {} as Importer, isLoading, error } = useGetImporter(importerId);
-  const { template = {} as Template } = importer;
+  useEffect(() => {
+    setStepStore(step);
+  }, [step]);
 
-  // Load upload for the second step
-  const { data: upload = {} as Upload, error: uploadError } = useGetUpload(tusId);
-  const { is_parsed } = upload;
+  // Reload on close + complete
+  useEffect(() => {
+    if (!isOpen && step === "complete") {
+      reload();
+    }
+  }, [isOpen]);
 
   // Delay jump to the second step
   useEffect(() => {
-    if (is_parsed) setTimeout(() => stepper.setCurrent(1), 1000);
-  }, [is_parsed]);
+    if (isParsed) setTimeout(() => stepper.setCurrent(1), 1000);
+  }, [isParsed]);
+
+  // Actions
+  const requestClose = () => {
+    window?.top?.postMessage("close", "*");
+    window?.parent?.postMessage("close", "*");
+  };
+
+  const reload = () => {
+    setTusId("");
+    stepper.setCurrent(0);
+    location.reload();
+  };
+
+  // Render
+
+  if (isLoadingImporter) return null;
 
   if (!importerId)
     return (
@@ -48,12 +69,10 @@ export default function Main() {
       </div>
     );
 
-  if (isLoading) return null;
-
-  if (error)
+  if (importerError)
     return (
       <div className={style.wrapper}>
-        <Errors error={error.toString()} />
+        <Errors error={importerError.toString()} />
       </div>
     );
 
@@ -65,22 +84,19 @@ export default function Main() {
 
       <div className={style.content}>
         {step === "upload" && <Uploader template={template} onSuccess={setTusId} />}
-        {step === "review" && (
-          <Review
-            template={template}
-            upload={upload}
-            onSuccess={() => stepper.setCurrent(2)}
-            onCancel={() => {
-              stepper.setCurrent(0);
-              setTusId("");
-            }}
-          />
-        )}
-        {step === "complete" && <Complete />}
+        {step === "review" && <Review template={template} upload={upload} onSuccess={() => stepper.setCurrent(2)} onCancel={reload} />}
+        {step === "complete" && <Complete reload={reload} close={requestClose} />}
         {step === "done" && <div>All done</div>}
       </div>
 
-      {!!uploadError && <Errors error={uploadError.toString()} />}
+      {!!uploadError && (
+        <div className={style.status}>
+          <Errors error={uploadError.toString()} />
+          <Button onClick={reload} variants={["primary"]} type="button" icon="update">
+            Reload
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
