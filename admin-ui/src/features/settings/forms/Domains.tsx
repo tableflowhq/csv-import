@@ -17,7 +17,7 @@ export default function Domains({ importer }: { importer: Importer }) {
   return (
     <>
       <ListManager
-        placeholder="https://"
+        placeholder="example.com"
         name="Allowed domains"
         icon="link"
         required
