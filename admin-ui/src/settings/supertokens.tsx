@@ -23,11 +23,23 @@ export const superTokensConfig = {
     ThirdPartyEmailPassword.init({
       useShadowDom: false,
       resetPasswordUsingTokenFeature: {
-        disableDefaultUI: true
+        disableDefaultUI: true,
       },
       signInAndUpFeature: {
         providers: [Github.init(), Google.init()],
         disableDefaultUI: true,
+      },
+      onHandleEvent: (context) => {
+        switch (context.action) {
+          case "SUCCESS":
+            const user = context.user;
+            // @ts-ignore
+            if (window["posthog"]) {
+              // @ts-ignore
+              window["posthog"].identify(user.id, { email: user.email }, {});
+            }
+            break;
+        }
       },
     }),
     EmailVerification.init({ mode: "REQUIRED", disableDefaultUI: true }),
