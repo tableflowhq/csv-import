@@ -46,10 +46,11 @@ export default function ImporterPage({ importer }: ImporterViewProps) {
         <div className="container">
           <div className={style.top}>
             <div className={style.heading}>
-              <Icon icon="cube" size="m" className={style.icon} />
-
               <div>
-                <h1>{importer.name}</h1>
+                <div className={style.title}>
+                  <Icon icon="cube" size="m" className={style.icon} />
+                  <h1>{importer.name}</h1>
+                </div>
 
                 <div className={style.subTitle}>
                   <Button type="button" variants={["bare", "square"]} onClick={() => copyToClipboard(importer.id)} title="Copy to clipboard">

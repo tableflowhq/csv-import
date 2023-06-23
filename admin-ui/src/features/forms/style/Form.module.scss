@@ -182,10 +182,10 @@
 
 // This should be removed when the UI library is updated
 .iconFix.iconFix {
-  path {
-    stroke: none !important;
-    fill: var(--color-text-soft);
-  }
+  // path {
+  //   stroke: none !important;
+  //   fill: var(--color-text-soft);
+  // }
 }
 
 .disabledLink {
@@ -214,4 +214,8 @@
   .oauthButtonSvg path {
     fill: var(--color-text);
   }
+}
+
+.iconRed {
+  color: var(--color-text-error);
 }

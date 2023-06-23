@@ -19,7 +19,7 @@ export default function Domains({ importer }: { importer: Importer }) {
       <ListManager
         placeholder="https://"
         name="Allowed domains"
-        icon="gear"
+        icon="link"
         required
         formStyle={style.form}
         onChange={(value: string[]) => setAllowedDomains(value)}
