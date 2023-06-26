@@ -36,22 +36,24 @@ Create an importer, define your template, and retrieve data at https://app.table
 import { useState } from "react";
 import { TableFlowImporter } from "@tableflow/react";
 
-function MyComponent(){
+function MyComponent() {
   const [isOpen, setIsOpen] = useState(false);
 
-  return <>
-    <button onClick={() => setIsOpen(true)}>Open TableFlow Importer</button>
+  return (
+    <>
+      <button onClick={() => setIsOpen(true)}>Open TableFlow Importer</button>
 
-    <TableFlowImporter
-      isOpen={isOpen}
-      onRequestClose={() => setIsOpen(false)}
-      importerId={"53a84496-819d-4ec6-93b7-b4b56fb676ad"} // Replace with your importer ID from https://app.tableflow.com/importers
-      darkMode={true}
-      primaryColor="#7A5EF8"
-      closeOnClickOutside={true}
-      metadata={"{\"userId\": 1234, \"userEmail\": \"test@example.com\"}"}
-    />
-  </>
+      <TableFlowImporter
+        isOpen={isOpen}
+        onRequestClose={() => setIsOpen(false)}
+        importerId={"53a84496-819d-4ec6-93b7-b4b56fb676ad"} // Replace with your importer ID from https://app.tableflow.com/importers
+        darkMode={true}
+        primaryColor="#7A5EF8"
+        closeOnClickOutside={true}
+        metadata={"{\"userId\": 1234, \"userEmail\": \"test@example.com\"}"}
+      />
+    </>
+  );
 }
 ```
 
