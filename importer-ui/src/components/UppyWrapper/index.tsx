@@ -17,7 +17,7 @@ const uppy = new Uppy({
   restrictions,
   autoProceed: true,
   allowMultipleUploadBatches: false,
-  debug: true,
+  debug: false,
 }).use(Tus, { limit: 1 });
 
 export default function UppyWrapper({ onSuccess, importerId = "", metadata = "", endpoint = "" }: UppyWrapperProps) {
