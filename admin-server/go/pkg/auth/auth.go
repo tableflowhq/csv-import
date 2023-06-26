@@ -93,7 +93,7 @@ func InitAuth() error {
 					}
 					if resp.OK != nil {
 						// Add post sign up logic here
-						err = postSignUpAccountSetup(resp.OK.User.ID)
+						err = postSignUpAccountSetup(resp.OK.User.ID, resp.OK.User.Email)
 						if err != nil {
 							return tpepmodels.SignUpPOSTResponse{}, err
 						}
@@ -122,7 +122,7 @@ func InitAuth() error {
 					if resp.OK != nil {
 						if resp.OK.CreatedNewUser {
 							// Add post sign up logic here
-							err = postSignUpAccountSetup(resp.OK.User.ID)
+							err = postSignUpAccountSetup(resp.OK.User.ID, resp.OK.User.Email)
 							if err != nil {
 								return tpepmodels.ThirdPartyOutput{}, err
 							}
@@ -250,7 +250,7 @@ func InitAuth() error {
 	return err
 }
 
-func postSignUpAccountSetup(userID string) error {
+func postSignUpAccountSetup(userID, email string) error {
 	// Assign owner role to user
 	addRoleResult, err := userroles.AddRoleToUser(userID, RoleOwner, nil)
 	if err != nil {
@@ -370,6 +370,11 @@ func postSignUpAccountSetup(userID string) error {
 	if err != nil {
 		util.Log.Errorw("Error creating template columns after sign up", "user_id", userID, "workspace_id", workspace.ID)
 		return err
+	}
+
+	// TODO: Update to check if env is production instead
+	if env.APIServerURL == "https://api.tableflow.com" {
+		util.SendSlackMessage(util.SlackChannelNewUsers, fmt.Sprintf(":tada: New User :tada: \nEmail: %s\nUser ID: %s", email, userID))
 	}
 	return nil
 }
