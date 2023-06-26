@@ -385,7 +385,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/parser@npm:^7.1.0, @babel/parser@npm:^7.14.7, @babel/parser@npm:^7.17.3, @babel/parser@npm:^7.20.5, @babel/parser@npm:^7.20.7, @babel/parser@npm:^7.22.5":
+"@babel/parser@npm:^7.0.0, @babel/parser@npm:^7.1.0, @babel/parser@npm:^7.14.7, @babel/parser@npm:^7.17.3, @babel/parser@npm:^7.20.5, @babel/parser@npm:^7.20.7, @babel/parser@npm:^7.22.5":
   version: 7.22.5
   resolution: "@babel/parser@npm:7.22.5"
   bin:
@@ -2880,16 +2880,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tableflowhq/ui-library@npm:^1.13.0":
-  version: 1.13.0
-  resolution: "@tableflowhq/ui-library@npm:1.13.0::__archiveUrl=https%3A%2F%2Fnpm.pkg.github.com%2Fdownload%2F%40tableflowhq%2Fui-library%2F1.13.0%2Ff1d1b0b9a96bda8ad2f36c29f1d8689be0cfbf4f"
+"@tableflowhq/ui-library@npm:^1.25.0":
+  version: 1.25.0
+  resolution: "@tableflowhq/ui-library@npm:1.25.0::__archiveUrl=https%3A%2F%2Fnpm.pkg.github.com%2Fdownload%2F%40tableflowhq%2Fui-library%2F1.25.0%2Fae184fc41dd532f673ffaae3739d19eabc9aeb4e"
   dependencies:
+    babel-plugin-inline-react-svg: ^2.0.2
     tslib: ^2.5.3
   peerDependencies:
     react: ">=18.2.0"
     react-dom: ">=18.2.0"
     zustand: ^4.3.8
-  checksum: 4ec1f0a02cb19dddc63bb60f088e9e5ac5d610e4256335f5ee42847a09769b5c9a6fefe3dc793f857f97b14380de9803766f6a3ee43b38a2b05e5bdd2706ed26
+  checksum: f7a86863764397b73b2573c036deca7a4434f190644baff9a619db526e05509b5f18c37b0796f1982e0e685ac7f130707af3fe158bda93dc802158fb30518032
   languageName: node
   linkType: hard
 
@@ -4474,6 +4475,21 @@ __metadata:
     "@babel/core": ^7.0.0
     webpack: ">=2"
   checksum: d48bcf9e030e598656ad3ff5fb85967db2eaaf38af5b4a4b99d25618a2057f9f100e6b231af2a46c1913206db506115ca7a8cbdf52c9c73d767070dae4352ab5
+  languageName: node
+  linkType: hard
+
+"babel-plugin-inline-react-svg@npm:^2.0.2":
+  version: 2.0.2
+  resolution: "babel-plugin-inline-react-svg@npm:2.0.2"
+  dependencies:
+    "@babel/helper-plugin-utils": ^7.0.0
+    "@babel/parser": ^7.0.0
+    lodash.isplainobject: ^4.0.6
+    resolve: ^2.0.0-next.4
+    svgo: ^2.8.0
+  peerDependencies:
+    "@babel/core": ^7.0.0
+  checksum: f0652e75d0a671c593f45c91388ab825d13dd0b244870eb8541a81a7c93ccd0f2dfc5d7596a34784feaa77529a09a717c47a36ad6350a92cb57d12c5e005c4a1
   languageName: node
   linkType: hard
 
@@ -7831,7 +7847,7 @@ __metadata:
   dependencies:
     "@mantine/core": ^6.0.10
     "@mantine/form": ^6.0.4
-    "@tableflowhq/ui-library": ^1.13.0
+    "@tableflowhq/ui-library": ^1.25.0
     "@testing-library/jest-dom": ^5.14.1
     "@testing-library/react": ^13.0.0
     "@testing-library/user-event": ^13.2.1
@@ -9377,6 +9393,13 @@ __metadata:
   version: 4.0.8
   resolution: "lodash.debounce@npm:4.0.8"
   checksum: a3f527d22c548f43ae31c861ada88b2637eb48ac6aa3eb56e82d44917971b8aa96fbb37aa60efea674dc4ee8c42074f90f7b1f772e9db375435f6c83a19b3bc6
+  languageName: node
+  linkType: hard
+
+"lodash.isplainobject@npm:^4.0.6":
+  version: 4.0.6
+  resolution: "lodash.isplainobject@npm:4.0.6"
+  checksum: 29c6351f281e0d9a1d58f1a4c8f4400924b4c79f18dfc4613624d7d54784df07efaff97c1ff2659f3e085ecf4fff493300adc4837553104cef2634110b0d5337
   languageName: node
   linkType: hard
 
@@ -13118,7 +13141,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"svgo@npm:^2.7.0":
+"svgo@npm:^2.7.0, svgo@npm:^2.8.0":
   version: 2.8.0
   resolution: "svgo@npm:2.8.0"
   dependencies:

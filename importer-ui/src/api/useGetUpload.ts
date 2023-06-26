@@ -8,6 +8,7 @@ const config = { keepPreviousData: true };
 export default function useGetUpload(tusId: string): UseQueryResult<Upload> {
   const [configOverrides, setConfigOverrides] = useState({});
   const [refetchCount, setRefetchCount] = useState(0);
+  const [customError, setCustomError] = useState("");
 
   const query: UseQueryResult<Upload> = useQuery(
     ["upload", tusId],
@@ -19,22 +20,35 @@ export default function useGetUpload(tusId: string): UseQueryResult<Upload> {
   );
   const isParsed = query?.data?.is_parsed;
   const { error } = query;
-
-  // TODO: Add the ability to re-upload if there is an error here
+  const maxRefetchCount = 50;
+  const waitDelay = (attempt: number) => {
+    if (attempt <= 2) {
+      return 100;
+    }
+    if (attempt <= 5) {
+      return 250;
+    }
+    if (attempt <= 10) {
+      return 500;
+    }
+    return 1000;
+  };
   useEffect(() => {
     if (isParsed) {
       setConfigOverrides({ enabled: false });
     } else if (tusId && !error) {
-      // TODO: Show an error if this reaches the max refetch count
-      // "The upload could not be processed. Please try again."
-      if (refetchCount <= 25) setConfigOverrides({ refetchInterval: 200, enabled: true });
-      else setConfigOverrides({ enabled: false });
+      if (refetchCount <= maxRefetchCount) {
+        setConfigOverrides({ refetchInterval: waitDelay(refetchCount), enabled: true });
+      } else {
+        setConfigOverrides({ enabled: false });
+        setCustomError("The upload could not be processed. Please try again.");
+      }
     } else {
       setConfigOverrides({ enabled: true });
     }
   }, [isParsed, tusId, error, refetchCount]);
 
-  return query;
+  return customError ? ({ ...query, error: customError } as any) : query;
 }
 
 async function getUpload(tusId: string) {

@@ -1,10 +1,10 @@
 import { TableFlowImporterProps } from "../components/TableFlowImporter/types";
 
 const defaults: TableFlowImporterProps = {
-    isOpen: false,
-    importerId: "53a84496-819d-4ec6-93b7-b4b56fb676ad",
+    importerId: "89872e9f-3ccd-43e7-93c1-d7dfb680b45b",
     hostUrl: "http://localhost:3000", // https://importer.tableflow.com
     metadata: '{"userId": 1234, "userEmail": "test@example.com"}',
+    darkMode: true,
 };
 
 export default defaults;

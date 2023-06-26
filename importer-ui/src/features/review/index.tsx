@@ -33,12 +33,12 @@ export default function Review({ upload, template, onSuccess, onCancel }: Review
     <div className={style.content}>
       <form onSubmit={onSubmit}>
         <div className={style.tableWrapper}>
-          <Table data={rows} background="dark" columnWidths={["20%", "30%", "30%", "20%"]} columnAlignments={["", "", "", "center"]} />
+          <Table data={rows} background="dark" columnWidths={["20%", "30%", "30%", "20%"]} columnAlignments={["", "", "", "center"]} fixHeader />
         </div>
 
         <div className={style.actions}>
           <Button type="button" variants={["secondary"]} onClick={onCancel}>
-            Back
+            Cancel
           </Button>
           <Button variants={["primary"]} disabled={isLoading}>
             Submit

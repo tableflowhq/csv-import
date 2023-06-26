@@ -34,7 +34,7 @@ const locale = {
     dropHint: "Drop your files here",
     // Used as the hover text and screen reader label for file progress indicators when
     // they have been fully uploaded.
-    uploadComplete: "Upload complete",
+    uploadComplete: "Upload complete. Processing data...",
     uploadPaused: "Upload paused",
     // Used as the hover text and screen reader label for the buttons to resume paused uploads.
     resumeUpload: "Resume upload",

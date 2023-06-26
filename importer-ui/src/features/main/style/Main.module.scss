@@ -21,8 +21,10 @@
   margin: 0 var(--m);
 }
 
-.prov {
-  position: absolute;
-  right: 2rem;
-  bottom: 2rem;
+.status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--m);
+  padding: 0 var(--m);
 }
