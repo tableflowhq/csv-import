@@ -27,6 +27,7 @@ import (
 	"tableflow/go/pkg/db"
 	"tableflow/go/pkg/env"
 	"tableflow/go/pkg/model"
+	"tableflow/go/pkg/slack"
 	"tableflow/go/pkg/util"
 )
 
@@ -374,7 +375,7 @@ func postSignUpAccountSetup(userID, email string) error {
 
 	// TODO: Update to check if env is production instead
 	if env.APIServerURL == "https://api.tableflow.com" {
-		util.SendSlackMessage(util.SlackChannelNewUsers, fmt.Sprintf(":tada: New User :tada: \nEmail: %s\nUser ID: %s", email, userID))
+		slack.SendMessage(slack.ChannelNewUsers, fmt.Sprintf(":tada: New User :tada: \nEmail: %s\nUser ID: %s", email, userID))
 	}
 	return nil
 }

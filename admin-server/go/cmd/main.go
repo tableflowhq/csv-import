@@ -8,6 +8,7 @@ import (
 	"tableflow/go/pkg/auth"
 	"tableflow/go/pkg/db"
 	"tableflow/go/pkg/env"
+	"tableflow/go/pkg/slack"
 	"tableflow/go/pkg/util"
 	"tableflow/go/services"
 	"tableflow/go/services/file"
@@ -30,6 +31,13 @@ func main() {
 	err = env.InitEnv()
 	if err != nil {
 		util.Log.Errorw("Error loading initializing env", "error", err.Error())
+		return
+	}
+
+	/* Slack */
+	err = slack.InitSlack()
+	if err != nil {
+		util.Log.Errorw("Error initializing Slack", "error", err.Error())
 		return
 	}
 
