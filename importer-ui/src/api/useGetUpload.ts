@@ -8,6 +8,7 @@ const config = { keepPreviousData: true };
 export default function useGetUpload(tusId: string): UseQueryResult<Upload> {
   const [configOverrides, setConfigOverrides] = useState({});
   const [refetchCount, setRefetchCount] = useState(0);
+  const [customError, setCustomError] = useState("");
 
   const query: UseQueryResult<Upload> = useQuery(
     ["upload", tusId],
@@ -28,13 +29,16 @@ export default function useGetUpload(tusId: string): UseQueryResult<Upload> {
       // TODO: Show an error if this reaches the max refetch count
       // "The upload could not be processed. Please try again."
       if (refetchCount <= 25) setConfigOverrides({ refetchInterval: 200, enabled: true });
-      else setConfigOverrides({ enabled: false });
+      else {
+        setConfigOverrides({ enabled: false });
+        setCustomError("The upload could not be processed. Please try again.");
+      }
     } else {
       setConfigOverrides({ enabled: true });
     }
   }, [isParsed, tusId, error, refetchCount]);
 
-  return query;
+  return customError ? ({ ...query, error: customError } as any) : query;
 }
 
 async function getUpload(tusId: string) {

@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { Button, Errors, Stepper, useLocalStorage, useStepper } from "@tableflowhq/ui-library";
+import { getAPIBaseURL } from "../../api/api";
 import useEmbedStore from "../../stores/embed";
 import useApi from "./hooks/useApi";
 import style from "./style/Main.module.scss";
@@ -7,19 +8,16 @@ import Complete from "../complete";
 import Review from "../review";
 import Uploader from "../uploader";
 
+const TUS_ENDPOINT = getAPIBaseURL("v1") + "files";
+
 const steps = [
   { label: "Upload", id: "upload" },
   { label: "Review", id: "review" },
   { label: "Complete", id: "complete" },
 ];
 
-export let ImporterID = "";
-export let Metadata = "";
-
 export default function Main() {
   const { importerId, metadata, isOpen } = useEmbedStore((state) => state.embedParams);
-  ImporterID = importerId;
-  Metadata = metadata;
 
   const [stepStore, setStepStore] = useLocalStorage("stepStored", "upload");
   const stepper = useStepper(
@@ -83,7 +81,9 @@ export default function Main() {
       </div>
 
       <div className={style.content}>
-        {step === "upload" && <Uploader template={template} onSuccess={setTusId} />}
+        {step === "upload" && (
+          <Uploader template={template} importerId={importerId} metadata={metadata} onSuccess={setTusId} endpoint={TUS_ENDPOINT} />
+        )}
         {step === "review" && <Review template={template} upload={upload} onSuccess={() => stepper.setCurrent(2)} onCancel={reload} />}
         {step === "complete" && <Complete reload={reload} close={requestClose} />}
         {step === "done" && <div>All done</div>}

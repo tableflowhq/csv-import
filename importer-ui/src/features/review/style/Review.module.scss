@@ -11,6 +11,10 @@
     gap: var(--m);
 
     .tableWrapper {
+      overflow-y: auto;
+      padding: 1px;
+      margin-right: -20px;
+      padding-right: 21px;
     }
 
     .actions {
@@ -24,6 +28,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   line-height: 1;
+  white-space: nowrap;
 
   & > small {
     background-color: var(--color-input-background);
@@ -31,6 +36,7 @@
     padding: var(--m-xxxxs);
     border-radius: var(--border-radius-1);
     font-size: var(--font-size-xs);
+    display: inline-block;
 
     & + small {
       margin-left: var(--m-xxxxs);
