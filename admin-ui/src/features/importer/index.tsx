@@ -78,7 +78,7 @@ export default function ImporterPage({ importer }: ImporterViewProps) {
             {tab === "template" ? (
               <Templates importer={importer} />
             ) : tab === "code" ? (
-              <Code importerId={importerId} />
+              <Code importerId={importerId} theme={theme} />
             ) : tab === "settings" ? (
               <Settings importer={importer} />
             ) : null}
