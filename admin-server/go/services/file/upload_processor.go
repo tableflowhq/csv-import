@@ -1,8 +1,6 @@
 package file
 
 import (
-	"encoding/csv"
-	"errors"
 	"fmt"
 	"github.com/guregu/null"
 	"github.com/tus/tusd/pkg/handler"
@@ -73,34 +71,45 @@ func UploadCompleteHandler(event handler.HookEvent) {
 		return
 	}
 
-	// Parse the column headers and sample data
-	err = createUploadColumns(upload, file)
+	// Parse the column headers, sample data, and retrieve the row count
+	uploadColumns, rowCount, err := processUploadColumnsAndRowCount(upload, file)
 	if err != nil {
-		util.Log.Errorw("Could not parse upload", "error", err, "upload_id", upload.ID)
+		util.Log.Errorw("Could not parse upload columns", "error", err, "upload_id", upload.ID)
 		saveUploadError(upload, "An error occurred determining the columns in your file. Please check the file and try again.")
 		removeUploadFileFromDisk(fileName, upload.ID.String())
 		return
 	}
-	fileSize, err := util.GetFileSize(file)
-	upload.FileSize = null.NewInt(fileSize, err == nil)
-	numRows, err := getCSVRowCount(file)
-	// Subtract 1 to remove the header row
-	upload.NumRows = null.IntFrom(int64(math.Max(float64(numRows-1), 0)))
-	if err != nil {
-		util.Log.Errorw("Could not get row count for upload", "error", err, "upload_id", upload.ID)
-	}
-	if numRows == 0 {
+	if rowCount == 0 {
 		util.Log.Debugw("A file was uploaded with no rows or an error occurred during processing", "upload_id", upload.ID)
 		saveUploadError(upload, "No rows were found in your file, please try again with a different file.")
 		removeUploadFileFromDisk(fileName, upload.ID.String())
 		return
 	}
-	if numRows == 1 {
+	if rowCount == 1 {
 		util.Log.Debugw("A file was uploaded with only one row", "upload_id", upload.ID)
-		saveUploadError(upload, "Only one row was found in your file, please try again with a different file.")
+		saveUploadError(upload, "Only one row was found in your file, please try again with a different file that has a header row and at least one row of data.")
 		removeUploadFileFromDisk(fileName, upload.ID.String())
 		return
 	}
+	if len(uploadColumns) == 0 {
+		util.Log.Warnw("No upload columns found in file", "error", err, "upload_id", upload.ID)
+		saveUploadError(upload, "An error occurred determining the columns in your file. Please check the file and try again.")
+		removeUploadFileFromDisk(fileName, upload.ID.String())
+		return
+	}
+	err = db.DB.Create(&uploadColumns).Error
+	if err != nil {
+		util.Log.Errorw("Could not create upload columns in database", "error", err, "upload_id", upload.ID)
+		saveUploadError(upload, "An error occurred determining the columns in your file. Please check the file and try again.")
+		removeUploadFileFromDisk(fileName, upload.ID.String())
+		return
+	}
+
+	upload.NumColumns = null.IntFrom(int64(len(uploadColumns)))
+	fileSize, err := util.GetFileSize(file)
+	upload.FileSize = null.NewInt(fileSize, err == nil)
+	// Subtract 1 to remove the header row
+	upload.NumRows = null.IntFrom(int64(math.Max(float64(rowCount-1), 0)))
 
 	upload.IsParsed = true
 	err = db.DB.Save(upload).Error
@@ -129,6 +138,55 @@ func UploadCompleteHandler(event handler.HookEvent) {
 	util.Log.Debugw("File upload complete", "upload_id", upload.ID)
 }
 
+func processUploadColumnsAndRowCount(upload *model.Upload, file *os.File) ([]model.UploadColumn, int, error) {
+	it, err := util.OpenDataFileIterator(file, upload.FileType.String)
+	defer it.Close()
+	if err != nil {
+		return nil, 0, err
+	}
+	uploadColumns := make([]model.UploadColumn, 0)
+	isHeaderRow := true
+	rowIndex := -1
+	sampleDataSize := 3
+
+	for it.HasNext() {
+		rowIndex++
+		row, err := it.GetRow()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			// TODO: Handle parse error here and surface it to user. Save parse errors on upload or new table?
+			util.Log.Warnw("Error while parsing data file", "error", err, "upload_id", upload.ID)
+			continue
+		}
+		if isHeaderRow {
+			isHeaderRow = false
+			for columnIndex, v := range row {
+				uploadColumns = append(uploadColumns, model.UploadColumn{
+					UploadID:   upload.ID,
+					Name:       v,
+					Index:      columnIndex,
+					SampleData: make([]string, 0),
+				})
+			}
+			continue
+		}
+		if rowIndex <= sampleDataSize {
+			// Don't collect more than sampleDataSize sample data rows
+			for columnIndex, v := range row {
+				if columnIndex >= len(uploadColumns) {
+					util.Log.Warnw("Index out of range for row", "index", columnIndex, "value", v, "upload_id", upload.ID)
+					continue
+				}
+				uploadColumns[columnIndex].SampleData = append(uploadColumns[columnIndex].SampleData, v)
+			}
+		}
+		// Continue to iterate through the file to get the row count
+	}
+	return uploadColumns, int(math.Max(float64(rowIndex), 0)), nil
+}
+
 func saveUploadError(upload *model.Upload, errorStr string) {
 	upload.Error = null.StringFrom(errorStr)
 	if err := db.DB.Save(upload).Error; err != nil {
@@ -147,95 +205,4 @@ func removeUploadFileFromDisk(fileName, uploadID string) {
 		util.Log.Errorw("Could not delete upload info from file system", "error", err, "upload_id", uploadID)
 		return
 	}
-}
-
-func createUploadColumns(upload *model.Upload, file *os.File) error {
-	uploadColumns, err := getCSVUploadColumns(upload, file)
-	if err != nil {
-		util.Log.Errorw("Could not parse CSV upload columns")
-		return err
-	}
-	upload.NumColumns = null.IntFrom(int64(len(uploadColumns)))
-	if len(uploadColumns) == 0 {
-		return errors.New("no columns could be determined from the upload")
-	}
-	err = db.DB.Create(&uploadColumns).Error
-	if err != nil {
-		util.Log.Errorw("Could not create upload columns in database")
-		return err
-	}
-	return nil
-}
-
-func getCSVRowCount(file *os.File) (int, error) {
-	r := csv.NewReader(file)
-	defer func(f *os.File) {
-		_, err := f.Seek(0, io.SeekStart)
-		if err != nil {
-			util.Log.Errorw("Error resetting file reader", "error", err)
-		}
-	}(file)
-	rowCount := 0
-	for {
-		_, err := r.Read()
-		if err != nil {
-			if err == io.EOF {
-				break
-			}
-			return 0, err
-		}
-		rowCount++
-	}
-	return rowCount, nil
-}
-
-func getCSVUploadColumns(upload *model.Upload, file *os.File) ([]model.UploadColumn, error) {
-	uploadColumns := make([]model.UploadColumn, 0)
-	r := csv.NewReader(file)
-	defer func() {
-		_, err := file.Seek(0, io.SeekStart)
-		if err != nil {
-			util.Log.Errorw("Error resetting file reader", "error", err, "upload_id", upload.ID)
-		}
-	}()
-
-	isHeaderRow := true
-	rowIndex := -1
-	sampleDataSize := 3
-	for {
-		rowIndex++
-		row, err := r.Read()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			// TODO: Handle parse error here and surface it to user. Save parse errors on upload or new table?
-			util.Log.Warnw("Error while parsing CSV file", "error", err, "upload_id", upload.ID)
-			continue
-		}
-		if isHeaderRow {
-			isHeaderRow = false
-			for columnIndex, v := range row {
-				uploadColumns = append(uploadColumns, model.UploadColumn{
-					UploadID:   upload.ID,
-					Name:       v,
-					Index:      columnIndex,
-					SampleData: make([]string, 0),
-				})
-			}
-			continue
-		}
-		if rowIndex > sampleDataSize {
-			// Don't collect more than sampleDataSize sample data rows
-			break
-		}
-		for columnIndex, v := range row {
-			if columnIndex >= len(uploadColumns) {
-				util.Log.Warnw("Index out of range for row", "index", columnIndex, "value", v, "upload_id", upload.ID)
-				continue
-			}
-			uploadColumns[columnIndex].SampleData = append(uploadColumns[columnIndex].SampleData, v)
-		}
-	}
-	return uploadColumns, nil
 }

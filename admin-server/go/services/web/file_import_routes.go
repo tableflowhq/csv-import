@@ -64,6 +64,12 @@ type ImportServiceUploadColumn struct {
 	SampleData pq.StringArray `json:"sample_data" gorm:"type:text[]" swaggertype:"array,string" example:"test@example.com"`
 }
 
+type importToCSVResult struct {
+	NumRows          int
+	NumColumns       int
+	NumNonEmptyCells int
+}
+
 // tusPostFile
 //
 //	@Summary		Post file (tus)
@@ -462,20 +468,59 @@ func importData(upload *model.Upload, template *model.Template) {
 			columnPositionMap[uc.Index] = tci
 		}
 	}
-	w := csv.NewWriter(importFile)
-	r := csv.NewReader(downloadFile)
+
+	importResult, err := processAndWriteCSV(downloadFile, importFile, columnPositionMap, template, upload, imp)
+	if err != nil {
+		util.Log.Errorw("Could not process and write import file", "error", err, "import_id", imp.ID, "file", downloadFileName, "file_type", upload.FileType.String)
+		return
+	}
+	util.Log.Debugw("Import processing complete", "import_id", imp.ID, "time", time.Since(importStartTime))
+
+	err = s3.S3.UploadFile(imp.ID.String(), imp.FileType.String, s3.S3.BucketImports, importFile)
+	if err != nil {
+		util.Log.Errorw("Could not upload import file to S3", "error", err, "import_id", imp.ID)
+		return
+	}
+
+	imp.StorageBucket = null.StringFrom(s3.S3.BucketImports)
+	imp.IsStored = true
+	imp.NumRows = null.IntFrom(int64(importResult.NumRows))
+	imp.NumColumns = null.IntFrom(int64(importResult.NumColumns))
+	imp.NumProcessedValues = null.IntFrom(int64(importResult.NumNonEmptyCells))
+	fileSize, err := util.GetFileSize(importFile)
+	imp.FileSize = null.NewInt(fileSize, err == nil)
+
+	err = db.DB.Save(imp).Error
+	if err != nil {
+		util.Log.Errorw("Could not update import in database", "error", err, "import_id", imp.ID)
+		return
+	}
+	util.Log.Debugw("File import complete", "import_id", imp.ID)
+}
+
+func processAndWriteCSV(fileToRead, fileToWrite *os.File, columnPositionMap map[int]int, template *model.Template, upload *model.Upload, imp *model.Import) (importToCSVResult, error) {
+	it, err := util.OpenDataFileIterator(fileToRead, upload.FileType.String)
+	defer it.Close()
+	if err != nil {
+		return importToCSVResult{}, err
+	}
+	defer util.ResetFileReader(fileToWrite)
+
+	w := csv.NewWriter(fileToWrite)
 	isHeaderRow := true
 	rowIndex := -1
+	rowCount := 0
 	numNonEmptyCells := 0
 	columnLength := len(template.TemplateColumns)
-	for {
+
+	for it.HasNext() {
 		rowIndex++
-		row, err := r.Read()
+		row, err := it.GetRow()
 		if err == io.EOF {
 			break
 		}
 		if err != nil {
-			util.Log.Warnw("Error while parsing downloaded CSV file", "error", err, "import_id", imp.ID)
+			util.Log.Warnw("Error while parsing downloaded file", "error", err, "import_id", imp.ID)
 			continue
 		}
 		if isHeaderRow {
@@ -504,6 +549,7 @@ func importData(upload *model.Upload, template *model.Template) {
 				}
 			}
 		}
+		rowCount++
 		if err = w.Write(records); err != nil {
 			util.Log.Warnw("Error while writing row to import file", "error", err, "import_id", imp.ID)
 		}
@@ -512,31 +558,12 @@ func importData(upload *model.Upload, template *model.Template) {
 		}
 	}
 	w.Flush()
-	_, err = importFile.Seek(0, io.SeekStart)
-	if err != nil {
-		util.Log.Errorw("Error resetting file reader", "error", err, "import_id", imp.ID)
-	}
-	util.Log.Debugw("Import processing complete", "import_id", imp.ID, "time", time.Since(importStartTime))
 
-	err = s3.S3.UploadFile(imp.ID.String(), imp.FileType.String, s3.S3.BucketImports, importFile)
-	if err != nil {
-		util.Log.Errorw("Could not upload import file to S3", "error", err, "import_id", imp.ID)
-		return
-	}
-
-	imp.StorageBucket = null.StringFrom(s3.S3.BucketImports)
-	imp.IsStored = true
-	imp.NumRows = null.IntFrom(int64(math.Max(float64(rowIndex-1), 0)))
-	imp.NumColumns = null.IntFrom(int64(columnLength))
-	imp.NumProcessedValues = null.IntFrom(int64(numNonEmptyCells))
-	fileSize, err := util.GetFileSize(importFile)
-	imp.FileSize = null.NewInt(fileSize, err == nil)
-	err = db.DB.Save(imp).Error
-	if err != nil {
-		util.Log.Errorw("Could not update import in database", "error", err, "import_id", imp.ID)
-		return
-	}
-	util.Log.Debugw("File import complete", "import_id", imp.ID)
+	return importToCSVResult{
+		NumRows:          rowCount,
+		NumColumns:       columnLength,
+		NumNonEmptyCells: numNonEmptyCells,
+	}, nil
 }
 
 func waitForUploadToBeStored(upload *model.Upload) error {

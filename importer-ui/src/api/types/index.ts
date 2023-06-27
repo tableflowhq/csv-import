@@ -33,9 +33,9 @@ export type TemplateColumn = {
 
 export type Upload = {
   created_at: number;
-  file_extension: "csv";
+  file_extension: string;
   file_name: string;
-  file_type: "text/csv";
+  file_type: string;
   id: string;
   is_parsed: boolean;
   is_stored: boolean;

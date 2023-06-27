@@ -9,7 +9,7 @@ import "./style/uppy.overrides.scss";
 import locale from "./locale";
 
 const restrictions = {
-  allowedFileTypes: ["text/csv"],
+  allowedFileTypes: ["text/csv", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"],
 };
 
 const uppy = new Uppy({
