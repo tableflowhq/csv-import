@@ -146,11 +146,13 @@ func processUploadColumnsAndRowCount(upload *model.Upload, file *os.File) ([]mod
 	}
 	uploadColumns := make([]model.UploadColumn, 0)
 	isHeaderRow := true
-	rowIndex := -1
+	rowIndex := 0
 	sampleDataSize := 3
 
-	for it.HasNext() {
-		rowIndex++
+	for ; ; rowIndex++ {
+		if !it.HasNext() {
+			break
+		}
 		row, err := it.GetRow()
 		if err == io.EOF {
 			break
@@ -184,7 +186,7 @@ func processUploadColumnsAndRowCount(upload *model.Upload, file *os.File) ([]mod
 		}
 		// Continue to iterate through the file to get the row count
 	}
-	return uploadColumns, int(math.Max(float64(rowIndex), 0)), nil
+	return uploadColumns, rowIndex, nil
 }
 
 func saveUploadError(upload *model.Upload, errorStr string) {

@@ -484,7 +484,8 @@ func importData(upload *model.Upload, template *model.Template) {
 
 	imp.StorageBucket = null.StringFrom(s3.S3.BucketImports)
 	imp.IsStored = true
-	imp.NumRows = null.IntFrom(int64(importResult.NumRows))
+	// Subtract 1 to remove the header row
+	imp.NumRows = null.IntFrom(int64(math.Max(float64(importResult.NumRows-1), 0)))
 	imp.NumColumns = null.IntFrom(int64(importResult.NumColumns))
 	imp.NumProcessedValues = null.IntFrom(int64(importResult.NumNonEmptyCells))
 	fileSize, err := util.GetFileSize(importFile)
@@ -508,13 +509,14 @@ func processAndWriteCSV(fileToRead, fileToWrite *os.File, columnPositionMap map[
 
 	w := csv.NewWriter(fileToWrite)
 	isHeaderRow := true
-	rowIndex := -1
-	rowCount := 0
+	rowIndex := 0
 	numNonEmptyCells := 0
 	columnLength := len(template.TemplateColumns)
 
-	for it.HasNext() {
-		rowIndex++
+	for ; ; rowIndex++ {
+		if !it.HasNext() {
+			break
+		}
 		row, err := it.GetRow()
 		if err == io.EOF {
 			break
@@ -549,7 +551,6 @@ func processAndWriteCSV(fileToRead, fileToWrite *os.File, columnPositionMap map[
 				}
 			}
 		}
-		rowCount++
 		if err = w.Write(records); err != nil {
 			util.Log.Warnw("Error while writing row to import file", "error", err, "import_id", imp.ID)
 		}
@@ -560,7 +561,7 @@ func processAndWriteCSV(fileToRead, fileToWrite *os.File, columnPositionMap map[
 	w.Flush()
 
 	return importToCSVResult{
-		NumRows:          rowCount,
+		NumRows:          rowIndex,
 		NumColumns:       columnLength,
 		NumNonEmptyCells: numNonEmptyCells,
 	}, nil
