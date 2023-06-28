@@ -125,7 +125,7 @@ func (h Handler) UploadFile_DO_NOT_USE(key, contentType, bucket string, file *os
 	return err
 }
 
-func (h Handler) UploadFileMultipart_DO_NOT_USER(key, contentType, bucket string, file *os.File) error {
+func (h Handler) UploadFileMultipart_DO_NOT_USE(key, contentType, bucket string, file *os.File) error {
 	util.Log.Debugw("Uploading file to S3", "key", key, "bucket", bucket)
 	svc := s3.New(h.Session)
 	createResp, err := svc.CreateMultipartUpload(&s3.CreateMultipartUploadInput{
