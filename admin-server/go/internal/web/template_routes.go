@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"tableflow/go/pkg/db"
 	"tableflow/go/pkg/model"
+	"tableflow/go/pkg/types"
 	"tableflow/go/pkg/util"
 	"time"
 )
@@ -25,23 +26,18 @@ type TemplateColumnCreateRequest struct {
 //	@Description	Get a single template
 //	@Tags			Template
 //	@Success		200	{object}	model.Template
-//	@Failure		400	{object}	Res
+//	@Failure		400	{object}	types.Res
 //	@Router			/admin/v1/template/{id} [get]
 //	@Param			id	path	string	true	"Template ID"
 func getTemplate(c *gin.Context) {
 	id := c.Param("id")
 	if len(id) == 0 {
-		c.AbortWithStatusJSON(http.StatusBadRequest, Res{Err: "No template ID provided"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No template ID provided"})
 		return
 	}
-	template, err := db.GetTemplateWithUsers(id)
+	template, err := db.GetTemplate(id)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, Res{Err: err.Error()})
-		return
-	}
-	_, err = validateUserInWorkspace(c, template.WorkspaceID.String())
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, Res{Err: err.Error()})
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, template)
@@ -53,42 +49,36 @@ func getTemplate(c *gin.Context) {
 //	@Description	Create a template column
 //	@Tags			Template
 //	@Success		200	{object}	model.Template
-//	@Failure		400	{object}	Res
+//	@Failure		400	{object}	types.Res
 //	@Router			/admin/v1/template-column [post]
 //	@Param			body	body	TemplateColumnCreateRequest	true	"Request body"
 func createTemplateColumn(c *gin.Context) {
 	req := TemplateColumnCreateRequest{}
 	if err := c.BindJSON(&req); err != nil {
 		util.Log.Warnw("Could not bind JSON", "error", err)
-		c.AbortWithStatusJSON(http.StatusBadRequest, Res{Err: err.Error()})
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return
 	}
 	template, err := db.GetTemplate(req.TemplateID)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, Res{Err: "Template does not exist"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Template does not exist"})
 		return
 	}
-	userID, err := validateUserInWorkspace(c, template.WorkspaceID.String())
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, Res{Err: err.Error()})
-		return
-	}
-	user := model.User{ID: model.ParseID(userID)}
 
 	// Basic validation
 	if len(req.Name) == 0 {
-		c.AbortWithStatusJSON(http.StatusBadRequest, Res{Err: "No column name provided"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No column name provided"})
 		return
 	}
 	if !model.IsValidTemplateColumnKey(req.Key) {
-		c.AbortWithStatusJSON(http.StatusBadRequest, Res{Err: "The column key can only contain lowercase letters, numbers, and underscores"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "The column key can only contain lowercase letters, numbers, and underscores"})
 		return
 	}
 	keyAlreadyExists := lo.ContainsBy(template.TemplateColumns, func(tc *model.TemplateColumn) bool {
 		return tc.Key == req.Key
 	})
 	if keyAlreadyExists {
-		c.AbortWithStatusJSON(http.StatusBadRequest, Res{Err: fmt.Sprintf("A column already exists with the key %s", req.Key)})
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("A column already exists with the key %s", req.Key)})
 		return
 	}
 
@@ -98,13 +88,11 @@ func createTemplateColumn(c *gin.Context) {
 		Name:       req.Name,
 		Key:        req.Key,
 		Required:   req.Required,
-		CreatedBy:  user.ID,
-		UpdatedBy:  user.ID,
 	}
-	err = db.DB.Create(&templateColumn).Error
+	err = db.DB.Omit(db.OpenModelOmitFields...).Create(&templateColumn).Error
 	if err != nil {
 		util.Log.Errorw("Could not create template column", "error", err, "template_id", req.TemplateID)
-		c.AbortWithStatusJSON(http.StatusBadRequest, Res{Err: err.Error()})
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return
 	}
 	template.TemplateColumns = append(template.TemplateColumns, &templateColumn)
@@ -117,41 +105,34 @@ func createTemplateColumn(c *gin.Context) {
 //	@Description	Delete a template column
 //	@Tags			Template
 //	@Success		200	{object}	model.Template
-//	@Failure		400	{object}	Res
+//	@Failure		400	{object}	types.Res
 //	@Router			/admin/v1/template-column/{id} [delete]
 //	@Param			id	path	string	true	"Template column ID"
 func deleteTemplateColumn(c *gin.Context) {
 	id := c.Param("id")
 	if len(id) == 0 {
-		c.AbortWithStatusJSON(http.StatusBadRequest, Res{Err: "No template column ID provided"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No template column ID provided"})
 		return
 	}
 
 	template, err := db.GetTemplateByTemplateColumnID(id)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, Res{Err: "Template or template column does not exist"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Template or template column does not exist"})
 		return
 	}
-	userID, err := validateUserInWorkspace(c, template.WorkspaceID.String())
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, Res{Err: err.Error()})
-		return
-	}
-	user := model.User{ID: model.ParseID(userID)}
 
 	templateColumn, ok := lo.Find(template.TemplateColumns, func(tc *model.TemplateColumn) bool {
 		return tc.ID.EqualsString(id)
 	})
 	if !ok {
 		// This shouldn't be possible unless it was deleted by another user before this request could be made
-		c.AbortWithStatusJSON(http.StatusInternalServerError, Res{Err: "Unable to find template column"})
+		c.AbortWithStatusJSON(http.StatusInternalServerError, types.Res{Err: "Unable to find template column"})
 		return
 	}
-	templateColumn.DeletedBy = user.ID
 	templateColumn.DeletedAt = gorm.DeletedAt{Time: time.Now(), Valid: true}
 	err = db.DB.Save(&templateColumn).Error
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, Res{Err: err.Error()})
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return
 	}
 	// Remove the deleted template column from the template to return

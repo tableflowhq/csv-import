@@ -11,19 +11,18 @@ import (
 	"net/http"
 	"os"
 	_ "tableflow/docs"
+	"tableflow/go/internal"
 	"tableflow/go/pkg/env"
 	"tableflow/go/pkg/file"
 	"tableflow/go/pkg/routes"
 	"tableflow/go/pkg/util"
-	"tableflow/go/pkg/web"
-	"tableflow/go/services"
 	"time"
 )
 
 //	@title						TableFlow API
-//	@version					1.0
+//	@version					1.2
 //	@description				The backend API of the TableFlow application.
-//	@termsOfService				https://tableflow.com/terms/
+//	@termsOfService				https://tableflow.com/terms
 //	@contact.name				TableFlow
 //	@contact.url				https://tableflow.com
 //	@contact.email				support@tableflow.com
@@ -34,9 +33,9 @@ import (
 //	@name						Authorization
 
 const (
-	httpServerReadTimeout         = 120 * time.Second
-	httpServerWriteTimeout        = 120 * time.Second
-	httpDefaultAuthorizationToken = "tableflow"
+	httpServerReadTimeout  = 120 * time.Second
+	httpServerWriteTimeout = 120 * time.Second
+	webAppDefaultAuthToken = "tableflow"
 )
 
 func InitWebServer(ctx context.Context) error {
@@ -80,12 +79,10 @@ func InitWebServer(ctx context.Context) error {
 	/* --------------------------  Importer routes  -------------------------- */
 
 	importer := router.Group("/file-import/v1")
-	// TODO: These are routes which will be authenticated by API key from the client
 	tusHandler := file.TusFileHandler()
 	importer.POST("/files", routes.TusPostFile(tusHandler))
 	importer.HEAD("/files/:id", routes.TusHeadFile(tusHandler))
 	importer.PATCH("/files/:id", routes.TusPatchFile(tusHandler))
-	//public.GET("/files/:id", gin.WrapF(tusHandler.GetFile))
 
 	importer.GET("/importer/:id", routes.GetImporterForImportService)
 	importer.GET("/upload/:id", routes.GetUploadForImportService)
@@ -93,41 +90,41 @@ func InitWebServer(ctx context.Context) error {
 
 	/* ---------------------------  Admin routes  ---------------------------- */
 
-	v1 := router.Group("/admin/v1")
-	authHeaderToken := os.Getenv("HTTP_API_SERVER_AUTH_TOKEN")
+	adm := router.Group("/admin/v1")
+	authHeaderToken := os.Getenv("TABLEFLOW_WEB_APP_AUTH_TOKEN")
 	if len(authHeaderToken) == 0 {
-		authHeaderToken = httpDefaultAuthorizationToken
+		authHeaderToken = webAppDefaultAuthToken
 	}
-	v1.Use(web.ApiKeyAuthMiddleware(func(_ *gin.Context, apiKey string) bool {
+	adm.Use(util.ApiKeyAuthMiddleware(func(_ *gin.Context, apiKey string) bool {
 		return apiKey == authHeaderToken
 	}))
 
-	/* API Key */
-	v1.GET("/api-key", getAPIKey)
-	v1.POST("/api-key", regenerateAPIKey)
+	/* Settings */
+	adm.GET("/settings/api-key", getAPIKey)
+	adm.POST("/settings/api-key", regenerateAPIKey)
 
 	/* Importer */
-	v1.POST("/importer", createImporter)
-	v1.GET("/importer/:id", getImporter)
-	v1.POST("/importer/:id", editImporter)
-	v1.GET("/importers/:workspace-id", getImporters)
+	adm.POST("/importer", createImporter)
+	adm.GET("/importer/:id", getImporter)
+	adm.POST("/importer/:id", editImporter)
+	adm.GET("/importers", getImporters)
 
 	/* Template */
-	v1.GET("/template/:id", getTemplate)
-	v1.POST("/template-column", createTemplateColumn)
-	v1.DELETE("/template-column/:id", deleteTemplateColumn)
+	adm.GET("/template/:id", getTemplate)
+	adm.POST("/template-column", createTemplateColumn)
+	adm.DELETE("/template-column/:id", deleteTemplateColumn)
 
 	/* Import */
-	v1.GET("/import/:id", getImport)
-	v1.GET("/imports/:workspace-id", getImports)
+	adm.GET("/import/:id", getImport)
+	adm.GET("/imports", getImports)
 
 	/* Upload */
-	v1.GET("/upload/:id", getUpload)
+	adm.GET("/upload/:id", getUpload)
 
 	/* ---------------------------  API routes  --------------------------- */
 
 	api := router.Group("/v1")
-	api.Use(web.ApiKeyAuthMiddleware(func(c *gin.Context, apiKey string) bool {
+	api.Use(util.ApiKeyAuthMiddleware(func(c *gin.Context, apiKey string) bool {
 		dbApiKey, err := getAPIKeyFromDB()
 		if err != nil || apiKey != dbApiKey {
 			return false
@@ -147,7 +144,7 @@ func InitWebServer(ctx context.Context) error {
 	}()
 	util.Log.Debugw("API server started")
 	go func() {
-		defer services.ShutdownWaitGroup.Done()
+		defer internal.ShutdownWaitGroup.Done()
 		for {
 			select {
 			case <-ctx.Done():

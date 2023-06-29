@@ -5,17 +5,17 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"tableflow/go/internal"
+	"tableflow/go/internal/s3"
+	"tableflow/go/internal/web"
 	"tableflow/go/pkg/db"
 	"tableflow/go/pkg/env"
 	"tableflow/go/pkg/file"
 	"tableflow/go/pkg/util"
-	"tableflow/go/services"
-	"tableflow/go/services/s3"
-	"tableflow/go/services/web"
 )
 
 func main() {
-	services.ShutdownCtx, services.ShutdownCancelFunc = context.WithCancel(context.Background())
+	internal.ShutdownCtx, internal.ShutdownCancelFunc = context.WithCancel(context.Background())
 	var err error
 
 	/* Logger */
@@ -47,16 +47,16 @@ func main() {
 	}
 
 	/* Temp Storage */
-	services.ShutdownWaitGroup.Add(1)
-	err = file.InitTempStorage(services.ShutdownCtx)
+	internal.ShutdownWaitGroup.Add(1)
+	err = file.InitTempStorage(internal.ShutdownCtx)
 	if err != nil {
 		util.Log.Fatalw("Error initializing temp storage", "error", err.Error())
 		return
 	}
 
 	/* Web Server */
-	services.ShutdownWaitGroup.Add(1)
-	err = web.InitWebServer(services.ShutdownCtx)
+	internal.ShutdownWaitGroup.Add(1)
+	err = web.InitWebServer(internal.ShutdownCtx)
 	if err != nil {
 		util.Log.Fatalw("Error initializing web server", "error", err)
 		return
@@ -69,8 +69,8 @@ func main() {
 		signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 		<-quit
 		util.Log.Infow("Shutting down services...")
-		services.ShutdownCancelFunc()
+		internal.ShutdownCancelFunc()
 	}()
-	services.ShutdownWaitGroup.Wait()
+	internal.ShutdownWaitGroup.Wait()
 	util.Log.Infow("Services shutdown")
 }

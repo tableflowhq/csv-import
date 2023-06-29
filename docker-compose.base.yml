@@ -18,23 +18,6 @@ services:
       timeout: 5s
       retries: 5
 
-  supertokens:
-    image: registry.supertokens.io/supertokens/supertokens-postgresql:5.0
-    ports:
-      - "${SUPERTOKENS_PORT}:${SUPERTOKENS_PORT}"
-    networks:
-      - app_network
-    environment:
-      - POSTGRESQL_CONNECTION_URI="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:${POSTGRES_PORT}/${POSTGRES_DATABASE_NAME}"
-      - ACCESS_TOKEN_BLACKLISTING=true
-    restart: unless-stopped
-    healthcheck:
-      test: >
-        bash -c 'exec 3<>/dev/tcp/127.0.0.1/${SUPERTOKENS_PORT} && echo -e "GET /hello HTTP/1.1\r\nhost: 127.0.0.1:${SUPERTOKENS_PORT}\r\nConnection: close\r\n\r\n" >&3 && cat <&3 | grep "Hello"'
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   backend:
     build: "./admin-server"
     platform: linux/amd64
@@ -43,27 +26,19 @@ services:
     networks:
       - app_network
     environment:
-      - SUPERTOKENS_HOST=${SUPERTOKENS_HOST}
-      - SUPERTOKENS_PORT=${SUPERTOKENS_PORT}
-      - SUPERTOKENS_API_KEY=${SUPERTOKENS_API_KEY}
       - POSTGRES_HOST=${POSTGRES_HOST}
       - POSTGRES_PORT=${POSTGRES_PORT}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DATABASE_NAME=${POSTGRES_DATABASE_NAME}
-      - WEB_APP_URL=${WEB_APP_URL}
-      - API_SERVER_URL=${API_SERVER_URL}
-      - API_SERVER_PORT=${API_SERVER_PORT}
-      - EMAIL_API_KEY=${EMAIL_API_KEY}
+      - TABLEFLOW_WEB_APP_URL=${TABLEFLOW_WEB_APP_URL}
+      - TABLEFLOW_API_SERVER_URL=${TABLEFLOW_API_SERVER_URL}
+      - TABLEFLOW_API_SERVER_PORT=${TABLEFLOW_API_SERVER_PORT}
       - AWS_REGION=${AWS_REGION}
       - AWS_S3_FILE_UPLOADS_BUCKET_NAME=${AWS_S3_FILE_UPLOADS_BUCKET_NAME}
       - AWS_S3_FILE_IMPORTS_BUCKET_NAME=${AWS_S3_FILE_IMPORTS_BUCKET_NAME}
       - AWS_IAM_FILE_ACCESS_KEY=${AWS_IAM_FILE_ACCESS_KEY}
       - AWS_IAM_FILE_SECRET_KEY=${AWS_IAM_FILE_SECRET_KEY}
-      - OAUTH_PROVIDER_GOOGLE_CLIENT_ID=${OAUTH_PROVIDER_GOOGLE_CLIENT_ID}
-      - OAUTH_PROVIDER_GOOGLE_CLIENT_SECRET=${OAUTH_PROVIDER_GOOGLE_CLIENT_SECRET}
-      - OAUTH_PROVIDER_GITHUB_CLIENT_ID=${OAUTH_PROVIDER_GITHUB_CLIENT_ID}
-      - OAUTH_PROVIDER_GITHUB_CLIENT_SECRET=${OAUTH_PROVIDER_GITHUB_CLIENT_SECRET}
     volumes:
       - ${PWD}/../.env:/.env
       - tmp:/tmp/tableflow-files
@@ -72,7 +47,7 @@ services:
     restart: on-failure
     healthcheck:
       test: >
-        bash -c 'exec 3<>/dev/tcp/127.0.0.1/3003 && echo -e "GET /api/health HTTP/1.1\r\nhost: 127.0.0.1:3003\r\nConnection: close\r\n\r\n" >&3 && cat <&3 | grep "ok"'
+        bash -c 'exec 3<>/dev/tcp/127.0.0.1/3003 && echo -e "GET /public/health HTTP/1.1\r\nhost: 127.0.0.1:3003\r\nConnection: close\r\n\r\n" >&3 && cat <&3 | grep "ok"'
       interval: 10s
       timeout: 5s
       retries: 5

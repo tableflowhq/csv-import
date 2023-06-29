@@ -6,25 +6,14 @@ services:
       file: docker-compose.base.yml
       service: postgres
 
-  supertokens:
-    extends:
-      file: docker-compose.base.yml
-      service: supertokens
-    depends_on:
-      postgres:
-        condition: service_healthy
-
   backend:
     extends:
       file: docker-compose.base.yml
       service: backend
     environment:
-      - SUPERTOKENS_HOST=http://host.docker.internal
       - POSTGRES_HOST=host.docker.internal
     depends_on:
       postgres:
-        condition: service_healthy
-      supertokens:
         condition: service_healthy
 
 networks:

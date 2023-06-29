@@ -11,6 +11,7 @@ import (
 
 var DB *gorm.DB
 var dbInitialized bool
+var OpenModelOmitFields = []string{"WorkspaceID", "CreatedBy", "UpdatedBy", "DeletedBy"}
 
 func InitDatabase() error {
 	if dbInitialized {
@@ -45,22 +46,21 @@ func getDatabaseInitSQL() string {
 		);
 		insert into instance_id (id) values (gen_random_uuid()) on conflict do nothing;
 
-		create table if not exists users (
-		    id         uuid primary key         not null default gen_random_uuid(),
-		    api_key    text                     not null default concat('tf_', replace(gen_random_uuid()::text, '-', '')),
-		    created_at timestamp with time zone not null
+		create table if not exists settings (
+		    initialized bool primary key         not null default true,
+		    api_key     text                     not null default concat('tf_', replace(gen_random_uuid()::text, '-', '')),
+		    created_at  timestamp with time zone not null default now(),
+		    constraint initialized check (initialized)
 		);
+		insert into settings select on conflict do nothing;
 
 		create table if not exists importers (
 		    id              uuid primary key         not null default gen_random_uuid(),
 		    name            text                     not null,
 		    allowed_domains text[]                   not null,
 		    webhook_url     text,
-		    created_by      uuid                     not null,
 		    created_at      timestamp with time zone not null,
-		    updated_by      uuid                     not null,
 		    updated_at      timestamp with time zone not null,
-		    deleted_by      uuid,
 		    deleted_at      timestamp with time zone
 		);
 		create index if not exists importers_created_at_idx on importers(created_at);
@@ -69,11 +69,8 @@ func getDatabaseInitSQL() string {
 		    id           uuid primary key         not null default gen_random_uuid(),
 		    importer_id  uuid                     not null,
 		    name         text                     not null,
-		    created_by   uuid                     not null,
 		    created_at   timestamp with time zone not null,
-		    updated_by   uuid                     not null,
 		    updated_at   timestamp with time zone not null,
-		    deleted_by   uuid,
 		    deleted_at   timestamp with time zone,
 		    constraint fk_importer_id_id
 		        foreign key (importer_id)
@@ -88,11 +85,8 @@ func getDatabaseInitSQL() string {
 		    name        text                     not null,
 		    key         text                     not null,
 		    required    bool                     not null default false,
-		    created_by  uuid                     not null,
 		    created_at  timestamp with time zone not null,
-		    updated_by  uuid                     not null,
 		    updated_at  timestamp with time zone not null,
-		    deleted_by  uuid,
 		    deleted_at  timestamp with time zone,
 		    constraint fk_template_id
 		        foreign key (template_id)

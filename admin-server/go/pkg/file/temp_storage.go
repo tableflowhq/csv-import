@@ -5,8 +5,8 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"tableflow/go/internal"
 	"tableflow/go/pkg/util"
-	"tableflow/go/services"
 )
 
 const tempDir = "/tmp/tableflow-files"
@@ -43,7 +43,7 @@ func InitTempStorage(ctx context.Context) error {
 	}
 
 	go func() {
-		defer services.ShutdownWaitGroup.Done()
+		defer internal.ShutdownWaitGroup.Done()
 		for {
 			select {
 			case <-ctx.Done():

@@ -8,9 +8,10 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"tableflow/go/internal/s3"
 	"tableflow/go/pkg/db"
+	"tableflow/go/pkg/types"
 	"tableflow/go/pkg/util"
-	"tableflow/go/services/s3"
 )
 
 // getImportForExternalAPI
@@ -19,25 +20,19 @@ import (
 //	@Description	Get an individual import
 //	@Tags			External API
 //	@Success		200	{object}	model.Import
-//	@Failure		400	{object}	Res
+//	@Failure		400	{object}	types.Res
 //	@Router			/v1/import/{id} [get]
 //	@Param			id	path	string	true	"Import ID"
 func getImportForExternalAPI(c *gin.Context) {
 	id := c.Param("id")
 	if len(id) == 0 {
-		c.AbortWithStatusJSON(http.StatusBadRequest, Res{Err: "No import ID provided"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No import ID provided"})
 		return
 	}
 	imp, err := db.GetImport(id)
 	if err != nil {
 		util.Log.Warnw("Could not get import", "error", err, "import_id", id)
-		c.AbortWithStatusJSON(http.StatusBadRequest, Res{Err: "Could not find import"})
-		return
-	}
-	workspaceID := c.GetString("workspace_id")
-	if imp.WorkspaceID.String() != workspaceID {
-		util.Log.Warnw("Attempted to download import not belonging to workspace", "workspace_id", workspaceID, "import_id", id)
-		c.AbortWithStatusJSON(http.StatusUnauthorized, Res{Err: "Unauthorized"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Could not find import"})
 		return
 	}
 	c.JSON(http.StatusOK, imp)
@@ -49,30 +44,24 @@ func getImportForExternalAPI(c *gin.Context) {
 //	@Description	Download the import as a file
 //	@Tags			External API
 //	@Success		200
-//	@Failure		400	{object}	Res
+//	@Failure		400	{object}	types.Res
 //	@Router			/v1/import/{id}/download [get]
 //	@Param			id	path	string	true	"Import ID"
 func downloadImportForExternalAPI(c *gin.Context) {
 	id := c.Param("id")
 	if len(id) == 0 {
-		c.AbortWithStatusJSON(http.StatusBadRequest, Res{Err: "No import ID provided"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No import ID provided"})
 		return
 	}
 
 	imp, err := db.GetImport(id)
 	if err != nil {
 		util.Log.Warnw("Could not get import to download", "error", err, "import_id", id)
-		c.AbortWithStatusJSON(http.StatusBadRequest, Res{Err: "Could not find import"})
-		return
-	}
-	workspaceID := c.GetString("workspace_id")
-	if imp.WorkspaceID.String() != workspaceID {
-		util.Log.Warnw("Attempted to download import not belonging to workspace", "workspace_id", workspaceID, "import_id", id)
-		c.AbortWithStatusJSON(http.StatusUnauthorized, Res{Err: "Unauthorized"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Could not find import"})
 		return
 	}
 	if !imp.IsStored {
-		c.AbortWithStatusJSON(http.StatusPreconditionFailed, Res{Err: "Import has not finished processing"})
+		c.AbortWithStatusJSON(http.StatusPreconditionFailed, types.Res{Err: "Import has not finished processing"})
 		return
 	}
 
@@ -82,7 +71,7 @@ func downloadImportForExternalAPI(c *gin.Context) {
 	}
 	if err != nil {
 		util.Log.Errorw("Error downloading file from S3", "error", err, "import_id", id)
-		c.AbortWithStatusJSON(http.StatusInternalServerError, Res{Err: "Could not download import"})
+		c.AbortWithStatusJSON(http.StatusInternalServerError, types.Res{Err: "Could not download import"})
 		return
 	}
 	fileExtension := lo.Ternary(imp.FileExtension.Valid, fmt.Sprintf(".%s", imp.FileExtension.String), "")
@@ -97,7 +86,7 @@ func downloadImportForExternalAPI(c *gin.Context) {
 	_, err = io.Copy(c.Writer, res.Body)
 	if err != nil {
 		util.Log.Errorw("Error copying import reader to response during download", "error", err, "import_id", id)
-		c.AbortWithStatusJSON(http.StatusInternalServerError, Res{Err: "Could not download import"})
+		c.AbortWithStatusJSON(http.StatusInternalServerError, types.Res{Err: "Could not download import"})
 		return
 	}
 }

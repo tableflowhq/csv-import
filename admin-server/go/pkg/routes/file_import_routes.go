@@ -15,11 +15,12 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"tableflow/go/internal/s3"
 	"tableflow/go/pkg/db"
 	"tableflow/go/pkg/file"
 	"tableflow/go/pkg/model"
+	"tableflow/go/pkg/types"
 	"tableflow/go/pkg/util"
-	"tableflow/go/services/s3"
 	"time"
 )
 
@@ -152,26 +153,26 @@ func TusPatchFile(h *handler.UnroutedHandler) gin.HandlerFunc {
 //	@Description	Get a single importer and its template
 //	@Tags			File Import
 //	@Success		200	{object}	ImportServiceImporter
-//	@Failure		400	{object}	Res
+//	@Failure		400	{object}	types.Res
 //	@Router			/file-import/v1/importer/{id} [get]
 //	@Param			id	path	string	true	"Importer ID"
 func GetImporterForImportService(c *gin.Context) {
 	id := c.Param("id")
 	if len(id) == 0 {
-		c.AbortWithStatusJSON(http.StatusBadRequest, Res{Err: "No importer ID provided"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No importer ID provided"})
 		return
 	}
 	template, err := db.GetTemplateByImporterWithImporter(id)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, Res{Err: err.Error()})
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return
 	}
 	if !template.ImporterID.Valid || template.Importer == nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, Res{Err: "Template not attached to importer"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Template not attached to importer"})
 		return
 	}
 	if len(template.TemplateColumns) == 0 {
-		c.AbortWithStatusJSON(http.StatusBadRequest, Res{Err: "No template columns found. Please create at least one template column to use this importer."})
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No template columns found. Please create at least one template column to use this importer."})
 		return
 	}
 	if len(template.Importer.AllowedDomains) != 0 {
@@ -207,13 +208,13 @@ func GetImporterForImportService(c *gin.Context) {
 //	@Description	Get a single upload by the tus ID provided to the client from the upload
 //	@Tags			File Import
 //	@Success		200	{object}	ImportServiceUpload
-//	@Failure		400	{object}	Res
+//	@Failure		400	{object}	types.Res
 //	@Router			/file-import/v1/upload/{id} [get]
 //	@Param			id	path	string	true	"tus ID"
 func GetUploadForImportService(c *gin.Context) {
 	id := c.Param("id")
 	if len(id) == 0 {
-		c.AbortWithStatusJSON(http.StatusBadRequest, Res{Err: "No upload tus ID provided"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No upload tus ID provided"})
 		return
 	}
 	upload, err := db.GetUploadByTusID(id)
@@ -222,7 +223,7 @@ func GetUploadForImportService(c *gin.Context) {
 		return
 	}
 	if upload.Error.Valid {
-		c.AbortWithStatusJSON(http.StatusBadRequest, Res{Err: upload.Error.String})
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: upload.Error.String})
 		return
 	}
 	importerUploadColumns := make([]*ImportServiceUploadColumn, len(upload.UploadColumns))
@@ -256,43 +257,43 @@ func GetUploadForImportService(c *gin.Context) {
 //	@Summary		Set upload column mapping and import data
 //	@Description	Set the template column IDs for each upload column and trigger the import. Note: we will eventually have a separate import endpoint once there is a review step in the upload process.
 //	@Tags			File Import
-//	@Success		200	{object}	Res
-//	@Failure		400	{object}	Res
+//	@Success		200	{object}	types.Res
+//	@Failure		400	{object}	types.Res
 //	@Router			/file-import/v1/upload-column-mapping/{id} [post]
 //	@Param			id		path	string				true	"Upload ID"
 //	@Param			body	body	map[string]string	true	"Request body"
 func SetUploadColumnMappingAndImportData(c *gin.Context) {
 	id := c.Param("id")
 	if len(id) == 0 {
-		c.AbortWithStatusJSON(http.StatusBadRequest, Res{Err: "No upload ID provided"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No upload ID provided"})
 		return
 	}
 	// Upload column ID -> Template column ID
 	columnMapping := make(map[string]string)
 	if err := c.BindJSON(&columnMapping); err != nil {
 		util.Log.Warnw("Could not bind JSON", "error", err)
-		c.AbortWithStatusJSON(http.StatusBadRequest, Res{Err: err.Error()})
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return
 	}
 
 	upload, err := db.GetUpload(id)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, Res{Err: err.Error()})
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return
 	}
 	template, err := db.GetTemplateByImporter(upload.ImporterID.String())
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, Res{Err: err.Error()})
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return
 	}
 	if len(template.TemplateColumns) == 0 {
-		c.AbortWithStatusJSON(http.StatusBadRequest, Res{Err: "Template does not have columns"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Template does not have columns"})
 		return
 	}
 
 	// Validate there are no duplicate template column IDs
 	if util.HasDuplicateValues(columnMapping) {
-		c.AbortWithStatusJSON(http.StatusBadRequest, Res{Err: "Mapping cannot contain duplicate template columns"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Mapping cannot contain duplicate template columns"})
 		return
 	}
 	// Validate that all required template column IDs are provided
@@ -307,13 +308,13 @@ func SetUploadColumnMappingAndImportData(c *gin.Context) {
 		return true
 	})
 	if !hasAllRequiredColumns {
-		c.AbortWithStatusJSON(http.StatusBadRequest, Res{Err: "All required columns must be set"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "All required columns must be set"})
 		return
 	}
 	err = db.SetTemplateColumnIDs(upload, columnMapping)
 	if err != nil {
 		util.Log.Errorw("Could not set template column mapping", "error", err)
-		c.AbortWithStatusJSON(http.StatusBadRequest, Res{Err: "An error occurred updating the column mapping"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "An error occurred updating the column mapping"})
 		return
 	}
 
@@ -321,7 +322,7 @@ func SetUploadColumnMappingAndImportData(c *gin.Context) {
 	// This will be its own endpoint or attached to the review stage once that is implemented
 	go importData(upload, template)
 
-	c.JSON(http.StatusOK, Res{Message: "success"})
+	c.JSON(http.StatusOK, types.Res{Message: "success"})
 }
 
 func importData(upload *model.Upload, template *model.Template) {

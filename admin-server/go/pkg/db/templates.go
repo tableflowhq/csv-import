@@ -39,25 +39,6 @@ func GetTemplateByTemplateColumnID(templateColumnID string) (*model.Template, er
 	return &template, nil
 }
 
-func GetTemplateWithUsers(id string) (*model.Template, error) {
-	if len(id) == 0 {
-		return nil, errors.New("no ID provided")
-	}
-	var template model.Template
-	err := DB.Preload("TemplateColumns").
-		Preload("CreatedByUser", userPreloadArgs).
-		Preload("UpdatedByUser", userPreloadArgs).
-		Preload("DeletedByUser", userPreloadArgs).
-		First(&template, model.ParseID(id)).Error
-	if err != nil {
-		return nil, err
-	}
-	if !template.ID.Valid {
-		return nil, gorm.ErrRecordNotFound
-	}
-	return &template, nil
-}
-
 func GetTemplateByImporter(importerID string) (*model.Template, error) {
 	if len(importerID) == 0 {
 		return nil, errors.New("no importer ID provided")

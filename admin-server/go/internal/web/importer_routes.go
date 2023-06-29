@@ -9,12 +9,12 @@ import (
 	"strings"
 	"tableflow/go/pkg/db"
 	"tableflow/go/pkg/model"
+	"tableflow/go/pkg/types"
 	"tableflow/go/pkg/util"
 )
 
 type ImporterCreateRequest struct {
-	Name        string `json:"name" example:"Test Importer"`
-	WorkspaceID string `json:"workspace_id" example:"b2079476-261a-41fe-8019-46eb51c537f7"`
+	Name string `json:"name" example:"Test Importer"`
 }
 
 type ImporterEditRequest struct {
@@ -29,51 +29,39 @@ type ImporterEditRequest struct {
 //	@Description	Create an importer
 //	@Tags			Importer
 //	@Success		200	{object}	model.Importer
-//	@Failure		400	{object}	Res
+//	@Failure		400	{object}	types.Res
 //	@Router			/admin/v1/importer [post]
 //	@Param			body	body	ImporterCreateRequest	true	"Request body"
 func createImporter(c *gin.Context) {
 	req := ImporterCreateRequest{}
 	if err := c.BindJSON(&req); err != nil {
 		util.Log.Warnw("Could not bind JSON", "error", err)
-		c.AbortWithStatusJSON(http.StatusBadRequest, Res{Err: err.Error()})
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return
 	}
-	userID, err := validateUserInWorkspace(c, req.WorkspaceID)
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, Res{Err: err.Error()})
-		return
-	}
-	user := model.User{ID: model.ParseID(userID)}
 	if len(req.Name) == 0 {
 		req.Name = "My Importer"
 	}
 	importer := model.Importer{
-		ID:          model.NewID(),
-		WorkspaceID: model.ParseID(req.WorkspaceID),
-		Name:        req.Name,
-		CreatedBy:   user.ID,
-		UpdatedBy:   user.ID,
+		ID:   model.NewID(),
+		Name: req.Name,
 	}
-	err = db.DB.Create(&importer).Error
+	err := db.DB.Omit(db.OpenModelOmitFields...).Create(&importer).Error
 	if err != nil {
-		util.Log.Errorw("Could not create importer", "error", err, "workspace_id", req.WorkspaceID)
-		c.AbortWithStatusJSON(http.StatusBadRequest, Res{Err: err.Error()})
+		util.Log.Errorw("Could not create importer", "error", err)
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return
 	}
 	// Right now, templates are 1:1 with importers. Create a default template to be used by the importer
 	template := model.Template{
-		ID:          model.NewID(),
-		WorkspaceID: importer.WorkspaceID,
-		ImporterID:  importer.ID,
-		Name:        "Default Template",
-		CreatedBy:   user.ID,
-		UpdatedBy:   user.ID,
+		ID:         model.NewID(),
+		ImporterID: importer.ID,
+		Name:       "Default Template",
 	}
-	err = db.DB.Create(&template).Error
+	err = db.DB.Omit(db.OpenModelOmitFields...).Create(&template).Error
 	if err != nil {
-		util.Log.Errorw("Could not create template for importer", "error", err, "workspace_id", req.WorkspaceID)
-		c.AbortWithStatusJSON(http.StatusBadRequest, Res{Err: err.Error()})
+		util.Log.Errorw("Could not create template for importer", "error", err)
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, &importer)
@@ -85,23 +73,18 @@ func createImporter(c *gin.Context) {
 //	@Description	Get a single importer
 //	@Tags			Importer
 //	@Success		200	{object}	model.Importer
-//	@Failure		400	{object}	Res
+//	@Failure		400	{object}	types.Res
 //	@Router			/admin/v1/importer/{id} [get]
 //	@Param			id	path	string	true	"Importer ID"
 func getImporter(c *gin.Context) {
 	id := c.Param("id")
 	if len(id) == 0 {
-		c.AbortWithStatusJSON(http.StatusBadRequest, Res{Err: "No importer ID provided"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No importer ID provided"})
 		return
 	}
-	importer, err := db.GetImporterWithUsers(id)
+	importer, err := db.GetImporter(id)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, Res{Err: err.Error()})
-		return
-	}
-	_, err = validateUserInWorkspace(c, importer.WorkspaceID.String())
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, Res{Err: err.Error()})
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, importer)
@@ -113,23 +96,13 @@ func getImporter(c *gin.Context) {
 //	@Description	Get a list of importers
 //	@Tags			Importer
 //	@Success		200	{object}	[]model.Importer
-//	@Failure		400	{object}	Res
-//	@Router			/admin/v1/importers/{workspace-id} [get]
-//	@Param			workspace-id	path	string	true	"Workspace ID"
+//	@Failure		400	{object}	types.Res
+//	@Router			/admin/v1/importers [get]
 func getImporters(c *gin.Context) {
-	workspaceID := c.Param("workspace-id")
-	if len(workspaceID) == 0 {
-		c.AbortWithStatusJSON(http.StatusBadRequest, Res{Err: "No workspace ID provided"})
-		return
-	}
-	_, err := validateUserInWorkspace(c, workspaceID)
+	var importers []*model.Importer
+	err := db.DB.Preload("Template.TemplateColumns").Find(&importers).Error
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, Res{Err: err.Error()})
-		return
-	}
-	importers, err := db.GetImportersWithUsers(workspaceID)
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, Res{Err: err.Error()})
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, importers)
@@ -141,25 +114,25 @@ func getImporters(c *gin.Context) {
 //	@Description	Edit an importer
 //	@Tags			Importer
 //	@Success		200	{object}	model.Importer
-//	@Failure		400	{object}	Res
+//	@Failure		400	{object}	types.Res
 //	@Router			/admin/v1/importer/{id} [post]
 //	@Param			id		path	string				true	"Importer ID"
 //	@Param			body	body	ImporterEditRequest	true	"Request body"
 func editImporter(c *gin.Context) {
 	id := c.Param("id")
 	if len(id) == 0 {
-		c.AbortWithStatusJSON(http.StatusBadRequest, Res{Err: "No importer ID provided"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No importer ID provided"})
 		return
 	}
 	req := ImporterEditRequest{}
 	if err := c.BindJSON(&req); err != nil {
 		util.Log.Warnw("Could not bind JSON", "error", err)
-		c.AbortWithStatusJSON(http.StatusBadRequest, Res{Err: err.Error()})
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return
 	}
 	importer, err := db.GetImporter(id)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, Res{Err: err.Error()})
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return
 	}
 
@@ -174,7 +147,7 @@ func editImporter(c *gin.Context) {
 			importer.WebhookURL = null.NewString("", false)
 		} else {
 			if !util.IsValidURL(*req.WebhookURL) {
-				c.AbortWithStatusJSON(http.StatusBadRequest, Res{Err: "Invalid webhook URL"})
+				c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Invalid webhook URL"})
 				return
 			}
 			importer.WebhookURL = null.StringFromPtr(req.WebhookURL)
@@ -190,7 +163,7 @@ func editImporter(c *gin.Context) {
 			}
 		}
 		if len(invalidDomains) != 0 {
-			c.AbortWithStatusJSON(http.StatusBadRequest, Res{
+			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{
 				Err: fmt.Sprintf("Invalid domain%s: %s - Domains must be in the format 'example.com' or 'www.example.com' and not complete URLs.",
 					lo.Ternary(len(invalidDomains) == 1, "", "s"), strings.Join(invalidDomains, ", ")),
 			})
@@ -201,10 +174,10 @@ func editImporter(c *gin.Context) {
 	}
 
 	if save {
-		err = db.DB.Save(importer).Error
+		err = db.DB.Omit(db.OpenModelOmitFields...).Save(importer).Error
 		if err != nil {
 			util.Log.Errorw("Could not save importer", "error", err, "importer_id", importer.ID)
-			c.AbortWithStatusJSON(http.StatusBadRequest, Res{Err: err.Error()})
+			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 			return
 		}
 	}

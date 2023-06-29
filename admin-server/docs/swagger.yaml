@@ -77,33 +77,6 @@ definitions:
   model.JSONB:
     additionalProperties: true
     type: object
-  model.Organization:
-    properties:
-      created_at:
-        example: 1682366228
-        type: integer
-      created_by:
-        $ref: '#/definitions/model.User'
-      id:
-        example: 8a7850a1-8b03-4337-a530-f9d48f7d9232
-        type: string
-      name:
-        example: My Organization
-        type: string
-      updated_at:
-        example: 1682366228
-        type: integer
-      updated_by:
-        $ref: '#/definitions/model.User'
-      users:
-        items:
-          $ref: '#/definitions/model.User'
-        type: array
-      workspaces:
-        items:
-          $ref: '#/definitions/model.Workspace'
-        type: array
-    type: object
   model.Template:
     properties:
       created_at:
@@ -252,159 +225,17 @@ definitions:
         example: 1682366228
         type: integer
     type: object
-  model.Workspace:
+  types.Res:
     properties:
-      created_at:
-        example: 1682366228
-        type: integer
-      created_by:
-        $ref: '#/definitions/model.User'
-      id:
-        example: b2079476-261a-41fe-8019-46eb51c537f7
+      error:
         type: string
-      name:
-        example: My Workspace
+      message:
         type: string
-      updated_at:
-        example: 1682366228
-        type: integer
-      updated_by:
-        $ref: '#/definitions/model.User'
-      users:
-        items:
-          $ref: '#/definitions/model.User'
-        type: array
-      workspace_limit:
-        $ref: '#/definitions/model.WorkspaceLimit'
-    type: object
-  model.WorkspaceLimit:
-    properties:
-      files:
-        example: 10000
-        type: integer
-      id:
-        example: c44c948f-6061-45c9-aa6a-40373f6dcdad
-        type: string
-      importers:
-        example: 10
-        type: integer
-      processed_values:
-        example: 100000000
-        type: integer
-      rows:
-        example: 1000000
-        type: integer
-      rows_per_import:
-        example: 10000
-        type: integer
-      users:
-        example: 10
-        type: integer
-      workspace_id:
-        example: b2079476-261a-41fe-8019-46eb51c537f7
-        type: string
-    type: object
-  web.ImportServiceImporter:
-    properties:
-      id:
-        example: 6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353
-        type: string
-      name:
-        example: Test Importer
-        type: string
-      template:
-        $ref: '#/definitions/web.ImportServiceTemplate'
-    type: object
-  web.ImportServiceTemplate:
-    properties:
-      id:
-        example: f0797968-becc-422a-b135-19de1d8c5d46
-        type: string
-      name:
-        example: My Template
-        type: string
-      template_columns:
-        items:
-          $ref: '#/definitions/web.ImportServiceTemplateColumn'
-        type: array
-    type: object
-  web.ImportServiceTemplateColumn:
-    properties:
-      id:
-        example: a1ed136d-33ce-4b7e-a7a4-8a5ccfe54cd5
-        type: string
-      name:
-        example: Work Email
-        type: string
-      required:
-        example: false
-        type: boolean
-    type: object
-  web.ImportServiceUpload:
-    properties:
-      created_at:
-        example: 1682366228
-        type: integer
-      file_extension:
-        example: csv
-        type: string
-      file_name:
-        example: example.csv
-        type: string
-      file_size:
-        example: 1024
-        type: integer
-      file_type:
-        example: text/csv
-        type: string
-      id:
-        example: 50ca61e1-f683-4b03-9ec4-4b3adb592bf1
-        type: string
-      importer_id:
-        example: 6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353
-        type: string
-      is_parsed:
-        example: false
-        type: boolean
-      is_stored:
-        example: false
-        type: boolean
-      metadata:
-        example: '{"user_id": 1234}'
-        type: string
-      tus_id:
-        example: ee715c254ee61855b465ed61be930487
-        type: string
-      upload_columns:
-        items:
-          $ref: '#/definitions/web.ImportServiceUploadColumn'
-        type: array
-    type: object
-  web.ImportServiceUploadColumn:
-    properties:
-      id:
-        example: 3c79e7fd-1018-4a27-8b86-9cee84221cd8
-        type: string
-      index:
-        example: 0
-        type: integer
-      name:
-        example: Work Email
-        type: string
-      sample_data:
-        example:
-        - test@example.com
-        items:
-          type: string
-        type: array
     type: object
   web.ImporterCreateRequest:
     properties:
       name:
         example: Test Importer
-        type: string
-      workspace_id:
-        example: b2079476-261a-41fe-8019-46eb51c537f7
         type: string
     type: object
   web.ImporterEditRequest:
@@ -422,13 +253,6 @@ definitions:
         example: https://example.com/webhook
         type: string
     type: object
-  web.Res:
-    properties:
-      error:
-        type: string
-      message:
-        type: string
-    type: object
   web.TemplateColumnCreateRequest:
     properties:
       key:
@@ -444,39 +268,6 @@ definitions:
         example: f0797968-becc-422a-b135-19de1d8c5d46
         type: string
     type: object
-  web.WorkspaceUsageLimit:
-    properties:
-      month:
-        example: "2023-06-01"
-        type: string
-      num_files:
-        example: 10000
-        type: integer
-      num_files_limit:
-        example: 10000
-        type: integer
-      num_processed_values:
-        example: 10000
-        type: integer
-      num_processed_values_limit:
-        example: 10000
-        type: integer
-      num_rows:
-        example: 10000
-        type: integer
-      num_rows_limit:
-        example: 10000
-        type: integer
-      total_file_size_mb:
-        example: 10000
-        type: number
-      total_file_size_mb_limit:
-        example: 10000
-        type: number
-      workspace_id:
-        example: b2079476-261a-41fe-8019-46eb51c537f7
-        type: string
-    type: object
 host: localhost:3003
 info:
   contact:
@@ -484,9 +275,9 @@ info:
     name: TableFlow
     url: https://tableflow.com
   description: The backend API of the TableFlow application.
-  termsOfService: https://tableflow.com/terms/
+  termsOfService: https://tableflow.com/terms
   title: TableFlow API
-  version: "1.0"
+  version: "1.2"
 paths:
   /admin/v1/import/{id}:
     get:
@@ -505,7 +296,7 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/web.Res'
+            $ref: '#/definitions/types.Res'
       summary: Get import
       tags:
       - Import
@@ -527,7 +318,7 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/web.Res'
+            $ref: '#/definitions/types.Res'
       summary: Create importer
       tags:
       - Importer
@@ -548,7 +339,7 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/web.Res'
+            $ref: '#/definitions/types.Res'
       summary: Get importer
       tags:
       - Importer
@@ -574,19 +365,13 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/web.Res'
+            $ref: '#/definitions/types.Res'
       summary: Edit importer
       tags:
       - Importer
-  /admin/v1/importers/{workspace-id}:
+  /admin/v1/importers:
     get:
       description: Get a list of importers
-      parameters:
-      - description: Workspace ID
-        in: path
-        name: workspace-id
-        required: true
-        type: string
       responses:
         "200":
           description: OK
@@ -597,19 +382,13 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/web.Res'
+            $ref: '#/definitions/types.Res'
       summary: Get importers
       tags:
       - Importer
-  /admin/v1/imports/{workspace-id}:
+  /admin/v1/imports:
     get:
       description: Get a list of imports
-      parameters:
-      - description: Workspace ID
-        in: path
-        name: workspace-id
-        required: true
-        type: string
       responses:
         "200":
           description: OK
@@ -620,26 +399,39 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/web.Res'
+            $ref: '#/definitions/types.Res'
       summary: Get imports
       tags:
       - Import
-  /admin/v1/organization-workspaces:
+  /admin/v1/settings/api-key:
     get:
-      description: Get the current user's organization and workspaces that are a part
-        of the organization
+      description: Get the current API key
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/model.Organization'
+            type: string
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/web.Res'
-      summary: Get organization and attached workspaces
+            $ref: '#/definitions/types.Res'
+      summary: Get API key
       tags:
-      - Organization
+      - API Key
+    post:
+      description: Regenerate the current API key and return the new API key
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/types.Res'
+      summary: Regenerate API key
+      tags:
+      - API Key
   /admin/v1/template-column:
     post:
       description: Create a template column
@@ -658,7 +450,7 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/web.Res'
+            $ref: '#/definitions/types.Res'
       summary: Create template column
       tags:
       - Template
@@ -679,7 +471,7 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/web.Res'
+            $ref: '#/definitions/types.Res'
       summary: Delete template column
       tags:
       - Template
@@ -700,7 +492,7 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/web.Res'
+            $ref: '#/definitions/types.Res'
       summary: Get template
       tags:
       - Template
@@ -721,192 +513,10 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/web.Res'
+            $ref: '#/definitions/types.Res'
       summary: Get upload
       tags:
       - Upload
-  /admin/v1/workspace/{id}/api-key:
-    get:
-      description: Get the current API key of a workspace
-      parameters:
-      - description: Workspace ID
-        in: path
-        name: id
-        required: true
-        type: string
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/web.Res'
-      summary: Get workspace API key
-      tags:
-      - Workspace
-    post:
-      description: Regenerate the current API key of a workspace and return the new
-        API key
-      parameters:
-      - description: Workspace ID
-        in: path
-        name: id
-        required: true
-        type: string
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/web.Res'
-      summary: Regenerate workspace API key
-      tags:
-      - Workspace
-  /admin/v1/workspace/{id}/usage:
-    get:
-      description: Get the workspace usage for the current month
-      parameters:
-      - description: Workspace ID
-        in: path
-        name: id
-        required: true
-        type: string
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/web.WorkspaceUsageLimit'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/web.Res'
-      summary: Get workspace usage
-      tags:
-      - Workspace
-  /file-import/v1/files:
-    post:
-      description: Creates a new file upload after validating the length and parsing
-        the metadata
-      responses: {}
-      summary: Post file (tus)
-      tags:
-      - File Import
-  /file-import/v1/files/{id}:
-    head:
-      description: Returns the length and offset for the HEAD request
-      parameters:
-      - description: tus file ID
-        in: path
-        name: id
-        required: true
-        type: string
-      responses: {}
-      summary: Head file (tus)
-      tags:
-      - File Import
-    patch:
-      description: Adds a chunk to an upload, only allowed if enough space in the
-        upload is left
-      parameters:
-      - description: tus file ID
-        in: path
-        name: id
-        required: true
-        type: string
-      responses: {}
-      summary: Patch file (tus)
-      tags:
-      - File Import
-  /file-import/v1/importer/{id}:
-    get:
-      description: Get a single importer and its template
-      parameters:
-      - description: Importer ID
-        in: path
-        name: id
-        required: true
-        type: string
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/web.ImportServiceImporter'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/web.Res'
-      summary: Get importer
-      tags:
-      - File Import
-  /file-import/v1/upload-column-mapping/{id}:
-    post:
-      description: 'Set the template column IDs for each upload column and trigger
-        the import. Note: we will eventually have a separate import endpoint once
-        there is a review step in the upload process.'
-      parameters:
-      - description: Upload ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Request body
-        in: body
-        name: body
-        required: true
-        schema:
-          additionalProperties:
-            type: string
-          type: object
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/web.Res'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/web.Res'
-      summary: Set upload column mapping and import data
-      tags:
-      - File Import
-  /file-import/v1/upload/{id}:
-    get:
-      description: Get a single upload by the tus ID provided to the client from the
-        upload
-      parameters:
-      - description: tus ID
-        in: path
-        name: id
-        required: true
-        type: string
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/web.ImportServiceUpload'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/web.Res'
-      summary: Get upload by tus ID
-      tags:
-      - File Import
-  /public/health:
-    get:
-      description: Health check
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/web.Res'
-      summary: Health
-      tags:
-      - Public
   /v1/import/{id}:
     get:
       description: Get an individual import
@@ -924,7 +534,7 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/web.Res'
+            $ref: '#/definitions/types.Res'
       summary: Get import
       tags:
       - External API
@@ -943,7 +553,7 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/web.Res'
+            $ref: '#/definitions/types.Res'
       summary: Download import
       tags:
       - External API

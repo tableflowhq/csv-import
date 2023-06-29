@@ -10,7 +10,7 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
-        "termsOfService": "https://tableflow.com/terms/",
+        "termsOfService": "https://tableflow.com/terms",
         "contact": {
             "name": "TableFlow",
             "url": "https://tableflow.com",
@@ -47,7 +47,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/web.Res"
+                            "$ref": "#/definitions/types.Res"
                         }
                     }
                 }
@@ -81,7 +81,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/web.Res"
+                            "$ref": "#/definitions/types.Res"
                         }
                     }
                 }
@@ -113,7 +113,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/web.Res"
+                            "$ref": "#/definitions/types.Res"
                         }
                     }
                 }
@@ -152,28 +152,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/web.Res"
+                            "$ref": "#/definitions/types.Res"
                         }
                     }
                 }
             }
         },
-        "/admin/v1/importers/{workspace-id}": {
+        "/admin/v1/importers": {
             "get": {
                 "description": "Get a list of importers",
                 "tags": [
                     "Importer"
                 ],
                 "summary": "Get importers",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Workspace ID",
-                        "name": "workspace-id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -187,28 +178,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/web.Res"
+                            "$ref": "#/definitions/types.Res"
                         }
                     }
                 }
             }
         },
-        "/admin/v1/imports/{workspace-id}": {
+        "/admin/v1/imports": {
             "get": {
                 "description": "Get a list of imports",
                 "tags": [
                     "Import"
                 ],
                 "summary": "Get imports",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Workspace ID",
-                        "name": "workspace-id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -222,30 +204,51 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/web.Res"
+                            "$ref": "#/definitions/types.Res"
                         }
                     }
                 }
             }
         },
-        "/admin/v1/organization-workspaces": {
+        "/admin/v1/settings/api-key": {
             "get": {
-                "description": "Get the current user's organization and workspaces that are a part of the organization",
+                "description": "Get the current API key",
                 "tags": [
-                    "Organization"
+                    "API Key"
                 ],
-                "summary": "Get organization and attached workspaces",
+                "summary": "Get API key",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Organization"
+                            "type": "string"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/web.Res"
+                            "$ref": "#/definitions/types.Res"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Regenerate the current API key and return the new API key",
+                "tags": [
+                    "API Key"
+                ],
+                "summary": "Regenerate API key",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/types.Res"
                         }
                     }
                 }
@@ -279,7 +282,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/web.Res"
+                            "$ref": "#/definitions/types.Res"
                         }
                     }
                 }
@@ -311,7 +314,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/web.Res"
+                            "$ref": "#/definitions/types.Res"
                         }
                     }
                 }
@@ -343,7 +346,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/web.Res"
+                            "$ref": "#/definitions/types.Res"
                         }
                     }
                 }
@@ -375,272 +378,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/web.Res"
-                        }
-                    }
-                }
-            }
-        },
-        "/admin/v1/workspace/{id}/api-key": {
-            "get": {
-                "description": "Get the current API key of a workspace",
-                "tags": [
-                    "Workspace"
-                ],
-                "summary": "Get workspace API key",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Workspace ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/web.Res"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "Regenerate the current API key of a workspace and return the new API key",
-                "tags": [
-                    "Workspace"
-                ],
-                "summary": "Regenerate workspace API key",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Workspace ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/web.Res"
-                        }
-                    }
-                }
-            }
-        },
-        "/admin/v1/workspace/{id}/usage": {
-            "get": {
-                "description": "Get the workspace usage for the current month",
-                "tags": [
-                    "Workspace"
-                ],
-                "summary": "Get workspace usage",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Workspace ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/web.WorkspaceUsageLimit"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/web.Res"
-                        }
-                    }
-                }
-            }
-        },
-        "/file-import/v1/files": {
-            "post": {
-                "description": "Creates a new file upload after validating the length and parsing the metadata",
-                "tags": [
-                    "File Import"
-                ],
-                "summary": "Post file (tus)",
-                "responses": {}
-            }
-        },
-        "/file-import/v1/files/{id}": {
-            "head": {
-                "description": "Returns the length and offset for the HEAD request",
-                "tags": [
-                    "File Import"
-                ],
-                "summary": "Head file (tus)",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "tus file ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {}
-            },
-            "patch": {
-                "description": "Adds a chunk to an upload, only allowed if enough space in the upload is left",
-                "tags": [
-                    "File Import"
-                ],
-                "summary": "Patch file (tus)",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "tus file ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {}
-            }
-        },
-        "/file-import/v1/importer/{id}": {
-            "get": {
-                "description": "Get a single importer and its template",
-                "tags": [
-                    "File Import"
-                ],
-                "summary": "Get importer",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Importer ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/web.ImportServiceImporter"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/web.Res"
-                        }
-                    }
-                }
-            }
-        },
-        "/file-import/v1/upload-column-mapping/{id}": {
-            "post": {
-                "description": "Set the template column IDs for each upload column and trigger the import. Note: we will eventually have a separate import endpoint once there is a review step in the upload process.",
-                "tags": [
-                    "File Import"
-                ],
-                "summary": "Set upload column mapping and import data",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Upload ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/web.Res"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/web.Res"
-                        }
-                    }
-                }
-            }
-        },
-        "/file-import/v1/upload/{id}": {
-            "get": {
-                "description": "Get a single upload by the tus ID provided to the client from the upload",
-                "tags": [
-                    "File Import"
-                ],
-                "summary": "Get upload by tus ID",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "tus ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/web.ImportServiceUpload"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/web.Res"
-                        }
-                    }
-                }
-            }
-        },
-        "/public/health": {
-            "get": {
-                "description": "Health check",
-                "tags": [
-                    "Public"
-                ],
-                "summary": "Health",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/web.Res"
+                            "$ref": "#/definitions/types.Res"
                         }
                     }
                 }
@@ -672,7 +410,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/web.Res"
+                            "$ref": "#/definitions/types.Res"
                         }
                     }
                 }
@@ -701,7 +439,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/web.Res"
+                            "$ref": "#/definitions/types.Res"
                         }
                     }
                 }
@@ -815,45 +553,6 @@ const docTemplate = `{
         "model.JSONB": {
             "type": "object",
             "additionalProperties": true
-        },
-        "model.Organization": {
-            "type": "object",
-            "properties": {
-                "created_at": {
-                    "type": "integer",
-                    "example": 1682366228
-                },
-                "created_by": {
-                    "$ref": "#/definitions/model.User"
-                },
-                "id": {
-                    "type": "string",
-                    "example": "8a7850a1-8b03-4337-a530-f9d48f7d9232"
-                },
-                "name": {
-                    "type": "string",
-                    "example": "My Organization"
-                },
-                "updated_at": {
-                    "type": "integer",
-                    "example": 1682366228
-                },
-                "updated_by": {
-                    "$ref": "#/definitions/model.User"
-                },
-                "users": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.User"
-                    }
-                },
-                "workspaces": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.Workspace"
-                    }
-                }
-            }
         },
         "model.Template": {
             "type": "object",
@@ -1061,209 +760,14 @@ const docTemplate = `{
                 }
             }
         },
-        "model.Workspace": {
+        "types.Res": {
             "type": "object",
             "properties": {
-                "created_at": {
-                    "type": "integer",
-                    "example": 1682366228
+                "error": {
+                    "type": "string"
                 },
-                "created_by": {
-                    "$ref": "#/definitions/model.User"
-                },
-                "id": {
-                    "type": "string",
-                    "example": "b2079476-261a-41fe-8019-46eb51c537f7"
-                },
-                "name": {
-                    "type": "string",
-                    "example": "My Workspace"
-                },
-                "updated_at": {
-                    "type": "integer",
-                    "example": 1682366228
-                },
-                "updated_by": {
-                    "$ref": "#/definitions/model.User"
-                },
-                "users": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.User"
-                    }
-                },
-                "workspace_limit": {
-                    "$ref": "#/definitions/model.WorkspaceLimit"
-                }
-            }
-        },
-        "model.WorkspaceLimit": {
-            "type": "object",
-            "properties": {
-                "files": {
-                    "type": "integer",
-                    "example": 10000
-                },
-                "id": {
-                    "type": "string",
-                    "example": "c44c948f-6061-45c9-aa6a-40373f6dcdad"
-                },
-                "importers": {
-                    "type": "integer",
-                    "example": 10
-                },
-                "processed_values": {
-                    "type": "integer",
-                    "example": 100000000
-                },
-                "rows": {
-                    "type": "integer",
-                    "example": 1000000
-                },
-                "rows_per_import": {
-                    "type": "integer",
-                    "example": 10000
-                },
-                "users": {
-                    "type": "integer",
-                    "example": 10
-                },
-                "workspace_id": {
-                    "type": "string",
-                    "example": "b2079476-261a-41fe-8019-46eb51c537f7"
-                }
-            }
-        },
-        "web.ImportServiceImporter": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "string",
-                    "example": "6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353"
-                },
-                "name": {
-                    "type": "string",
-                    "example": "Test Importer"
-                },
-                "template": {
-                    "$ref": "#/definitions/web.ImportServiceTemplate"
-                }
-            }
-        },
-        "web.ImportServiceTemplate": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "string",
-                    "example": "f0797968-becc-422a-b135-19de1d8c5d46"
-                },
-                "name": {
-                    "type": "string",
-                    "example": "My Template"
-                },
-                "template_columns": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/web.ImportServiceTemplateColumn"
-                    }
-                }
-            }
-        },
-        "web.ImportServiceTemplateColumn": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "string",
-                    "example": "a1ed136d-33ce-4b7e-a7a4-8a5ccfe54cd5"
-                },
-                "name": {
-                    "type": "string",
-                    "example": "Work Email"
-                },
-                "required": {
-                    "type": "boolean",
-                    "example": false
-                }
-            }
-        },
-        "web.ImportServiceUpload": {
-            "type": "object",
-            "properties": {
-                "created_at": {
-                    "type": "integer",
-                    "example": 1682366228
-                },
-                "file_extension": {
-                    "type": "string",
-                    "example": "csv"
-                },
-                "file_name": {
-                    "type": "string",
-                    "example": "example.csv"
-                },
-                "file_size": {
-                    "type": "integer",
-                    "example": 1024
-                },
-                "file_type": {
-                    "type": "string",
-                    "example": "text/csv"
-                },
-                "id": {
-                    "type": "string",
-                    "example": "50ca61e1-f683-4b03-9ec4-4b3adb592bf1"
-                },
-                "importer_id": {
-                    "type": "string",
-                    "example": "6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353"
-                },
-                "is_parsed": {
-                    "type": "boolean",
-                    "example": false
-                },
-                "is_stored": {
-                    "type": "boolean",
-                    "example": false
-                },
-                "metadata": {
-                    "type": "string",
-                    "example": "{\"user_id\": 1234}"
-                },
-                "tus_id": {
-                    "type": "string",
-                    "example": "ee715c254ee61855b465ed61be930487"
-                },
-                "upload_columns": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/web.ImportServiceUploadColumn"
-                    }
-                }
-            }
-        },
-        "web.ImportServiceUploadColumn": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "string",
-                    "example": "3c79e7fd-1018-4a27-8b86-9cee84221cd8"
-                },
-                "index": {
-                    "type": "integer",
-                    "example": 0
-                },
-                "name": {
-                    "type": "string",
-                    "example": "Work Email"
-                },
-                "sample_data": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    },
-                    "example": [
-                        "test@example.com"
-                    ]
+                "message": {
+                    "type": "string"
                 }
             }
         },
@@ -1273,10 +777,6 @@ const docTemplate = `{
                 "name": {
                     "type": "string",
                     "example": "Test Importer"
-                },
-                "workspace_id": {
-                    "type": "string",
-                    "example": "b2079476-261a-41fe-8019-46eb51c537f7"
                 }
             }
         },
@@ -1302,17 +802,6 @@ const docTemplate = `{
                 }
             }
         },
-        "web.Res": {
-            "type": "object",
-            "properties": {
-                "error": {
-                    "type": "string"
-                },
-                "message": {
-                    "type": "string"
-                }
-            }
-        },
         "web.TemplateColumnCreateRequest": {
             "type": "object",
             "properties": {
@@ -1333,51 +822,6 @@ const docTemplate = `{
                     "example": "f0797968-becc-422a-b135-19de1d8c5d46"
                 }
             }
-        },
-        "web.WorkspaceUsageLimit": {
-            "type": "object",
-            "properties": {
-                "month": {
-                    "type": "string",
-                    "example": "2023-06-01"
-                },
-                "num_files": {
-                    "type": "integer",
-                    "example": 10000
-                },
-                "num_files_limit": {
-                    "type": "integer",
-                    "example": 10000
-                },
-                "num_processed_values": {
-                    "type": "integer",
-                    "example": 10000
-                },
-                "num_processed_values_limit": {
-                    "type": "integer",
-                    "example": 10000
-                },
-                "num_rows": {
-                    "type": "integer",
-                    "example": 10000
-                },
-                "num_rows_limit": {
-                    "type": "integer",
-                    "example": 10000
-                },
-                "total_file_size_mb": {
-                    "type": "number",
-                    "example": 10000
-                },
-                "total_file_size_mb_limit": {
-                    "type": "number",
-                    "example": 10000
-                },
-                "workspace_id": {
-                    "type": "string",
-                    "example": "b2079476-261a-41fe-8019-46eb51c537f7"
-                }
-            }
         }
     },
     "securityDefinitions": {
@@ -1391,7 +835,7 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "1.0",
+	Version:          "1.2",
 	Host:             "localhost:3003",
 	BasePath:         "/",
 	Schemes:          []string{},

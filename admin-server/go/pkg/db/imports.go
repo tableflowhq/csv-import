@@ -36,19 +36,3 @@ func GetImportForAdminAPI(id string) (*model.Import, error) {
 	}
 	return &imp, nil
 }
-
-func GetImportsForAdminAPI(workspaceID string) ([]*model.Import, error) {
-	if len(workspaceID) == 0 {
-		return nil, errors.New("no workspace ID provided")
-	}
-	var imports []*model.Import
-	err := DB.Preload("Importer").
-		Omit("StorageBucket").
-		Where("workspace_id = ?", model.ParseID(workspaceID)).
-		Order("created_at desc").
-		Find(&imports).Error
-	if err != nil {
-		return nil, err
-	}
-	return imports, nil
-}

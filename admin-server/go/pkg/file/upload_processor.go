@@ -9,10 +9,10 @@ import (
 	"math"
 	"os"
 	"strings"
+	"tableflow/go/internal/s3"
 	"tableflow/go/pkg/db"
 	"tableflow/go/pkg/model"
 	"tableflow/go/pkg/util"
-	"tableflow/go/services/s3"
 )
 
 // TODO: Break this out into its own service eventually
@@ -85,7 +85,11 @@ func uploadCompleteHandler(event handler.HookEvent) {
 		Metadata:      importMetadata,
 	}
 	fileName := fmt.Sprintf("%s/%s", TempUploadsDirectory, upload.TusID)
-	err = db.DB.Create(upload).Error
+	if upload.WorkspaceID.Valid {
+		err = db.DB.Create(upload).Error
+	} else {
+		err = db.DB.Omit(db.OpenModelOmitFields...).Create(upload).Error
+	}
 	if err != nil {
 		util.Log.Errorw("Could not create upload in database", "error", err, "upload_id", upload.ID, "tus_id", upload.TusID)
 		return

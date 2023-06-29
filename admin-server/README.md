@@ -20,7 +20,7 @@ swag fmt
 Generate docs
 
 ```bash
-swag init -d go/services/web/,go/pkg/model/ -g server.go --parseInternal -ot yaml,go,json
+swag init -d go/internal/web/,go/pkg/model/,go/pkg/types/ -g server.go --parseInternal -ot yaml,go,json
 ```
 
 ### Misc Backend
