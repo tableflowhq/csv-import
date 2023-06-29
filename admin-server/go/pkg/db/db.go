@@ -45,93 +45,14 @@ func getDatabaseInitSQL() string {
 		);
 		insert into instance_id (id) values (gen_random_uuid()) on conflict do nothing;
 
-		create index if not exists thirdparty_users_user_id_idx on thirdparty_users(user_id);
-		create or replace view users as (
-		    with
-			    all_users as (
-			        select users.user_id        as id
-			             , users.email
-			             , users.time_joined
-			             , users.third_party_id as recipe
-			             , true                 as email_verified
-			        from thirdparty_users users
-			        union all
-			        select users.user_id           as id
-			             , users.email
-			             , users.time_joined
-			             , 'email'                 as recipe
-			             , eve.user_id is not null as email_verified
-			        from emailpassword_users users
-			             left join emailverification_verified_emails eve on eve.user_id = users.user_id
-			    )
-		    select all_users.id
-		         , all_users.email
-		         , all_users.time_joined
-		         , roles.role
-		         , all_users.recipe
-		         , all_users.email_verified
-		    from all_users
-		         left join user_roles roles on all_users.id = roles.user_id
-		);
-
-		create table if not exists organizations (
+		create table if not exists users (
 		    id         uuid primary key         not null default gen_random_uuid(),
-		    name       text                     not null,
-		    created_by uuid                     not null,
-		    created_at timestamp with time zone not null,
-		    updated_by uuid                     not null,
-		    updated_at timestamp with time zone not null,
-		    deleted_by uuid,
-		    deleted_at timestamp with time zone
+		    api_key    text                     not null default concat('tf_', replace(gen_random_uuid()::text, '-', '')),
+		    created_at timestamp with time zone not null
 		);
-
-		create table if not exists workspaces (
-		    id              uuid primary key         not null default gen_random_uuid(),
-		    organization_id uuid                     not null,
-		    name            text                     not null,
-		    api_key         text                     not null default concat('tf_', replace(gen_random_uuid()::text, '-', '')),
-		    created_by      uuid                     not null,
-		    created_at      timestamp with time zone not null,
-		    updated_by      uuid                     not null,
-		    updated_at      timestamp with time zone not null,
-		    deleted_by      uuid,
-		    deleted_at      timestamp with time zone,
-		    constraint fk_organization_id
-		        foreign key (organization_id)
-		            references organizations(id)
-		);
-		create index if not exists workspaces_organization_id_idx on workspaces(organization_id);
-		create unique index if not exists workspaces_api_key_idx on workspaces(api_key);
-
-		create table if not exists organization_users (
-		    organization_id uuid not null,
-		    user_id         uuid not null,
-		    primary key (organization_id, user_id),
-		    constraint fk_organization_id
-		        foreign key (organization_id)
-		            references organizations(id)
-		            on delete cascade
-		            on update no action
-		);
-		create index if not exists organization_users_organization_id_idx on organization_users(organization_id);
-		create index if not exists organization_users_user_id_idx on organization_users(user_id);
-
-		create table if not exists workspace_users (
-		    workspace_id uuid not null,
-		    user_id      uuid not null,
-		    primary key (workspace_id, user_id),
-		    constraint fk_workspace_id
-		        foreign key (workspace_id)
-		            references workspaces(id)
-		            on delete cascade
-		            on update no action
-		);
-		create index if not exists workspace_users_workspace_id_idx on workspace_users(workspace_id);
-		create index if not exists workspace_users_user_id_idx on workspace_users(user_id);
 
 		create table if not exists importers (
 		    id              uuid primary key         not null default gen_random_uuid(),
-		    workspace_id    uuid                     not null,
 		    name            text                     not null,
 		    allowed_domains text[]                   not null,
 		    webhook_url     text,
@@ -140,16 +61,12 @@ func getDatabaseInitSQL() string {
 		    updated_by      uuid                     not null,
 		    updated_at      timestamp with time zone not null,
 		    deleted_by      uuid,
-		    deleted_at      timestamp with time zone,
-		    constraint fk_workspace_id
-		        foreign key (workspace_id)
-		            references workspaces(id)
+		    deleted_at      timestamp with time zone
 		);
-		create index if not exists importers_workspace_id_created_at_idx on importers(workspace_id, created_at);
+		create index if not exists importers_created_at_idx on importers(created_at);
 
 		create table if not exists templates (
 		    id           uuid primary key         not null default gen_random_uuid(),
-		    workspace_id uuid                     not null,
 		    importer_id  uuid                     not null,
 		    name         text                     not null,
 		    created_by   uuid                     not null,
@@ -158,14 +75,11 @@ func getDatabaseInitSQL() string {
 		    updated_at   timestamp with time zone not null,
 		    deleted_by   uuid,
 		    deleted_at   timestamp with time zone,
-		    constraint fk_workspace_id
-		        foreign key (workspace_id)
-		            references workspaces(id),
 		    constraint fk_importer_id_id
 		        foreign key (importer_id)
 		            references importers(id)
 		);
-		create index if not exists templates_workspace_id_created_at_idx on templates(workspace_id, created_at);
+		create index if not exists templates_created_at_idx on templates(created_at);
 		create unique index if not exists templates_importer_id_idx on templates(importer_id) where (deleted_at is null);
 
 		create table if not exists template_columns (
@@ -190,7 +104,6 @@ func getDatabaseInitSQL() string {
 		    id             uuid primary key not null default gen_random_uuid(),
 		    tus_id         varchar(32)      not null,
 		    importer_id    uuid             not null,
-		    workspace_id   uuid             not null,
 		    file_name      text,
 		    file_type      text,
 		    file_extension text,
@@ -205,13 +118,10 @@ func getDatabaseInitSQL() string {
 		    created_at     timestamptz      not null default now(),
 		    constraint fk_importer_id
 		        foreign key (importer_id)
-		            references importers(id),
-		    constraint fk_workspace_id
-		        foreign key (workspace_id)
-		            references workspaces(id)
+		            references importers(id)
 		);
 		create unique index if not exists uploads_tus_id_idx on uploads(tus_id);
-		create index if not exists uploads_workspace_id_created_at_idx on uploads(workspace_id, created_at);
+		create index if not exists uploads_created_at_idx on uploads(created_at);
 		create index if not exists uploads_importer_id_idx on uploads(importer_id);
 
 		create table if not exists upload_columns (
@@ -235,7 +145,6 @@ func getDatabaseInitSQL() string {
 		    id                   uuid primary key not null default gen_random_uuid(),
 		    upload_id            uuid             not null,
 		    importer_id          uuid             not null,
-		    workspace_id         uuid             not null,
 		    file_type            text,
 		    file_extension       text,
 		    file_size            bigint,
@@ -251,50 +160,10 @@ func getDatabaseInitSQL() string {
 		            references uploads(id),
 		    constraint fk_importer_id
 		        foreign key (importer_id)
-		            references importers(id),
-		    constraint fk_workspace_id
-		        foreign key (workspace_id)
-		            references workspaces(id)
+		            references importers(id)
 		);
-		create index if not exists imports_workspace_id_created_at_idx on imports(workspace_id, created_at);
+		create index if not exists imports_created_at_idx on imports(created_at);
 		create index if not exists imports_importer_id_idx on imports(importer_id);
-
-		create table if not exists workspace_limits (
-		    id               uuid primary key not null default gen_random_uuid(),
-		    workspace_id     uuid             not null,
-		    users            int,
-		    importers        int,
-		    files            int,
-		    rows             int,
-		    rows_per_import  int,
-		    processed_values int,
-		    constraint fk_workspace_id
-		        foreign key (workspace_id)
-		            references workspaces(id)
-		);
-		create index if not exists workspace_limits_workspace_id_idx on workspace_limits(workspace_id);
-
-		create table if not exists workspace_limit_triggers (
-		    id                 uuid primary key         not null default gen_random_uuid(),
-		    workspace_id       uuid                     not null,
-		    workspace_limit_id uuid                     not null,
-		    upload_id          uuid,
-		    limit_type         text                     not null,
-		    current_value      bigint                   not null,
-		    limit_value        bigint                   not null,
-		    blocked            bool                     not null default false,
-		    created_at         timestamp with time zone not null,
-		    constraint fk_workspace_id
-		        foreign key (workspace_id)
-		            references workspaces(id),
-		    constraint fk_workspace_limit_id
-		        foreign key (workspace_limit_id)
-		            references workspace_limits(id),
-		    constraint fk_upload_id
-		        foreign key (upload_id)
-		            references uploads(id)
-		);
-		create index if not exists workspace_limit_triggers_workspace_id_created_at_idx on workspace_limit_triggers(workspace_id, created_at);
 	`
 }
 

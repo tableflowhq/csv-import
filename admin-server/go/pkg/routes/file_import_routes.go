@@ -1,4 +1,4 @@
-package web
+package routes
 
 import (
 	"encoding/csv"
@@ -16,9 +16,9 @@ import (
 	"os"
 	"strings"
 	"tableflow/go/pkg/db"
+	"tableflow/go/pkg/file"
 	"tableflow/go/pkg/model"
 	"tableflow/go/pkg/util"
-	"tableflow/go/services/file"
 	"tableflow/go/services/s3"
 	"time"
 )
@@ -70,13 +70,13 @@ type importToCSVResult struct {
 	NumNonEmptyCells int
 }
 
-// tusPostFile
+// TusPostFile
 //
 //	@Summary		Post file (tus)
 //	@Description	Creates a new file upload after validating the length and parsing the metadata
 //	@Tags			File Import
 //	@Router			/file-import/v1/files [post]
-func tusPostFile(h *handler.UnroutedHandler) gin.HandlerFunc {
+func TusPostFile(h *handler.UnroutedHandler) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		importerID := c.Request.Header.Get("X-Importer-ID")
 		if len(importerID) == 0 {
@@ -120,33 +120,33 @@ func validateAllowedDomains(c *gin.Context, importer *model.Importer) error {
 	return nil
 }
 
-// tusHeadFile
+// TusHeadFile
 //
 //	@Summary		Head file (tus)
 //	@Description	Returns the length and offset for the HEAD request
 //	@Tags			File Import
 //	@Router			/file-import/v1/files/{id} [head]
 //	@Param			id	path	string	true	"tus file ID"
-func tusHeadFile(h *handler.UnroutedHandler) gin.HandlerFunc {
+func TusHeadFile(h *handler.UnroutedHandler) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		h.HeadFile(c.Writer, c.Request)
 	}
 }
 
-// tusPatchFile
+// TusPatchFile
 //
 //	@Summary		Patch file (tus)
 //	@Description	Adds a chunk to an upload, only allowed if enough space in the upload is left
 //	@Tags			File Import
 //	@Router			/file-import/v1/files/{id} [patch]
 //	@Param			id	path	string	true	"tus file ID"
-func tusPatchFile(h *handler.UnroutedHandler) gin.HandlerFunc {
+func TusPatchFile(h *handler.UnroutedHandler) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		h.PatchFile(c.Writer, c.Request)
 	}
 }
 
-// getImporterForImportService
+// GetImporterForImportService
 //
 //	@Summary		Get importer
 //	@Description	Get a single importer and its template
@@ -155,7 +155,7 @@ func tusPatchFile(h *handler.UnroutedHandler) gin.HandlerFunc {
 //	@Failure		400	{object}	Res
 //	@Router			/file-import/v1/importer/{id} [get]
 //	@Param			id	path	string	true	"Importer ID"
-func getImporterForImportService(c *gin.Context) {
+func GetImporterForImportService(c *gin.Context) {
 	id := c.Param("id")
 	if len(id) == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, Res{Err: "No importer ID provided"})
@@ -201,7 +201,7 @@ func getImporterForImportService(c *gin.Context) {
 	c.JSON(http.StatusOK, importer)
 }
 
-// getUploadForImportService
+// GetUploadForImportService
 //
 //	@Summary		Get upload by tus ID
 //	@Description	Get a single upload by the tus ID provided to the client from the upload
@@ -210,7 +210,7 @@ func getImporterForImportService(c *gin.Context) {
 //	@Failure		400	{object}	Res
 //	@Router			/file-import/v1/upload/{id} [get]
 //	@Param			id	path	string	true	"tus ID"
-func getUploadForImportService(c *gin.Context) {
+func GetUploadForImportService(c *gin.Context) {
 	id := c.Param("id")
 	if len(id) == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, Res{Err: "No upload tus ID provided"})
@@ -223,11 +223,6 @@ func getUploadForImportService(c *gin.Context) {
 	}
 	if upload.Error.Valid {
 		c.AbortWithStatusJSON(http.StatusBadRequest, Res{Err: upload.Error.String})
-		return
-	}
-	// Check if there are limits on the workspace
-	if err = checkWorkspaceLimitsForUpload(upload); err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, Res{Err: err.Error()})
 		return
 	}
 	importerUploadColumns := make([]*ImportServiceUploadColumn, len(upload.UploadColumns))
@@ -256,80 +251,7 @@ func getUploadForImportService(c *gin.Context) {
 	c.JSON(http.StatusOK, importerUpload)
 }
 
-func checkWorkspaceLimitsForUpload(upload *model.Upload) error {
-	if !upload.IsParsed {
-		// The upload isn't finished processing yet, no limits apply
-		return nil
-	}
-	limit, err := db.GetWorkspaceLimit(upload.WorkspaceID.String())
-	if err != nil {
-		// Assume no limits? Let the upload happen??
-		util.Log.Warnw("Could not find workspace limits during upload", "error", err, "workspace_id", upload.WorkspaceID)
-		return nil
-	}
-	if !upload.NumRows.Valid {
-		// This shouldn't happen, but log it if it does
-		util.Log.Warnw("Upload does not have num_rows set when determining limits", "error", err, "upload_id", upload.ID)
-		return nil
-	}
-	/* Rows per import limit */
-	if limit.RowsPerImport.Valid && upload.NumRows.Int64 > limit.RowsPerImport.Int64 {
-		createWorkspaceLimitTrigger(upload, limit, upload.NumRows.Int64, limit.RowsPerImport.Int64, model.WorkspaceLimitTriggerTypeRowsPerImport)
-		errStr := fmt.Sprintf("This import is limited to %s rows and your file contains %s rows. Please reduce "+
-			"the number of rows and upload the file again or contact support to increase this limit.",
-			util.CommaFormat(limit.RowsPerImport.Int64), util.CommaFormat(upload.NumRows.Int64))
-		return errors.New(errStr)
-	}
-	if limit.Files.Valid || limit.Rows.Valid {
-		// Only retrieve the usage if there are limits to check
-		usage, err := db.GetWorkspaceUsageCurrentMonth(upload.WorkspaceID.String())
-		if err != nil {
-			// Let the upload happen??
-			util.Log.Warnw("Could not determine workspace usage during upload", "error", err, "workspace_id", upload.WorkspaceID)
-			return nil
-		}
-		/* Number of files per month limit */
-		if limit.Files.Valid && usage.NumFiles >= limit.Files.Int64 {
-			createWorkspaceLimitTrigger(upload, limit, usage.NumFiles, limit.Files.Int64, model.WorkspaceLimitTriggerTypeFiles)
-			errStr := fmt.Sprintf("The number of allowed imports has been exceeded for the current " +
-				"month. Please contact support to increase this limit.")
-			return errors.New(errStr)
-		}
-		/* Number of rows per month limit */
-		if limit.Rows.Valid {
-			if usage.NumRows+upload.NumRows.Int64 >= limit.Rows.Int64 {
-				createWorkspaceLimitTrigger(upload, limit, usage.NumRows, limit.Rows.Int64, model.WorkspaceLimitTriggerTypeRows)
-				errStr := fmt.Sprintf("The number of rows in this upload (%s) will cause the current monthly "+
-					"limit to be exceeded. Please reduce the number of rows in your file and try again or contact "+
-					"support to increase this limit.", util.CommaFormat(upload.NumRows.Int64))
-				return errors.New(errStr)
-			} else if usage.NumRows >= limit.Rows.Int64 {
-				createWorkspaceLimitTrigger(upload, limit, usage.NumRows, limit.Rows.Int64, model.WorkspaceLimitTriggerTypeRows)
-				errStr := fmt.Sprintf("The number of allowed rows has been exceeded for the current " +
-					"month. Please contact support to increase this limit.")
-				return errors.New(errStr)
-			}
-		}
-	}
-	return nil
-}
-
-func createWorkspaceLimitTrigger(upload *model.Upload, wl *model.WorkspaceLimit, currentValue, limitValue int64, limitType model.WorkspaceLimitTriggerType) {
-	wlt := &model.WorkspaceLimitTrigger{
-		WorkspaceID:      upload.WorkspaceID,
-		WorkspaceLimitID: wl.ID,
-		UploadID:         upload.ID,
-		LimitType:        limitType,
-		CurrentValue:     currentValue,
-		LimitValue:       limitValue,
-		Blocked:          true,
-	}
-	if err := db.DB.Create(wlt).Error; err != nil {
-		util.Log.Errorw("Unable to create workspace limit trigger", "error", err, "workspace_id", upload.WorkspaceID, "workspace_limit_id", wl.ID, "upload_id", upload.ID)
-	}
-}
-
-// setUploadColumnMappingAndImportData
+// SetUploadColumnMappingAndImportData
 //
 //	@Summary		Set upload column mapping and import data
 //	@Description	Set the template column IDs for each upload column and trigger the import. Note: we will eventually have a separate import endpoint once there is a review step in the upload process.
@@ -339,7 +261,7 @@ func createWorkspaceLimitTrigger(upload *model.Upload, wl *model.WorkspaceLimit,
 //	@Router			/file-import/v1/upload-column-mapping/{id} [post]
 //	@Param			id		path	string				true	"Upload ID"
 //	@Param			body	body	map[string]string	true	"Request body"
-func setUploadColumnMappingAndImportData(c *gin.Context) {
+func SetUploadColumnMappingAndImportData(c *gin.Context) {
 	id := c.Param("id")
 	if len(id) == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, Res{Err: "No upload ID provided"})

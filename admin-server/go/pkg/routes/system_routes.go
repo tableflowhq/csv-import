@@ -1,4 +1,4 @@
-package web
+package routes
 
 import (
 	"github.com/gin-gonic/gin"
@@ -10,13 +10,13 @@ type Res struct {
 	Message string `json:"message,omitempty"`
 }
 
-// health
+// Health
 //
 //	@Summary		Health
 //	@Description	Health check
 //	@Tags			Public
 //	@Success		200	{object}	Res
 //	@Router			/public/health [get]
-func health(c *gin.Context) {
+func Health(c *gin.Context) {
 	c.JSON(http.StatusOK, Res{Message: "ok"})
 }

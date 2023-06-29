@@ -3,7 +3,6 @@ package web
 import (
 	"errors"
 	"github.com/gin-gonic/gin"
-	"tableflow/go/pkg/auth"
 	"tableflow/go/pkg/db"
 	"tableflow/go/pkg/util"
 )
@@ -12,7 +11,7 @@ func validateUserInWorkspace(c *gin.Context, workspaceID string) (string, error)
 	if len(workspaceID) == 0 {
 		return "", errors.New("Invalid workspace ID")
 	}
-	userID := auth.GetUserID(c)
+	userID := web.GetUserID(c)
 	if len(userID) == 0 {
 		return "", errors.New("User not logged in")
 	}

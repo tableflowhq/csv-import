@@ -3,6 +3,7 @@ package file
 import (
 	"fmt"
 	"github.com/guregu/null"
+	"github.com/tus/tusd/pkg/filestore"
 	"github.com/tus/tusd/pkg/handler"
 	"io"
 	"math"
@@ -14,7 +15,35 @@ import (
 	"tableflow/go/services/s3"
 )
 
-func UploadCompleteHandler(event handler.HookEvent) {
+// TODO: Break this out into its own service eventually
+func TusFileHandler() *handler.UnroutedHandler {
+	store := filestore.FileStore{
+		Path: TempUploadsDirectory,
+	}
+	composer := handler.NewStoreComposer()
+	store.UseIn(composer)
+	fileHandler, err := handler.NewUnroutedHandler(handler.Config{
+		BasePath:                "/file-import/v1/files",
+		StoreComposer:           composer,
+		NotifyCompleteUploads:   true,
+		DisableDownload:         true,
+		RespectForwardedHeaders: true,
+	})
+	if err != nil {
+		util.Log.Fatalw("Unable to create tus file upload handler", "error", err)
+		return nil
+	}
+	go func() {
+		for {
+			event := <-fileHandler.CompleteUploads
+			util.Log.Infow("File upload to disk completed", "tus_id", event.Upload.ID)
+			go uploadCompleteHandler(event)
+		}
+	}()
+	return fileHandler
+}
+
+func uploadCompleteHandler(event handler.HookEvent) {
 	uploadFileName := event.Upload.MetaData["filename"]
 	uploadFileType := event.Upload.MetaData["filetype"]
 	uploadFileExtension := ""

@@ -5,13 +5,11 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"tableflow/go/pkg/auth"
 	"tableflow/go/pkg/db"
 	"tableflow/go/pkg/env"
-	"tableflow/go/pkg/slack"
+	"tableflow/go/pkg/file"
 	"tableflow/go/pkg/util"
 	"tableflow/go/services"
-	"tableflow/go/services/file"
 	"tableflow/go/services/s3"
 	"tableflow/go/services/web"
 )
@@ -31,20 +29,6 @@ func main() {
 	err = env.InitEnv()
 	if err != nil {
 		util.Log.Errorw("Error loading initializing env", "error", err.Error())
-		return
-	}
-
-	/* Slack */
-	err = slack.InitSlack()
-	if err != nil {
-		util.Log.Errorw("Error initializing Slack", "error", err.Error())
-		return
-	}
-
-	/* SuperTokens */
-	err = auth.InitAuth()
-	if err != nil {
-		util.Log.Fatalw("Error initializing SuperTokens", "error", err.Error())
 		return
 	}
 

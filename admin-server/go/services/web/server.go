@@ -6,11 +6,16 @@ import (
 	"fmt"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/supertokens/supertokens-golang/supertokens"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"net/http"
+	"os"
 	_ "tableflow/docs"
 	"tableflow/go/pkg/env"
+	"tableflow/go/pkg/file"
+	"tableflow/go/pkg/routes"
 	"tableflow/go/pkg/util"
+	"tableflow/go/pkg/web"
 	"tableflow/go/services"
 	"time"
 )
@@ -29,9 +34,9 @@ import (
 //	@name						Authorization
 
 const (
-	httpServerReadTimeout  = 120 * time.Second
-	httpServerWriteTimeout = 120 * time.Second
-	importerDefaultOrigin  = "https://importer.tableflow.com"
+	httpServerReadTimeout         = 120 * time.Second
+	httpServerWriteTimeout        = 120 * time.Second
+	httpDefaultAuthorizationToken = "tableflow"
 )
 
 func InitWebServer(ctx context.Context) error {
@@ -40,13 +45,12 @@ func InitWebServer(ctx context.Context) error {
 	router := gin.New()
 
 	router.Use(cors.New(cors.Config{
-		AllowOrigins: []string{importerDefaultOrigin, env.WebAppURL},
+		AllowOrigins: []string{env.WebAppURL},
 		AllowMethods: []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},
-		AllowHeaders: append([]string{"Accept", "Authorization", "X-Requested-With", "X-Request-ID",
+		AllowHeaders: []string{"Accept", "Authorization", "X-Requested-With", "X-Request-ID",
 			"X-HTTP-Method-Override", "Upload-Length", "Upload-Offset", "Tus-Resumable", "Upload-Metadata",
 			"Upload-Defer-Length", "Upload-Concat", "User-Agent", "Referrer", "Origin", "Content-Type", "Content-Length",
 			"X-Importer-ID", "X-Import-Metadata"},
-			supertokens.GetAllCORSHeaders()...),
 		ExposeHeaders: []string{"Upload-Offset", "Location", "Upload-Length", "Tus-Version", "Tus-Resumable",
 			"Tus-Max-Size", "Tus-Extension", "Upload-Metadata", "Upload-Defer-Length", "Upload-Concat", "Location",
 			"Upload-Offset", "Upload-Length"},
@@ -56,14 +60,7 @@ func InitWebServer(ctx context.Context) error {
 	}))
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
-	router.Use(func(c *gin.Context) {
-		supertokens.Middleware(http.HandlerFunc(
-			func(rw http.ResponseWriter, r *http.Request) {
-				c.Next()
-			})).ServeHTTP(c.Writer, c.Request)
-		// We call Abort so that the next handler in the chain is not called, unless we call Next explicitly
-		c.Abort()
-	})
+
 	server := &http.Server{
 		Addr:           fmt.Sprintf(":%v", env.APIServerPort),
 		Handler:        router,
@@ -72,10 +69,75 @@ func InitWebServer(ctx context.Context) error {
 		MaxHeaderBytes: 1 << 20,
 	}
 
-	initializePublicRoutes(router)
-	initializeFileImportServiceRoutes(router)
-	initializeAdminRoutes(router)
-	initializeAPIRoutes(router)
+	/* ---------------------------  Public routes  --------------------------- */
+
+	public := router.Group("/public")
+	// Swagger API docs (accessible at /public/swagger/index.html)
+	public.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	// Used for external status health checks (i.e. AWS)
+	public.GET("/health", routes.Health)
+
+	/* --------------------------  Importer routes  -------------------------- */
+
+	importer := router.Group("/file-import/v1")
+	// TODO: These are routes which will be authenticated by API key from the client
+	tusHandler := file.TusFileHandler()
+	importer.POST("/files", routes.TusPostFile(tusHandler))
+	importer.HEAD("/files/:id", routes.TusHeadFile(tusHandler))
+	importer.PATCH("/files/:id", routes.TusPatchFile(tusHandler))
+	//public.GET("/files/:id", gin.WrapF(tusHandler.GetFile))
+
+	importer.GET("/importer/:id", routes.GetImporterForImportService)
+	importer.GET("/upload/:id", routes.GetUploadForImportService)
+	importer.POST("/upload-column-mapping/:id", routes.SetUploadColumnMappingAndImportData)
+
+	/* ---------------------------  Admin routes  ---------------------------- */
+
+	v1 := router.Group("/admin/v1")
+	authHeaderToken := os.Getenv("HTTP_API_SERVER_AUTH_TOKEN")
+	if len(authHeaderToken) == 0 {
+		authHeaderToken = httpDefaultAuthorizationToken
+	}
+	v1.Use(web.ApiKeyAuthMiddleware(func(_ *gin.Context, apiKey string) bool {
+		return apiKey == authHeaderToken
+	}))
+
+	/* API Key */
+	v1.GET("/api-key", getAPIKey)
+	v1.POST("/api-key", regenerateAPIKey)
+
+	/* Importer */
+	v1.POST("/importer", createImporter)
+	v1.GET("/importer/:id", getImporter)
+	v1.POST("/importer/:id", editImporter)
+	v1.GET("/importers/:workspace-id", getImporters)
+
+	/* Template */
+	v1.GET("/template/:id", getTemplate)
+	v1.POST("/template-column", createTemplateColumn)
+	v1.DELETE("/template-column/:id", deleteTemplateColumn)
+
+	/* Import */
+	v1.GET("/import/:id", getImport)
+	v1.GET("/imports/:workspace-id", getImports)
+
+	/* Upload */
+	v1.GET("/upload/:id", getUpload)
+
+	/* ---------------------------  API routes  --------------------------- */
+
+	api := router.Group("/v1")
+	api.Use(web.ApiKeyAuthMiddleware(func(c *gin.Context, apiKey string) bool {
+		dbApiKey, err := getAPIKeyFromDB()
+		if err != nil || apiKey != dbApiKey {
+			return false
+		}
+		return true
+	}))
+
+	/* Import */
+	api.GET("/import/:id", getImportForExternalAPI)
+	api.GET("/import/:id/download", downloadImportForExternalAPI)
 
 	// Initialize the server in a goroutine so that it won't block shutdown handling
 	go func() {
