@@ -3,47 +3,18 @@ package file
 import (
 	"fmt"
 	"github.com/guregu/null"
-	"github.com/tus/tusd/pkg/filestore"
 	"github.com/tus/tusd/pkg/handler"
 	"io"
 	"math"
 	"os"
 	"strings"
-	"tableflow/go/internal/s3"
 	"tableflow/go/pkg/db"
 	"tableflow/go/pkg/model"
+	"tableflow/go/pkg/tf"
 	"tableflow/go/pkg/util"
 )
 
-// TODO: Break this out into its own service eventually
-func TusFileHandler() *handler.UnroutedHandler {
-	store := filestore.FileStore{
-		Path: TempUploadsDirectory,
-	}
-	composer := handler.NewStoreComposer()
-	store.UseIn(composer)
-	fileHandler, err := handler.NewUnroutedHandler(handler.Config{
-		BasePath:                "/file-import/v1/files",
-		StoreComposer:           composer,
-		NotifyCompleteUploads:   true,
-		DisableDownload:         true,
-		RespectForwardedHeaders: true,
-	})
-	if err != nil {
-		util.Log.Fatalw("Unable to create tus file upload handler", "error", err)
-		return nil
-	}
-	go func() {
-		for {
-			event := <-fileHandler.CompleteUploads
-			util.Log.Infow("File upload to disk completed", "tus_id", event.Upload.ID)
-			go uploadCompleteHandler(event)
-		}
-	}()
-	return fileHandler
-}
-
-func uploadCompleteHandler(event handler.HookEvent) {
+func UploadCompleteHandler(event handler.HookEvent) {
 	uploadFileName := event.Upload.MetaData["filename"]
 	uploadFileType := event.Upload.MetaData["filetype"]
 	uploadFileExtension := ""
@@ -53,12 +24,12 @@ func uploadCompleteHandler(event handler.HookEvent) {
 
 	importerID := event.HTTPRequest.Header.Get("X-Importer-ID")
 	if len(importerID) == 0 {
-		util.Log.Errorw("No importer ID found on the request headers during upload complete handling", "tus_id", event.Upload.ID)
+		tf.Log.Errorw("No importer ID found on the request headers during upload complete handling", "tus_id", event.Upload.ID)
 		return
 	}
 	importer, err := db.GetImporterWithoutTemplate(importerID)
 	if err != nil {
-		util.Log.Errorw("Could not retrieve importer from database during upload complete handling", "error", err, "tus_id", event.Upload.ID, "importer_id", importerID)
+		tf.Log.Errorw("Could not retrieve importer from database during upload complete handling", "error", err, "tus_id", event.Upload.ID, "importer_id", importerID)
 		return
 	}
 	importMetadataEncodedStr := event.HTTPRequest.Header.Get("X-Import-Metadata")
@@ -66,11 +37,11 @@ func uploadCompleteHandler(event handler.HookEvent) {
 	if len(importMetadataEncodedStr) != 0 {
 		importMetadataStr, err := util.DecodeBase64(importMetadataEncodedStr)
 		if err != nil {
-			util.Log.Warnw("Could not decode base64 import metadata", "error", err, "tus_id", event.Upload.ID, "importer_id", importerID)
+			tf.Log.Warnw("Could not decode base64 import metadata", "error", err, "tus_id", event.Upload.ID, "importer_id", importerID)
 		} else {
 			importMetadata, err = model.JSONStringToJSONB(importMetadataStr)
 			if err != nil {
-				util.Log.Warnw("Could not convert import metadata to json", "error", err, "tus_id", event.Upload.ID, "importer_id", importerID)
+				tf.Log.Warnw("Could not convert import metadata to json", "error", err, "tus_id", event.Upload.ID, "importer_id", importerID)
 			}
 		}
 	}
@@ -85,20 +56,16 @@ func uploadCompleteHandler(event handler.HookEvent) {
 		Metadata:      importMetadata,
 	}
 	fileName := fmt.Sprintf("%s/%s", TempUploadsDirectory, upload.TusID)
-	if upload.WorkspaceID.Valid {
-		err = db.DB.Create(upload).Error
-	} else {
-		err = db.DB.Omit(db.OpenModelOmitFields...).Create(upload).Error
-	}
+	err = tf.DB.Create(upload).Error
 	if err != nil {
-		util.Log.Errorw("Could not create upload in database", "error", err, "upload_id", upload.ID, "tus_id", upload.TusID)
+		tf.Log.Errorw("Could not create upload in database", "error", err, "upload_id", upload.ID, "tus_id", upload.TusID)
 		return
 	}
 
 	file, err := os.Open(fileName)
 	defer file.Close()
 	if err != nil {
-		util.Log.Errorw("Could not open temp upload file from disk", "error", err, "upload_id", upload.ID)
+		tf.Log.Errorw("Could not open temp upload file from disk", "error", err, "upload_id", upload.ID)
 		saveUploadError(upload, "An error occurred while processing your upload. Please try again.")
 		removeUploadFileFromDisk(fileName, upload.ID.String())
 		return
@@ -107,32 +74,32 @@ func uploadCompleteHandler(event handler.HookEvent) {
 	// Parse the column headers, sample data, and retrieve the row count
 	uploadColumns, rowCount, err := processUploadColumnsAndRowCount(upload, file)
 	if err != nil {
-		util.Log.Errorw("Could not parse upload columns", "error", err, "upload_id", upload.ID)
+		tf.Log.Errorw("Could not parse upload columns", "error", err, "upload_id", upload.ID)
 		saveUploadError(upload, "An error occurred determining the columns in your file. Please check the file and try again.")
 		removeUploadFileFromDisk(fileName, upload.ID.String())
 		return
 	}
 	if rowCount == 0 {
-		util.Log.Debugw("A file was uploaded with no rows or an error occurred during processing", "upload_id", upload.ID)
+		tf.Log.Debugw("A file was uploaded with no rows or an error occurred during processing", "upload_id", upload.ID)
 		saveUploadError(upload, "No rows were found in your file, please try again with a different file.")
 		removeUploadFileFromDisk(fileName, upload.ID.String())
 		return
 	}
 	if rowCount == 1 {
-		util.Log.Debugw("A file was uploaded with only one row", "upload_id", upload.ID)
+		tf.Log.Debugw("A file was uploaded with only one row", "upload_id", upload.ID)
 		saveUploadError(upload, "Only one row was found in your file, please try again with a different file that has a header row and at least one row of data.")
 		removeUploadFileFromDisk(fileName, upload.ID.String())
 		return
 	}
 	if len(uploadColumns) == 0 {
-		util.Log.Warnw("No upload columns found in file", "error", err, "upload_id", upload.ID)
+		tf.Log.Warnw("No upload columns found in file", "error", err, "upload_id", upload.ID)
 		saveUploadError(upload, "An error occurred determining the columns in your file. Please check the file and try again.")
 		removeUploadFileFromDisk(fileName, upload.ID.String())
 		return
 	}
-	err = db.DB.Create(&uploadColumns).Error
+	err = tf.DB.Create(&uploadColumns).Error
 	if err != nil {
-		util.Log.Errorw("Could not create upload columns in database", "error", err, "upload_id", upload.ID)
+		tf.Log.Errorw("Could not create upload columns in database", "error", err, "upload_id", upload.ID)
 		saveUploadError(upload, "An error occurred determining the columns in your file. Please check the file and try again.")
 		removeUploadFileFromDisk(fileName, upload.ID.String())
 		return
@@ -145,30 +112,30 @@ func uploadCompleteHandler(event handler.HookEvent) {
 	upload.NumRows = null.IntFrom(int64(math.Max(float64(rowCount-1), 0)))
 
 	upload.IsParsed = true
-	err = db.DB.Save(upload).Error
+	err = tf.DB.Save(upload).Error
 	if err != nil {
-		util.Log.Errorw("Could not update upload in database", "error", err)
+		tf.Log.Errorw("Could not update upload in database", "error", err)
 		removeUploadFileFromDisk(fileName, upload.ID.String())
 		return
 	}
 
 	// Store the upload on S3
-	err = s3.S3.UploadFile(upload.ID.String(), upload.FileType.String, s3.S3.BucketUploads, file)
+	err = tf.S3.UploadFile(upload.ID.String(), upload.FileType.String, tf.S3.BucketUploads, file)
 	if err != nil {
-		util.Log.Errorw("Could not upload file to S3", "error", err, "upload_id", upload.ID)
+		tf.Log.Errorw("Could not upload file to S3", "error", err, "upload_id", upload.ID)
 		removeUploadFileFromDisk(fileName, upload.ID.String())
 		return
 	}
-	upload.StorageBucket = null.StringFrom(s3.S3.BucketUploads)
+	upload.StorageBucket = null.StringFrom(tf.S3.BucketUploads)
 	upload.IsStored = true
-	err = db.DB.Save(upload).Error
+	err = tf.DB.Save(upload).Error
 	if err != nil {
-		util.Log.Errorw("Could not update upload in database", "error", err, "upload_id", upload.ID)
+		tf.Log.Errorw("Could not update upload in database", "error", err, "upload_id", upload.ID)
 		removeUploadFileFromDisk(fileName, upload.ID.String())
 		return
 	}
 	removeUploadFileFromDisk(fileName, upload.ID.String())
-	util.Log.Debugw("File upload complete", "upload_id", upload.ID)
+	tf.Log.Debugw("File upload complete", "upload_id", upload.ID)
 }
 
 func processUploadColumnsAndRowCount(upload *model.Upload, file *os.File) ([]model.UploadColumn, int, error) {
@@ -192,7 +159,7 @@ func processUploadColumnsAndRowCount(upload *model.Upload, file *os.File) ([]mod
 		}
 		if err != nil {
 			// TODO: Handle parse error here and surface it to user. Save parse errors on upload or new table?
-			util.Log.Warnw("Error while parsing data file", "error", err, "upload_id", upload.ID)
+			tf.Log.Warnw("Error while parsing data file", "error", err, "upload_id", upload.ID)
 			continue
 		}
 		if isHeaderRow {
@@ -211,7 +178,7 @@ func processUploadColumnsAndRowCount(upload *model.Upload, file *os.File) ([]mod
 			// Don't collect more than sampleDataSize sample data rows
 			for columnIndex, v := range row {
 				if columnIndex >= len(uploadColumns) {
-					util.Log.Warnw("Index out of range for row", "index", columnIndex, "value", v, "upload_id", upload.ID)
+					tf.Log.Warnw("Index out of range for row", "index", columnIndex, "value", v, "upload_id", upload.ID)
 					continue
 				}
 				uploadColumns[columnIndex].SampleData = append(uploadColumns[columnIndex].SampleData, v)
@@ -224,20 +191,20 @@ func processUploadColumnsAndRowCount(upload *model.Upload, file *os.File) ([]mod
 
 func saveUploadError(upload *model.Upload, errorStr string) {
 	upload.Error = null.StringFrom(errorStr)
-	if err := db.DB.Save(upload).Error; err != nil {
-		util.Log.Errorw("Could not update upload in database", "error", err, "upload_id", upload.ID)
+	if err := tf.DB.Save(upload).Error; err != nil {
+		tf.Log.Errorw("Could not update upload in database", "error", err, "upload_id", upload.ID)
 	}
 }
 
 func removeUploadFileFromDisk(fileName, uploadID string) {
 	err := os.Remove(fileName)
 	if err != nil {
-		util.Log.Errorw("Could not delete upload from file system", "error", err, "upload_id", uploadID)
+		tf.Log.Errorw("Could not delete upload from file system", "error", err, "upload_id", uploadID)
 		return
 	}
 	err = os.Remove(fmt.Sprintf("%s.info", fileName))
 	if err != nil {
-		util.Log.Errorw("Could not delete upload info from file system", "error", err, "upload_id", uploadID)
+		tf.Log.Errorw("Could not delete upload info from file system", "error", err, "upload_id", uploadID)
 		return
 	}
 }

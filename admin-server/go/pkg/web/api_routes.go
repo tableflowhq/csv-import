@@ -8,10 +8,9 @@ import (
 	"io"
 	"net/http"
 	"strconv"
-	"tableflow/go/internal/s3"
 	"tableflow/go/pkg/db"
+	"tableflow/go/pkg/tf"
 	"tableflow/go/pkg/types"
-	"tableflow/go/pkg/util"
 )
 
 // getImportForExternalAPI
@@ -31,8 +30,14 @@ func getImportForExternalAPI(c *gin.Context) {
 	}
 	imp, err := db.GetImport(id)
 	if err != nil {
-		util.Log.Warnw("Could not get import", "error", err, "import_id", id)
+		tf.Log.Warnw("Could not get import", "error", err, "import_id", id)
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Could not find import"})
+		return
+	}
+	workspaceID := c.GetString("workspace_id")
+	if imp.WorkspaceID.String() != workspaceID {
+		tf.Log.Warnw("Attempted to download import not belonging to workspace", "workspace_id", workspaceID, "import_id", id)
+		c.AbortWithStatusJSON(http.StatusUnauthorized, types.Res{Err: "Unauthorized"})
 		return
 	}
 	c.JSON(http.StatusOK, imp)
@@ -56,8 +61,14 @@ func downloadImportForExternalAPI(c *gin.Context) {
 
 	imp, err := db.GetImport(id)
 	if err != nil {
-		util.Log.Warnw("Could not get import to download", "error", err, "import_id", id)
+		tf.Log.Warnw("Could not get import to download", "error", err, "import_id", id)
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Could not find import"})
+		return
+	}
+	workspaceID := c.GetString("workspace_id")
+	if imp.WorkspaceID.String() != workspaceID {
+		tf.Log.Warnw("Attempted to download import not belonging to workspace", "workspace_id", workspaceID, "import_id", id)
+		c.AbortWithStatusJSON(http.StatusUnauthorized, types.Res{Err: "Unauthorized"})
 		return
 	}
 	if !imp.IsStored {
@@ -65,12 +76,12 @@ func downloadImportForExternalAPI(c *gin.Context) {
 		return
 	}
 
-	res, err := s3.S3.DownloadFile(imp.ID.String(), s3.S3.BucketImports)
+	res, err := tf.S3.DownloadFile(imp.ID.String(), tf.S3.BucketImports)
 	if res != nil && res.Body != nil {
 		defer res.Body.Close()
 	}
 	if err != nil {
-		util.Log.Errorw("Error downloading file from S3", "error", err, "import_id", id)
+		tf.Log.Errorw("Error downloading file from S3", "error", err, "import_id", id)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, types.Res{Err: "Could not download import"})
 		return
 	}
@@ -85,7 +96,7 @@ func downloadImportForExternalAPI(c *gin.Context) {
 	// Stream the file content as the response
 	_, err = io.Copy(c.Writer, res.Body)
 	if err != nil {
-		util.Log.Errorw("Error copying import reader to response during download", "error", err, "import_id", id)
+		tf.Log.Errorw("Error copying import reader to response during download", "error", err, "import_id", id)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, types.Res{Err: "Could not download import"})
 		return
 	}

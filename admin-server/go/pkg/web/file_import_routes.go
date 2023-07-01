@@ -1,4 +1,4 @@
-package routes
+package web
 
 import (
 	"encoding/csv"
@@ -15,10 +15,10 @@ import (
 	"net/url"
 	"os"
 	"strings"
-	"tableflow/go/internal/s3"
 	"tableflow/go/pkg/db"
 	"tableflow/go/pkg/file"
 	"tableflow/go/pkg/model"
+	"tableflow/go/pkg/tf"
 	"tableflow/go/pkg/types"
 	"tableflow/go/pkg/util"
 	"time"
@@ -71,13 +71,13 @@ type importToCSVResult struct {
 	NumNonEmptyCells int
 }
 
-// TusPostFile
+// tusPostFile
 //
 //	@Summary		Post file (tus)
 //	@Description	Creates a new file upload after validating the length and parsing the metadata
 //	@Tags			File Import
 //	@Router			/file-import/v1/files [post]
-func TusPostFile(h *handler.UnroutedHandler) gin.HandlerFunc {
+func tusPostFile(h *handler.UnroutedHandler) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		importerID := c.Request.Header.Get("X-Importer-ID")
 		if len(importerID) == 0 {
@@ -103,7 +103,7 @@ func validateAllowedDomains(c *gin.Context, importer *model.Importer) error {
 	referer := c.Request.Referer()
 	uri, err := url.ParseRequestURI(referer)
 	if err != nil || len(uri.Host) == 0 {
-		util.Log.Errorw("Missing or invalid referer header while checking allowed domains during import", "importer_id", importer.ID, "referer", referer)
+		tf.Log.Errorw("Missing or invalid referer header while checking allowed domains during import", "importer_id", importer.ID, "referer", referer)
 		return errors.New("Unable to determine upload origin. Please contact support.")
 	}
 	hostName := uri.Hostname()
@@ -115,39 +115,39 @@ func validateAllowedDomains(c *gin.Context, importer *model.Importer) error {
 		}
 	}
 	if !containsAllowedDomain {
-		util.Log.Errorw("Upload request blocked coming from unauthorized domain", "importer_id", importer.ID, "referer", referer, "allowed_domains", importer.AllowedDomains)
+		tf.Log.Errorw("Upload request blocked coming from unauthorized domain", "importer_id", importer.ID, "referer", referer, "allowed_domains", importer.AllowedDomains)
 		return errors.New("Uploads are only allowed from authorized domains. Please contact support.")
 	}
 	return nil
 }
 
-// TusHeadFile
+// tusHeadFile
 //
 //	@Summary		Head file (tus)
 //	@Description	Returns the length and offset for the HEAD request
 //	@Tags			File Import
 //	@Router			/file-import/v1/files/{id} [head]
 //	@Param			id	path	string	true	"tus file ID"
-func TusHeadFile(h *handler.UnroutedHandler) gin.HandlerFunc {
+func tusHeadFile(h *handler.UnroutedHandler) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		h.HeadFile(c.Writer, c.Request)
 	}
 }
 
-// TusPatchFile
+// tusPatchFile
 //
 //	@Summary		Patch file (tus)
 //	@Description	Adds a chunk to an upload, only allowed if enough space in the upload is left
 //	@Tags			File Import
 //	@Router			/file-import/v1/files/{id} [patch]
 //	@Param			id	path	string	true	"tus file ID"
-func TusPatchFile(h *handler.UnroutedHandler) gin.HandlerFunc {
+func tusPatchFile(h *handler.UnroutedHandler) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		h.PatchFile(c.Writer, c.Request)
 	}
 }
 
-// GetImporterForImportService
+// getImporterForImportService
 //
 //	@Summary		Get importer
 //	@Description	Get a single importer and its template
@@ -156,7 +156,7 @@ func TusPatchFile(h *handler.UnroutedHandler) gin.HandlerFunc {
 //	@Failure		400	{object}	types.Res
 //	@Router			/file-import/v1/importer/{id} [get]
 //	@Param			id	path	string	true	"Importer ID"
-func GetImporterForImportService(c *gin.Context) {
+func getImporterForImportService(c *gin.Context) {
 	id := c.Param("id")
 	if len(id) == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No importer ID provided"})
@@ -202,7 +202,7 @@ func GetImporterForImportService(c *gin.Context) {
 	c.JSON(http.StatusOK, importer)
 }
 
-// GetUploadForImportService
+// getUploadForImportService
 //
 //	@Summary		Get upload by tus ID
 //	@Description	Get a single upload by the tus ID provided to the client from the upload
@@ -211,7 +211,7 @@ func GetImporterForImportService(c *gin.Context) {
 //	@Failure		400	{object}	types.Res
 //	@Router			/file-import/v1/upload/{id} [get]
 //	@Param			id	path	string	true	"tus ID"
-func GetUploadForImportService(c *gin.Context) {
+func getUploadForImportService(c *gin.Context, limitCheck func(*model.Upload) error) {
 	id := c.Param("id")
 	if len(id) == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No upload tus ID provided"})
@@ -224,6 +224,11 @@ func GetUploadForImportService(c *gin.Context) {
 	}
 	if upload.Error.Valid {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: upload.Error.String})
+		return
+	}
+	// Check if there are limits on the workspace
+	if err = limitCheck(upload); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return
 	}
 	importerUploadColumns := make([]*ImportServiceUploadColumn, len(upload.UploadColumns))
@@ -252,7 +257,7 @@ func GetUploadForImportService(c *gin.Context) {
 	c.JSON(http.StatusOK, importerUpload)
 }
 
-// SetUploadColumnMappingAndImportData
+// setUploadColumnMappingAndImportData
 //
 //	@Summary		Set upload column mapping and import data
 //	@Description	Set the template column IDs for each upload column and trigger the import. Note: we will eventually have a separate import endpoint once there is a review step in the upload process.
@@ -262,7 +267,7 @@ func GetUploadForImportService(c *gin.Context) {
 //	@Router			/file-import/v1/upload-column-mapping/{id} [post]
 //	@Param			id		path	string				true	"Upload ID"
 //	@Param			body	body	map[string]string	true	"Request body"
-func SetUploadColumnMappingAndImportData(c *gin.Context) {
+func setUploadColumnMappingAndImportData(c *gin.Context) {
 	id := c.Param("id")
 	if len(id) == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No upload ID provided"})
@@ -271,7 +276,7 @@ func SetUploadColumnMappingAndImportData(c *gin.Context) {
 	// Upload column ID -> Template column ID
 	columnMapping := make(map[string]string)
 	if err := c.BindJSON(&columnMapping); err != nil {
-		util.Log.Warnw("Could not bind JSON", "error", err)
+		tf.Log.Warnw("Could not bind JSON", "error", err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return
 	}
@@ -313,7 +318,7 @@ func SetUploadColumnMappingAndImportData(c *gin.Context) {
 	}
 	err = db.SetTemplateColumnIDs(upload, columnMapping)
 	if err != nil {
-		util.Log.Errorw("Could not set template column mapping", "error", err)
+		tf.Log.Errorw("Could not set template column mapping", "error", err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "An error occurred updating the column mapping"})
 		return
 	}
@@ -331,7 +336,7 @@ func importData(upload *model.Upload, template *model.Template) {
 
 	err := waitForUploadToBeStored(upload)
 	if err != nil {
-		util.Log.Errorw("Unable to import data after waiting on S3 upload completion", "error", err)
+		tf.Log.Errorw("Unable to import data after waiting on S3 upload completion", "error", err)
 		return
 	}
 
@@ -344,9 +349,9 @@ func importData(upload *model.Upload, template *model.Template) {
 		FileExtension: upload.FileExtension,
 		Metadata:      upload.Metadata,
 	}
-	err = db.DB.Create(imp).Error
+	err = tf.DB.Create(imp).Error
 	if err != nil {
-		util.Log.Errorw("Could not create import in database", "error", err, "upload_id", upload.ID)
+		tf.Log.Errorw("Could not create import in database", "error", err, "upload_id", upload.ID)
 		return
 	}
 
@@ -357,7 +362,7 @@ func importData(upload *model.Upload, template *model.Template) {
 		_ = downloadFile.Close()
 	}(downloadFile)
 	if err != nil {
-		util.Log.Errorw("Failed to create file to download for import", "error", err, "import_id", imp.ID, "file", downloadFileName)
+		tf.Log.Errorw("Failed to create file to download for import", "error", err, "import_id", imp.ID, "file", downloadFileName)
 		return
 	}
 
@@ -368,13 +373,13 @@ func importData(upload *model.Upload, template *model.Template) {
 		_ = importFile.Close()
 	}(importFile)
 	if err != nil {
-		util.Log.Errorw("Failed to create file for import", "error", err, "import_id", imp.ID, "file", importFileName)
+		tf.Log.Errorw("Failed to create file for import", "error", err, "import_id", imp.ID, "file", importFileName)
 		return
 	}
 
-	err = s3.S3.DownloadFileToDisk(upload.ID.String(), s3.S3.BucketUploads, downloadFile)
+	err = tf.S3.DownloadFileToDisk(upload.ID.String(), tf.S3.BucketUploads, downloadFile)
 	if err != nil {
-		util.Log.Errorw("Unable to download file", "error", err, "import_id", imp.ID, "file", downloadFileName)
+		tf.Log.Errorw("Unable to download file", "error", err, "import_id", imp.ID, "file", downloadFileName)
 		return
 	}
 
@@ -394,18 +399,18 @@ func importData(upload *model.Upload, template *model.Template) {
 
 	importResult, err := processAndWriteCSV(downloadFile, importFile, columnPositionMap, template, upload, imp)
 	if err != nil {
-		util.Log.Errorw("Could not process and write import file", "error", err, "import_id", imp.ID, "file", downloadFileName, "file_type", upload.FileType.String)
+		tf.Log.Errorw("Could not process and write import file", "error", err, "import_id", imp.ID, "file", downloadFileName, "file_type", upload.FileType.String)
 		return
 	}
-	util.Log.Debugw("Import processing complete", "import_id", imp.ID, "time", time.Since(importStartTime))
+	tf.Log.Debugw("Import processing complete", "import_id", imp.ID, "time", time.Since(importStartTime))
 
-	err = s3.S3.UploadFile(imp.ID.String(), imp.FileType.String, s3.S3.BucketImports, importFile)
+	err = tf.S3.UploadFile(imp.ID.String(), imp.FileType.String, tf.S3.BucketImports, importFile)
 	if err != nil {
-		util.Log.Errorw("Could not upload import file to S3", "error", err, "import_id", imp.ID)
+		tf.Log.Errorw("Could not upload import file to S3", "error", err, "import_id", imp.ID)
 		return
 	}
 
-	imp.StorageBucket = null.StringFrom(s3.S3.BucketImports)
+	imp.StorageBucket = null.StringFrom(tf.S3.BucketImports)
 	imp.IsStored = true
 	// Subtract 1 to remove the header row
 	imp.NumRows = null.IntFrom(int64(math.Max(float64(importResult.NumRows-1), 0)))
@@ -414,12 +419,12 @@ func importData(upload *model.Upload, template *model.Template) {
 	fileSize, err := util.GetFileSize(importFile)
 	imp.FileSize = null.NewInt(fileSize, err == nil)
 
-	err = db.DB.Save(imp).Error
+	err = tf.DB.Save(imp).Error
 	if err != nil {
-		util.Log.Errorw("Could not update import in database", "error", err, "import_id", imp.ID)
+		tf.Log.Errorw("Could not update import in database", "error", err, "import_id", imp.ID)
 		return
 	}
-	util.Log.Debugw("File import complete", "import_id", imp.ID)
+	tf.Log.Debugw("File import complete", "import_id", imp.ID)
 }
 
 func processAndWriteCSV(fileToRead, fileToWrite *os.File, columnPositionMap map[int]int, template *model.Template, upload *model.Upload, imp *model.Import) (importToCSVResult, error) {
@@ -445,7 +450,7 @@ func processAndWriteCSV(fileToRead, fileToWrite *os.File, columnPositionMap map[
 			break
 		}
 		if err != nil {
-			util.Log.Warnw("Error while parsing downloaded file", "error", err, "import_id", imp.ID)
+			tf.Log.Warnw("Error while parsing downloaded file", "error", err, "import_id", imp.ID)
 			continue
 		}
 		if isHeaderRow {
@@ -455,7 +460,7 @@ func processAndWriteCSV(fileToRead, fileToWrite *os.File, columnPositionMap map[
 				records[i] = tc.Key
 			}
 			if err = w.Write(records); err != nil {
-				util.Log.Warnw("Error while writing header row to import file", "error", err, "import_id", imp.ID)
+				tf.Log.Warnw("Error while writing header row to import file", "error", err, "import_id", imp.ID)
 			}
 			continue
 		}
@@ -475,7 +480,7 @@ func processAndWriteCSV(fileToRead, fileToWrite *os.File, columnPositionMap map[
 			}
 		}
 		if err = w.Write(records); err != nil {
-			util.Log.Warnw("Error while writing row to import file", "error", err, "import_id", imp.ID)
+			tf.Log.Warnw("Error while writing row to import file", "error", err, "import_id", imp.ID)
 		}
 		if rowIndex%10000 == 0 {
 			w.Flush()
@@ -507,14 +512,14 @@ func waitForUploadToBeStored(upload *model.Upload) error {
 			return nil
 		}
 		if attempt == 1 {
-			util.Log.Debugw("Waiting to import file until upload completion", "upload_id", uploadID, "file_size_mb", uploadSizeMB)
+			tf.Log.Debugw("Waiting to import file until upload completion", "upload_id", uploadID, "file_size_mb", uploadSizeMB)
 		}
 		wait := waitDelay(attempt)
 		if attempt == maxAttempts/4 {
-			util.Log.Warnw("Long wait time detected waiting for upload to be stored in S3", "attempts", attempt, "wait_time", wait.String(), "upload_id", uploadID, "file_size_mb", uploadSizeMB)
+			tf.Log.Warnw("Long wait time detected waiting for upload to be stored in S3", "attempts", attempt, "wait_time", wait.String(), "upload_id", uploadID, "file_size_mb", uploadSizeMB)
 		}
 		if attempt == maxAttempts {
-			util.Log.Warnw("Exceeded max attempts waiting for upload to be stored in S3", "attempts", attempt, "wait_time", wait.String(), "upload_id", uploadID, "file_size_mb", uploadSizeMB)
+			tf.Log.Warnw("Exceeded max attempts waiting for upload to be stored in S3", "attempts", attempt, "wait_time", wait.String(), "upload_id", uploadID, "file_size_mb", uploadSizeMB)
 			break
 		}
 		time.Sleep(wait)

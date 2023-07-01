@@ -6,6 +6,7 @@ import (
 	"github.com/xuri/excelize/v2"
 	"io"
 	"os"
+	"tableflow/go/pkg/tf"
 )
 
 type DataFileIterator struct {
@@ -20,14 +21,14 @@ func GetFileSize(file *os.File) (int64, error) {
 	if err == nil {
 		return fileStat.Size(), nil
 	}
-	Log.Errorw("Unable to determine file size", "error", err)
+	tf.Log.Errorw("Unable to determine file size", "error", err)
 	return 0, err
 }
 
 func ResetFileReader(file *os.File) {
 	_, err := file.Seek(0, io.SeekStart)
 	if err != nil {
-		Log.Errorw("Error resetting file reader", "error", err)
+		tf.Log.Errorw("Error resetting file reader", "error", err)
 	}
 }
 

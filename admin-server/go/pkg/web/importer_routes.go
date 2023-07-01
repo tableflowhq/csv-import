@@ -9,12 +9,14 @@ import (
 	"strings"
 	"tableflow/go/pkg/db"
 	"tableflow/go/pkg/model"
+	"tableflow/go/pkg/tf"
 	"tableflow/go/pkg/types"
 	"tableflow/go/pkg/util"
 )
 
 type ImporterCreateRequest struct {
-	Name string `json:"name" example:"Test Importer"`
+	Name        string `json:"name" example:"Test Importer"`
+	WorkspaceID string `json:"workspace_id" example:"b2079476-261a-41fe-8019-46eb51c537f7"`
 }
 
 type ImporterEditRequest struct {
@@ -32,35 +34,47 @@ type ImporterEditRequest struct {
 //	@Failure		400	{object}	types.Res
 //	@Router			/admin/v1/importer [post]
 //	@Param			body	body	ImporterCreateRequest	true	"Request body"
-func createImporter(c *gin.Context) {
+func createImporter(c *gin.Context, getWorkspaceUser func(*gin.Context, string) (string, error)) {
 	req := ImporterCreateRequest{}
 	if err := c.BindJSON(&req); err != nil {
-		util.Log.Warnw("Could not bind JSON", "error", err)
+		tf.Log.Warnw("Could not bind JSON", "error", err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return
 	}
+	userID, err := getWorkspaceUser(c, req.WorkspaceID)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, types.Res{Err: err.Error()})
+		return
+	}
+	user := model.User{ID: model.ParseID(userID)}
 	if len(req.Name) == 0 {
 		req.Name = "My Importer"
 	}
 	importer := model.Importer{
-		ID:   model.NewID(),
-		Name: req.Name,
+		ID:          model.NewID(),
+		WorkspaceID: model.ParseID(req.WorkspaceID),
+		Name:        req.Name,
+		CreatedBy:   user.ID,
+		UpdatedBy:   user.ID,
 	}
-	err := db.DB.Omit(db.OpenModelOmitFields...).Create(&importer).Error
+	err = tf.DB.Create(&importer).Error
 	if err != nil {
-		util.Log.Errorw("Could not create importer", "error", err)
+		tf.Log.Errorw("Could not create importer", "error", err, "workspace_id", req.WorkspaceID)
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return
 	}
 	// Right now, templates are 1:1 with importers. Create a default template to be used by the importer
 	template := model.Template{
-		ID:         model.NewID(),
-		ImporterID: importer.ID,
-		Name:       "Default Template",
+		ID:          model.NewID(),
+		WorkspaceID: importer.WorkspaceID,
+		ImporterID:  importer.ID,
+		Name:        "Default Template",
+		CreatedBy:   user.ID,
+		UpdatedBy:   user.ID,
 	}
-	err = db.DB.Omit(db.OpenModelOmitFields...).Create(&template).Error
+	err = tf.DB.Create(&template).Error
 	if err != nil {
-		util.Log.Errorw("Could not create template for importer", "error", err)
+		tf.Log.Errorw("Could not create template for importer", "error", err, "workspace_id", req.WorkspaceID)
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return
 	}
@@ -76,15 +90,20 @@ func createImporter(c *gin.Context) {
 //	@Failure		400	{object}	types.Res
 //	@Router			/admin/v1/importer/{id} [get]
 //	@Param			id	path	string	true	"Importer ID"
-func getImporter(c *gin.Context) {
+func getImporter(c *gin.Context, getWorkspaceUser func(*gin.Context, string) (string, error)) {
 	id := c.Param("id")
 	if len(id) == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No importer ID provided"})
 		return
 	}
-	importer, err := db.GetImporter(id)
+	importer, err := db.GetImporterWithUsers(id)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+		return
+	}
+	_, err = getWorkspaceUser(c, importer.WorkspaceID.String())
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, types.Res{Err: err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, importer)
@@ -97,10 +116,20 @@ func getImporter(c *gin.Context) {
 //	@Tags			Importer
 //	@Success		200	{object}	[]model.Importer
 //	@Failure		400	{object}	types.Res
-//	@Router			/admin/v1/importers [get]
-func getImporters(c *gin.Context) {
-	var importers []*model.Importer
-	err := db.DB.Preload("Template.TemplateColumns").Find(&importers).Error
+//	@Router			/admin/v1/importers/{workspace-id} [get]
+//	@Param			workspace-id	path	string	true	"Workspace ID"
+func getImporters(c *gin.Context, getWorkspaceUser func(*gin.Context, string) (string, error)) {
+	workspaceID := c.Param("workspace-id")
+	if len(workspaceID) == 0 {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No workspace ID provided"})
+		return
+	}
+	_, err := getWorkspaceUser(c, workspaceID)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, types.Res{Err: err.Error()})
+		return
+	}
+	importers, err := db.GetImportersWithUsers(workspaceID)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return
@@ -118,7 +147,7 @@ func getImporters(c *gin.Context) {
 //	@Router			/admin/v1/importer/{id} [post]
 //	@Param			id		path	string				true	"Importer ID"
 //	@Param			body	body	ImporterEditRequest	true	"Request body"
-func editImporter(c *gin.Context) {
+func editImporter(c *gin.Context, getWorkspaceUser func(*gin.Context, string) (string, error)) {
 	id := c.Param("id")
 	if len(id) == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No importer ID provided"})
@@ -126,13 +155,18 @@ func editImporter(c *gin.Context) {
 	}
 	req := ImporterEditRequest{}
 	if err := c.BindJSON(&req); err != nil {
-		util.Log.Warnw("Could not bind JSON", "error", err)
+		tf.Log.Warnw("Could not bind JSON", "error", err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return
 	}
 	importer, err := db.GetImporter(id)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+		return
+	}
+	_, err = getWorkspaceUser(c, importer.WorkspaceID.String())
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, types.Res{Err: err.Error()})
 		return
 	}
 
@@ -174,9 +208,9 @@ func editImporter(c *gin.Context) {
 	}
 
 	if save {
-		err = db.DB.Omit(db.OpenModelOmitFields...).Save(importer).Error
+		err = tf.DB.Save(importer).Error
 		if err != nil {
-			util.Log.Errorw("Could not save importer", "error", err, "importer_id", importer.ID)
+			tf.Log.Errorw("Could not save importer", "error", err, "importer_id", importer.ID)
 			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 			return
 		}

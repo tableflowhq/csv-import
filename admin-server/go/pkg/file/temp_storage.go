@@ -1,30 +1,19 @@
 package file
 
 import (
-	"context"
-	"errors"
 	"os"
 	"path/filepath"
-	"tableflow/go/internal"
-	"tableflow/go/pkg/util"
+	"tableflow/go/pkg/tf"
 )
+
+var TempUploadsDirectory = ""
+var TempDownloadsDirectory = ""
+var TempImportsDirectory = ""
 
 const tempDir = "/tmp/tableflow-files"
 const dirMode = 0774
 
-var tempStorageInitialized bool
-var (
-	TempUploadsDirectory   = ""
-	TempDownloadsDirectory = ""
-	TempImportsDirectory   = ""
-)
-
-func InitTempStorage(ctx context.Context) error {
-	if tempStorageInitialized {
-		return errors.New("temp storage already initialized")
-	}
-	tempStorageInitialized = true
-
+func CreateTempDirectories() error {
 	err := os.MkdirAll(tempDir, dirMode)
 	if err != nil {
 		return err
@@ -41,21 +30,14 @@ func InitTempStorage(ctx context.Context) error {
 	if err = createTempDirectory(TempImportsDirectory); err != nil {
 		return err
 	}
-
-	go func() {
-		defer internal.ShutdownWaitGroup.Done()
-		for {
-			select {
-			case <-ctx.Done():
-				if err := os.RemoveAll(tempDir); err != nil {
-					util.Log.Errorw("Error removing temp file directory", "error", err, "name", tempDir)
-				}
-				util.Log.Debugw("Temp file directory removed", "name", tempDir)
-				return
-			}
-		}
-	}()
 	return nil
+}
+
+func RemoveTempDirectories() {
+	if err := os.RemoveAll(tempDir); err != nil {
+		tf.Log.Errorw("Error removing temp file directory", "error", err, "name", tempDir)
+	}
+	tf.Log.Debugw("Temp file directory removed", "name", tempDir)
 }
 
 func createTempDirectory(name string) error {
@@ -63,18 +45,18 @@ func createTempDirectory(name string) error {
 	if err == nil {
 		return nil
 	}
-	util.Log.Warnw("Could not create temp directory, attempting to remove and try again", "name", name, "error", err)
+	tf.Log.Warnw("Could not create temp directory, attempting to remove and try again", "name", name, "error", err)
 	// If the creation results in an error the first time, attempt to remove the temp directory as it still may
 	// exist from a previous improper shutdown
 	err = os.RemoveAll(name)
 	if err != nil {
-		util.Log.Errorw("Could not remove temp directory after failing to create it", "name", name, "error", err)
+		tf.Log.Errorw("Could not remove temp directory after failing to create it", "name", name, "error", err)
 		_ = os.RemoveAll(tempDir)
 		return err
 	}
 	err = os.Mkdir(name, dirMode)
 	if err != nil {
-		util.Log.Warnw("Could not create temp directory after final attempt", "name", name, "error", err)
+		tf.Log.Warnw("Could not create temp directory after final attempt", "name", name, "error", err)
 		_ = os.RemoveAll(tempDir)
 	}
 	return err

@@ -16,7 +16,7 @@ import (
 //	@Failure		400	{object}	types.Res
 //	@Router			/admin/v1/upload/{id} [get]
 //	@Param			id	path	string	true	"Upload ID"
-func getUpload(c *gin.Context) {
+func getUpload(c *gin.Context, getWorkspaceUser func(*gin.Context, string) (string, error)) {
 	id := c.Param("id")
 	if len(id) == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No upload ID provided"})
@@ -25,6 +25,11 @@ func getUpload(c *gin.Context) {
 	upload, err := db.GetUpload(id)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+		return
+	}
+	_, err = getWorkspaceUser(c, upload.WorkspaceID.String())
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, types.Res{Err: err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, upload)
