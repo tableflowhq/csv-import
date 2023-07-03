@@ -210,18 +210,18 @@ func initTempStorage(ctx context.Context, wg *sync.WaitGroup) error {
 func initWebServer(ctx context.Context, wg *sync.WaitGroup) error {
 	webAppDefaultAuthToken := "tableflow"
 	authHeaderToken := os.Getenv("TABLEFLOW_WEB_APP_AUTH_TOKEN")
-
-	adminAPIAuthValidator := func(c *gin.Context, apiKey string) bool {
-		if len(authHeaderToken) == 0 {
-			authHeaderToken = webAppDefaultAuthToken
-		}
-		return apiKey == authHeaderToken
+	if len(authHeaderToken) == 0 {
+		authHeaderToken = webAppDefaultAuthToken
 	}
+	adminAPIAuthValidator := web.APIKeyAuthMiddleware(func(c *gin.Context, apiKey string) bool {
+		return apiKey == authHeaderToken
+	})
 	externalAPIAuthValidator := func(c *gin.Context, apiKey string) bool {
 		workspaceID, err := db.GetWorkspaceIDFromAPIKey(apiKey)
 		if err != nil || len(workspaceID) == 0 {
 			return false
 		}
+		c.Set("workspace_id", workspaceID)
 		return true
 	}
 	getWorkspaceUser := func(c *gin.Context, workspaceID string) (string, error) {

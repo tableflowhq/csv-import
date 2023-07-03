@@ -11,7 +11,7 @@ import (
 	"tableflow/go/pkg/types"
 )
 
-func apiKeyAuthMiddleware(isAuthorized func(c *gin.Context, apiKey string) bool) gin.HandlerFunc {
+func APIKeyAuthMiddleware(isAuthorized func(c *gin.Context, apiKey string) bool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if len(authHeader) == 0 {

@@ -38,7 +38,7 @@ const importerDefaultOrigin = "https://importer.tableflow.com"
 
 type ServerConfig struct {
 	AuthMiddleware           gin.HandlerFunc
-	AdminAPIAuthValidator    func(c *gin.Context, apiKey string) bool
+	AdminAPIAuthValidator    gin.HandlerFunc
 	ExternalAPIAuthValidator func(c *gin.Context, apiKey string) bool
 	GetWorkspaceUser         func(c *gin.Context, workspaceID string) (string, error)
 	GetUserID                func(c *gin.Context) string
@@ -113,7 +113,7 @@ func StartWebServer(config ServerConfig) *http.Server {
 	/* ---------------------------  Admin routes  ---------------------------- */
 
 	adm := router.Group("/admin/v1")
-	adm.Use(apiKeyAuthMiddleware(config.AdminAPIAuthValidator))
+	adm.Use(config.AdminAPIAuthValidator)
 
 	/* Organization */
 	adm.GET("/organization-workspaces", func(c *gin.Context) { getOrganizationWorkspaces(c, config.GetUserID) })
@@ -143,7 +143,7 @@ func StartWebServer(config ServerConfig) *http.Server {
 	/* ---------------------------  API routes  --------------------------- */
 
 	api := router.Group("/v1")
-	api.Use(apiKeyAuthMiddleware(config.ExternalAPIAuthValidator))
+	api.Use(APIKeyAuthMiddleware(config.ExternalAPIAuthValidator))
 
 	/* Import */
 	api.GET("/import/:id", getImportForExternalAPI)
