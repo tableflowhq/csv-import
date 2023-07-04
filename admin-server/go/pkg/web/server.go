@@ -38,7 +38,7 @@ const importerDefaultOrigin = "https://importer.tableflow.com"
 
 type ServerConfig struct {
 	AuthMiddleware           gin.HandlerFunc
-	AdminAPIAuthValidator    func(c *gin.Context, apiKey string) bool
+	AdminAPIAuthValidator    gin.HandlerFunc
 	ExternalAPIAuthValidator func(c *gin.Context, apiKey string) bool
 	GetWorkspaceUser         func(c *gin.Context, workspaceID string) (string, error)
 	GetUserID                func(c *gin.Context) string
@@ -51,7 +51,11 @@ func StartWebServer(config ServerConfig) *http.Server {
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
 
-	allowedOrigin := lo.Ternary(len(tf.WebAppURL) != 0, tf.WebAppURL, webAppDefaultURL)
+	webAppURL, err := util.ParseBaseURL(os.Getenv("TABLEFLOW_WEB_APP_URL"))
+	if err != nil {
+		tf.Log.Warnw("Invalid TABLEFLOW_WEB_APP_URL provided: this should be set on the environment to the URL of where clients will access the front end web app", "error", err.Error())
+	}
+	allowedOrigin := lo.Ternary(len(webAppURL) != 0, webAppURL, webAppDefaultURL)
 	router.Use(cors.New(cors.Config{
 		AllowOrigins: []string{allowedOrigin, importerDefaultOrigin},
 		AllowMethods: []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},
@@ -109,7 +113,7 @@ func StartWebServer(config ServerConfig) *http.Server {
 	/* ---------------------------  Admin routes  ---------------------------- */
 
 	adm := router.Group("/admin/v1")
-	adm.Use(apiKeyAuthMiddleware(config.AdminAPIAuthValidator))
+	adm.Use(config.AdminAPIAuthValidator)
 
 	/* Organization */
 	adm.GET("/organization-workspaces", func(c *gin.Context) { getOrganizationWorkspaces(c, config.GetUserID) })
@@ -139,7 +143,7 @@ func StartWebServer(config ServerConfig) *http.Server {
 	/* ---------------------------  API routes  --------------------------- */
 
 	api := router.Group("/v1")
-	api.Use(apiKeyAuthMiddleware(config.ExternalAPIAuthValidator))
+	api.Use(APIKeyAuthMiddleware(config.ExternalAPIAuthValidator))
 
 	/* Import */
 	api.GET("/import/:id", getImportForExternalAPI)

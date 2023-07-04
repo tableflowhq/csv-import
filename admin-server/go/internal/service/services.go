@@ -18,7 +18,6 @@ import (
 	"tableflow/go/pkg/file"
 	"tableflow/go/pkg/model"
 	"tableflow/go/pkg/tf"
-	"tableflow/go/pkg/util"
 	"tableflow/go/pkg/web"
 	"time"
 )
@@ -89,7 +88,6 @@ func initLogger() error {
 }
 
 func initEnv() error {
-	var err error
 	if envInitialized {
 		return errors.New("env already initialized")
 	}
@@ -100,16 +98,6 @@ func initEnv() error {
 	// Used for development, the env exists only in the base directory
 	_ = godotenv.Load("../.env")
 
-	tf.WebAppURL, err = util.ParseBaseURL(os.Getenv("TABLEFLOW_WEB_APP_URL"))
-	if err != nil {
-		tf.Log.Errorw("Invalid TABLEFLOW_WEB_APP_URL provided: this must be set on the environment to the URL of where clients will access the front end web app", "error", err.Error())
-		return err
-	}
-	tf.APIServerURL, err = util.ParseBaseURL(os.Getenv("TABLEFLOW_API_SERVER_URL"))
-	if err != nil {
-		tf.Log.Errorw("Invalid TABLEFLOW_API_SERVER_URL provided: this must be set on the environment to the URL of where the backend API server is accessible", "error", err.Error())
-		return err
-	}
 	return nil
 }
 
@@ -222,18 +210,18 @@ func initTempStorage(ctx context.Context, wg *sync.WaitGroup) error {
 func initWebServer(ctx context.Context, wg *sync.WaitGroup) error {
 	webAppDefaultAuthToken := "tableflow"
 	authHeaderToken := os.Getenv("TABLEFLOW_WEB_APP_AUTH_TOKEN")
-
-	adminAPIAuthValidator := func(c *gin.Context, apiKey string) bool {
-		if len(authHeaderToken) == 0 {
-			authHeaderToken = webAppDefaultAuthToken
-		}
-		return apiKey == authHeaderToken
+	if len(authHeaderToken) == 0 {
+		authHeaderToken = webAppDefaultAuthToken
 	}
+	adminAPIAuthValidator := web.APIKeyAuthMiddleware(func(c *gin.Context, apiKey string) bool {
+		return apiKey == authHeaderToken
+	})
 	externalAPIAuthValidator := func(c *gin.Context, apiKey string) bool {
 		workspaceID, err := db.GetWorkspaceIDFromAPIKey(apiKey)
 		if err != nil || len(workspaceID) == 0 {
 			return false
 		}
+		c.Set("workspace_id", workspaceID)
 		return true
 	}
 	getWorkspaceUser := func(c *gin.Context, workspaceID string) (string, error) {
