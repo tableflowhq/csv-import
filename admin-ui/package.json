@@ -43,7 +43,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "storybook": "start-storybook -p 6006 -s public",
-    "build-storybook": "build-storybook -s public",
+    "build-storybook": "build-storybook -s public"
   },
   "eslintConfig": {
     "extends": [
