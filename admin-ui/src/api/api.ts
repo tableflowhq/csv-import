@@ -83,6 +83,7 @@ const errorHandler = (error: any, url: string, method: string): ApiResponse<any>
   return result;
 };
 
+// TODO: Add support for getting custom auth from env
 const headers = {
   "Content-Type": "application/json",
   Authorization: "Bearer tableflow",
