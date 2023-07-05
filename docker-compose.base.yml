@@ -12,8 +12,9 @@ services:
     networks:
       - app_network
     restart: unless-stopped
+    command: -p ${POSTGRES_PORT}
     healthcheck:
-      test: ['CMD', 'pg_isready']
+      test: ['CMD', 'pg_isready', '-p',  '${POSTGRES_PORT}']
       interval: 5s
       timeout: 5s
       retries: 5
