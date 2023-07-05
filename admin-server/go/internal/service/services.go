@@ -291,34 +291,5 @@ func getDatabaseConfigurationSQL() string {
 		    initialized bool unique      not null default true,
 		    constraint initialized check (initialized)
 		);
-
--- 		create index if not exists thirdparty_users_user_id_idx on thirdparty_users(user_id);
--- 		create or replace view users as (
--- 		    with
--- 			    all_users as (
--- 			        select users.user_id        as id
--- 			             , users.email
--- 			             , users.time_joined
--- 			             , users.third_party_id as recipe
--- 			             , true                 as email_verified
--- 			        from thirdparty_users users
--- 			        union all
--- 			        select users.user_id           as id
--- 			             , users.email
--- 			             , users.time_joined
--- 			             , 'email'                 as recipe
--- 			             , eve.user_id is not null as email_verified
--- 			        from emailpassword_users users
--- 			             left join emailverification_verified_emails eve on eve.user_id = users.user_id
--- 			    )
--- 		    select all_users.id
--- 		         , all_users.email
--- 		         , all_users.time_joined
--- 		         , roles.role
--- 		         , all_users.recipe
--- 		         , all_users.email_verified
--- 		    from all_users
--- 		         left join user_roles roles on all_users.id = roles.user_id
--- 		);
 	`
 }
