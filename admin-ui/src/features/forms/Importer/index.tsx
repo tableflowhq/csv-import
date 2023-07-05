@@ -1,6 +1,6 @@
 import { useEffect } from "react";
-import { Button, classes, Errors, Input } from "@tableflowhq/ui-library";
 import { useForm } from "@mantine/form";
+import { Button, classes, Errors, Input } from "@tableflowhq/ui-library";
 import { Importer } from "../../../api/types";
 import usePostImporter from "../../../api/usePostImporter";
 import { ImporterProps } from "../types";
@@ -17,7 +17,7 @@ export default function ImporterForm({ title = "Importer form", importer = {} as
     },
   });
 
-  const { mutate, isLoading, error, isSuccess, data } = usePostImporter(context?.workspaceId, importer?.id);
+  const { mutate, isLoading, error, isSuccess } = usePostImporter(context?.workspaceId, importer?.id);
 
   useEffect(() => {
     if (isSuccess && !error && !isLoading && onSuccess) onSuccess();

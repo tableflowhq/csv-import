@@ -1,4 +1,4 @@
-import { Badge, Dialog, Icon } from "@tableflowhq/ui-library";
+import { Badge, Dialog } from "@tableflowhq/ui-library";
 import { DialogItem } from "@tableflowhq/ui-library/build/Dialog/types";
 import { EntityId, Update } from "@tableflowhq/ui-library/build/hooks/useEntitySelection";
 import { TableData } from "@tableflowhq/ui-library/build/Table/types";

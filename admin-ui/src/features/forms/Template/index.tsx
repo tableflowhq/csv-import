@@ -22,7 +22,7 @@ export default function TemplateColumnForm({
       required: column?.required || false,
     },
   });
-  const { mutate, isLoading, error, isSuccess, data } = usePostTemplateColumn(context?.templateId);
+  const { mutate, isLoading, error, isSuccess } = usePostTemplateColumn(context?.templateId);
 
   useEffect(() => {
     if (isSuccess && !error && !isLoading && onSuccess) onSuccess();

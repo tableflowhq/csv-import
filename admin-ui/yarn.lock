@@ -4249,8 +4249,6 @@ __metadata:
     rollup-plugin-postcss: ^3.1.8
     rollup-plugin-typescript2: ^0.29.0
     sass: ^1.59.3
-    supertokens-auth-react: ^0.31.3
-    supertokens-web-js: ^0.5.0
     typescript: ^5.0.2
     web-vitals: ^3.3.0
     webpack: ^5.77.0
@@ -5014,15 +5012,6 @@ __metadata:
   version: 1.0.0
   resolution: "browser-process-hrtime@npm:1.0.0"
   checksum: e30f868cdb770b1201afb714ad1575dd86366b6e861900884665fb627109b3cc757c40067d3bfee1ff2a29c835257ea30725a8018a9afd02ac1c24b408b1e45f
-  languageName: node
-  linkType: hard
-
-"browser-tabs-lock@npm:^1.3.0":
-  version: 1.3.0
-  resolution: "browser-tabs-lock@npm:1.3.0"
-  dependencies:
-    lodash: ">=4.17.21"
-  checksum: 4fcfb6d5fc4bc5e4f53c298d555d8421ca4f815e32c2650b73008868eb70d7ee41aca8f92ad84d9beb77a8ffe0cb99f1efc8d9b3135cc434d48f7bd569f2bb72
   languageName: node
   linkType: hard
 
@@ -8597,13 +8586,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"intl-tel-input@npm:^17.0.19":
-  version: 17.0.21
-  resolution: "intl-tel-input@npm:17.0.21"
-  checksum: 834c4b72f6e8e9905544e1959ff5501e3f071d744be3f51187f5544953d829b988641ace5ddf23a417866205737af5d5197056aedcdc830caf424469ad5d521a
-  languageName: node
-  linkType: hard
-
 "invariant@npm:^2.2.4":
   version: 2.2.4
   resolution: "invariant@npm:2.2.4"
@@ -10123,7 +10105,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash@npm:>=4.17.21, lodash@npm:^4.17.15, lodash@npm:^4.17.20, lodash@npm:^4.17.21, lodash@npm:^4.7.0":
+"lodash@npm:^4.17.15, lodash@npm:^4.17.20, lodash@npm:^4.17.21, lodash@npm:^4.7.0":
   version: 4.17.21
   resolution: "lodash@npm:4.17.21"
   checksum: eb835a2e51d381e561e508ce932ea50a8e5a68f4ebdd771ea240d3048244a8d13658acbd502cd4829768c56f2e16bdd4340b9ea141297d472517b83868e677f7
@@ -12611,7 +12593,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prop-types@npm:*, prop-types@npm:^15.6.2, prop-types@npm:^15.8.1":
+"prop-types@npm:^15.6.2, prop-types@npm:^15.8.1":
   version: 15.8.1
   resolution: "prop-types@npm:15.8.1"
   dependencies:
@@ -14347,48 +14329,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"supertokens-auth-react@npm:^0.31.3":
-  version: 0.31.5
-  resolution: "supertokens-auth-react@npm:0.31.5"
-  dependencies:
-    intl-tel-input: ^17.0.19
-    prop-types: "*"
-    supertokens-js-override: ^0.0.4
-  peerDependencies:
-    react: ">=16.8.0"
-    react-dom: ">=16.8.0"
-    supertokens-web-js: ^0.5.0
-  checksum: 359212467b8d8e6452efd2b1e0c8f1d9c5339c72bd5b0a4e93a85427f937b3ea9235da119ea006d7e80dae1f8fadec4ed09adee3d2d540e5dc7478ca37364ceb
-  languageName: node
-  linkType: hard
-
-"supertokens-js-override@npm:0.0.4, supertokens-js-override@npm:^0.0.4":
-  version: 0.0.4
-  resolution: "supertokens-js-override@npm:0.0.4"
-  checksum: 1486212cf2a364f798781065c598cc4a6519fdf232c5cf9f159c70637722669aa078f70a443f5a406bbc2bb5283c40cd44dea3f1bc0ac75d2ced1fdba37e1b0d
-  languageName: node
-  linkType: hard
-
-"supertokens-web-js@npm:^0.5.0":
-  version: 0.5.0
-  resolution: "supertokens-web-js@npm:0.5.0"
-  dependencies:
-    supertokens-js-override: 0.0.4
-    supertokens-website: ^16.0.0
-  checksum: 7a3e23f29054fc8dd9b1dff64cd2f439a6769b86cb30aa9e02b4b616d5048d3783ba29f46a031788e54f15c054f8a34acb6d1290c7497f8b8a8085118dcd8252
-  languageName: node
-  linkType: hard
-
-"supertokens-website@npm:^16.0.0":
-  version: 16.0.10
-  resolution: "supertokens-website@npm:16.0.10"
-  dependencies:
-    browser-tabs-lock: ^1.3.0
-    supertokens-js-override: ^0.0.4
-  checksum: b0cee02d1691707dccddd2fe7973bebde7d18ff83415017a6a7ef59038d5c427071aa10c26d39ef29650b11c607a14f81b86a79729d550afecf18febdc730ad3
-  languageName: node
-  linkType: hard
-
 "supports-color@npm:^2.0.0":
   version: 2.0.0
   resolution: "supports-color@npm:2.0.0"
@@ -14916,11 +14856,11 @@ __metadata:
 
 "typescript@patch:typescript@^5.0.2#~builtin<compat/typescript>":
   version: 5.1.3
-  resolution: "typescript@patch:typescript@npm%3A5.1.3#~builtin<compat/typescript>::version=5.1.3&hash=85af82"
+  resolution: "typescript@patch:typescript@npm%3A5.1.3#~builtin<compat/typescript>::version=5.1.3&hash=5da071"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 32a25b2e128a4616f999d4ee502aabb1525d5647bc8955e6edf05d7fbc53af8aa98252e2f6ba80bcedfc0260c982b885f3c09cfac8bb65d2924f3133ad1e1e62
+  checksum: 6f0a9dca6bf4ce9dcaf4e282aade55ef4c56ecb5fb98d0a4a5c0113398815aea66d871b5611e83353e5953a19ed9ef103cf5a76ac0f276d550d1e7cd5344f61e
   languageName: node
   linkType: hard
 
