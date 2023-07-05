@@ -13,7 +13,7 @@ import (
 //	@Description	Get the current user's organization and workspaces that are a part of the organization
 //	@Tags			Organization
 //	@Success		200	{object}	model.Organization
-//	@Failure		400	{object}	Res
+//	@Failure		400	{object}	types.Res
 //	@Router			/admin/v1/organization-workspaces [get]
 func getOrganizationWorkspaces(c *gin.Context, getUserID func(*gin.Context) string) {
 	userID := getUserID(c)

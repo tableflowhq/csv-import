@@ -77,6 +77,33 @@ definitions:
   model.JSONB:
     additionalProperties: true
     type: object
+  model.Organization:
+    properties:
+      created_at:
+        example: 1682366228
+        type: integer
+      created_by:
+        $ref: '#/definitions/model.User'
+      id:
+        example: 8a7850a1-8b03-4337-a530-f9d48f7d9232
+        type: string
+      name:
+        example: My Organization
+        type: string
+      updated_at:
+        example: 1682366228
+        type: integer
+      updated_by:
+        $ref: '#/definitions/model.User'
+      users:
+        items:
+          $ref: '#/definitions/model.User'
+        type: array
+      workspaces:
+        items:
+          $ref: '#/definitions/model.Workspace'
+        type: array
+    type: object
   model.Template:
     properties:
       created_at:
@@ -225,6 +252,29 @@ definitions:
         example: 1682366228
         type: integer
     type: object
+  model.Workspace:
+    properties:
+      created_at:
+        example: 1682366228
+        type: integer
+      created_by:
+        $ref: '#/definitions/model.User'
+      id:
+        example: b2079476-261a-41fe-8019-46eb51c537f7
+        type: string
+      name:
+        example: My Workspace
+        type: string
+      updated_at:
+        example: 1682366228
+        type: integer
+      updated_by:
+        $ref: '#/definitions/model.User'
+      users:
+        items:
+          $ref: '#/definitions/model.User'
+        type: array
+    type: object
   types.Res:
     properties:
       error:
@@ -232,10 +282,107 @@ definitions:
       message:
         type: string
     type: object
+  web.ImportServiceImporter:
+    properties:
+      id:
+        example: 6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353
+        type: string
+      name:
+        example: Test Importer
+        type: string
+      template:
+        $ref: '#/definitions/web.ImportServiceTemplate'
+    type: object
+  web.ImportServiceTemplate:
+    properties:
+      id:
+        example: f0797968-becc-422a-b135-19de1d8c5d46
+        type: string
+      name:
+        example: My Template
+        type: string
+      template_columns:
+        items:
+          $ref: '#/definitions/web.ImportServiceTemplateColumn'
+        type: array
+    type: object
+  web.ImportServiceTemplateColumn:
+    properties:
+      id:
+        example: a1ed136d-33ce-4b7e-a7a4-8a5ccfe54cd5
+        type: string
+      name:
+        example: Work Email
+        type: string
+      required:
+        example: false
+        type: boolean
+    type: object
+  web.ImportServiceUpload:
+    properties:
+      created_at:
+        example: 1682366228
+        type: integer
+      file_extension:
+        example: csv
+        type: string
+      file_name:
+        example: example.csv
+        type: string
+      file_size:
+        example: 1024
+        type: integer
+      file_type:
+        example: text/csv
+        type: string
+      id:
+        example: 50ca61e1-f683-4b03-9ec4-4b3adb592bf1
+        type: string
+      importer_id:
+        example: 6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353
+        type: string
+      is_parsed:
+        example: false
+        type: boolean
+      is_stored:
+        example: false
+        type: boolean
+      metadata:
+        example: '{"user_id": 1234}'
+        type: string
+      tus_id:
+        example: ee715c254ee61855b465ed61be930487
+        type: string
+      upload_columns:
+        items:
+          $ref: '#/definitions/web.ImportServiceUploadColumn'
+        type: array
+    type: object
+  web.ImportServiceUploadColumn:
+    properties:
+      id:
+        example: 3c79e7fd-1018-4a27-8b86-9cee84221cd8
+        type: string
+      index:
+        example: 0
+        type: integer
+      name:
+        example: Work Email
+        type: string
+      sample_data:
+        example:
+        - test@example.com
+        items:
+          type: string
+        type: array
+    type: object
   web.ImporterCreateRequest:
     properties:
       name:
         example: Test Importer
+        type: string
+      workspace_id:
+        example: b2079476-261a-41fe-8019-46eb51c537f7
         type: string
     type: object
   web.ImporterEditRequest:
@@ -369,9 +516,15 @@ paths:
       summary: Edit importer
       tags:
       - Importer
-  /admin/v1/importers:
+  /admin/v1/importers/{workspace-id}:
     get:
       description: Get a list of importers
+      parameters:
+      - description: Workspace ID
+        in: path
+        name: workspace-id
+        required: true
+        type: string
       responses:
         "200":
           description: OK
@@ -386,9 +539,15 @@ paths:
       summary: Get importers
       tags:
       - Importer
-  /admin/v1/imports:
+  /admin/v1/imports/{workspace-id}:
     get:
       description: Get a list of imports
+      parameters:
+      - description: Workspace ID
+        in: path
+        name: workspace-id
+        required: true
+        type: string
       responses:
         "200":
           description: OK
@@ -403,35 +562,22 @@ paths:
       summary: Get imports
       tags:
       - Import
-  /admin/v1/settings/api-key:
+  /admin/v1/organization-workspaces:
     get:
-      description: Get the current API key
+      description: Get the current user's organization and workspaces that are a part
+        of the organization
       responses:
         "200":
           description: OK
           schema:
-            type: string
+            $ref: '#/definitions/model.Organization'
         "400":
           description: Bad Request
           schema:
             $ref: '#/definitions/types.Res'
-      summary: Get API key
+      summary: Get organization and attached workspaces
       tags:
-      - API Key
-    post:
-      description: Regenerate the current API key and return the new API key
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/types.Res'
-      summary: Regenerate API key
-      tags:
-      - API Key
+      - Organization
   /admin/v1/template-column:
     post:
       description: Create a template column
@@ -517,6 +663,167 @@ paths:
       summary: Get upload
       tags:
       - Upload
+  /admin/v1/workspace/{id}/api-key:
+    get:
+      description: Get the current API key of a workspace
+      parameters:
+      - description: Workspace ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/types.Res'
+      summary: Get workspace API key
+      tags:
+      - Workspace
+    post:
+      description: Regenerate the current API key of a workspace and return the new
+        API key
+      parameters:
+      - description: Workspace ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/types.Res'
+      summary: Regenerate workspace API key
+      tags:
+      - Workspace
+  /file-import/v1/files:
+    post:
+      description: Creates a new file upload after validating the length and parsing
+        the metadata
+      responses: {}
+      summary: Post file (tus)
+      tags:
+      - File Import
+  /file-import/v1/files/{id}:
+    head:
+      description: Returns the length and offset for the HEAD request
+      parameters:
+      - description: tus file ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses: {}
+      summary: Head file (tus)
+      tags:
+      - File Import
+    patch:
+      description: Adds a chunk to an upload, only allowed if enough space in the
+        upload is left
+      parameters:
+      - description: tus file ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses: {}
+      summary: Patch file (tus)
+      tags:
+      - File Import
+  /file-import/v1/importer/{id}:
+    get:
+      description: Get a single importer and its template
+      parameters:
+      - description: Importer ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/web.ImportServiceImporter'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/types.Res'
+      summary: Get importer
+      tags:
+      - File Import
+  /file-import/v1/upload-column-mapping/{id}:
+    post:
+      description: 'Set the template column IDs for each upload column and trigger
+        the import. Note: we will eventually have a separate import endpoint once
+        there is a review step in the upload process.'
+      parameters:
+      - description: Upload ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: body
+        required: true
+        schema:
+          additionalProperties:
+            type: string
+          type: object
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.Res'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/types.Res'
+      summary: Set upload column mapping and import data
+      tags:
+      - File Import
+  /file-import/v1/upload/{id}:
+    get:
+      description: Get a single upload by the tus ID provided to the client from the
+        upload
+      parameters:
+      - description: tus ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/web.ImportServiceUpload'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/types.Res'
+      summary: Get upload by tus ID
+      tags:
+      - File Import
+  /public/health:
+    get:
+      description: Health check
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.Res'
+      summary: Health
+      tags:
+      - Public
   /v1/import/{id}:
     get:
       description: Get an individual import

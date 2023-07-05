@@ -17,18 +17,18 @@ import (
 	"time"
 )
 
-// @title						TableFlow API
-// @version					    1.2
-// @description				    The backend API of the TableFlow application.
-// @termsOfService				https://tableflow.com/terms
-// @contact.name				TableFlow
-// @contact.url				    https://tableflow.com
-// @contact.email				support@tableflow.com
-// @host						localhost:3003
-// @BasePath					/
-// @securityDefinitions.apikey	ApiKeyAuth
-// @in							header
-// @name						Authorization
+//	@title						TableFlow API
+//	@version					1.2
+//	@description				The backend API of the TableFlow application.
+//	@termsOfService				https://tableflow.com/terms
+//	@contact.name				TableFlow
+//	@contact.url				https://tableflow.com
+//	@contact.email				support@tableflow.com
+//	@host						localhost:3003
+//	@BasePath					/
+//	@securityDefinitions.apikey	ApiKeyAuth
+//	@in							header
+//	@name						Authorization
 
 const httpServerReadTimeout = 120 * time.Second
 const httpServerWriteTimeout = 120 * time.Second

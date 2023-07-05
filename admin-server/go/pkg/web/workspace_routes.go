@@ -13,7 +13,7 @@ import (
 //	@Description	Get the current API key of a workspace
 //	@Tags			Workspace
 //	@Success		200	{object}	string
-//	@Failure		400	{object}	Res
+//	@Failure		400	{object}	types.Res
 //	@Router			/admin/v1/workspace/{id}/api-key [get]
 //	@Param			id	path	string	true	"Workspace ID"
 func getWorkspaceAPIKey(c *gin.Context, getWorkspaceUser func(*gin.Context, string) (string, error)) {
@@ -41,7 +41,7 @@ func getWorkspaceAPIKey(c *gin.Context, getWorkspaceUser func(*gin.Context, stri
 //	@Description	Regenerate the current API key of a workspace and return the new API key
 //	@Tags			Workspace
 //	@Success		200	{object}	string
-//	@Failure		400	{object}	Res
+//	@Failure		400	{object}	types.Res
 //	@Router			/admin/v1/workspace/{id}/api-key [post]
 //	@Param			id	path	string	true	"Workspace ID"
 func regenerateWorkspaceAPIKey(c *gin.Context, getWorkspaceUser func(*gin.Context, string) (string, error)) {
