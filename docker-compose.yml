@@ -11,6 +11,7 @@ services:
       file: docker-compose.base.yml
       service: backend
     environment:
+      # TODO: Allow users to provide their own postgres connection and support it here
       - POSTGRES_HOST=host.docker.internal
     depends_on:
       postgres:
