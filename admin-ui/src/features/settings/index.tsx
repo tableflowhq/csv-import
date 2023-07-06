@@ -15,13 +15,13 @@ export default function Settings({ importer }: { importer: Importer }) {
         </Box>
       </div>
 
-      {/* <div className={style.column}>
-        <h3>Webhook URL</h3>
-        <p>Notifications on import completion</p>
-        <Box className={style.box}>
-          <Webhook importer={importer} />
-        </Box>
-      </div> */}
+      <div className={style.column}>
+        {/*<h3>Webhook URL</h3>*/}
+        {/*<p>Notifications on import completion</p>*/}
+        {/*<Box className={style.box}>*/}
+        {/*  <Webhook importer={importer} />*/}
+        {/*</Box>*/}
+      </div>
     </div>
   );
 }
