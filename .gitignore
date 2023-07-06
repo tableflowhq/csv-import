@@ -24,7 +24,6 @@ build/
 .DS_Store
 .idea
 .vscode
-.yarnrc.yml
 
 /admin-server/build
 
@@ -33,7 +32,6 @@ build/
 /out/
 
 # misc
-.DS_Store
 *.pem
 
 # local env files

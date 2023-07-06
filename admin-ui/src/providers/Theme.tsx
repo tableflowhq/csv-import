@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { MantineProvider } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
-import { useThemeStore } from "@tableflowhq/ui-library";
+import { useThemeStore } from "@tableflow/ui-library";
 import { ThemeProps } from "./types";
 
 export default function ThemeProvider({ children }: ThemeProps): React.ReactElement {

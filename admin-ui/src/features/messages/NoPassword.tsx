@@ -1,5 +1,5 @@
-import { Button, Icon } from "@tableflowhq/ui-library";
-import { useThemeStore } from "@tableflowhq/ui-library";
+import { Button, Icon } from "@tableflow/ui-library";
+import { useThemeStore } from "@tableflow/ui-library";
 import style from "./style/Common.module.scss";
 import { ReactComponent as SofaDark } from "../../assets/illos/dark/sofa.svg";
 import { ReactComponent as SofaLight } from "../../assets/illos/light/sofa.svg";

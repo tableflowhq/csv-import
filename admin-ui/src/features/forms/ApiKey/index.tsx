@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Box, Button, classes, Errors, Icon, Input, Modal, useEntitySelection, useModal, usePassword } from "@tableflowhq/ui-library";
+import { Box, Button, classes, Errors, Icon, Input, Modal, useEntitySelection, useModal, usePassword } from "@tableflow/ui-library";
 import ImporterDelete from "../Importer/ImporterDelete";
 import useApiKey from "../../../api/useApiKey";
 import useGetOrganization from "../../../api/useGetOrganization";

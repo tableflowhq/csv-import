@@ -1,4 +1,4 @@
-import { Box } from "@tableflowhq/ui-library";
+import { Box } from "@tableflow/ui-library";
 import { Importer } from "../../api/types";
 import Domains from "./forms/Domains";
 import style from "./style/Settings.module.scss";

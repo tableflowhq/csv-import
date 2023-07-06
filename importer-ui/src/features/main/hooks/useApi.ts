@@ -1,4 +1,4 @@
-import { useLocalStorage } from "@tableflowhq/ui-library";
+import { useLocalStorage } from "@tableflow/ui-library";
 import { Importer, Template, Upload } from "../../../api/types";
 import useGetImporter from "../../../api/useGetImporter";
 import useGetUpload from "../../../api/useGetUpload";

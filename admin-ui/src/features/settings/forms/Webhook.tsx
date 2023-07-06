@@ -1,5 +1,5 @@
 import { useForm } from "@mantine/form";
-import { Button, Errors, Input } from "@tableflowhq/ui-library";
+import { Button, Errors, Input } from "@tableflow/ui-library";
 import { Importer } from "../../../api/types";
 import usePostImporter from "../../../api/usePostImporter";
 import style from "../style/Form.module.scss";

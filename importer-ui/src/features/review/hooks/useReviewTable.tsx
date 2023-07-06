@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Input, Switch } from "@tableflowhq/ui-library";
+import { Input, Switch } from "@tableflow/ui-library";
 import { TemplateColumn, UploadColumn } from "../../../api/types";
 import stringsSimilarity from "../../../utils/stringSimilarity";
 import style from "../style/Review.module.scss";

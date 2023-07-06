@@ -10,7 +10,7 @@ import {
   useEntitySelection,
   useFilter,
   useSyncPagination,
-} from "@tableflowhq/ui-library";
+} from "@tableflow/ui-library";
 import ImporterForm from "../forms/Importer";
 import ImporterDelete from "../forms/Importer/ImporterDelete";
 import { Importer } from "../../api/types";

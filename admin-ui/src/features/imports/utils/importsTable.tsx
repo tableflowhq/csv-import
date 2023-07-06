@@ -1,5 +1,5 @@
-import { timeToText } from "@tableflowhq/ui-library";
-import { TableData } from "@tableflowhq/ui-library/build/Table/types";
+import { timeToText } from "@tableflow/ui-library";
+import { TableData } from "@tableflow/ui-library/build/Table/types";
 import Download from "../components/Download";
 import { Import } from "../../../api/types";
 

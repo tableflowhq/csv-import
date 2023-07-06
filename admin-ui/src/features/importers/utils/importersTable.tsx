@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
-import { Dialog, Icon, timeToText } from "@tableflowhq/ui-library";
-import { DialogItem } from "@tableflowhq/ui-library/build/Dialog/types";
-import { EntityId, Update } from "@tableflowhq/ui-library/build/hooks/useEntitySelection";
-import { TableData } from "@tableflowhq/ui-library/build/Table/types";
+import { Dialog, Icon, timeToText } from "@tableflow/ui-library";
+import { DialogItem } from "@tableflow/ui-library/build/Dialog/types";
+import { EntityId, Update } from "@tableflow/ui-library/build/hooks/useEntitySelection";
+import { TableData } from "@tableflow/ui-library/build/Table/types";
 import { Importer } from "../../../api/types";
 import style from "../style/Importers.module.scss";
 

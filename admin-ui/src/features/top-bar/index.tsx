@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Button, Dialog, Tableflow, ThemeToggle } from "@tableflowhq/ui-library";
-import { DialogItem } from "@tableflowhq/ui-library/build/Dialog/types";
+import { Button, Dialog, Tableflow, ThemeToggle } from "@tableflow/ui-library";
+import { DialogItem } from "@tableflow/ui-library/build/Dialog/types";
 import { AuthContext } from "../../providers/Auth";
 import MainMenu from "./components/MainMenu";
 import style from "./style/TopBar.module.scss";

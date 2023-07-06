@@ -1,7 +1,7 @@
-import { Badge, Dialog } from "@tableflowhq/ui-library";
-import { DialogItem } from "@tableflowhq/ui-library/build/Dialog/types";
-import { EntityId, Update } from "@tableflowhq/ui-library/build/hooks/useEntitySelection";
-import { TableData } from "@tableflowhq/ui-library/build/Table/types";
+import { Badge, Dialog } from "@tableflow/ui-library";
+import { DialogItem } from "@tableflow/ui-library/build/Dialog/types";
+import { EntityId, Update } from "@tableflow/ui-library/build/hooks/useEntitySelection";
+import { TableData } from "@tableflow/ui-library/build/Table/types";
 import { TemplateColumn } from "../../../api/types";
 
 export function columnsTable(columns: TemplateColumn[] = [], update: Update): TableData {

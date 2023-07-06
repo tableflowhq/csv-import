@@ -1,5 +1,5 @@
 import { PropsWithChildren } from "react";
-import { useThemeStore } from "@tableflowhq/ui-library";
+import { useThemeStore } from "@tableflow/ui-library";
 import style from "./style/Hello.module.scss";
 import { ReactComponent as SorryDark } from "../../assets/illos/dark/sorry.svg";
 import { ReactComponent as SorryLight } from "../../assets/illos/light/sorry.svg";

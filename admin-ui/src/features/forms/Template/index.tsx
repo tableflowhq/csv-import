@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useForm } from "@mantine/form";
-import { Button, classes, Errors, Input, Switch } from "@tableflowhq/ui-library";
+import { Button, classes, Errors, Input, Switch } from "@tableflow/ui-library";
 import { TemplateColumn } from "../../../api/types";
 import usePostTemplateColumn from "../../../api/usePostTemplateColumn";
 import { TemplateColumnProps } from "../types";
