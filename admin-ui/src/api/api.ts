@@ -83,11 +83,17 @@ const errorHandler = (error: any, url: string, method: string): ApiResponse<any>
   return result;
 };
 
+// TODO: Add support for getting custom auth from env
+const headers = {
+  "Content-Type": "application/json",
+  Authorization: "Bearer tableflow",
+};
+
 export async function get(path: string): Promise<ApiResponse<any>> {
   const url = `${baseURL}${path}`;
   return axios
     .get(url, {
-      headers: { "Content-Type": "application/json" },
+      headers,
       timeout: 10 * 1000,
     })
     .then(successHandler())
@@ -98,7 +104,7 @@ export async function post(path: string, body: any): Promise<ApiResponse<any>> {
   const url = `${baseURL}${path}`;
   return axios
     .post(url, body, {
-      headers: { "Content-Type": "application/json" },
+      headers,
       timeout: 10 * 1000,
     })
     .then(successHandler({ title: "Successfully saved", message: "" }))
@@ -109,7 +115,7 @@ export async function remove(path: string): Promise<ApiResponse<any>> {
   const url = `${baseURL}${path}`;
   return axios
     .delete(url, {
-      headers: { "Content-Type": "application/json" },
+      headers,
       timeout: 10 * 1000,
     })
     .then(successHandler({ title: "Successfully deleted", message: "" }))

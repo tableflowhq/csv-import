@@ -1,30 +1,32 @@
+import { useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Button, Dialog, Tableflow, ThemeToggle } from "@tableflowhq/ui-library";
-import { DialogItem } from "@tableflowhq/ui-library/build/Dialog/types";
-import checkIsEmailVerified from "../../utils/verification";
+import { Button, Dialog, Tableflow, ThemeToggle } from "@tableflow/ui-library";
+import { DialogItem } from "@tableflow/ui-library/build/Dialog/types";
+import { AuthContext } from "../../providers/Auth";
 import MainMenu from "./components/MainMenu";
 import style from "./style/TopBar.module.scss";
-import { useSessionContext } from "supertokens-auth-react/recipe/session";
-import { signOut } from "supertokens-auth-react/recipe/thirdpartyemailpassword";
 
 export default function TopBar() {
-  const sessionContext = useSessionContext() as any;
-  const { doesSessionExist, invalidClaims } = sessionContext;
-  const isEmailVerified = checkIsEmailVerified(doesSessionExist, invalidClaims);
+  const sessionContext = useContext(AuthContext);
+  const { sessionExists, verified, showProfile, signOut } = sessionContext;
 
   const navigate = useNavigate();
 
   async function onLogout() {
-    await signOut();
-    // @ts-ignore
-    if (window["posthog"]) {
-      // @ts-ignore
-      window["posthog"].reset();
-    }
-    navigate("/");
+    signOut && signOut();
   }
 
   const userMenu: DialogItem[] = [
+    ...(sessionExists && verified
+      ? [
+          {
+            children: "My profile",
+            onClick: () => navigate("/profile"),
+            icon: "userSimple",
+            iconPosition: "left",
+          } as DialogItem,
+        ]
+      : []),
     {
       children: "Log out",
       onClick: () => onLogout(),
@@ -32,14 +34,6 @@ export default function TopBar() {
       iconPosition: "left",
     },
   ];
-  if (doesSessionExist && isEmailVerified) {
-    userMenu.unshift({
-      children: "My profile",
-      action: () => navigate("/profile"),
-      icon: "userSimple",
-      iconPosition: "left",
-    });
-  }
 
   return (
     <div className={style.topBar}>
@@ -48,17 +42,19 @@ export default function TopBar() {
           <Tableflow color />
         </Link>
 
-        {doesSessionExist === true && isEmailVerified && <MainMenu />}
+        {sessionExists && verified && <MainMenu />}
 
         <div className={style.separator} />
 
         <ThemeToggle />
 
-        {doesSessionExist === true && isEmailVerified && (
+        {sessionExists && verified && (
           <Button icon="gear" variants={["tertiary", "small"]} onClick={() => navigate("/settings")} className={style.settingsButton} />
         )}
 
-        {doesSessionExist === true && <Dialog items={userMenu} icon="userSimple" variants={["tertiary", "small"]} className={style.profileButton} />}
+        {sessionExists && showProfile && (
+          <Dialog items={userMenu} icon="userSimple" variants={["tertiary", "small"]} className={style.profileButton} />
+        )}
       </div>
     </div>
   );

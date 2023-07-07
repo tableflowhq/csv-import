@@ -5,7 +5,7 @@ RUN go mod download && go mod verify
 COPY . .
 RUN GOOS=linux go build -o build ./go/cmd
 
-FROM gcr.io/distroless/base AS final
+FROM ubuntu:latest AS final
 COPY --from=backend /app/build /
 EXPOSE 3003
 ENTRYPOINT ["/build"]

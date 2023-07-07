@@ -19,9 +19,8 @@ type Workspace struct {
 	DeletedByUser  *User          `json:"-" gorm:"foreignKey:ID;references:DeletedBy"`
 	DeletedAt      gorm.DeletedAt `json:"-"`
 
-	Organization   *Organization   `json:"organization,omitempty" swaggerignore:"true" gorm:"foreignKey:ID;references:OrganizationID"`
-	Users          []*User         `json:"users,omitempty" gorm:"many2many:workspace_users;"`
-	WorkspaceLimit *WorkspaceLimit `json:"workspace_limit,omitempty"`
+	Organization *Organization `json:"organization,omitempty" swaggerignore:"true" gorm:"foreignKey:ID;references:OrganizationID"`
+	Users        []*User       `json:"users,omitempty" gorm:"many2many:workspace_users;"`
 }
 
 func (w *Workspace) BeforeCreate(_ *gorm.DB) (err error) {

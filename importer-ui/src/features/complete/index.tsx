@@ -1,4 +1,4 @@
-import { Box, Button, Icon } from "@tableflowhq/ui-library";
+import { Box, Button, Icon } from "@tableflow/ui-library";
 import { CompleteProps } from "./types";
 import style from "./style/Complete.module.scss";
 

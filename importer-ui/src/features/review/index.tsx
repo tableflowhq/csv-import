@@ -1,5 +1,5 @@
 import { FormEvent, useEffect } from "react";
-import { Button, Errors, Table } from "@tableflowhq/ui-library";
+import { Button, Errors, Table } from "@tableflow/ui-library";
 import usePostUpload from "../../api/usePostUpload";
 import useReviewTable from "./hooks/useReviewTable";
 import { ReviewProps } from "./types";

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useForm } from "@mantine/form";
-import { Button, classes, Errors, Input, Switch } from "@tableflowhq/ui-library";
+import { Button, classes, Errors, Input, Switch } from "@tableflow/ui-library";
 import { TemplateColumn } from "../../../api/types";
 import usePostTemplateColumn from "../../../api/usePostTemplateColumn";
 import { TemplateColumnProps } from "../types";
@@ -22,7 +22,7 @@ export default function TemplateColumnForm({
       required: column?.required || false,
     },
   });
-  const { mutate, isLoading, error, isSuccess, data } = usePostTemplateColumn(context?.templateId);
+  const { mutate, isLoading, error, isSuccess } = usePostTemplateColumn(context?.templateId);
 
   useEffect(() => {
     if (isSuccess && !error && !isLoading && onSuccess) onSuccess();

@@ -6,7 +6,7 @@ import (
 
 type Template struct {
 	ID            ID             `json:"id" swaggertype:"string" example:"f0797968-becc-422a-b135-19de1d8c5d46"`
-	WorkspaceID   ID             `json:"workspace_id" swaggertype:"string" example:"b2079476-261a-41fe-8019-46eb51c537f7"`
+	WorkspaceID   ID             `json:"workspace_id,omitempty" swaggertype:"string" example:"b2079476-261a-41fe-8019-46eb51c537f7"`
 	ImporterID    ID             `json:"importer_id" swaggertype:"string" example:"6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353"`
 	Name          string         `json:"name" example:"My Template"`
 	CreatedBy     ID             `json:"-"`

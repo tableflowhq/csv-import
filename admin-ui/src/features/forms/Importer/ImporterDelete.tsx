@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Badge, Button, Icon } from "@tableflowhq/ui-library";
+import { Badge, Button, Icon } from "@tableflow/ui-library";
 import useDeleteImporter from "../../../api/useDeleteImporter";
 import { ImporterDeleteProps } from "../types";
 import style from "../style/DeleteConfirmation.module.scss";

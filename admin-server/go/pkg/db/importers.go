@@ -4,6 +4,7 @@ import (
 	"errors"
 	"gorm.io/gorm"
 	"tableflow/go/pkg/model"
+	"tableflow/go/pkg/tf"
 )
 
 func GetImporter(id string) (*model.Importer, error) {
@@ -11,7 +12,7 @@ func GetImporter(id string) (*model.Importer, error) {
 		return nil, errors.New("no importer ID provided")
 	}
 	var importer model.Importer
-	err := DB.Preload("Template.TemplateColumns").
+	err := tf.DB.Preload("Template.TemplateColumns").
 		First(&importer, model.ParseID(id)).Error
 	if err != nil {
 		return nil, err
@@ -27,7 +28,7 @@ func GetImporterWithoutTemplate(id string) (*model.Importer, error) {
 		return nil, errors.New("no importer ID provided")
 	}
 	var importer model.Importer
-	err := DB.First(&importer, model.ParseID(id)).Error
+	err := tf.DB.First(&importer, model.ParseID(id)).Error
 	if err != nil {
 		return nil, err
 	}
@@ -42,7 +43,7 @@ func GetImporterWithUsers(id string) (*model.Importer, error) {
 		return nil, errors.New("no importer ID provided")
 	}
 	var importer model.Importer
-	err := DB.Preload("Template.TemplateColumns").
+	err := tf.DB.Preload("Template.TemplateColumns").
 		Preload("CreatedByUser", userPreloadArgs).
 		Preload("UpdatedByUser", userPreloadArgs).
 		Preload("DeletedByUser", userPreloadArgs).
@@ -61,7 +62,7 @@ func GetImporters(workspaceID string) ([]*model.Importer, error) {
 		return nil, errors.New("no workspace ID provided")
 	}
 	var importers []*model.Importer
-	err := DB.Preload("Template.TemplateColumns").
+	err := tf.DB.Preload("Template.TemplateColumns").
 		Where("workspace_id = ?", workspaceID).
 		Find(&importers).Error
 	if err != nil {
@@ -76,7 +77,7 @@ func GetImportersWithUsers(workspaceID string) ([]*model.Importer, error) {
 	}
 	var importers []*model.Importer
 
-	err := DB.Preload("Template.TemplateColumns").
+	err := tf.DB.Preload("Template.TemplateColumns").
 		Preload("CreatedByUser", userPreloadArgs).
 		Preload("UpdatedByUser", userPreloadArgs).
 		Preload("DeletedByUser", userPreloadArgs).

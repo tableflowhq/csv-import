@@ -10,7 +10,7 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
-        "termsOfService": "https://tableflow.com/terms/",
+        "termsOfService": "https://tableflow.com/terms",
         "contact": {
             "name": "TableFlow",
             "url": "https://tableflow.com",
@@ -47,7 +47,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/web.Res"
+                            "$ref": "#/definitions/types.Res"
                         }
                     }
                 }
@@ -81,7 +81,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/web.Res"
+                            "$ref": "#/definitions/types.Res"
                         }
                     }
                 }
@@ -113,7 +113,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/web.Res"
+                            "$ref": "#/definitions/types.Res"
                         }
                     }
                 }
@@ -152,7 +152,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/web.Res"
+                            "$ref": "#/definitions/types.Res"
                         }
                     }
                 }
@@ -187,7 +187,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/web.Res"
+                            "$ref": "#/definitions/types.Res"
                         }
                     }
                 }
@@ -222,7 +222,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/web.Res"
+                            "$ref": "#/definitions/types.Res"
                         }
                     }
                 }
@@ -245,7 +245,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/web.Res"
+                            "$ref": "#/definitions/types.Res"
                         }
                     }
                 }
@@ -279,7 +279,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/web.Res"
+                            "$ref": "#/definitions/types.Res"
                         }
                     }
                 }
@@ -311,7 +311,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/web.Res"
+                            "$ref": "#/definitions/types.Res"
                         }
                     }
                 }
@@ -343,7 +343,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/web.Res"
+                            "$ref": "#/definitions/types.Res"
                         }
                     }
                 }
@@ -375,7 +375,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/web.Res"
+                            "$ref": "#/definitions/types.Res"
                         }
                     }
                 }
@@ -407,7 +407,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/web.Res"
+                            "$ref": "#/definitions/types.Res"
                         }
                     }
                 }
@@ -437,39 +437,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/web.Res"
-                        }
-                    }
-                }
-            }
-        },
-        "/admin/v1/workspace/{id}/usage": {
-            "get": {
-                "description": "Get the workspace usage for the current month",
-                "tags": [
-                    "Workspace"
-                ],
-                "summary": "Get workspace usage",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Workspace ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/web.WorkspaceUsageLimit"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/web.Res"
+                            "$ref": "#/definitions/types.Res"
                         }
                     }
                 }
@@ -547,7 +515,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/web.Res"
+                            "$ref": "#/definitions/types.Res"
                         }
                     }
                 }
@@ -585,13 +553,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/web.Res"
+                            "$ref": "#/definitions/types.Res"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/web.Res"
+                            "$ref": "#/definitions/types.Res"
                         }
                     }
                 }
@@ -623,7 +591,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/web.Res"
+                            "$ref": "#/definitions/types.Res"
                         }
                     }
                 }
@@ -640,7 +608,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/web.Res"
+                            "$ref": "#/definitions/types.Res"
                         }
                     }
                 }
@@ -672,7 +640,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/web.Res"
+                            "$ref": "#/definitions/types.Res"
                         }
                     }
                 }
@@ -701,7 +669,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/web.Res"
+                            "$ref": "#/definitions/types.Res"
                         }
                     }
                 }
@@ -1091,46 +1059,17 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/model.User"
                     }
-                },
-                "workspace_limit": {
-                    "$ref": "#/definitions/model.WorkspaceLimit"
                 }
             }
         },
-        "model.WorkspaceLimit": {
+        "types.Res": {
             "type": "object",
             "properties": {
-                "files": {
-                    "type": "integer",
-                    "example": 10000
+                "error": {
+                    "type": "string"
                 },
-                "id": {
-                    "type": "string",
-                    "example": "c44c948f-6061-45c9-aa6a-40373f6dcdad"
-                },
-                "importers": {
-                    "type": "integer",
-                    "example": 10
-                },
-                "processed_values": {
-                    "type": "integer",
-                    "example": 100000000
-                },
-                "rows": {
-                    "type": "integer",
-                    "example": 1000000
-                },
-                "rows_per_import": {
-                    "type": "integer",
-                    "example": 10000
-                },
-                "users": {
-                    "type": "integer",
-                    "example": 10
-                },
-                "workspace_id": {
-                    "type": "string",
-                    "example": "b2079476-261a-41fe-8019-46eb51c537f7"
+                "message": {
+                    "type": "string"
                 }
             }
         },
@@ -1302,17 +1241,6 @@ const docTemplate = `{
                 }
             }
         },
-        "web.Res": {
-            "type": "object",
-            "properties": {
-                "error": {
-                    "type": "string"
-                },
-                "message": {
-                    "type": "string"
-                }
-            }
-        },
         "web.TemplateColumnCreateRequest": {
             "type": "object",
             "properties": {
@@ -1333,51 +1261,6 @@ const docTemplate = `{
                     "example": "f0797968-becc-422a-b135-19de1d8c5d46"
                 }
             }
-        },
-        "web.WorkspaceUsageLimit": {
-            "type": "object",
-            "properties": {
-                "month": {
-                    "type": "string",
-                    "example": "2023-06-01"
-                },
-                "num_files": {
-                    "type": "integer",
-                    "example": 10000
-                },
-                "num_files_limit": {
-                    "type": "integer",
-                    "example": 10000
-                },
-                "num_processed_values": {
-                    "type": "integer",
-                    "example": 10000
-                },
-                "num_processed_values_limit": {
-                    "type": "integer",
-                    "example": 10000
-                },
-                "num_rows": {
-                    "type": "integer",
-                    "example": 10000
-                },
-                "num_rows_limit": {
-                    "type": "integer",
-                    "example": 10000
-                },
-                "total_file_size_mb": {
-                    "type": "number",
-                    "example": 10000
-                },
-                "total_file_size_mb_limit": {
-                    "type": "number",
-                    "example": 10000
-                },
-                "workspace_id": {
-                    "type": "string",
-                    "example": "b2079476-261a-41fe-8019-46eb51c537f7"
-                }
-            }
         }
     },
     "securityDefinitions": {
@@ -1391,7 +1274,7 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "1.0",
+	Version:          "1.2",
 	Host:             "localhost:3003",
 	BasePath:         "/",
 	Schemes:          []string{},

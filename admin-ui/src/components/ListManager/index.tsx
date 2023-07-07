@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { Button, Errors, Input } from "@tableflowhq/ui-library";
+import { useEffect, useState } from "react";
+import { Button, Errors, Input } from "@tableflow/ui-library";
 import { ListManagerProps } from "./types";
 import style from "./style/ListManager.module.scss";
 

@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Box, Button, Input, Modal, Pagination, Table, useEntitySelection, useFilter, useSyncPagination } from "@tableflowhq/ui-library";
+import { Box, Button, Input, Modal, Pagination, Table, useEntitySelection, useFilter, useSyncPagination } from "@tableflow/ui-library";
 import TemplateColumnForm from "../forms/Template";
 import TemplateColumnDelete from "../forms/Template/templateColumnDelete";
 import { TemplateColumn } from "../../api/types";

@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
-import { Button } from "@tableflowhq/ui-library";
-import { ButtonProps, buttonVariant } from "@tableflowhq/ui-library/build/Button/types";
+import { Button } from "@tableflow/ui-library";
+import { ButtonProps, buttonVariant } from "@tableflow/ui-library/build/Button/types";
 import style from "../style/MainMenu.module.scss";
 
 type menuItem = {

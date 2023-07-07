@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Button, Errors, Stepper, useLocalStorage, useStepper } from "@tableflowhq/ui-library";
+import { Button, Errors, Stepper, useLocalStorage, useStepper } from "@tableflow/ui-library";
 import { getAPIBaseURL } from "../../api/api";
 import useEmbedStore from "../../stores/embed";
 import useApi from "./hooks/useApi";

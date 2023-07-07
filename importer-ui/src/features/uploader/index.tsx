@@ -1,4 +1,4 @@
-import { Table } from "@tableflowhq/ui-library";
+import { Table } from "@tableflow/ui-library";
 import UppyWrapper from "../../components/UppyWrapper";
 import useTemplateTable from "./hooks/useTemplateTable";
 import { UploaderProps } from "./types";

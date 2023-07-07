@@ -6,14 +6,6 @@ services:
       file: docker-compose.base.yml
       service: postgres
 
-  supertokens:
-    extends:
-      file: docker-compose.base.yml
-      service: supertokens
-    depends_on:
-      postgres:
-        condition: service_healthy
-
 networks:
   app_network:
     driver: bridge

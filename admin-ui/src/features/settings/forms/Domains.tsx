@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Errors } from "@tableflowhq/ui-library";
+import { Errors } from "@tableflow/ui-library";
 import ListManager from "../../../components/ListManager";
 import { Importer } from "../../../api/types";
 import usePostImporter from "../../../api/usePostImporter";

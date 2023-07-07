@@ -4,6 +4,7 @@ import (
 	"errors"
 	"gorm.io/gorm"
 	"tableflow/go/pkg/model"
+	"tableflow/go/pkg/tf"
 )
 
 func GetOrganizationOfUserWithWorkspaces(userID string) (*model.Organization, error) {
@@ -11,7 +12,7 @@ func GetOrganizationOfUserWithWorkspaces(userID string) (*model.Organization, er
 		return nil, errors.New("no user ID provided")
 	}
 	var organization model.Organization
-	err := DB.Preload("Workspaces").
+	err := tf.DB.Preload("Workspaces").
 		Where("id in (select organization_id from organization_users where user_id = ?)", model.ParseID(userID)).
 		First(&organization).Error
 	if err != nil {

@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Icon } from "@tableflowhq/ui-library";
+import { Icon } from "@tableflow/ui-library";
 import { TemplateColumn } from "../../../api/types";
 
 export default function useTemplateTable(fields: TemplateColumn[] = []) {

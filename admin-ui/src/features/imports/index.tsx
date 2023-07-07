@@ -1,4 +1,4 @@
-import { collectionCountLabel, Input, Pagination, Table, useFilter, useSyncPagination } from "@tableflowhq/ui-library";
+import { collectionCountLabel, Input, Pagination, Table, useFilter, useSyncPagination } from "@tableflow/ui-library";
 import { Import } from "../../api/types";
 import useApiKey from "../../api/useApiKey";
 import useGetImports from "../../api/useGetImports";

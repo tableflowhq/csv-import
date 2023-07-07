@@ -8,7 +8,7 @@ import (
 
 type Importer struct {
 	ID             ID             `json:"id" swaggertype:"string" example:"6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353"`
-	WorkspaceID    ID             `json:"workspace_id" swaggertype:"string" example:"b2079476-261a-41fe-8019-46eb51c537f7"`
+	WorkspaceID    ID             `json:"workspace_id,omitempty" swaggertype:"string" example:"b2079476-261a-41fe-8019-46eb51c537f7"`
 	Name           string         `json:"name" example:"Test Importer"`
 	AllowedDomains pq.StringArray `json:"allowed_domains" gorm:"type:text[]" swaggertype:"array,string" example:"example.com"`
 	WebhookURL     null.String    `json:"webhook_url" swaggertype:"string" example:"https://api.tableflow.com/hooks"`

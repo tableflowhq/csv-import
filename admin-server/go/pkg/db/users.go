@@ -4,6 +4,7 @@ import (
 	"errors"
 	"gorm.io/gorm"
 	"tableflow/go/pkg/model"
+	"tableflow/go/pkg/tf"
 )
 
 // userPreloadArgs Used to remove unnecessary fields when preloading Users for our standard objects
@@ -17,7 +18,7 @@ func GetUser(id string) (*model.User, error) {
 		return nil, errors.New("no ID provided")
 	}
 	var user model.User
-	err := DB.First(&user, model.ParseID(id)).Error
+	err := tf.DB.First(&user, model.ParseID(id)).Error
 	if err != nil {
 		return nil, err
 	}
@@ -29,7 +30,7 @@ func GetUser(id string) (*model.User, error) {
 
 func GetUsers() ([]*model.User, error) {
 	var users []*model.User
-	err := DB.Find(&users).Error
+	err := tf.DB.Find(&users).Error
 	if err != nil {
 		return nil, err
 	}
@@ -47,6 +48,6 @@ func IsUserInWorkspace(workspaceID, userID string) (bool, error) {
 		Exists bool
 	}
 	var res Res
-	err := DB.Raw("select exists(select 1 from workspace_users where workspace_id = ? and user_id = ?);", workspaceID, userID).Scan(&res).Error
+	err := tf.DB.Raw("select exists(select 1 from workspace_users where workspace_id = ? and user_id = ?);", workspaceID, userID).Scan(&res).Error
 	return res.Exists, err
 }
