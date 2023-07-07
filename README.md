@@ -14,7 +14,7 @@
 
 ## TableFlow is an open source data import platform
 
-* Embeddable import iFrame modal
+* Embeddable import iframe modal
 * Column mapping
 * Webhook notification (coming soon)
 * API to retrieve data (coming soon)
