@@ -33,8 +33,8 @@ import (
 const httpServerReadTimeout = 120 * time.Second
 const httpServerWriteTimeout = 120 * time.Second
 const webServerDefaultPort = 3003
-const webAppDefaultURL = "http://localhost:3000"
-const importerDefaultOrigin = "https://importer.tableflow.com"
+const adminUIDefaultURL = "http://localhost:3000"
+const importerUIDefaultURL = "http://localhost:3001"
 
 type ServerConfig struct {
 	AuthMiddleware           gin.HandlerFunc
@@ -53,11 +53,18 @@ func StartWebServer(config ServerConfig) *http.Server {
 
 	webAppURL, err := util.ParseBaseURL(os.Getenv("TABLEFLOW_WEB_APP_URL"))
 	if err != nil {
-		tf.Log.Warnw("Invalid TABLEFLOW_WEB_APP_URL provided: this should be set on the environment to the URL of where clients will access the front end web app", "error", err.Error())
+		tf.Log.Warnw(fmt.Sprintf("Invalid TABLEFLOW_WEB_APP_URL provided, defaulting to %s. "+
+			"This should be set on the environment to the URL of where clients will access the front end web app", adminUIDefaultURL), "error", err)
 	}
-	allowedOrigin := lo.Ternary(len(webAppURL) != 0, webAppURL, webAppDefaultURL)
+	importerURL, err := util.ParseBaseURL(os.Getenv("TABLEFLOW_WEB_IMPORTER_URL"))
+	if err != nil {
+		tf.Log.Warnw(fmt.Sprintf("Invalid TABLEFLOW_WEB_IMPORTER_URL provided, defaulting to %s. "+
+			"This should be set on the environment to the URL of where the importer is hosted", importerUIDefaultURL), "error", err)
+	}
+	webAppURL = lo.Ternary(len(webAppURL) != 0, webAppURL, adminUIDefaultURL)
+	importerURL = lo.Ternary(len(importerURL) != 0, importerURL, importerUIDefaultURL)
 	router.Use(cors.New(cors.Config{
-		AllowOrigins: []string{allowedOrigin, importerDefaultOrigin},
+		AllowOrigins: []string{webAppURL, importerURL},
 		AllowMethods: []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},
 		AllowHeaders: append([]string{"Accept", "Authorization", "X-Requested-With", "X-Request-ID",
 			"X-HTTP-Method-Override", "Upload-Length", "Upload-Offset", "Tus-Resumable", "Upload-Metadata",

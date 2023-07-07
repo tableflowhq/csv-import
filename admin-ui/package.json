@@ -17,6 +17,7 @@
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
     "axios": "^1.3.4",
+    "cross-env": "^7.0.3",
     "file-saver": "^2.0.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -33,7 +34,7 @@
   },
   "scripts": {
     "rebuild-backend": "docker-compose -f ../docker-compose.dev-frontend.yml up -d --build backend",
-    "start": "react-scripts start",
+    "start": "cross-env PORT=3000 react-scripts start",
     "build": "react-scripts build",
     "deploy": "react-scripts build && aws s3 sync --cache-control 'max-age=604800' --exclude index.html build/ s3://tableflow-admin-cdn && aws s3 sync --cache-control 'no-cache' build/ s3://tableflow-admin-cdn && aws cloudfront create-invalidation --distribution-id EKBO9G2CH0AXD --paths \"/*\"",
     "test": "react-scripts test",
