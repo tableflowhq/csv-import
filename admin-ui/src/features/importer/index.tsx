@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
 import { Button, Icon, Tabs, useTabs, useThemeStore } from "@tableflow/ui-library";
+import { defaultAppHost, getImporterURL } from "../../api/api";
 import notification from "../../utils/notification";
 import { ImporterViewProps } from "./types";
 import style from "./style/Importer.module.scss";
@@ -23,14 +24,11 @@ export default function ImporterPage({ importer }: ImporterViewProps) {
   };
   const { tab } = tabs;
   const theme = useThemeStore((state) => state.theme);
-  const getImporterUrl = (): string => {
-    let importerUrl = "https://importer.tableflow.com";
-    // TODO: Get importer URL from env if provided
-    if (window.location.hostname === "localhost") {
-      importerUrl = "http://localhost:3001";
-    }
-    return `${importerUrl}?importerId=${importerId}&darkMode=${theme === "light" ? "false" : "true"}`;
-  };
+
+  const importerURL = getImporterURL();
+  const importerPreviewURL = `${importerURL}?importerId=${importerId}&darkMode=${theme === "light" ? "false" : "true"}`;
+  // Only provide the importer host URL to the code preview if it's not being hosted on TableFlow
+  const importerCodeURL = window.location.hostname === defaultAppHost ? "" : importerURL;
 
   useEffect(() => {
     if (importerTab !== tab) navigate(`/importers/${importerId}/${tab}`);
@@ -65,7 +63,7 @@ export default function ImporterPage({ importer }: ImporterViewProps) {
                 icon="share"
                 type="button"
                 variants={theme === "light" ? [] : ["secondary"]}
-                onClick={() => window.open(getImporterUrl(), "_blank")}
+                onClick={() => window.open(importerPreviewURL, "_blank")}
                 title="Open the importer in a new tab to preview">
                 Preview
               </Button>
@@ -78,7 +76,7 @@ export default function ImporterPage({ importer }: ImporterViewProps) {
             {tab === "template" ? (
               <Templates importer={importer} />
             ) : tab === "code" ? (
-              <Code importerId={importerId} theme={theme} />
+              <Code importerId={importerId} theme={theme} hostUrl={importerCodeURL} />
             ) : tab === "settings" ? (
               <Settings importer={importer} />
             ) : null}

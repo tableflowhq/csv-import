@@ -7,8 +7,9 @@ import { ApiResponse } from "./types";
 const env = {
   API_BASE_URL: "",
 };
-const defaultAppHost = "app.tableflow.com";
+export const defaultAppHost = "app.tableflow.com";
 const defaultAPIHost = "api.tableflow.com";
+const defaultImporterURL = "https://importer.tableflow.com";
 
 // Authenticated routes will use the path /api/v1
 const baseURL = getAPIBaseURL("v1");
@@ -40,6 +41,14 @@ export function getAPIBaseURL(version?: string, api = "admin"): string {
   }
   return `${window.location.protocol}//${host}:3003/${api}${versionSlug}`;
 }
+
+export const getImporterURL = (): string => {
+  // TODO: Get importer URL from env if provided
+  if (window.location.hostname === defaultAppHost) {
+    return defaultImporterURL;
+  }
+  return `${window.location.protocol}//${window.location.hostname}:3001`;
+};
 
 const successHandler = (notificationVars?: Notification) => {
   return (response: AxiosResponse<any, any>): ApiResponse<any> => {
