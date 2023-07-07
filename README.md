@@ -35,7 +35,7 @@
 ### ☁️ TableFlow Cloud
 
 The quickest way to get started with TableFlow is signing up for free
-to [TableFlow Cloud](https://app.tableflow.com/signup).
+to [TableFlow Cloud](https://app.tableflow.com/signup)
 <br>
 
 ### 👩‍💻 Self-hosted deploy (local)
@@ -56,8 +56,10 @@ Then open [http://localhost:3000](http://localhost:3000) to access TableFlow.
 **Important notes:**
 
 1. [ ] Make sure the server you use is only accessible within your VPC
-2. [ ] Make sure your local machine is able to connect to the server on ports 3000, 3001 (the web servers) and 3003 (the
-   API server)
+2. [ ] Make sure your local machine is able to connect to the server on ports 3000 (the web server) and 3003 (the API
+   server)
+3. [ ] Update your network settings to allow port 3001 (the importer iframe) to be accessible from where your users will
+   import data, most likely public
 
 One-line install script (for Amazon Linux):
 
