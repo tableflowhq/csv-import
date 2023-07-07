@@ -1,7 +1,7 @@
 import { useEffect } from "react";
+import { useThemeStore } from "@tableflow/ui-library";
 import useSearchParams from "../hooks/useSearchParams";
 import useEmbedStore from "../stores/embed";
-import useThemeStore from "../stores/theme";
 import { EmbedProps } from "./types";
 
 export default function Embed({ children }: EmbedProps) {
