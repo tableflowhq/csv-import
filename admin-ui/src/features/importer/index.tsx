@@ -25,10 +25,10 @@ export default function ImporterPage({ importer }: ImporterViewProps) {
   const theme = useThemeStore((state) => state.theme);
   const getImporterUrl = (): string => {
     let importerUrl = "https://importer.tableflow.com";
-    // Update when using other port for importer
-    // if (window.location.hostname === "localhost") {
-    //   importerUrl = "http://localhost:3000";
-    // }
+    // TODO: Get importer URL from env if provided
+    if (window.location.hostname === "localhost") {
+      importerUrl = "http://localhost:3001";
+    }
     return `${importerUrl}?importerId=${importerId}&darkMode=${theme === "light" ? "false" : "true"}`;
   };
 
