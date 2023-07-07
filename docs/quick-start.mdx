@@ -1,0 +1,46 @@
+---
+title: Quick Start
+description: Start using TableFlow in just a few steps
+---
+
+## ☁️ TableFlow Cloud
+
+The quickest way to get started with TableFlow is signing up for free
+to [TableFlow Cloud](https://app.tableflow.com/signup)
+
+## 👩‍💻 Self-hosted deploy (local)
+
+You can run TableFlow locally with Docker:
+
+```bash
+git clone https://github.com/tableflowhq/tableflow.git
+cd tableflow
+docker-compose up -d
+```
+
+Then open [http://localhost:3000](http://localhost:3000) to access TableFlow.
+
+## 🤖 Self-hosted deploy (AWS EC2)
+
+**Important notes:**
+
+1. [ ] Make sure the server you use is only accessible within your VPC
+2. [ ] Make sure your local machine is able to connect to the server on ports 3000 (the web server) and 3003 (the API
+server)
+3. [ ] Update your network settings to allow port 3001 (the importer iframe) to be accessible from where your users will
+import data, most likely public
+
+One-line install script (for Amazon Linux):
+
+```bash
+sudo yum update -y && \
+sudo yum install -y docker git && \
+sudo service docker start && \
+sudo usermod -a -G docker $USER && \
+sudo curl -L "https://github.com/docker/compose/releases/download/v2.19.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && \
+sudo mv /usr/local/bin/docker-compose /usr/bin/docker-compose && \
+sudo chmod +x /usr/bin/docker-compose && \
+git clone https://github.com/tableflowhq/tableflow.git && cd tableflow && \
+cp .env.example .env && \
+sg docker -c 'docker-compose up -d'
+```
