@@ -1,13 +1,5 @@
-import { createContext, Dispatch, SetStateAction, useState } from "react";
-import { AuthProps } from "./types";
-
-type AuthConfig = {
-  sessionExists: boolean;
-  verified: boolean;
-  showProfile: boolean;
-  setAuthConfig?: Dispatch<SetStateAction<AuthConfig>>;
-  signOut?: () => void;
-};
+import { createContext, useState } from "react";
+import { AuthConfig, AuthProps } from "./types";
 
 const defaultAuth: AuthConfig = {
   sessionExists: true,
