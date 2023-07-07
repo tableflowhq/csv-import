@@ -36,7 +36,6 @@
 
 The quickest way to get started with TableFlow is signing up for free
 to [TableFlow Cloud](https://app.tableflow.com/signup)
-<br>
 
 ### 👩‍💻 Self-hosted deploy (local)
 
@@ -49,7 +48,6 @@ docker-compose up -d
 ```
 
 Then open [http://localhost:3000](http://localhost:3000) to access TableFlow.
-<br>
 
 ### 🤖 Self-hosted deploy (AWS EC2)
 
