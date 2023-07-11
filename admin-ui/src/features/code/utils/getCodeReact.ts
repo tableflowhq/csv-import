@@ -1,12 +1,12 @@
 import { CodeProps } from "../types";
 
-export default function getCode(props: CodeProps) {
+export default function getCodeReact(props: CodeProps) {
   let hostUrlLine = "";
   if (props.hostUrl) {
     hostUrlLine = `\n        hostUrl={"${props.hostUrl}"}`;
   }
   return `import { useState } from "react";
-import { TableFlowImporter } from "@tableflow/react";
+import { TableFlowImporter } from "@tableflow/react-sdk";
 
 function MyComponent() {
   const [isOpen, setIsOpen] = useState(false);
