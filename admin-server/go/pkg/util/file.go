@@ -10,10 +10,9 @@ import (
 )
 
 type DataFileIterator struct {
-	File    *os.File
-	HasNext func() bool
-	GetRow  func() ([]string, error)
-	Close   func()
+	File   *os.File
+	GetRow func() ([]string, error)
+	Close  func()
 }
 
 func GetFileSize(file *os.File) (int64, error) {
@@ -38,9 +37,6 @@ func OpenDataFileIterator(file *os.File, fileType string) (DataFileIterator, err
 	switch fileType {
 	case "text/csv":
 		r := csv.NewReader(file)
-		it.HasNext = func() bool {
-			return true
-		}
 		it.GetRow = func() ([]string, error) {
 			return r.Read()
 		}
@@ -61,14 +57,17 @@ func OpenDataFileIterator(file *os.File, fileType string) (DataFileIterator, err
 		if err != nil {
 			return it, err
 		}
-		it.HasNext = func() bool {
-			return rows.Next()
-		}
 		it.GetRow = func() ([]string, error) {
+			if !rows.Next() {
+				return []string{}, io.EOF
+			}
 			return rows.Columns()
 		}
 		it.Close = func() {
-			rows.Close()
+			closeErr := rows.Close()
+			if closeErr != nil {
+				tf.Log.Errorw("Error closing excel file during iteration", "error", err)
+			}
 			ResetFileReader(it.File)
 		}
 		return it, nil

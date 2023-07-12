@@ -20,7 +20,8 @@ export default function useGetUpload(tusId: string): UseQueryResult<Upload> {
   );
   const isParsed = query?.data?.is_parsed;
   const { error } = query;
-  const maxRefetchCount = 50;
+  // TODO: Make this smarter based on file size
+  const maxRefetchCount = 60;
   const waitDelay = (attempt: number) => {
     if (attempt <= 2) {
       return 100;
@@ -28,7 +29,7 @@ export default function useGetUpload(tusId: string): UseQueryResult<Upload> {
     if (attempt <= 5) {
       return 250;
     }
-    if (attempt <= 10) {
+    if (attempt <= 15) {
       return 500;
     }
     return 1000;
