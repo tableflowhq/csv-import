@@ -51,6 +51,7 @@ services:
       - TABLEFLOW_WEB_IMPORTER_URL=${TABLEFLOW_WEB_IMPORTER_URL}
       - TABLEFLOW_WEB_APP_AUTH_TOKEN=${TABLEFLOW_WEB_APP_AUTH_TOKEN}
       - TABLEFLOW_API_SERVER_PORT=${TABLEFLOW_API_SERVER_PORT}
+      - SCYLLA_HOST=${SCYLLA_HOST}
     volumes:
       - ${PWD}/../.env:/.env
       - tmp:/tmp/tableflow-files

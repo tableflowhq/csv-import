@@ -177,6 +177,7 @@ func initScylla(ctx context.Context, wg *sync.WaitGroup) error {
 	scyllaInitialized = true
 
 	scyllaHost := os.Getenv("SCYLLA_HOST")
+	// TODO: Remove
 	tf.Log.Infof("Scylla host: %s", scyllaHost)
 	systemCfg := gocql.NewCluster(scyllaHost)
 	systemCfg.Keyspace = "system"
