@@ -45,3 +45,4 @@ build/
 next-env.d.ts
 
 !ui-library/build
+!js-sdk/build
