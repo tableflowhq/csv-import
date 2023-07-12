@@ -855,6 +855,25 @@ paths:
       summary: Get import
       tags:
       - External API
+  /v1/import/{id}/download:
+    get:
+      description: Download the import as a file
+      parameters:
+      - description: Import ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/types.Res'
+      summary: Download import
+      tags:
+      - External API
   /v1/import/{id}/rows:
     get:
       description: Paginate the rows of an import

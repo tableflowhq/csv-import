@@ -639,6 +639,35 @@
                 }
             }
         },
+        "/v1/import/{id}/download": {
+            "get": {
+                "description": "Download the import as a file",
+                "tags": [
+                    "External API"
+                ],
+                "summary": "Download import",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Import ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/types.Res"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/import/{id}/rows": {
             "get": {
                 "description": "Paginate the rows of an import",
