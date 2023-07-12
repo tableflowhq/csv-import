@@ -156,6 +156,7 @@ func StartWebServer(config ServerConfig) *http.Server {
 	/* Import */
 	api.GET("/import/:id", getImportForExternalAPI)
 	api.GET("/import/:id/rows", getImportRowsForExternalAPI)
+	//api.GET("/import/:id/download", downloadImportForExternalAPI)
 
 	// Initialize the server in a goroutine so that it won't block shutdown handling
 	go func() {
