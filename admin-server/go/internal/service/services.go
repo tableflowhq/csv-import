@@ -288,8 +288,6 @@ func initWebServer(ctx context.Context, wg *sync.WaitGroup) error {
 	} else {
 		corsOrigins = []string{fmt.Sprintf("http://%s:3000", localIP), fmt.Sprintf("http://%s:3001", localIP)}
 	}
-	// TODO: remove
-	tf.Log.Infof("private IP: %s", localIP)
 
 	config := web.ServerConfig{
 		AdminAPIAuthValidator:    adminAPIAuthValidator,
