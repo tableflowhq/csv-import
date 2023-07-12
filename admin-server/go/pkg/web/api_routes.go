@@ -1,14 +1,19 @@
 package web
 
 import (
+	"encoding/csv"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"io"
 	"net/http"
+	"os"
 	"strconv"
 	"tableflow/go/pkg/db"
+	"tableflow/go/pkg/file"
 	"tableflow/go/pkg/scylla"
 	"tableflow/go/pkg/tf"
 	"tableflow/go/pkg/types"
+	"tableflow/go/pkg/util"
 )
 
 // getImportForExternalAPI
@@ -163,28 +168,80 @@ func downloadImportForExternalAPI(c *gin.Context) {
 		return
 	}
 
-	//res, err := tf.S3.DownloadFile(imp.ID.String(), tf.S3.BucketImports)
-	//if res != nil && res.Body != nil {
-	//	defer res.Body.Close()
-	//}
-	//if err != nil {
-	//	tf.Log.Errorw("Error downloading file from S3", "error", err, "import_id", id)
-	//	c.AbortWithStatusJSON(http.StatusInternalServerError, types.Res{Err: "Could not download import"})
-	//	return
-	//}
-	//fileExtension := lo.Ternary(imp.FileExtension.Valid, fmt.Sprintf(".%s", imp.FileExtension.String), "")
-	//fileName := fmt.Sprintf("%s%s", imp.ID.String(), fileExtension)
-	//
-	//// Set the appropriate response headers
-	//c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%s", fileName))
-	//c.Header("Content-Type", aws.StringValue(res.ContentType))
-	//c.Header("Content-Length", strconv.Itoa(int(aws.Int64Value(res.ContentLength))))
-	//
-	//// Stream the file content as the response
-	//_, err = io.Copy(c.Writer, res.Body)
-	//if err != nil {
-	//	tf.Log.Errorw("Error copying import reader to response during download", "error", err, "import_id", id)
-	//	c.AbortWithStatusJSON(http.StatusInternalServerError, types.Res{Err: "Could not download import"})
-	//	return
-	//}
+	filePath := fmt.Sprintf("%s/%s", file.TempDownloadsDirectory, imp.ID.String())
+	downloadFile, err := os.Create(filePath)
+	if err != nil {
+		tf.Log.Errorw("Error creating local file to download for external API", "error", err, "import_id", id)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, types.Res{Err: "Could not download import"})
+		return
+	}
+	defer func(downloadFile *os.File) {
+		fileErr := os.Remove(filePath)
+		if fileErr != nil {
+			tf.Log.Errorw("Could not delete download from file system", "error", fileErr, "import_id", id)
+		}
+		_ = downloadFile.Close()
+	}(downloadFile)
+
+	importer, err := db.GetImporter(imp.ImporterID.String())
+	if err != nil {
+		tf.Log.Errorw("Could not retrieve importer to download import for external API", "error", err, "import_id", id)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, types.Res{Err: "Could not download import"})
+		return
+	}
+
+	sampleImportRow, err := scylla.GetImportRow(imp.ID.String(), 0)
+	if err != nil {
+		tf.Log.Errorw("Could not retrieve sample import row to download import  for external API", "error", err, "import_id", id)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, types.Res{Err: "Could not download import"})
+		return
+	}
+
+	columnHeaders := make([]string, len(sampleImportRow.Values), len(sampleImportRow.Values))
+	pos := 0
+	for i, _ := range importer.Template.TemplateColumns {
+		tc := importer.Template.TemplateColumns[i]
+		if _, ok := sampleImportRow.Values[tc.Key]; ok {
+			columnHeaders[pos] = tc.Key
+			pos++
+		}
+	}
+	w := csv.NewWriter(downloadFile)
+	if err = w.Write(columnHeaders); err != nil {
+		tf.Log.Errorw("Error while writing header row to import file for external API download", "error", err, "import_id", imp.ID)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, types.Res{Err: "Could not download import"})
+		return
+	}
+	paginationPageSize := 1000
+	for offset := 0; ; offset += paginationPageSize {
+		if offset > int(imp.NumRows.Int64) {
+			break
+		}
+		importRows := scylla.PaginateImportRows(imp.ID.String(), offset, paginationPageSize)
+		for pageRowIndex := 0; pageRowIndex < len(importRows); pageRowIndex++ {
+			row := make([]string, len(columnHeaders), len(columnHeaders))
+			for i, key := range columnHeaders {
+				row[i] = importRows[pageRowIndex].Values[key]
+			}
+			if err = w.Write(row); err != nil {
+				tf.Log.Warnw("Error while writing row to import file for external API download", "error", err, "import_id", imp.ID)
+			}
+		}
+	}
+	w.Flush()
+
+	// Set the appropriate response headers
+	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%s", fmt.Sprintf("%s.csv", imp.ID.String())))
+	c.Header("Content-Type", imp.FileType.String)
+	fileSize, _ := util.GetFileSize(downloadFile)
+	c.Header("Content-Length", strconv.Itoa(int(fileSize)))
+
+	// Stream the file to the response writer
+	_, err = io.Copy(c.Writer, downloadFile)
+	if err != nil {
+		tf.Log.Errorw("Error copying import reader to response during download", "error", err, "import_id", id)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, types.Res{Err: "Could not download import"})
+		return
+	}
+	c.Status(http.StatusOK)
 }

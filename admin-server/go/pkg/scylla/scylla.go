@@ -37,6 +37,12 @@ func PaginateUploadRows(uploadID string, offset, limit int) []map[int]string {
 	return res
 }
 
+func GetImportRow(importID string, index int) (types.ImportRow, error) {
+	row := types.ImportRow{}
+	err := tf.Scylla.Query("select row_index, values from import_rows where import_id = ? and row_index = ?", importID, index).Scan(&row.Index, &row.Values)
+	return row, err
+}
+
 func PaginateImportRows(importID string, offset, limit int) []types.ImportRow {
 	if limit > maxPageSize {
 		tf.Log.Errorw("Attempted to paginate import greater than max page size", "import_id", importID, "page_size", limit)

@@ -16,6 +16,7 @@ type DataFileIterator struct {
 }
 
 func GetFileSize(file *os.File) (int64, error) {
+	defer ResetFileReader(file)
 	fileStat, err := file.Stat()
 	if err == nil {
 		return fileStat.Size(), nil
