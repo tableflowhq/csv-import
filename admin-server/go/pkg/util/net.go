@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -120,4 +121,22 @@ func HTTPRequest(url, method string, body interface{}, headers map[string]string
 	}
 	defer response.Body.Close()
 	return nil
+}
+
+func GetLocalIP() (string, error) {
+	conn, err := net.Dial("udp", "8.8.8.8:80")
+	if err != nil {
+		return "", err
+	}
+	defer conn.Close()
+
+	localAddress := conn.LocalAddr().(*net.UDPAddr)
+
+	// TODO: remove
+	tf.Log.Infof("local IP: %s", localAddress.IP.String())
+
+	if localAddress.IP.IsPrivate() {
+		return localAddress.IP.String(), nil
+	}
+	return "", errors.New("local IP address is not private")
 }

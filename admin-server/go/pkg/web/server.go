@@ -44,6 +44,7 @@ type ServerConfig struct {
 	GetUserID                      func(c *gin.Context) string
 	UploadLimitCheck               func(*model.Upload) error
 	UploadAdditionalStorageHandler func(*model.Upload)
+	AdditionalCORSOrigins          []string
 	AdditionalCORSHeaders          []string
 }
 
@@ -65,7 +66,7 @@ func StartWebServer(config ServerConfig) *http.Server {
 	webAppURL = lo.Ternary(len(webAppURL) != 0, webAppURL, adminUIDefaultURL)
 	importerURL = lo.Ternary(len(importerURL) != 0, importerURL, importerUIDefaultURL)
 	router.Use(cors.New(cors.Config{
-		AllowOrigins: []string{webAppURL, importerURL},
+		AllowOrigins: append([]string{webAppURL, importerURL}, config.AdditionalCORSOrigins...),
 		AllowMethods: []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},
 		AllowHeaders: append([]string{"Accept", "Authorization", "X-Requested-With", "X-Request-ID",
 			"X-HTTP-Method-Override", "Upload-Length", "Upload-Offset", "Tus-Resumable", "Upload-Metadata",
@@ -156,7 +157,7 @@ func StartWebServer(config ServerConfig) *http.Server {
 	/* Import */
 	api.GET("/import/:id", getImportForExternalAPI)
 	api.GET("/import/:id/rows", getImportRowsForExternalAPI)
-	//api.GET("/import/:id/download", downloadImportForExternalAPI)
+	api.GET("/import/:id/download", downloadImportForExternalAPI)
 
 	// Initialize the server in a goroutine so that it won't block shutdown handling
 	go func() {
