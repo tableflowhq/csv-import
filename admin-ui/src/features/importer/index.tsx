@@ -19,6 +19,8 @@ export default function ImporterPage({ importer }: ImporterViewProps) {
   );
   const navigate = useNavigate();
   const copyToClipboard = (text: string) => {
+    // TODO: This won't work on non-secure origins (besides localhost), update to use a different method
+    // https://stackoverflow.com/questions/51805395/navigator-clipboard-is-undefined
     navigator.clipboard.writeText(text);
     notification({ type: "success", message: "Copied to clipboard" });
   };
