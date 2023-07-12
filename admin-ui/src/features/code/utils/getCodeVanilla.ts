@@ -1,7 +1,7 @@
 import { CodeProps } from "../types";
 
 export default function getCodeVanilla(props: CodeProps) {
-  return `import { TableFlowImporter } from "@tableflow/vanilla-sdk";
+  return `import { tableFlowImporter } from "@tableflow/vanilla-sdk";
 
 const args = {
   importerId: "${props.importerId || "YOUR_IMPORTER_ID"}",
@@ -13,6 +13,8 @@ const args = {
 }
 
 const uploadButton = document.getElementById("uploadButton");
+
+const dialog = tableFlowImporter(args);
 
 uploadButton.addEventListener("click", () => {
   dialog?.showModal();
