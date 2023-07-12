@@ -16,7 +16,6 @@ import (
 	"tableflow/go/pkg/file"
 	"tableflow/go/pkg/model"
 	"tableflow/go/pkg/tf"
-	"tableflow/go/pkg/util"
 	"tableflow/go/pkg/web"
 	"time"
 )
@@ -281,13 +280,6 @@ func initWebServer(ctx context.Context, wg *sync.WaitGroup) error {
 	uploadLimitCheck := func(_ *model.Upload) error {
 		return nil
 	}
-	var corsOrigins []string
-	localIP, err := util.GetLocalIP()
-	if err != nil {
-		tf.Log.Warnw("Error determining local IP address, .env will need to be updated with app and importer URLs to correctly configure CORS", "error", err)
-	} else {
-		corsOrigins = []string{fmt.Sprintf("http://%s:3000", localIP), fmt.Sprintf("http://%s:3001", localIP)}
-	}
 
 	config := web.ServerConfig{
 		AdminAPIAuthValidator:    adminAPIAuthValidator,
@@ -295,7 +287,6 @@ func initWebServer(ctx context.Context, wg *sync.WaitGroup) error {
 		GetWorkspaceUser:         getWorkspaceUser,
 		GetUserID:                getUserID,
 		UploadLimitCheck:         uploadLimitCheck,
-		AdditionalCORSOrigins:    corsOrigins,
 	}
 	server := web.StartWebServer(config)
 
