@@ -46,12 +46,12 @@ func getImportForExternalAPI(c *gin.Context) {
 //	@Summary		Get import rows
 //	@Description	Paginate the rows of an import
 //	@Tags			External API
-//	@Success 200 {array} ImportRow
+//	@Success		200	{array}		types.ImportRow
 //	@Failure		400	{object}	types.Res
 //	@Router			/v1/import/{id}/rows [get]
-//	@Param			id	path	string	true	"Import ID"
-//	@Param   offset         query     int        false  "int valid"          minimum(0)
-//	@Param   limit         query     int        false  "int valid"          minimum(1)    maximum(1000)
+//	@Param			id		path	string	true	"Import ID"
+//	@Param			offset	query	int		false	"int valid"	minimum(0)
+//	@Param			limit	query	int		false	"int valid"	minimum(1)	maximum(1000)
 func getImportRowsForExternalAPI(c *gin.Context) {
 	id := c.Param("id")
 	if len(id) == 0 {
