@@ -18,7 +18,6 @@ type Import struct {
 	NumProcessedValues null.Int    `json:"num_processed_values" swaggertype:"integer" example:"128"`
 	Metadata           JSONB       `json:"metadata"`
 	IsStored           bool        `json:"is_stored" example:"false"`
-	StorageBucket      null.String `json:"-" swaggerignore:"true"`
 	CreatedAt          NullTime    `json:"created_at" swaggertype:"integer" example:"1682366228"`
 
 	Importer *Importer `json:"importer,omitempty" swaggerignore:"true" gorm:"foreignKey:ID;references:ImporterID"`

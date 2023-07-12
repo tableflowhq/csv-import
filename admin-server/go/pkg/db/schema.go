@@ -238,8 +238,7 @@ func GetDatabaseSchemaInitSQL() string {
 		    num_columns    int,
 		    metadata       jsonb            not null default '{}'::jsonb, -- Optional custom data the client can send from the SDK, i.e. their user ID
 		    is_parsed      bool             not null default false,       -- Are the upload_columns created and ready for the user to map?
-		    is_stored      bool             not null default false,       -- Has the file been uploaded to S3?
-		    storage_bucket text,
+		    is_stored      bool             not null default false,       -- Have all the records been stored?
 		    error          text,
 		    created_at     timestamptz      not null default now(),
 		    constraint fk_importer_id
@@ -282,8 +281,7 @@ func GetDatabaseSchemaInitSQL() string {
 		    num_columns          int,
 		    num_processed_values int,
 		    metadata             jsonb            not null default '{}'::jsonb, -- Optional custom data the client can send from the SDK, i.e. their user ID
-		    is_stored            bool             not null default false,       -- Has the file been uploaded to S3?
-		    storage_bucket       text,
+		    is_stored            bool             not null default false,       -- Have all the records been stored?
 		    created_at           timestamptz      not null default now(),
 		    constraint fk_upload_id
 		        foreign key (upload_id)

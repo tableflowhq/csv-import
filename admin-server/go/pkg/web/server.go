@@ -37,13 +37,14 @@ const adminUIDefaultURL = "http://localhost:3000"
 const importerUIDefaultURL = "http://localhost:3001"
 
 type ServerConfig struct {
-	AuthMiddleware           gin.HandlerFunc
-	AdminAPIAuthValidator    gin.HandlerFunc
-	ExternalAPIAuthValidator func(c *gin.Context, apiKey string) bool
-	GetWorkspaceUser         func(c *gin.Context, workspaceID string) (string, error)
-	GetUserID                func(c *gin.Context) string
-	UploadLimitCheck         func(*model.Upload) error
-	AdditionalCORSHeaders    []string
+	AuthMiddleware                 gin.HandlerFunc
+	AdminAPIAuthValidator          gin.HandlerFunc
+	ExternalAPIAuthValidator       func(c *gin.Context, apiKey string) bool
+	GetWorkspaceUser               func(c *gin.Context, workspaceID string) (string, error)
+	GetUserID                      func(c *gin.Context) string
+	UploadLimitCheck               func(*model.Upload) error
+	UploadAdditionalStorageHandler func(*model.Upload)
+	AdditionalCORSHeaders          []string
 }
 
 func StartWebServer(config ServerConfig) *http.Server {
@@ -107,7 +108,7 @@ func StartWebServer(config ServerConfig) *http.Server {
 	/* --------------------------  Importer routes  -------------------------- */
 
 	importer := router.Group("/file-import/v1")
-	tusHandler := tusFileHandler()
+	tusHandler := tusFileHandler(config.UploadAdditionalStorageHandler)
 
 	importer.POST("/files", tusPostFile(tusHandler))
 	importer.HEAD("/files/:id", tusHeadFile(tusHandler))
@@ -154,7 +155,7 @@ func StartWebServer(config ServerConfig) *http.Server {
 
 	/* Import */
 	api.GET("/import/:id", getImportForExternalAPI)
-	api.GET("/import/:id/download", downloadImportForExternalAPI)
+	api.GET("/import/:id/rows", getImportRowsForExternalAPI)
 
 	// Initialize the server in a goroutine so that it won't block shutdown handling
 	go func() {
