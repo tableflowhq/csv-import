@@ -14,5 +14,5 @@ export default function useApi(importerId: string) {
   const { data: upload = {} as Upload, error: uploadError } = useGetUpload(tusId);
   const { is_parsed: isParsed } = upload;
 
-  return { importer, isLoadingImporter, importerError, template, upload, uploadError, isParsed, setTusId };
+  return { tusId, importer, isLoadingImporter, importerError, template, upload, uploadError, isParsed, setTusId };
 }

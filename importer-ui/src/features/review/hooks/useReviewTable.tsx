@@ -26,7 +26,7 @@ export default function useReviewTable(items: UploadColumn[] = [], templateColum
         }
         return { ...acc, [name]: { value: field.id } };
       }, {}),
-    [templateColumns]
+    [JSON.stringify(templateColumns)]
   );
 
   const handleTemplateChange = (id: string, template: string) => {

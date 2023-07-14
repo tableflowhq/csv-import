@@ -1,7 +1,7 @@
 import { Template, Upload } from "../../../api/types";
 
 export type ReviewProps = {
-  upload: Upload;
+  upload?: Upload;
   template: Template;
   onSuccess: (uploadId: string) => void;
   onCancel: () => void;
