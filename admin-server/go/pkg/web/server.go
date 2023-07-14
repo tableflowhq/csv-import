@@ -43,7 +43,7 @@ type ServerConfig struct {
 	GetWorkspaceUser               func(c *gin.Context, workspaceID string) (string, error)
 	GetUserID                      func(c *gin.Context) string
 	UploadLimitCheck               func(*model.Upload) error
-	UploadAdditionalStorageHandler func(*model.Upload, string)
+	UploadAdditionalStorageHandler func(*model.Upload, *os.File)
 	AdditionalCORSOrigins          []string
 	AdditionalCORSHeaders          []string
 }
