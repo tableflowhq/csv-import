@@ -18,8 +18,8 @@ function MyComponent() {
       <TableFlowImporter
         isOpen={isOpen}
         onRequestClose={() => setIsOpen(false)}
-        importerId={"${props.importerId || "YOUR_IMPORTER_ID"}"}
-        darkMode={${props.theme !== "light"}}${hostUrlLine}
+        importerId={"${props.importerId || "YOUR_IMPORTER_ID"}"}${hostUrlLine}
+        darkMode={${props.theme !== "light"}}
         primaryColor="#7A5EF8"
         closeOnClickOutside={true}
         metadata={"{\\"userId\\": 1234, \\"userEmail\\": \\"test@example.com\\"}"}

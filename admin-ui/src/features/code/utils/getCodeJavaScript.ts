@@ -1,11 +1,14 @@
 import { CodeProps } from "../types";
 
-export default function getCodeVanilla(props: CodeProps) {
-  return `import { tableFlowImporter } from "@tableflow/js-sdk";
+export default function getCodeJavaScript(props: CodeProps) {
+  let hostUrlLine = "";
+  if (props.hostUrl) {
+    hostUrlLine = `\n  hostUrl: "${props.hostUrl}",`;
+  }
+  return `import { tableFlowImporter } from "@tableflow/js";
 
 const args = {
-  importerId: "${props.importerId || "YOUR_IMPORTER_ID"}",
-  hostUrl: "${props.hostUrl || "http://localhost:3001"}",
+  importerId: "${props.importerId || "YOUR_IMPORTER_ID"}",${hostUrlLine}
   darkMode: ${props.theme !== "light"},
   primaryColor: "#7a5ef8",
   metadata: '{"userId": 1234, "userEmail": "test@example.com"}',
