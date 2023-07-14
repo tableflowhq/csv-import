@@ -90,7 +90,7 @@ export default function Main() {
         {step === "upload" && (
           <Uploader template={template} importerId={importerId} metadata={metadata} onSuccess={uploadDone} endpoint={TUS_ENDPOINT} />
         )}
-        {step === "review" && !isParsed && <Spinner className={style.spinner}>Processing will take only a moment...</Spinner>}
+        {step === "review" && !isParsed && <Spinner className={style.spinner}>Processing your file...</Spinner>}
         {step === "review" && isParsed && <Review template={template} upload={upload} onSuccess={() => stepper.setCurrent(2)} onCancel={reload} />}
         {step === "complete" && <Complete reload={reload} close={requestClose} />}
         {step === "done" && <div>All done</div>}
