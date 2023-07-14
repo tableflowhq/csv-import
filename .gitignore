@@ -25,8 +25,8 @@ build/
 .idea
 .vscode
 
-/admin-server/build
 /admin-server/build/
+/admin-ui/build/
 /importer-ui/build/
 /react-sdk/build/
 /js-sdk/build/
