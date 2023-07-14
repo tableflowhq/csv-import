@@ -22,7 +22,7 @@ export default function Review({ upload, template, onSuccess, onCancel }: Review
   };
 
   useEffect(() => {
-    if (isSuccess && !error && !isLoading) {
+    if (isSuccess && !error && !isLoading && upload) {
       onSuccess(upload.id);
     }
   }, [isSuccess]);
@@ -32,9 +32,13 @@ export default function Review({ upload, template, onSuccess, onCancel }: Review
   return (
     <div className={style.content}>
       <form onSubmit={onSubmit}>
-        <div className={style.tableWrapper}>
-          <Table data={rows} background="dark" columnWidths={["20%", "30%", "30%", "20%"]} columnAlignments={["", "", "", "center"]} fixHeader />
-        </div>
+        {upload ? (
+          <div className={style.tableWrapper}>
+            <Table data={rows} background="dark" columnWidths={["20%", "30%", "30%", "20%"]} columnAlignments={["", "", "", "center"]} fixHeader />
+          </div>
+        ) : (
+          <>Loading...</>
+        )}
 
         <div className={style.actions}>
           <Button type="button" variants={["secondary"]} onClick={onCancel}>

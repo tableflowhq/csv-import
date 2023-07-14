@@ -1,0 +1,19 @@
+.spinner {
+  display: flex;
+  align-items: center;
+  gap: var(--m);
+  font-size: var(--font-size-l);
+  justify-content: center;
+  align-items: center;
+
+  svg {
+    aspect-ratio: 1;
+    display: block;
+    width: 128px;
+    height: 128px;
+  }
+
+  & > div:last-of-type {
+    margin-right: var(--m);
+  }
+}

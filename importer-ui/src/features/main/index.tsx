@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { Button, Errors, Stepper, useLocalStorage, useStepper } from "@tableflow/ui-library";
+import Spinner from "../../components/Spinner";
 import { getAPIBaseURL } from "../../api/api";
 import useEmbedStore from "../../stores/embed";
 import useApi from "./hooks/useApi";
@@ -26,7 +27,7 @@ export default function Main() {
   );
   const step = stepper?.step?.id;
 
-  const { isLoadingImporter, importerError, template, upload, uploadError, isParsed, setTusId } = useApi(importerId);
+  const { tusId, isLoadingImporter, importerError, template, upload, uploadError, isParsed, setTusId } = useApi(importerId);
 
   useEffect(() => {
     setStepStore(step);
@@ -41,10 +42,15 @@ export default function Main() {
 
   // Delay jump to the second step
   useEffect(() => {
-    if (isParsed) setTimeout(() => stepper.setCurrent(1), 1000);
+    if (tusId) setTimeout(() => stepper.setCurrent(1), 500);
   }, [isParsed]);
 
   // Actions
+  const uploadDone = (tusId: string) => {
+    setTusId(tusId);
+    // setTimeout(() => stepper.setCurrent(1), 500);
+  };
+
   const requestClose = () => {
     window?.top?.postMessage("close", "*");
     window?.parent?.postMessage("close", "*");
@@ -82,9 +88,10 @@ export default function Main() {
 
       <div className={style.content}>
         {step === "upload" && (
-          <Uploader template={template} importerId={importerId} metadata={metadata} onSuccess={setTusId} endpoint={TUS_ENDPOINT} />
+          <Uploader template={template} importerId={importerId} metadata={metadata} onSuccess={uploadDone} endpoint={TUS_ENDPOINT} />
         )}
-        {step === "review" && <Review template={template} upload={upload} onSuccess={() => stepper.setCurrent(2)} onCancel={reload} />}
+        {step === "review" && !isParsed && <Spinner className={style.spinner}>Processing your file...</Spinner>}
+        {step === "review" && isParsed && <Review template={template} upload={upload} onSuccess={() => stepper.setCurrent(2)} onCancel={reload} />}
         {step === "complete" && <Complete reload={reload} close={requestClose} />}
         {step === "done" && <div>All done</div>}
       </div>
