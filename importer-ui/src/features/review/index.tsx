@@ -10,8 +10,6 @@ export default function Review({ upload, template, onSuccess, onCancel }: Review
 
   const { mutate, error, isSuccess, isLoading } = usePostUpload(upload?.id || "");
 
-  console.log("REVIEW", isSuccess, upload);
-
   const onSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
