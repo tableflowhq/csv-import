@@ -25,7 +25,7 @@ type uploadProcessResult struct {
 var maxColumnLimit = int(math.Min(1000, math.MaxInt16))
 var maxRowLimit = 1000 * 1000 * 10 // TODO: Store and configure this on the workspace? But keep a max limit to prevent runaways?
 
-func UploadCompleteHandler(event handler.HookEvent, uploadAdditionalStorageHandler func(*model.Upload)) {
+func UploadCompleteHandler(event handler.HookEvent, uploadAdditionalStorageHandler func(*model.Upload, string)) {
 	uploadFileName := event.Upload.MetaData["filename"]
 	uploadFileType := event.Upload.MetaData["filetype"]
 	uploadFileExtension := ""
@@ -136,11 +136,15 @@ func UploadCompleteHandler(event handler.HookEvent, uploadAdditionalStorageHandl
 	}
 
 	if uploadAdditionalStorageHandler != nil {
-		go uploadAdditionalStorageHandler(upload)
+		go func(u *model.Upload, fn string) {
+			uploadAdditionalStorageHandler(u, fn)
+			removeUploadFileFromDisk(fn, u.ID.String())
+			tf.Log.Debugw("Upload complete", "upload_id", u.ID)
+		}(upload, fileName)
+	} else {
+		removeUploadFileFromDisk(fileName, upload.ID.String())
+		tf.Log.Debugw("Upload complete", "upload_id", upload.ID)
 	}
-
-	removeUploadFileFromDisk(fileName, upload.ID.String())
-	tf.Log.Debugw("Upload complete", "upload_id", upload.ID)
 }
 
 func processAndStoreUpload(upload *model.Upload, file *os.File) (uploadProcessResult, error) {
