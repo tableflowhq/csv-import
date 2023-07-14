@@ -3530,6 +3530,36 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tableflow/js@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "@tableflow/js@workspace:."
+  dependencies:
+    "@babel/preset-env": ^7.22.7
+    "@babel/preset-typescript": ^7.22.5
+    "@rollup/plugin-commonjs": ^25.0.2
+    "@rollup/plugin-image": ^3.0.2
+    "@rollup/plugin-node-resolve": ^15.1.0
+    "@storybook/addon-essentials": 7.0.26
+    "@storybook/addon-interactions": 7.0.26
+    "@storybook/addon-links": 7.0.26
+    "@storybook/blocks": 7.0.26
+    "@storybook/html": 7.0.26
+    "@storybook/html-webpack5": 7.0.26
+    "@storybook/testing-library": 0.0.14-next.2
+    "@svgr/rollup": ^8.0.1
+    postcss: ^8.4.25
+    react: 18.2.0
+    react-dom: 18.2.0
+    rollup: ^3.26.2
+    rollup-plugin-copy: ^3.4.0
+    rollup-plugin-peer-deps-external: ^2.2.4
+    rollup-plugin-postcss: ^4.0.2
+    rollup-plugin-typescript2: ^0.35.0
+    storybook: 7.0.26
+    typescript: ^5.1.6
+  languageName: unknown
+  linkType: soft
+
 "@testing-library/dom@npm:^8.3.0":
   version: 8.20.1
   resolution: "@testing-library/dom@npm:8.20.1"
@@ -7751,36 +7781,6 @@ __metadata:
   checksum: 0af309ea4db17c4c47e84a9246f907960a15577683c005fdeafc8f3c06bc455136f95a6f28fa2a3e924b767eb4dacd9b40915a7707305f88586f099af3ac27a8
   languageName: node
   linkType: hard
-
-"js-sdk@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "js-sdk@workspace:."
-  dependencies:
-    "@babel/preset-env": ^7.22.7
-    "@babel/preset-typescript": ^7.22.5
-    "@rollup/plugin-commonjs": ^25.0.2
-    "@rollup/plugin-image": ^3.0.2
-    "@rollup/plugin-node-resolve": ^15.1.0
-    "@storybook/addon-essentials": 7.0.26
-    "@storybook/addon-interactions": 7.0.26
-    "@storybook/addon-links": 7.0.26
-    "@storybook/blocks": 7.0.26
-    "@storybook/html": 7.0.26
-    "@storybook/html-webpack5": 7.0.26
-    "@storybook/testing-library": 0.0.14-next.2
-    "@svgr/rollup": ^8.0.1
-    postcss: ^8.4.25
-    react: 18.2.0
-    react-dom: 18.2.0
-    rollup: ^3.26.2
-    rollup-plugin-copy: ^3.4.0
-    rollup-plugin-peer-deps-external: ^2.2.4
-    rollup-plugin-postcss: ^4.0.2
-    rollup-plugin-typescript2: ^0.35.0
-    storybook: 7.0.26
-    typescript: ^5.1.6
-  languageName: unknown
-  linkType: soft
 
 "js-tokens@npm:^3.0.0 || ^4.0.0, js-tokens@npm:^4.0.0":
   version: 4.0.0

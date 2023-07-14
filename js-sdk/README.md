@@ -19,13 +19,13 @@
 **NPM**
 
 ```bash
-npm install @tableflow/js-sdk
+npm install @tableflow/js
 ```
 
 **Yarn**
 
 ```bash
-yarn add @tableflow/js-sdk
+yarn add @tableflow/js
 ```
 
 ### 2. Add the Importer to your application
@@ -33,7 +33,7 @@ yarn add @tableflow/js-sdk
 Create an importer, define your template, and retrieve data at https://app.tableflow.com/importers
 
 ```javascript
-import { tableFlowImporter } from "@tableflow/js-sdk";
+import { tableFlowImporter } from "@tableflow/js";
 
 const args = {
   importerId: "53a84496-819d-4ec6-93b7-b4b56fb676ad", // Replace with your importer ID from https://app.tableflow.com/importers
