@@ -19,7 +19,6 @@ type Upload struct {
 	Metadata      JSONB       `json:"metadata" swaggertype:"string" example:"{\"user_id\": 1234}"`
 	IsParsed      bool        `json:"is_parsed" example:"false"`
 	IsStored      bool        `json:"is_stored" example:"false"`
-	StorageBucket null.String `json:"-" swaggerignore:"true"`
 	Error         null.String `json:"-" swaggerignore:"true"`
 	CreatedAt     NullTime    `json:"created_at" swaggertype:"integer" example:"1682366228"`
 

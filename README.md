@@ -58,6 +58,8 @@ Then open [http://localhost:3000](http://localhost:3000) to access TableFlow.
    server)
 3. [ ] Update your network settings to allow port 3001 (the importer iframe) to be accessible from where your users will
    import data, most likely public
+4. [ ] Update `TABLEFLOW_WEB_APP_URL` and `TABLEFLOW_WEB_IMPORTER_URL` in your .env.example file with the correct URLs
+   where you'll access the web applications from
 
 One-line install script (for Amazon Linux):
 

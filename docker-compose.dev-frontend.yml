@@ -6,12 +6,19 @@ services:
       file: docker-compose.base.yml
       service: postgres
 
+  scylla:
+    extends:
+      file: docker-compose.base.yml
+      service: scylla
+
   backend:
     extends:
       file: docker-compose.base.yml
       service: backend
     depends_on:
       postgres:
+        condition: service_healthy
+      scylla:
         condition: service_healthy
 
 networks:

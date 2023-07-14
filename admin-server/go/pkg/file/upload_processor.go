@@ -2,19 +2,30 @@ package file
 
 import (
 	"fmt"
+	"github.com/gocql/gocql"
 	"github.com/guregu/null"
 	"github.com/tus/tusd/pkg/handler"
 	"io"
 	"math"
 	"os"
 	"strings"
+	"sync"
 	"tableflow/go/pkg/db"
 	"tableflow/go/pkg/model"
+	"tableflow/go/pkg/scylla"
 	"tableflow/go/pkg/tf"
 	"tableflow/go/pkg/util"
+	"time"
 )
 
-func UploadCompleteHandler(event handler.HookEvent) {
+type uploadProcessResult struct {
+	NumRows int
+}
+
+var maxColumnLimit = int(math.Min(1000, math.MaxInt16))
+var maxRowLimit = 1000 * 1000 * 10 // TODO: Store and configure this on the workspace? But keep a max limit to prevent runaways?
+
+func UploadCompleteHandler(event handler.HookEvent, uploadAdditionalStorageHandler func(*model.Upload)) {
 	uploadFileName := event.Upload.MetaData["filename"]
 	uploadFileType := event.Upload.MetaData["filetype"]
 	uploadFileExtension := ""
@@ -72,32 +83,36 @@ func UploadCompleteHandler(event handler.HookEvent) {
 	}
 
 	// Parse the column headers, sample data, and retrieve the row count
-	uploadColumns, rowCount, err := processUploadColumnsAndRowCount(upload, file)
+	err = processUploadColumns(upload, file)
 	if err != nil {
 		tf.Log.Errorw("Could not parse upload columns", "error", err, "upload_id", upload.ID)
 		saveUploadError(upload, "An error occurred determining the columns in your file. Please check the file and try again.")
 		removeUploadFileFromDisk(fileName, upload.ID.String())
 		return
 	}
-	if rowCount == 0 {
-		tf.Log.Debugw("A file was uploaded with no rows or an error occurred during processing", "upload_id", upload.ID)
-		saveUploadError(upload, "No rows were found in your file, please try again with a different file.")
-		removeUploadFileFromDisk(fileName, upload.ID.String())
-		return
-	}
-	if rowCount == 1 {
-		tf.Log.Debugw("A file was uploaded with only one row", "upload_id", upload.ID)
-		saveUploadError(upload, "Only one row was found in your file, please try again with a different file that has a header row and at least one row of data.")
-		removeUploadFileFromDisk(fileName, upload.ID.String())
-		return
-	}
-	if len(uploadColumns) == 0 {
+	if len(upload.UploadColumns) == 0 {
 		tf.Log.Warnw("No upload columns found in file", "error", err, "upload_id", upload.ID)
 		saveUploadError(upload, "An error occurred determining the columns in your file. Please check the file and try again.")
 		removeUploadFileFromDisk(fileName, upload.ID.String())
 		return
 	}
-	err = tf.DB.Create(&uploadColumns).Error
+
+	uploadResult, err := processAndStoreUpload(upload, file)
+	if err != nil {
+		tf.Log.Errorw("Could not process upload", "error", err, "upload_id", upload.ID)
+		saveUploadError(upload, "An error occurred processing your file. Please check the file and try again.")
+		removeUploadFileFromDisk(fileName, upload.ID.String())
+		return
+	}
+
+	if uploadResult.NumRows == 0 {
+		tf.Log.Debugw("A file was uploaded with no rows or an error occurred during processing", "upload_id", upload.ID)
+		saveUploadError(upload, "No rows with data were found in your file, please try again with a different file that has a header row and at least one row of data.")
+		removeUploadFileFromDisk(fileName, upload.ID.String())
+		return
+	}
+
+	err = tf.DB.Create(upload.UploadColumns).Error
 	if err != nil {
 		tf.Log.Errorw("Could not create upload columns in database", "error", err, "upload_id", upload.ID)
 		saveUploadError(upload, "An error occurred determining the columns in your file. Please check the file and try again.")
@@ -105,13 +120,14 @@ func UploadCompleteHandler(event handler.HookEvent) {
 		return
 	}
 
-	upload.NumColumns = null.IntFrom(int64(len(uploadColumns)))
+	upload.NumColumns = null.IntFrom(int64(len(upload.UploadColumns)))
 	fileSize, err := util.GetFileSize(file)
 	upload.FileSize = null.NewInt(fileSize, err == nil)
-	// Subtract 1 to remove the header row
-	upload.NumRows = null.IntFrom(int64(math.Max(float64(rowCount-1), 0)))
+	upload.NumRows = null.IntFrom(int64(uploadResult.NumRows))
 
 	upload.IsParsed = true
+	upload.IsStored = true
+
 	err = tf.DB.Save(upload).Error
 	if err != nil {
 		tf.Log.Errorw("Could not update upload in database", "error", err)
@@ -119,40 +135,94 @@ func UploadCompleteHandler(event handler.HookEvent) {
 		return
 	}
 
-	// Store the upload on S3
-	err = tf.S3.UploadFile(upload.ID.String(), upload.FileType.String, tf.S3.BucketUploads, file)
-	if err != nil {
-		tf.Log.Errorw("Could not upload file to S3", "error", err, "upload_id", upload.ID)
-		removeUploadFileFromDisk(fileName, upload.ID.String())
-		return
+	if uploadAdditionalStorageHandler != nil {
+		go uploadAdditionalStorageHandler(upload)
 	}
-	upload.StorageBucket = null.StringFrom(tf.S3.BucketUploads)
-	upload.IsStored = true
-	err = tf.DB.Save(upload).Error
-	if err != nil {
-		tf.Log.Errorw("Could not update upload in database", "error", err, "upload_id", upload.ID)
-		removeUploadFileFromDisk(fileName, upload.ID.String())
-		return
-	}
+
 	removeUploadFileFromDisk(fileName, upload.ID.String())
-	tf.Log.Debugw("File upload complete", "upload_id", upload.ID)
+	tf.Log.Debugw("Upload complete", "upload_id", upload.ID)
 }
 
-func processUploadColumnsAndRowCount(upload *model.Upload, file *os.File) ([]model.UploadColumn, int, error) {
+func processAndStoreUpload(upload *model.Upload, file *os.File) (uploadProcessResult, error) {
 	it, err := util.OpenDataFileIterator(file, upload.FileType.String)
 	defer it.Close()
 	if err != nil {
-		return nil, 0, err
+		return uploadProcessResult{}, err
 	}
-	uploadColumns := make([]model.UploadColumn, 0)
-	isHeaderRow := true
-	rowIndex := 0
-	sampleDataSize := 3
+	// Skip the header row
+	_, err = it.GetRow()
+	if err != nil {
+		return uploadProcessResult{}, err
+	}
 
-	for ; ; rowIndex++ {
-		if !it.HasNext() {
+	numRows := 0
+	goroutines := 8
+	batchSize := 1000
+	batchCounter := 0
+
+	in := make(chan *gocql.Batch, 0)
+	var wg sync.WaitGroup
+	for i := 0; i < goroutines; i++ {
+		go scylla.ProcessBatch(in, &wg)
+	}
+	b := tf.Scylla.NewBatch(gocql.LoggedBatch)
+	startTime := time.Now()
+
+	for i := 0; ; i++ {
+		if i >= maxRowLimit {
+			tf.Log.Warnw("Max rows reached while processing upload", "upload_id", upload.ID, "max_rows", maxRowLimit)
+			in <- b
 			break
 		}
+		row, err := it.GetRow()
+		if err == io.EOF {
+			in <- b // Send in the last batch
+			break
+		}
+		if err != nil {
+			// TODO: Handle parse error here and surface it to user. Save parse errors on upload or new table?
+			tf.Log.Warnw("Error while parsing data file", "error", err, "upload_id", upload.ID)
+			continue
+		}
+
+		uploadRow := make(map[int16]string)
+		for columnIndex, columnValue := range row {
+			if columnIndex >= len(upload.UploadColumns) {
+				tf.Log.Warnw("Index out of range for row", "column_index", columnIndex, "row_index", i, "upload_id", upload.ID)
+				break
+			}
+			// TODO: Deal with invalid characters better, determine charsets programmatically? Or just surface these to the user?
+			uploadRow[int16(columnIndex)] = strings.ToValidUTF8(columnValue, "")
+		}
+		numRows++
+
+		b.Query("insert into upload_rows (upload_id, row_index, values) values (?, ?, ?)", upload.ID.String(), i, uploadRow)
+		batchCounter++
+		if batchCounter == batchSize {
+			// Send in the batch and start a new one
+			in <- b
+			b = tf.Scylla.NewBatch(gocql.LoggedBatch)
+			batchCounter = 0
+		}
+	}
+
+	close(in)
+	wg.Wait()
+
+	tf.Log.Debugw("Upload processing and storage complete", "num_records", numRows, "time_taken", time.Since(startTime))
+	return uploadProcessResult{NumRows: numRows}, nil
+}
+
+func processUploadColumns(upload *model.Upload, file *os.File) error {
+	it, err := util.OpenDataFileIterator(file, upload.FileType.String)
+	defer it.Close()
+	if err != nil {
+		return err
+	}
+	headerRowProcessed := false
+	sampleDataSize := 3 // Don't collect more than sampleDataSize sample data rows
+
+	for i := 0; i < sampleDataSize; i++ {
 		row, err := it.GetRow()
 		if err == io.EOF {
 			break
@@ -162,10 +232,14 @@ func processUploadColumnsAndRowCount(upload *model.Upload, file *os.File) ([]mod
 			tf.Log.Warnw("Error while parsing data file", "error", err, "upload_id", upload.ID)
 			continue
 		}
-		if isHeaderRow {
-			isHeaderRow = false
+		if !headerRowProcessed {
+			headerRowProcessed = true
 			for columnIndex, v := range row {
-				uploadColumns = append(uploadColumns, model.UploadColumn{
+				if columnIndex >= maxColumnLimit {
+					tf.Log.Warnw("Max column limit reached for row", "column_index", columnIndex, "row_index", i, "upload_id", upload.ID)
+					break
+				}
+				upload.UploadColumns = append(upload.UploadColumns, &model.UploadColumn{
 					UploadID:   upload.ID,
 					Name:       v,
 					Index:      columnIndex,
@@ -174,19 +248,15 @@ func processUploadColumnsAndRowCount(upload *model.Upload, file *os.File) ([]mod
 			}
 			continue
 		}
-		if rowIndex <= sampleDataSize {
-			// Don't collect more than sampleDataSize sample data rows
-			for columnIndex, v := range row {
-				if columnIndex >= len(uploadColumns) {
-					tf.Log.Warnw("Index out of range for row", "index", columnIndex, "value", v, "upload_id", upload.ID)
-					continue
-				}
-				uploadColumns[columnIndex].SampleData = append(uploadColumns[columnIndex].SampleData, v)
+		for columnIndex, v := range row {
+			if columnIndex >= len(upload.UploadColumns) {
+				tf.Log.Warnw("Index out of range for row", "column_index", columnIndex, "row_index", i, "upload_id", upload.ID)
+				break
 			}
+			upload.UploadColumns[columnIndex].SampleData = append(upload.UploadColumns[columnIndex].SampleData, v)
 		}
-		// Continue to iterate through the file to get the row count
 	}
-	return uploadColumns, rowIndex, nil
+	return nil
 }
 
 func saveUploadError(upload *model.Upload, errorStr string) {

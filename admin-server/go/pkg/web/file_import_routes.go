@@ -1,23 +1,20 @@
 package web
 
 import (
-	"encoding/csv"
 	"errors"
-	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/gocql/gocql"
 	"github.com/guregu/null"
 	"github.com/lib/pq"
 	"github.com/samber/lo"
 	"github.com/tus/tusd/pkg/handler"
-	"io"
-	"math"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
+	"sync"
 	"tableflow/go/pkg/db"
-	"tableflow/go/pkg/file"
 	"tableflow/go/pkg/model"
+	"tableflow/go/pkg/scylla"
 	"tableflow/go/pkg/tf"
 	"tableflow/go/pkg/types"
 	"tableflow/go/pkg/util"
@@ -65,7 +62,7 @@ type ImportServiceUploadColumn struct {
 	SampleData pq.StringArray `json:"sample_data" gorm:"type:text[]" swaggertype:"array,string" example:"test@example.com"`
 }
 
-type importToCSVResult struct {
+type importProcessResult struct {
 	NumRows          int
 	NumColumns       int
 	NumNonEmptyCells int
@@ -331,198 +328,110 @@ func setUploadColumnMappingAndImportData(c *gin.Context) {
 }
 
 func importData(upload *model.Upload, template *model.Template) {
-	// TODO: Figure out a more robust solution here instead of polling for the upload to be complete.
-	// Maybe have uploads that are successfully completed and mapped pushed to a queue then have a job that polls from that queue?
-
-	err := waitForUploadToBeStored(upload)
-	if err != nil {
-		tf.Log.Errorw("Unable to import data after waiting on S3 upload completion", "error", err)
-		return
-	}
-
 	imp := &model.Import{
-		ID:            model.NewID(),
-		UploadID:      upload.ID,
-		ImporterID:    upload.ImporterID,
-		WorkspaceID:   upload.WorkspaceID,
-		FileType:      upload.FileType,
-		FileExtension: upload.FileExtension,
-		Metadata:      upload.Metadata,
+		ID:          model.NewID(),
+		UploadID:    upload.ID,
+		ImporterID:  upload.ImporterID,
+		WorkspaceID: upload.WorkspaceID,
+		Metadata:    upload.Metadata,
 	}
-	err = tf.DB.Create(imp).Error
+	err := tf.DB.Create(imp).Error
 	if err != nil {
 		tf.Log.Errorw("Could not create import in database", "error", err, "upload_id", upload.ID)
 		return
 	}
 
-	downloadFileName := fmt.Sprintf("%s/%s", file.TempDownloadsDirectory, upload.ID.String())
-	downloadFile, err := os.Create(downloadFileName)
-	defer func(downloadFile *os.File) {
-		_ = os.Remove(downloadFile.Name())
-		_ = downloadFile.Close()
-	}(downloadFile)
-	if err != nil {
-		tf.Log.Errorw("Failed to create file to download for import", "error", err, "import_id", imp.ID, "file", downloadFileName)
-		return
-	}
-
-	importFileName := fmt.Sprintf("%s/%s", file.TempImportsDirectory, imp.ID.String())
-	importFile, err := os.Create(importFileName)
-	defer func(importFile *os.File) {
-		_ = os.Remove(importFile.Name())
-		_ = importFile.Close()
-	}(importFile)
-	if err != nil {
-		tf.Log.Errorw("Failed to create file for import", "error", err, "import_id", imp.ID, "file", importFileName)
-		return
-	}
-
-	err = tf.S3.DownloadFileToDisk(upload.ID.String(), tf.S3.BucketUploads, downloadFile)
-	if err != nil {
-		tf.Log.Errorw("Unable to download file", "error", err, "import_id", imp.ID, "file", downloadFileName)
-		return
-	}
-
 	importStartTime := time.Now()
-	// template column ID -> row index within template
-	templateRowMap := make(map[string]int)
-	for i, tc := range template.TemplateColumns {
-		templateRowMap[tc.ID.String()] = i
+	// template column ID -> template column key
+	templateRowMap := make(map[string]string)
+	for _, tc := range template.TemplateColumns {
+		templateRowMap[tc.ID.String()] = tc.Key
 	}
-	// upload column index -> template column index
-	columnPositionMap := make(map[int]int)
+	// upload column index -> template column key
+	columnKeyMap := make(map[int]string)
 	for _, uc := range upload.UploadColumns {
-		if tci, ok := templateRowMap[uc.TemplateColumnID.String()]; ok {
-			columnPositionMap[uc.Index] = tci
+		if key, ok := templateRowMap[uc.TemplateColumnID.String()]; ok {
+			columnKeyMap[uc.Index] = key
 		}
 	}
 
-	importResult, err := processAndWriteCSV(downloadFile, importFile, columnPositionMap, template, upload, imp)
+	importResult, err := processAndStoreImport(columnKeyMap, template, upload, imp)
 	if err != nil {
-		tf.Log.Errorw("Could not process and write import file", "error", err, "import_id", imp.ID, "file", downloadFileName, "file_type", upload.FileType.String)
+		tf.Log.Errorw("Could not process and store import", "error", err, "import_id", imp.ID)
 		return
 	}
-	tf.Log.Debugw("Import processing complete", "import_id", imp.ID, "time", time.Since(importStartTime))
+	tf.Log.Debugw("Import processing and storage complete", "import_id", imp.ID, "time_taken", time.Since(importStartTime))
 
-	err = tf.S3.UploadFile(imp.ID.String(), imp.FileType.String, tf.S3.BucketImports, importFile)
-	if err != nil {
-		tf.Log.Errorw("Could not upload import file to S3", "error", err, "import_id", imp.ID)
-		return
-	}
-
-	imp.StorageBucket = null.StringFrom(tf.S3.BucketImports)
 	imp.IsStored = true
-	// Subtract 1 to remove the header row
-	imp.NumRows = null.IntFrom(int64(math.Max(float64(importResult.NumRows-1), 0)))
+	imp.NumRows = null.IntFrom(int64(importResult.NumRows))
 	imp.NumColumns = null.IntFrom(int64(importResult.NumColumns))
 	imp.NumProcessedValues = null.IntFrom(int64(importResult.NumNonEmptyCells))
-	fileSize, err := util.GetFileSize(importFile)
-	imp.FileSize = null.NewInt(fileSize, err == nil)
 
 	err = tf.DB.Save(imp).Error
 	if err != nil {
 		tf.Log.Errorw("Could not update import in database", "error", err, "import_id", imp.ID)
 		return
 	}
-	tf.Log.Debugw("File import complete", "import_id", imp.ID)
+	tf.Log.Debugw("Import complete", "import_id", imp.ID)
 }
 
-func processAndWriteCSV(fileToRead, fileToWrite *os.File, columnPositionMap map[int]int, template *model.Template, upload *model.Upload, imp *model.Import) (importToCSVResult, error) {
-	it, err := util.OpenDataFileIterator(fileToRead, upload.FileType.String)
-	defer it.Close()
-	if err != nil {
-		return importToCSVResult{}, err
-	}
-	defer util.ResetFileReader(fileToWrite)
-
-	w := csv.NewWriter(fileToWrite)
-	isHeaderRow := true
-	rowIndex := 0
+func processAndStoreImport(columnKeyMap map[int]string, template *model.Template, upload *model.Upload, imp *model.Import) (importProcessResult, error) {
+	importRowIndex := 0
 	numNonEmptyCells := 0
 	columnLength := len(template.TemplateColumns)
 
-	for ; ; rowIndex++ {
-		if !it.HasNext() {
+	goroutines := 8
+	batchSize := 1000
+	batchCounter := 0
+
+	in := make(chan *gocql.Batch, 0)
+	var wg sync.WaitGroup
+	for i := 0; i < goroutines; i++ {
+		go scylla.ProcessBatch(in, &wg)
+	}
+	b := tf.Scylla.NewBatch(gocql.LoggedBatch)
+
+	paginationPageSize := 1000
+	for offset := 0; ; offset += paginationPageSize {
+		if offset > int(upload.NumRows.Int64) {
+			in <- b
 			break
 		}
-		row, err := it.GetRow()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			tf.Log.Warnw("Error while parsing downloaded file", "error", err, "import_id", imp.ID)
-			continue
-		}
-		if isHeaderRow {
-			isHeaderRow = false
-			records := make([]string, columnLength, columnLength)
-			for i, tc := range template.TemplateColumns {
-				records[i] = tc.Key
-			}
-			if err = w.Write(records); err != nil {
-				tf.Log.Warnw("Error while writing header row to import file", "error", err, "import_id", imp.ID)
-			}
-			continue
-		}
-		/*
-			1. iterate through the row
-			2. get the upload column from the index of the row (map[int] uploadColumn)
-			3. now you have the template column ID
-			4. store the value to an array in its position
-		*/
-		records := make([]string, columnLength, columnLength)
-		for i, v := range row {
-			if tci, ok := columnPositionMap[i]; ok {
-				records[tci] = v
-				if len(strings.TrimSpace(v)) != 0 {
-					numNonEmptyCells++
+		uploadRows := scylla.PaginateUploadRows(upload.ID.String(), offset, paginationPageSize)
+		for pageRowIndex := 0; pageRowIndex < len(uploadRows); pageRowIndex++ {
+			/*
+				1. iterate through the row
+				2. get the upload column from the index of the row (map[int] uploadColumn)
+				3. now you have the template column key
+				4. store to the import row value map
+			*/
+			importRowValue := make(map[string]string, columnLength)
+			for colPos, cellVal := range uploadRows[pageRowIndex] {
+				if key, ok := columnKeyMap[colPos]; ok {
+					importRowValue[key] = cellVal
+					if len(strings.TrimSpace(cellVal)) != 0 {
+						numNonEmptyCells++
+					}
 				}
 			}
-		}
-		if err = w.Write(records); err != nil {
-			tf.Log.Warnw("Error while writing row to import file", "error", err, "import_id", imp.ID)
-		}
-		if rowIndex%10000 == 0 {
-			w.Flush()
+			b.Query("insert into import_rows (import_id, row_index, values) values (?, ?, ?)", imp.ID.String(), importRowIndex, importRowValue)
+			batchCounter++
+			if batchCounter == batchSize {
+				// Send in the batch and start a new one
+				in <- b
+				b = tf.Scylla.NewBatch(gocql.LoggedBatch)
+				batchCounter = 0
+			}
+			importRowIndex++
 		}
 	}
-	w.Flush()
 
-	return importToCSVResult{
-		NumRows:          rowIndex,
+	close(in)
+	wg.Wait()
+
+	return importProcessResult{
+		NumRows:          importRowIndex,
 		NumColumns:       columnLength,
 		NumNonEmptyCells: numNonEmptyCells,
 	}, nil
-}
-
-func waitForUploadToBeStored(upload *model.Upload) error {
-	uploadID := upload.ID.String()
-	uploadSizeMB := upload.FileSize.Int64 / 1000 / 1000
-	waitDelay := func(attempt int) time.Duration {
-		delay := math.Min(math.Pow(2, float64(attempt))*200, 5000)
-		return time.Duration(delay) * time.Millisecond
-	}
-	maxAttempts := 120
-	for attempt := 1; ; attempt++ {
-		isStored, err := db.IsUploadStored(uploadID)
-		if err != nil {
-			return err
-		}
-		if isStored {
-			return nil
-		}
-		if attempt == 1 {
-			tf.Log.Debugw("Waiting to import file until upload completion", "upload_id", uploadID, "file_size_mb", uploadSizeMB)
-		}
-		wait := waitDelay(attempt)
-		if attempt == maxAttempts/4 {
-			tf.Log.Warnw("Long wait time detected waiting for upload to be stored in S3", "attempts", attempt, "wait_time", wait.String(), "upload_id", uploadID, "file_size_mb", uploadSizeMB)
-		}
-		if attempt == maxAttempts {
-			tf.Log.Warnw("Exceeded max attempts waiting for upload to be stored in S3", "attempts", attempt, "wait_time", wait.String(), "upload_id", uploadID, "file_size_mb", uploadSizeMB)
-			break
-		}
-		time.Sleep(wait)
-	}
-	return errors.New("exceeded max wait attempts checking for upload to be stored")
 }
