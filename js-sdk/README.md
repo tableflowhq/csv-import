@@ -14,7 +14,7 @@
 
 ## Getting Started
 
-### 1. Install the TableFlow React SDK
+### 1. Install the TableFlow JS SDK
 
 **NPM**
 
@@ -36,8 +36,7 @@ Create an importer, define your template, and retrieve data at https://app.table
 import { tableFlowImporter } from "@tableflow/js-sdk";
 
 const args = {
-  importerId: "YOUR_IMPORTER_ID",
-  hostUrl: "http://localhost:3001",
+  importerId: "53a84496-819d-4ec6-93b7-b4b56fb676ad", // Replace with your importer ID from https://app.tableflow.com/importers
   darkMode: true,
   primaryColor: "#7a5ef8",
   metadata: '{"userId": 1234, "userEmail": "test@example.com"}',
@@ -62,8 +61,7 @@ Or directly in the HTML
 
 <script>
   const args = {
-    importerId: "YOUR_IMPORTER_ID",
-    hostUrl: "http://localhost:3001",
+    importerId: "53a84496-819d-4ec6-93b7-b4b56fb676ad", // Replace with your importer ID from https://app.tableflow.com/importers
     darkMode: true,
     primaryColor: "#7a5ef8",
     metadata: '{"userId": 1234, "userEmail": "test@example.com"}',
