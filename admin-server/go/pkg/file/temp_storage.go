@@ -8,7 +8,6 @@ import (
 
 var TempUploadsDirectory = ""
 var TempDownloadsDirectory = ""
-var TempImportsDirectory = ""
 
 const tempDir = "/tmp/tableflow-files"
 const dirMode = 0774
@@ -24,10 +23,6 @@ func CreateTempDirectories() error {
 	}
 	TempDownloadsDirectory = filepath.Join(tempDir, "downloads")
 	if err = createTempDirectory(TempDownloadsDirectory); err != nil {
-		return err
-	}
-	TempImportsDirectory = filepath.Join(tempDir, "imports")
-	if err = createTempDirectory(TempImportsDirectory); err != nil {
 		return err
 	}
 	return nil

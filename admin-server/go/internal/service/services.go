@@ -4,10 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/gin-gonic/gin"
+	"github.com/gocql/gocql"
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"
 	"gorm.io/driver/postgres"
@@ -25,7 +23,7 @@ import (
 var loggerInitialized bool
 var envInitialized bool
 var dbInitialized bool
-var s3Initialized bool
+var scyllaInitialized bool
 var tempStorageInitialized bool
 
 func InitServices(ctx context.Context, wg *sync.WaitGroup) {
@@ -52,10 +50,11 @@ func InitServices(ctx context.Context, wg *sync.WaitGroup) {
 		return
 	}
 
-	/* S3 */
-	err = initS3()
+	/* Scylla */
+	wg.Add(1)
+	err = initScylla(ctx, wg)
 	if err != nil {
-		tf.Log.Fatalw("Error initializing S3", "error", err.Error())
+		tf.Log.Fatalw("Error initializing Scylla", "error", err.Error())
 		return
 	}
 
@@ -73,6 +72,17 @@ func InitServices(ctx context.Context, wg *sync.WaitGroup) {
 	if err != nil {
 		tf.Log.Fatalw("Error initializing web server", "error", err)
 		return
+	}
+}
+
+func shutdownHandler(ctx context.Context, wg *sync.WaitGroup, close func()) {
+	defer wg.Done()
+	for {
+		select {
+		case <-ctx.Done():
+			close()
+			return
+		}
 	}
 }
 
@@ -160,26 +170,50 @@ func initDatabase() error {
 	return nil
 }
 
-func initS3() error {
-	if s3Initialized {
-		return errors.New("s3 already initialized")
+func initScylla(ctx context.Context, wg *sync.WaitGroup) error {
+	if scyllaInitialized {
+		return errors.New("scylla already initialized")
 	}
-	s3Initialized = true
-	s3Config := &aws.Config{
-		Region: aws.String(os.Getenv("AWS_REGION")),
-		Credentials: credentials.NewStaticCredentials(
-			os.Getenv("AWS_IAM_FILE_ACCESS_KEY"),
-			os.Getenv("AWS_IAM_FILE_SECRET_KEY"), ""),
-	}
-	sess, err := session.NewSession(s3Config)
+	scyllaInitialized = true
+
+	scyllaHost := os.Getenv("SCYLLA_HOST")
+	systemCfg := gocql.NewCluster(scyllaHost)
+	systemCfg.Keyspace = "system"
+	systemSession, err := systemCfg.CreateSession()
 	if err != nil {
+		systemSession.Close()
 		return err
 	}
-	tf.S3 = &tf.S3Handler{
-		Session:       sess,
-		BucketUploads: os.Getenv("AWS_S3_FILE_UPLOADS_BUCKET_NAME"),
-		BucketImports: os.Getenv("AWS_S3_FILE_IMPORTS_BUCKET_NAME"),
+	if err = systemSession.Query(getScyllaKeyspaceConfigurationCQL()).Exec(); err != nil {
+		systemSession.Close()
+		return err
 	}
+	systemSession.Close()
+
+	clusterCfg := gocql.NewCluster(scyllaHost)
+	clusterCfg.Keyspace = "tableflow"
+	//clusterCfg.Authenticator = gocql.PasswordAuthenticator{
+	//	Username: "your_username",
+	//	Password: "your_password",
+	//}
+	clusterCfg.NumConns = 8
+	clusterCfg.PoolConfig = gocql.PoolConfig{
+		HostSelectionPolicy: gocql.TokenAwareHostPolicy(gocql.RoundRobinHostPolicy()),
+	}
+
+	tf.Scylla, err = clusterCfg.CreateSession()
+	if err != nil {
+		tf.Scylla.Close()
+		return err
+	}
+	for _, stmt := range getScyllaSchemaConfigurationCQL() {
+		if err = tf.Scylla.Query(stmt).Exec(); err != nil {
+			tf.Scylla.Close()
+			return err
+		}
+	}
+
+	go shutdownHandler(ctx, wg, func() { tf.Scylla.Close() })
 	return nil
 }
 
@@ -194,16 +228,7 @@ func initTempStorage(ctx context.Context, wg *sync.WaitGroup) error {
 		return err
 	}
 
-	go func() {
-		defer wg.Done()
-		for {
-			select {
-			case <-ctx.Done():
-				file.RemoveTempDirectories()
-				return
-			}
-		}
-	}()
+	go shutdownHandler(ctx, wg, func() { file.RemoveTempDirectories() })
 	return nil
 }
 
@@ -255,6 +280,7 @@ func initWebServer(ctx context.Context, wg *sync.WaitGroup) error {
 	uploadLimitCheck := func(_ *model.Upload) error {
 		return nil
 	}
+
 	config := web.ServerConfig{
 		AdminAPIAuthValidator:    adminAPIAuthValidator,
 		ExternalAPIAuthValidator: externalAPIAuthValidator,
@@ -264,19 +290,12 @@ func initWebServer(ctx context.Context, wg *sync.WaitGroup) error {
 	}
 	server := web.StartWebServer(config)
 
-	go func() {
-		defer wg.Done()
-		for {
-			select {
-			case <-ctx.Done():
-				if err := server.Shutdown(ctx); err != nil {
-					tf.Log.Fatalw("API server forced to shutdown", "error", err)
-				}
-				tf.Log.Debugw("API server shutdown")
-				return
-			}
+	go shutdownHandler(ctx, wg, func() {
+		if err := server.Shutdown(ctx); err != nil {
+			tf.Log.Fatalw("API server forced to shutdown", "error", err)
 		}
-	}()
+		tf.Log.Debugw("API server shutdown")
+	})
 	return nil
 }
 
@@ -292,4 +311,29 @@ func getDatabaseConfigurationSQL() string {
 		    constraint initialized check (initialized)
 		);
 	`
+}
+
+func getScyllaKeyspaceConfigurationCQL() string {
+	return `
+		create keyspace if not exists tableflow
+		    with replication = { 'class' : 'NetworkTopologyStrategy', 'replication_factor' : 1}
+		     and durable_writes = true;
+	`
+}
+
+func getScyllaSchemaConfigurationCQL() []string {
+	return []string{
+		`create table if not exists upload_rows (
+		    upload_id  uuid,
+		    row_index int,
+		    values     map<int, text>,
+		    primary key ((upload_id),row_index)
+		);`,
+		`create table if not exists import_rows (
+		    import_id  uuid,
+		    row_index int,
+		    values     map<text, text>,
+		    primary key ((import_id),row_index)
+		);`,
+	}
 }

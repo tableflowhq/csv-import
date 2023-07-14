@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -110,6 +111,7 @@ func HTTPRequest(url, method string, body interface{}, headers map[string]string
 		tf.Log.Errorw("Error executing HTTP request", "error", err, "url", url)
 		return err
 	}
+	defer response.Body.Close()
 	if response.StatusCode < 200 || response.StatusCode > 299 {
 		bodyBytes, err := io.ReadAll(response.Body)
 		if err != nil {
@@ -118,6 +120,19 @@ func HTTPRequest(url, method string, body interface{}, headers map[string]string
 		tf.Log.Warnw("Received non-200 status code while executing http request", "status", response.StatusCode, "body", string(bodyBytes))
 		return errors.New("received non-200 status code while executing http request")
 	}
-	defer response.Body.Close()
 	return nil
+}
+
+func GetLocalIP() (string, error) {
+	conn, err := net.Dial("udp", "8.8.8.8:80")
+	if err != nil {
+		return "", err
+	}
+	defer conn.Close()
+
+	localAddress := conn.LocalAddr().(*net.UDPAddr)
+	if localAddress.IP.IsPrivate() {
+		return localAddress.IP.String(), nil
+	}
+	return "", errors.New("local IP address is not private")
 }
