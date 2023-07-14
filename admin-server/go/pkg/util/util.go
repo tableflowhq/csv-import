@@ -2,11 +2,13 @@ package util
 
 import (
 	"bytes"
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 	"net/mail"
+	"sync"
 )
 
 func JsonPrettyPrint(in string) string {
@@ -70,4 +72,15 @@ func DecodeBase64(encodedString string) (string, error) {
 func CommaFormat(num int64) string {
 	p := message.NewPrinter(language.English)
 	return p.Sprintf("%d", num)
+}
+
+func ShutdownHandler(ctx context.Context, wg *sync.WaitGroup, close func()) {
+	defer wg.Done()
+	for {
+		select {
+		case <-ctx.Done():
+			close()
+			return
+		}
+	}
 }

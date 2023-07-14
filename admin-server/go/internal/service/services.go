@@ -16,6 +16,7 @@ import (
 	"tableflow/go/pkg/file"
 	"tableflow/go/pkg/model"
 	"tableflow/go/pkg/tf"
+	"tableflow/go/pkg/util"
 	"tableflow/go/pkg/web"
 	"time"
 )
@@ -72,17 +73,6 @@ func InitServices(ctx context.Context, wg *sync.WaitGroup) {
 	if err != nil {
 		tf.Log.Fatalw("Error initializing web server", "error", err)
 		return
-	}
-}
-
-func shutdownHandler(ctx context.Context, wg *sync.WaitGroup, close func()) {
-	defer wg.Done()
-	for {
-		select {
-		case <-ctx.Done():
-			close()
-			return
-		}
 	}
 }
 
@@ -213,7 +203,7 @@ func initScylla(ctx context.Context, wg *sync.WaitGroup) error {
 		}
 	}
 
-	go shutdownHandler(ctx, wg, func() { tf.Scylla.Close() })
+	go util.ShutdownHandler(ctx, wg, func() { tf.Scylla.Close() })
 	return nil
 }
 
@@ -228,7 +218,7 @@ func initTempStorage(ctx context.Context, wg *sync.WaitGroup) error {
 		return err
 	}
 
-	go shutdownHandler(ctx, wg, func() { file.RemoveTempDirectories() })
+	go util.ShutdownHandler(ctx, wg, func() { file.RemoveTempDirectories() })
 	return nil
 }
 
@@ -290,7 +280,7 @@ func initWebServer(ctx context.Context, wg *sync.WaitGroup) error {
 	}
 	server := web.StartWebServer(config)
 
-	go shutdownHandler(ctx, wg, func() {
+	go util.ShutdownHandler(ctx, wg, func() {
 		if err := server.Shutdown(ctx); err != nil {
 			tf.Log.Fatalw("API server forced to shutdown", "error", err)
 		}
