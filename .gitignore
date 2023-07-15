@@ -26,6 +26,10 @@ build/
 .vscode
 
 /admin-server/build
+/admin-ui/build/
+/importer-ui/build/
+/react-sdk/build/
+/js-sdk/build/
 
 /coverage
 /.next/
@@ -43,6 +47,3 @@ build/
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-
-!ui-library/build
-!js-sdk/build

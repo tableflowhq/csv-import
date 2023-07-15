@@ -1,4 +1,5 @@
 import { saveAs } from "file-saver";
+import notification from "../utils/notification";
 import { baseURLExternal } from "./api";
 
 async function downloadFile(importId: string, apiKey: string, fileName: string = "tableflow-data.csv"): Promise<any> {
@@ -8,10 +9,16 @@ async function downloadFile(importId: string, apiKey: string, fileName: string =
       "Content-Type": "text/csv",
     },
   })
-    .then((response) => response.blob())
+    .then(async (response) => {
+      if (!response.ok) {
+        const res = await response.json();
+        throw res.error ? res.error : "An unknown error occurred, please try again";
+      }
+      return response.blob();
+    })
     .then((blob) => saveAs(blob, fileName))
     .catch((error) => {
-      console.log(error);
+      notification({ title: "Error", message: error, type: "error" });
     });
 }
 

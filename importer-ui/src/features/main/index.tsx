@@ -77,23 +77,24 @@ export default function Main() {
       </div>
     );
 
+  const content =
+    step === "upload" || !!uploadError ? (
+      <Uploader template={template} importerId={importerId} metadata={metadata} onSuccess={setTusId} endpoint={TUS_ENDPOINT} />
+    ) : step === "review" && !isParsed ? (
+      <Spinner className={style.spinner}>Processing will take only a moment...</Spinner>
+    ) : step === "review" && !!isParsed ? (
+      <Review template={template} upload={upload} onSuccess={() => stepper.setCurrent(2)} onCancel={reload} />
+    ) : !uploadError && step === "complete" ? (
+      <Complete reload={reload} close={requestClose} />
+    ) : null;
+
   return (
     <div className={style.wrapper}>
       <div className={style.header}>
         <Stepper {...stepper} />
       </div>
 
-      <div className={style.content}>
-        {(step === "upload" || !!uploadError) && (
-          <Uploader template={template} importerId={importerId} metadata={metadata} onSuccess={setTusId} endpoint={TUS_ENDPOINT} />
-        )}
-
-        {!uploadError && step === "review" && !isParsed && <Spinner className={style.spinner}>Processing will take only a moment...</Spinner>}
-        {!uploadError && step === "review" && !!isParsed && (
-          <Review template={template} upload={upload} onSuccess={() => stepper.setCurrent(2)} onCancel={reload} />
-        )}
-        {!uploadError && step === "complete" && <Complete reload={reload} close={requestClose} />}
-      </div>
+      <div className={style.content}>{content}</div>
 
       {!!uploadError && (
         <div className={style.status}>

@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { Button, Input, useLocalStorage } from "@tableflow/ui-library";
 import notification from "../../utils/notification";
 import getCodeReact from "./utils/getCodeReact";
-import getCodeVanilla from "./utils/getCodeVanilla";
+import getCodeJavaScript from "./utils/getCodeJavaScript";
 import { CodeProps } from "./types";
 import style from "./style/Code.module.scss";
 
@@ -11,10 +11,10 @@ export default function Code(props: CodeProps) {
 
   const options = {
     React: { value: "react" },
-    "Vanilla JS": { value: "vanilla" },
+    "JavaScript": { value: "javascript" },
   };
 
-  const code = useMemo(() => (framework === "react" ? getCodeReact(props) : getCodeVanilla(props)), [JSON.stringify(props), framework]);
+  const code = useMemo(() => (framework === "react" ? getCodeReact(props) : getCodeJavaScript(props)), [JSON.stringify(props), framework]);
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -24,7 +24,7 @@ export default function Code(props: CodeProps) {
   return (
     <div className={style.container}>
       <Input
-        label="Which project are you embedding the file uploader into?"
+        label="Select a frontend framework:"
         options={options}
         value={framework}
         onChange={(v) => setFramework(v)}

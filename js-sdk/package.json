@@ -1,7 +1,7 @@
 {
-  "name": "js-sdk",
+  "name": "@tableflow/js",
   "version": "1.0.0",
-  "license": "MIT",
+  "description": "The JS SDK for TableFlow. Embed an importer to collect and transform CSV files in your application.",
   "scripts": {
     "build": "rollup -c --bundleConfigAsCjs false",
     "build:watch": "rollup -c -w",
@@ -9,6 +9,26 @@
     "storybook:export": "storybook build",
     "build-storybook": "storybook build"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tableflowhq/tableflow.git"
+  },
+  "keywords": [
+    "csv",
+    "import",
+    "excel",
+    "data",
+    "importer",
+    "js",
+    "javascript",
+    "tableflow"
+  ],
+  "author": "TableFlow",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tableflowhq/tableflow/issues"
+  },
+  "homepage": "https://github.com/tableflowhq/tableflow#readme",
   "main": "build/index.js",
   "module": "build/index.esm.js",
   "types": "build/index.d.ts",
