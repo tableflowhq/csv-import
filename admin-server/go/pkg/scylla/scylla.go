@@ -94,3 +94,28 @@ func retryingBatchExecutor(batch *gocql.Batch) {
 	}
 	tf.Log.Errorw("Could not execute batch after final attempt", "error", err)
 }
+
+func GetScyllaKeyspaceConfigurationCQL() string {
+	return `
+		create keyspace if not exists tableflow
+		    with replication = { 'class' : 'NetworkTopologyStrategy', 'replication_factor' : 3}
+		     and durable_writes = true;
+	`
+}
+
+func GetScyllaSchemaConfigurationCQL() []string {
+	return []string{
+		`create table if not exists upload_rows (
+		    upload_id  uuid,
+		    row_index int,
+		    values     map<int, text>,
+		    primary key ((upload_id),row_index)
+		);`,
+		`create table if not exists import_rows (
+		    import_id  uuid,
+		    row_index int,
+		    values     map<text, text>,
+		    primary key ((import_id),row_index)
+		);`,
+	}
+}
