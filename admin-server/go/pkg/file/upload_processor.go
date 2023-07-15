@@ -74,11 +74,10 @@ func UploadCompleteHandler(event handler.HookEvent, uploadAdditionalStorageHandl
 	}
 
 	file, err := os.Open(fileName)
-	defer file.Close()
 	if err != nil {
 		tf.Log.Errorw("Could not open temp upload file from disk", "error", err, "upload_id", upload.ID)
 		saveUploadError(upload, "An error occurred while processing your upload. Please try again.")
-		removeUploadFileFromDisk(fileName, upload.ID.String())
+		removeUploadFileFromDisk(file, fileName, upload.ID.String())
 		return
 	}
 
@@ -87,13 +86,13 @@ func UploadCompleteHandler(event handler.HookEvent, uploadAdditionalStorageHandl
 	if err != nil {
 		tf.Log.Errorw("Could not parse upload columns", "error", err, "upload_id", upload.ID)
 		saveUploadError(upload, "An error occurred determining the columns in your file. Please check the file and try again.")
-		removeUploadFileFromDisk(fileName, upload.ID.String())
+		removeUploadFileFromDisk(file, fileName, upload.ID.String())
 		return
 	}
 	if len(upload.UploadColumns) == 0 {
 		tf.Log.Warnw("No upload columns found in file", "error", err, "upload_id", upload.ID)
 		saveUploadError(upload, "An error occurred determining the columns in your file. Please check the file and try again.")
-		removeUploadFileFromDisk(fileName, upload.ID.String())
+		removeUploadFileFromDisk(file, fileName, upload.ID.String())
 		return
 	}
 
@@ -101,14 +100,14 @@ func UploadCompleteHandler(event handler.HookEvent, uploadAdditionalStorageHandl
 	if err != nil {
 		tf.Log.Errorw("Could not process upload", "error", err, "upload_id", upload.ID)
 		saveUploadError(upload, "An error occurred processing your file. Please check the file and try again.")
-		removeUploadFileFromDisk(fileName, upload.ID.String())
+		removeUploadFileFromDisk(file, fileName, upload.ID.String())
 		return
 	}
 
 	if uploadResult.NumRows == 0 {
 		tf.Log.Debugw("A file was uploaded with no rows or an error occurred during processing", "upload_id", upload.ID)
 		saveUploadError(upload, "No rows with data were found in your file, please try again with a different file that has a header row and at least one row of data.")
-		removeUploadFileFromDisk(fileName, upload.ID.String())
+		removeUploadFileFromDisk(file, fileName, upload.ID.String())
 		return
 	}
 
@@ -116,7 +115,7 @@ func UploadCompleteHandler(event handler.HookEvent, uploadAdditionalStorageHandl
 	if err != nil {
 		tf.Log.Errorw("Could not create upload columns in database", "error", err, "upload_id", upload.ID)
 		saveUploadError(upload, "An error occurred determining the columns in your file. Please check the file and try again.")
-		removeUploadFileFromDisk(fileName, upload.ID.String())
+		removeUploadFileFromDisk(file, fileName, upload.ID.String())
 		return
 	}
 
@@ -131,18 +130,18 @@ func UploadCompleteHandler(event handler.HookEvent, uploadAdditionalStorageHandl
 	err = tf.DB.Save(upload).Error
 	if err != nil {
 		tf.Log.Errorw("Could not update upload in database", "error", err)
-		removeUploadFileFromDisk(fileName, upload.ID.String())
+		removeUploadFileFromDisk(file, fileName, upload.ID.String())
 		return
 	}
 
 	if uploadAdditionalStorageHandler != nil {
 		go func(u *model.Upload, f *os.File, fn string) {
 			uploadAdditionalStorageHandler(u, f)
-			removeUploadFileFromDisk(fn, u.ID.String())
+			removeUploadFileFromDisk(f, fn, u.ID.String())
 			tf.Log.Debugw("Upload complete", "upload_id", u.ID)
 		}(upload, file, fileName)
 	} else {
-		removeUploadFileFromDisk(fileName, upload.ID.String())
+		removeUploadFileFromDisk(file, fileName, upload.ID.String())
 		tf.Log.Debugw("Upload complete", "upload_id", upload.ID)
 	}
 }
@@ -270,7 +269,8 @@ func saveUploadError(upload *model.Upload, errorStr string) {
 	}
 }
 
-func removeUploadFileFromDisk(fileName, uploadID string) {
+func removeUploadFileFromDisk(file *os.File, fileName, uploadID string) {
+	defer file.Close()
 	err := os.Remove(fileName)
 	if err != nil {
 		tf.Log.Errorw("Could not delete upload from file system", "error", err, "upload_id", uploadID)
