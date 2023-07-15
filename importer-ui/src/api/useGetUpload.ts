@@ -20,6 +20,7 @@ export default function useGetUpload(tusId: string): UseQueryResult<Upload> {
   );
   const isParsed = query?.data?.is_parsed;
   const { error } = query;
+
   // TODO: Make this smarter based on file size
   const maxRefetchCount = 60;
   const waitDelay = (attempt: number) => {
@@ -34,6 +35,7 @@ export default function useGetUpload(tusId: string): UseQueryResult<Upload> {
     }
     return 1000;
   };
+
   useEffect(() => {
     if (isParsed) {
       setConfigOverrides({ enabled: false });

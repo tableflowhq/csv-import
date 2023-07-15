@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Button, Errors, Stepper, useLocalStorage, useStepper } from "@tableflow/ui-library";
+import { Button, Errors, Stepper, useStepper } from "@tableflow/ui-library";
 import Spinner from "../../components/Spinner";
 import { getAPIBaseURL } from "../../api/api";
 import useEmbedStore from "../../stores/embed";
@@ -18,39 +18,36 @@ const steps = [
 ];
 
 export default function Main() {
+  // Get iframe URL params
   const { importerId, metadata, isOpen } = useEmbedStore((state) => state.embedParams);
 
-  const [stepStore, setStepStore] = useLocalStorage("stepStored", "upload");
-  const stepper = useStepper(
-    steps,
-    steps.reduce((_, step, i) => (step.id === stepStore ? i : 0), 0) // default value is index of step from local storage
-  );
+  // Stepper handler
+  const stepper = useStepper(steps, 0);
   const step = stepper?.step?.id;
 
-  const { tusId, isLoadingImporter, importerError, template, upload, uploadError, isParsed, setTusId } = useApi(importerId);
+  // Async data & state
+  const { tusId, tusWasStored, isLoadingImporter, importerError, template, upload, uploadError, isParsed, setTusId } = useApi(importerId);
 
   useEffect(() => {
-    setStepStore(step);
-  }, [step]);
-
-  // Reload on close + complete
-  useEffect(() => {
-    if (!isOpen && step === "complete") {
-      reload();
-    }
-  }, [isOpen]);
+    if (uploadError && tusWasStored) reload();
+  }, [uploadError]);
 
   // Delay jump to the second step
   useEffect(() => {
     if (tusId) setTimeout(() => stepper.setCurrent(1), 500);
   }, [isParsed]);
 
-  // Actions
-  const uploadDone = (tusId: string) => {
-    setTusId(tusId);
-    // setTimeout(() => stepper.setCurrent(1), 500);
-  };
+  // Remove stored tusId on complete
+  useEffect(() => {
+    if (step === "complete") setTusId("");
+  }, [step]);
 
+  // Reload on close modal if completed
+  useEffect(() => {
+    if (!isOpen && step === "complete") reload();
+  }, [isOpen]);
+
+  // Actions
   const requestClose = () => {
     window?.top?.postMessage("close", "*");
     window?.parent?.postMessage("close", "*");
@@ -87,13 +84,15 @@ export default function Main() {
       </div>
 
       <div className={style.content}>
-        {step === "upload" && (
-          <Uploader template={template} importerId={importerId} metadata={metadata} onSuccess={uploadDone} endpoint={TUS_ENDPOINT} />
+        {(step === "upload" || !!uploadError) && (
+          <Uploader template={template} importerId={importerId} metadata={metadata} onSuccess={setTusId} endpoint={TUS_ENDPOINT} />
         )}
-        {step === "review" && !isParsed && <Spinner className={style.spinner}>Processing will take only a moment...</Spinner>}
-        {step === "review" && isParsed && <Review template={template} upload={upload} onSuccess={() => stepper.setCurrent(2)} onCancel={reload} />}
-        {step === "complete" && <Complete reload={reload} close={requestClose} />}
-        {step === "done" && <div>All done</div>}
+
+        {!uploadError && step === "review" && !isParsed && <Spinner className={style.spinner}>Processing will take only a moment...</Spinner>}
+        {!uploadError && step === "review" && !!isParsed && (
+          <Review template={template} upload={upload} onSuccess={() => stepper.setCurrent(2)} onCancel={reload} />
+        )}
+        {!uploadError && step === "complete" && <Complete reload={reload} close={requestClose} />}
       </div>
 
       {!!uploadError && (

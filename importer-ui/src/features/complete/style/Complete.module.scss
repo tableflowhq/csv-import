@@ -47,9 +47,13 @@
 
   .actions {
     display: flex;
-    flex-direction: column;
     gap: var(--m-xl);
     align-items: center;
     justify-content: center;
+    margin-top: var(--m-xxl);
+
+    & > * {
+      flex: 1 0 170px;
+    }
   }
 }
