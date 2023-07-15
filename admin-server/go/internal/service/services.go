@@ -182,7 +182,6 @@ func initScylla(ctx context.Context, wg *sync.WaitGroup) error {
 	}
 	systemSession, err := systemCfg.CreateSession()
 	if err != nil {
-		systemSession.Close()
 		return err
 	}
 	if err = systemSession.Query(scylla.GetScyllaKeyspaceConfigurationCQL()).Exec(); err != nil {
@@ -206,7 +205,6 @@ func initScylla(ctx context.Context, wg *sync.WaitGroup) error {
 
 	tf.Scylla, err = clusterCfg.CreateSession()
 	if err != nil {
-		tf.Scylla.Close()
 		return err
 	}
 	for _, stmt := range scylla.GetScyllaSchemaConfigurationCQL() {
