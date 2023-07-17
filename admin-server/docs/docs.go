@@ -693,7 +693,7 @@ const docTemplate = `{
                     {
                         "minimum": 0,
                         "type": "integer",
-                        "description": "int valid",
+                        "description": "Pagination offset",
                         "name": "offset",
                         "in": "query"
                     },
@@ -701,7 +701,7 @@ const docTemplate = `{
                         "maximum": 1000,
                         "minimum": 1,
                         "type": "integer",
-                        "description": "int valid",
+                        "description": "Pagination limit",
                         "name": "limit",
                         "in": "query"
                     }

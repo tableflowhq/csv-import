@@ -883,12 +883,12 @@ paths:
         name: id
         required: true
         type: string
-      - description: int valid
+      - description: Pagination offset
         in: query
         minimum: 0
         name: offset
         type: integer
-      - description: int valid
+      - description: Pagination limit
         in: query
         maximum: 1000
         minimum: 1

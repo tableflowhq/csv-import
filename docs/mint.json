@@ -63,6 +63,7 @@
     {
       "group": "Imports",
       "pages": [
+        "api-reference/get-import-rows",
         "api-reference/get-import",
         "api-reference/download-import"
       ]
