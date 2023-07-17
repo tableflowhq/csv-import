@@ -25,6 +25,31 @@ func GetFileSize(file *os.File) (int64, error) {
 	return 0, err
 }
 
+func GetRowCount(file *os.File, fileType string) (int64, error) {
+	it, err := OpenDataFileIterator(file, fileType)
+	defer it.Close()
+	if err != nil {
+		return 0, err
+	}
+	// Skip the header row
+	_, err = it.GetRow()
+	if err != nil {
+		return 0, err
+	}
+	var numRows int64
+	for ; ; numRows++ {
+		_, err := it.GetRow()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			tf.Log.Warnw("Error while parsing data file to get row count", "error", err)
+			continue
+		}
+	}
+	return numRows, nil
+}
+
 func ResetFileReader(file *os.File) {
 	_, err := file.Seek(0, io.SeekStart)
 	if err != nil {
