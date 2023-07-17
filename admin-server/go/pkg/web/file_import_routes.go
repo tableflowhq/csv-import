@@ -208,7 +208,7 @@ func getImporterForImportService(c *gin.Context) {
 //	@Failure		400	{object}	types.Res
 //	@Router			/file-import/v1/upload/{id} [get]
 //	@Param			id	path	string	true	"tus ID"
-func getUploadForImportService(c *gin.Context, limitCheck func(*model.Upload) error) {
+func getUploadForImportService(c *gin.Context) {
 	id := c.Param("id")
 	if len(id) == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No upload tus ID provided"})
@@ -221,11 +221,6 @@ func getUploadForImportService(c *gin.Context, limitCheck func(*model.Upload) er
 	}
 	if upload.Error.Valid {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: upload.Error.String})
-		return
-	}
-	// Check if there are limits on the workspace
-	if err = limitCheck(upload); err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return
 	}
 	importerUploadColumns := make([]*ImportServiceUploadColumn, len(upload.UploadColumns))

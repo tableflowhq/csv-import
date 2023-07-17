@@ -286,16 +286,12 @@ func initWebServer(ctx context.Context, wg *sync.WaitGroup) error {
 		}
 		return res.UserID
 	}
-	uploadLimitCheck := func(_ *model.Upload) error {
-		return nil
-	}
 
 	config := web.ServerConfig{
 		AdminAPIAuthValidator:    adminAPIAuthValidator,
 		ExternalAPIAuthValidator: externalAPIAuthValidator,
 		GetWorkspaceUser:         getWorkspaceUser,
 		GetUserID:                getUserID,
-		UploadLimitCheck:         uploadLimitCheck,
 	}
 	server := web.StartWebServer(config)
 
