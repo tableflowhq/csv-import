@@ -10,11 +10,11 @@ export default function Complete({ reload, close }: CompleteProps) {
       </span>
       <div>Upload Successful</div>
       <div className={style.actions}>
+        <Button type="button" variants={["tertiary"]} icon="cross" onClick={close}>
+          Close
+        </Button>
         <Button type="button" variants={["primary"]} icon="update" onClick={reload}>
           Upload another file
-        </Button>
-        <Button type="button" variants={["noFill"]} icon="cross" onClick={close}>
-          Close
         </Button>
       </div>
     </Box>
