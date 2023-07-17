@@ -42,8 +42,8 @@ type ServerConfig struct {
 	ExternalAPIAuthValidator       func(c *gin.Context, apiKey string) bool
 	GetWorkspaceUser               func(c *gin.Context, workspaceID string) (string, error)
 	GetUserID                      func(c *gin.Context) string
-	UploadLimitCheck               func(*model.Upload) error
-	UploadAdditionalStorageHandler func(*model.Upload, *os.File)
+	UploadLimitCheck               func(*model.Upload, *os.File) error
+	UploadAdditionalStorageHandler func(*model.Upload, *os.File) error
 	AdditionalCORSOrigins          []string
 	AdditionalCORSHeaders          []string
 }
@@ -109,14 +109,14 @@ func StartWebServer(config ServerConfig) *http.Server {
 	/* --------------------------  Importer routes  -------------------------- */
 
 	importer := router.Group("/file-import/v1")
-	tusHandler := tusFileHandler(config.UploadAdditionalStorageHandler)
+	tusHandler := tusFileHandler(config.UploadAdditionalStorageHandler, config.UploadLimitCheck)
 
 	importer.POST("/files", tusPostFile(tusHandler))
 	importer.HEAD("/files/:id", tusHeadFile(tusHandler))
 	importer.PATCH("/files/:id", tusPatchFile(tusHandler))
 
 	importer.GET("/importer/:id", getImporterForImportService)
-	importer.GET("/upload/:id", func(c *gin.Context) { getUploadForImportService(c, config.UploadLimitCheck) })
+	importer.GET("/upload/:id", getUploadForImportService)
 	importer.POST("/upload-column-mapping/:id", setUploadColumnMappingAndImportData)
 
 	/* ---------------------------  Admin routes  ---------------------------- */
