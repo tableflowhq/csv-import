@@ -22,7 +22,7 @@ export default function useGetUpload(tusId: string): UseQueryResult<Upload> {
   const { error } = query;
 
   // TODO: Make this smarter based on file size
-  const maxRefetchCount = 60;
+  const maxRefetchCount = 120;
   const waitDelay = (attempt: number) => {
     if (attempt <= 2) {
       return 100;
