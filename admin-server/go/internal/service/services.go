@@ -198,7 +198,15 @@ func initScylla(ctx context.Context, wg *sync.WaitGroup) error {
 			Password: scyllaPass,
 		}
 	}
-	clusterCfg.NumConns = 8
+	clusterCfg.NumConns = 4
+	clusterCfg.Consistency = gocql.One
+	clusterCfg.Timeout = time.Second * 12
+	clusterCfg.WriteTimeout = time.Second * 15
+	clusterCfg.RetryPolicy = &gocql.ExponentialBackoffRetryPolicy{
+		NumRetries: 2,
+		Min:        500 * time.Millisecond,
+		Max:        1 * time.Second,
+	}
 	clusterCfg.PoolConfig = gocql.PoolConfig{
 		HostSelectionPolicy: gocql.TokenAwareHostPolicy(gocql.RoundRobinHostPolicy()),
 	}

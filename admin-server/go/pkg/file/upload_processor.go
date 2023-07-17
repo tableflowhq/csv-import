@@ -160,7 +160,6 @@ func processAndStoreUpload(upload *model.Upload, file *os.File) (uploadProcessRe
 
 	numRows := 0
 	goroutines := 8
-	batchSize := 1000
 	batchCounter := 0
 
 	in := make(chan *gocql.Batch, 0)
@@ -168,7 +167,7 @@ func processAndStoreUpload(upload *model.Upload, file *os.File) (uploadProcessRe
 	for i := 0; i < goroutines; i++ {
 		go scylla.ProcessBatch(in, &wg)
 	}
-	b := tf.Scylla.NewBatch(gocql.LoggedBatch)
+	b := scylla.NewBatchInserter()
 	startTime := time.Now()
 
 	for i := 0; ; i++ {
@@ -201,10 +200,10 @@ func processAndStoreUpload(upload *model.Upload, file *os.File) (uploadProcessRe
 
 		b.Query("insert into upload_rows (upload_id, row_index, values) values (?, ?, ?)", upload.ID.String(), i, uploadRow)
 		batchCounter++
-		if batchCounter == batchSize {
+		if batchCounter == scylla.BatchInsertSize {
 			// Send in the batch and start a new one
 			in <- b
-			b = tf.Scylla.NewBatch(gocql.LoggedBatch)
+			b = scylla.NewBatchInserter()
 			batchCounter = 0
 		}
 	}

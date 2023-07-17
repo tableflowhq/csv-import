@@ -2,12 +2,14 @@ package scylla
 
 import (
 	"github.com/gocql/gocql"
+	"strings"
 	"sync"
 	"tableflow/go/pkg/tf"
 	"tableflow/go/pkg/types"
 )
 
 const maxPageSize = 10000
+const BatchInsertSize = 1000
 
 func PaginateUploadRows(uploadID string, offset, limit int) []map[int]string {
 	if limit > maxPageSize {
@@ -71,10 +73,20 @@ func PaginateImportRows(importID string, offset, limit int) []types.ImportRow {
 	return res
 }
 
+func NewBatchInserter() *gocql.Batch {
+	b := tf.Scylla.NewBatch(gocql.UnloggedBatch)
+	//b.SetConsistency(gocql.One)
+	//b.RetryPolicy(&gocql.SimpleRetryPolicy{NumRetries: 1})
+	return b
+}
+
 func ProcessBatch(in chan *gocql.Batch, wg *sync.WaitGroup) {
 	wg.Add(1)
 	for batch := range in {
-		retryingBatchExecutor(batch)
+		err := tf.Scylla.ExecuteBatch(batch)
+		if err != nil {
+			tf.Log.Errorw("Failed to execute batch", "error", err)
+		}
 	}
 	wg.Done()
 }
@@ -85,11 +97,12 @@ func retryingBatchExecutor(batch *gocql.Batch) {
 	for i := 0; i < maxRetries; i++ {
 		err = tf.Scylla.ExecuteBatch(batch)
 		if err == nil {
-			//tf.Log.Debugw("Batch executed successfully")
+			tf.Log.Debugw("Batch executed successfully")
 			return
 		}
-		if (i + 1) < maxRetries {
-			tf.Log.Warnw("Could not execute batch, retrying", "error", err, "attempt", i+1, "max_attempts", maxRetries)
+		isIOError := strings.HasSuffix(err.Error(), "i/o timeout")
+		if isIOError && (i+1) < maxRetries {
+			tf.Log.Infow("Could not execute batch due to i/o error, retrying", "error", err, "attempt", i+1, "max_attempts", maxRetries)
 		}
 	}
 	tf.Log.Errorw("Could not execute batch after final attempt", "error", err)
