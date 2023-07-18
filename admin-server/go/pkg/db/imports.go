@@ -42,7 +42,9 @@ func GetImportsForAdminAPI(workspaceID string) ([]*model.Import, error) {
 		return nil, errors.New("no workspace ID provided")
 	}
 	var imports []*model.Import
-	err := tf.DB.Preload("Importer").
+	// Use .Unscoped to load imports that are attached to a deleted importer
+	err := tf.DB.Unscoped().
+		Preload("Importer").
 		Where("workspace_id = ?", model.ParseID(workspaceID)).
 		Order("created_at desc").
 		Find(&imports).Error

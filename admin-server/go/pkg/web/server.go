@@ -135,6 +135,7 @@ func StartWebServer(config ServerConfig) *http.Server {
 	adm.POST("/importer", func(c *gin.Context) { createImporter(c, config.GetWorkspaceUser) })
 	adm.GET("/importer/:id", func(c *gin.Context) { getImporter(c, config.GetWorkspaceUser) })
 	adm.POST("/importer/:id", func(c *gin.Context) { editImporter(c, config.GetWorkspaceUser) })
+	adm.DELETE("/importer/:id", func(c *gin.Context) { deleteImporter(c, config.GetWorkspaceUser) })
 	adm.GET("/importers/:workspace-id", func(c *gin.Context) { getImporters(c, config.GetWorkspaceUser) })
 
 	/* Template */
