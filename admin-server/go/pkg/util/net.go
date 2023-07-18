@@ -129,8 +129,9 @@ func HTTPRequest(url, method string, body interface{}, headers map[string]string
 	}
 	err = json.Unmarshal(responseBody, &responseData)
 	if err != nil {
-		tf.Log.Errorw("Error marshalling response data from HTTP request", "error", err, "url", url)
-		return nil, err
+		//tf.Log.Debugw("Error marshalling response data from HTTP request", "error", err, "url", url)
+		// Assume non-JSON response
+		return string(responseBody), nil
 	}
 	return responseData, nil
 }
