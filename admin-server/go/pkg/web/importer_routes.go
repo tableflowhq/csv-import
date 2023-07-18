@@ -261,7 +261,7 @@ func deleteImporter(c *gin.Context, getWorkspaceUser func(*gin.Context, string) 
 		}
 	}
 
-	err = tf.DB.Debug().Session(&gorm.Session{FullSaveAssociations: true}).Save(&importer).Error
+	err = tf.DB.Session(&gorm.Session{FullSaveAssociations: true}).Save(&importer).Error
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return
