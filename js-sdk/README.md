@@ -55,7 +55,7 @@ uploadButton.addEventListener("click", () => {
 Or directly in the HTML
 
 ```html
-<script src="CDN-URL.js"></script>
+<script src="https://unpkg.com/@tableflow/js@latest/build/index.js"></script>
 
 <button id="uploadButton">Upload file</button>
 
