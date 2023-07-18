@@ -89,7 +89,7 @@ func validPortFromURL(port string) bool {
 	return true
 }
 
-func HTTPRequest(url, method string, body interface{}, headers map[string]string) (map[string]interface{}, error) {
+func HTTPRequest(url, method string, body interface{}, headers map[string]string) (interface{}, error) {
 	client := &http.Client{
 		Timeout: time.Second * 10,
 	}
@@ -123,7 +123,10 @@ func HTTPRequest(url, method string, body interface{}, headers map[string]string
 		return nil, errors.New("received non-200 status code while executing http request")
 	}
 
-	var responseData map[string]interface{}
+	var responseData interface{}
+	if responseBody == nil || len(responseBody) == 0 {
+		return responseData, nil
+	}
 	err = json.Unmarshal(responseBody, &responseData)
 	if err != nil {
 		tf.Log.Errorw("Error marshalling response data from HTTP request", "error", err, "url", url)

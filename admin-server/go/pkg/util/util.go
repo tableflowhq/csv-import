@@ -25,6 +25,11 @@ func IsValidJSON(str string) bool {
 	return json.Unmarshal([]byte(str), &js) == nil
 }
 
+func IsValidJSONBytes(bytes []byte) bool {
+	var js json.RawMessage
+	return json.Unmarshal(bytes, &js) == nil
+}
+
 func IsEmailValid(email string) bool {
 	_, err := mail.ParseAddress(email)
 	return err == nil
