@@ -183,7 +183,7 @@ func downloadImportForExternalAPI(c *gin.Context) {
 		_ = downloadFile.Close()
 	}(downloadFile)
 
-	importer, err := db.GetImporter(imp.ImporterID.String())
+	importer, err := db.GetImporterUnscoped(imp.ImporterID.String())
 	if err != nil {
 		tf.Log.Errorw("Could not retrieve importer to download import for external API", "error", err, "import_id", id)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, types.Res{Err: "Could not download import"})

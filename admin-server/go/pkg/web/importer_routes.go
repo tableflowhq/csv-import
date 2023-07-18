@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/guregu/null"
 	"github.com/samber/lo"
+	"gorm.io/gorm"
 	"net/http"
 	"strings"
 	"tableflow/go/pkg/db"
@@ -12,6 +13,7 @@ import (
 	"tableflow/go/pkg/tf"
 	"tableflow/go/pkg/types"
 	"tableflow/go/pkg/util"
+	"time"
 )
 
 type ImporterCreateRequest struct {
@@ -216,4 +218,54 @@ func editImporter(c *gin.Context, getWorkspaceUser func(*gin.Context, string) (s
 		}
 	}
 	c.JSON(http.StatusOK, importer)
+}
+
+// deleteImporter
+//
+//	@Summary		Delete importer
+//	@Description	Delete an importer
+//	@Tags			Importer
+//	@Success		200	{object}	types.Res
+//	@Failure		400	{object}	types.Res
+//	@Router			/admin/v1/importer/{id} [delete]
+//	@Param			id	path	string	true	"Importer ID"
+func deleteImporter(c *gin.Context, getWorkspaceUser func(*gin.Context, string) (string, error)) {
+	id := c.Param("id")
+	if len(id) == 0 {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No importer ID provided"})
+		return
+	}
+	importer, err := db.GetImporter(id)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+		return
+	}
+	userID, err := getWorkspaceUser(c, importer.WorkspaceID.String())
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, types.Res{Err: err.Error()})
+		return
+	}
+	user := model.User{ID: model.ParseID(userID)}
+	deletedAt := gorm.DeletedAt{Time: time.Now(), Valid: true}
+
+	importer.DeletedBy = user.ID
+	importer.DeletedAt = deletedAt
+
+	if importer.Template != nil {
+		importer.Template.DeletedBy = user.ID
+		importer.Template.DeletedAt = deletedAt
+		for i, _ := range importer.Template.TemplateColumns {
+			tc := importer.Template.TemplateColumns[i]
+			tc.DeletedBy = user.ID
+			tc.DeletedAt = deletedAt
+		}
+	}
+
+	err = tf.DB.Session(&gorm.Session{FullSaveAssociations: true}).Save(&importer).Error
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, types.Res{Message: "success"})
 }

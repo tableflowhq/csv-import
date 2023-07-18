@@ -8,6 +8,7 @@ import (
 	"github.com/lib/pq"
 	"github.com/samber/lo"
 	"github.com/tus/tusd/pkg/handler"
+	"gorm.io/gorm"
 	"net/http"
 	"net/url"
 	"strings"
@@ -161,7 +162,11 @@ func getImporterForImportService(c *gin.Context) {
 	}
 	template, err := db.GetTemplateByImporterWithImporter(id)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+		errStr := err.Error()
+		if err == gorm.ErrRecordNotFound {
+			errStr = "Importer not found. Check the importerId parameter or reach out to support for assistance."
+		}
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: errStr})
 		return
 	}
 	if !template.ImporterID.Valid || template.Importer == nil {
