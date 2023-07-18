@@ -9,7 +9,7 @@ import style from "../style/Importers.module.scss";
 export function importersTable(importers: Importer[] = [], update: Update): TableData {
   const actionMenu: DialogItem[] = [
     { children: "Edit", action: (id: EntityId) => update(id, "edit") },
-    // { children: "Delete", action: (id: EntityId) => update(id, "delete") },
+    { children: "Delete", action: (id: EntityId) => update(id, "delete") },
   ];
 
   return importers.map((importer) => {

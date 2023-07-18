@@ -156,6 +156,36 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "delete": {
+                "description": "Delete an importer",
+                "tags": [
+                    "Importer"
+                ],
+                "summary": "Delete importer",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Importer ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.Res"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/types.Res"
+                        }
+                    }
+                }
             }
         },
         "/admin/v1/importers/{workspace-id}": {

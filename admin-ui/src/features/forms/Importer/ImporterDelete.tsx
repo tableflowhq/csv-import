@@ -25,7 +25,8 @@ export default function ImporterDelete({ importer, onSuccess = () => null, conte
         <div className={style.texts}>
           <h3>Delete Importer</h3>
           <p>
-            Are you sure you want to delete <Badge variants={["deep"]}>{importer?.name}</Badge>? The action cannot be undone.
+            Are you sure you want to delete <Badge variants={["deep"]}>{importer?.name}</Badge>? Any applications using this importer will no longer
+            work. This action cannot be undone.
           </p>
         </div>
       </div>

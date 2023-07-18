@@ -228,7 +228,7 @@ func editImporter(c *gin.Context, getWorkspaceUser func(*gin.Context, string) (s
 //	@Success		200	{object}	types.Res
 //	@Failure		400	{object}	types.Res
 //	@Router			/admin/v1/importer/{id} [delete]
-//	@Param			id		path	string				true	"Importer ID"
+//	@Param			id	path	string	true	"Importer ID"
 func deleteImporter(c *gin.Context, getWorkspaceUser func(*gin.Context, string) (string, error)) {
 	id := c.Param("id")
 	if len(id) == 0 {
