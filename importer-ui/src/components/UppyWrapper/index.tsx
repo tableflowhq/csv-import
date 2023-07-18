@@ -10,6 +10,8 @@ import locale from "./locale";
 
 const restrictions = {
   allowedFileTypes: ["text/csv", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"],
+  maxNumberOfFiles: 1,
+  maxFileSize: 1073741824, // 1GB
 };
 
 const uppy = new Uppy({
