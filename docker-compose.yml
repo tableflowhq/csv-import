@@ -18,6 +18,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      scylla:
+        condition: service_healthy
 
   admin-ui:
     depends_on:
