@@ -3,7 +3,7 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download && go mod verify
 COPY . .
-RUN GOOS=linux go build -o build ./go/cmd
+RUN CGO_ENABLED=0 GOOS=linux go build -o build ./go/cmd
 
 FROM ubuntu:latest AS final
 COPY --from=backend /app/build /
