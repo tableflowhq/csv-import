@@ -29,7 +29,7 @@ services:
     restart: unless-stopped
     command: --authorizer=AllowAllAuthorizer
     healthcheck:
-      test: ["CMD-SHELL", "[ $$(nodetool statusgossip) = running ]"]
+      test: ["CMD", "cqlsh", "-e", "DESCRIBE KEYSPACES;"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -41,17 +41,8 @@ services:
       - "3003:3003"
     networks:
       - app_network
-    environment:
-      - POSTGRES_HOST=${POSTGRES_HOST}
-      - POSTGRES_PORT=${POSTGRES_PORT}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DATABASE_NAME=${POSTGRES_DATABASE_NAME}
-      - TABLEFLOW_WEB_APP_URL=${TABLEFLOW_WEB_APP_URL}
-      - TABLEFLOW_WEB_IMPORTER_URL=${TABLEFLOW_WEB_IMPORTER_URL}
-      - TABLEFLOW_WEB_APP_AUTH_TOKEN=${TABLEFLOW_WEB_APP_AUTH_TOKEN}
-      - TABLEFLOW_API_SERVER_PORT=${TABLEFLOW_API_SERVER_PORT}
-      - SCYLLA_HOST=${SCYLLA_HOST}
+    env_file:
+      - .env
     volumes:
       - ${PWD}/../.env:/.env
       - tmp:/tmp/tableflow-files
