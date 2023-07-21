@@ -16,6 +16,10 @@
       "to": "#5F2EE5"
     }
   },
+  "modeToggle": {
+    "default": "dark",
+    "isHidden": true
+  },
   "api": {
     "baseUrl": "https://api.tableflow.com/v1",
     "auth": {
@@ -24,12 +28,12 @@
   },
   "topbarLinks": [
     {
-      "name": "Login",
+      "name": "Sign in",
       "url": "https://app.tableflow.com"
     }
   ],
   "topbarCtaButton": {
-    "name": "Get Started",
+    "name": "Get started",
     "url": "https://app.tableflow.com/signup"
   },
   "anchors": [
