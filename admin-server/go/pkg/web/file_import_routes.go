@@ -8,6 +8,7 @@ import (
 	"github.com/lib/pq"
 	"github.com/samber/lo"
 	"github.com/tus/tusd/pkg/handler"
+	"gorm.io/gorm"
 	"net/http"
 	"net/url"
 	"strings"
@@ -161,7 +162,11 @@ func getImporterForImportService(c *gin.Context) {
 	}
 	template, err := db.GetTemplateByImporterWithImporter(id)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+		errStr := err.Error()
+		if err == gorm.ErrRecordNotFound {
+			errStr = "Importer not found. Check the importerId parameter or reach out to support for assistance."
+		}
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: errStr})
 		return
 	}
 	if !template.ImporterID.Valid || template.Importer == nil {
@@ -208,7 +213,7 @@ func getImporterForImportService(c *gin.Context) {
 //	@Failure		400	{object}	types.Res
 //	@Router			/file-import/v1/upload/{id} [get]
 //	@Param			id	path	string	true	"tus ID"
-func getUploadForImportService(c *gin.Context, limitCheck func(*model.Upload) error) {
+func getUploadForImportService(c *gin.Context) {
 	id := c.Param("id")
 	if len(id) == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No upload tus ID provided"})
@@ -221,11 +226,6 @@ func getUploadForImportService(c *gin.Context, limitCheck func(*model.Upload) er
 	}
 	if upload.Error.Valid {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: upload.Error.String})
-		return
-	}
-	// Check if there are limits on the workspace
-	if err = limitCheck(upload); err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return
 	}
 	importerUploadColumns := make([]*ImportServiceUploadColumn, len(upload.UploadColumns))
@@ -381,7 +381,6 @@ func processAndStoreImport(columnKeyMap map[int]string, template *model.Template
 	columnLength := len(template.TemplateColumns)
 
 	goroutines := 8
-	batchSize := 1000
 	batchCounter := 0
 
 	in := make(chan *gocql.Batch, 0)
@@ -389,7 +388,7 @@ func processAndStoreImport(columnKeyMap map[int]string, template *model.Template
 	for i := 0; i < goroutines; i++ {
 		go scylla.ProcessBatch(in, &wg)
 	}
-	b := tf.Scylla.NewBatch(gocql.LoggedBatch)
+	b := scylla.NewBatchInserter()
 
 	paginationPageSize := 1000
 	for offset := 0; ; offset += paginationPageSize {
@@ -416,10 +415,10 @@ func processAndStoreImport(columnKeyMap map[int]string, template *model.Template
 			}
 			b.Query("insert into import_rows (import_id, row_index, values) values (?, ?, ?)", imp.ID.String(), importRowIndex, importRowValue)
 			batchCounter++
-			if batchCounter == batchSize {
+			if batchCounter == scylla.BatchInsertSize {
 				// Send in the batch and start a new one
 				in <- b
-				b = tf.Scylla.NewBatch(gocql.LoggedBatch)
+				b = scylla.NewBatchInserter()
 				batchCounter = 0
 			}
 			importRowIndex++

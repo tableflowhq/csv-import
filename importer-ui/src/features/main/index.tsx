@@ -81,7 +81,7 @@ export default function Main() {
     step === "upload" || !!uploadError ? (
       <Uploader template={template} importerId={importerId} metadata={metadata} onSuccess={setTusId} endpoint={TUS_ENDPOINT} />
     ) : step === "review" && !isParsed ? (
-      <Spinner className={style.spinner}>Processing will take only a moment...</Spinner>
+      <Spinner className={style.spinner}>Processing your file...</Spinner>
     ) : step === "review" && !!isParsed ? (
       <Review template={template} upload={upload} onSuccess={() => stepper.setCurrent(2)} onCancel={reload} />
     ) : !uploadError && step === "complete" ? (

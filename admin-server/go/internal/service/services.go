@@ -15,7 +15,9 @@ import (
 	"tableflow/go/pkg/db"
 	"tableflow/go/pkg/file"
 	"tableflow/go/pkg/model"
+	"tableflow/go/pkg/scylla"
 	"tableflow/go/pkg/tf"
+	"tableflow/go/pkg/util"
 	"tableflow/go/pkg/web"
 	"time"
 )
@@ -72,17 +74,6 @@ func InitServices(ctx context.Context, wg *sync.WaitGroup) {
 	if err != nil {
 		tf.Log.Fatalw("Error initializing web server", "error", err)
 		return
-	}
-}
-
-func shutdownHandler(ctx context.Context, wg *sync.WaitGroup, close func()) {
-	defer wg.Done()
-	for {
-		select {
-		case <-ctx.Done():
-			close()
-			return
-		}
 	}
 }
 
@@ -177,14 +168,23 @@ func initScylla(ctx context.Context, wg *sync.WaitGroup) error {
 	scyllaInitialized = true
 
 	scyllaHost := os.Getenv("SCYLLA_HOST")
+	scyllaUser := os.Getenv("SCYLLA_USER")
+	scyllaPass := os.Getenv("SCYLLA_PASSWORD")
+	authEnabled := len(scyllaUser) != 0 && len(scyllaPass) != 0
+
 	systemCfg := gocql.NewCluster(scyllaHost)
 	systemCfg.Keyspace = "system"
+	if authEnabled {
+		systemCfg.Authenticator = gocql.PasswordAuthenticator{
+			Username: scyllaUser,
+			Password: scyllaPass,
+		}
+	}
 	systemSession, err := systemCfg.CreateSession()
 	if err != nil {
-		systemSession.Close()
 		return err
 	}
-	if err = systemSession.Query(getScyllaKeyspaceConfigurationCQL()).Exec(); err != nil {
+	if err = systemSession.Query(scylla.GetScyllaKeyspaceConfigurationCQL()).Exec(); err != nil {
 		systemSession.Close()
 		return err
 	}
@@ -192,28 +192,37 @@ func initScylla(ctx context.Context, wg *sync.WaitGroup) error {
 
 	clusterCfg := gocql.NewCluster(scyllaHost)
 	clusterCfg.Keyspace = "tableflow"
-	//clusterCfg.Authenticator = gocql.PasswordAuthenticator{
-	//	Username: "your_username",
-	//	Password: "your_password",
-	//}
-	clusterCfg.NumConns = 8
+	if authEnabled {
+		clusterCfg.Authenticator = gocql.PasswordAuthenticator{
+			Username: scyllaUser,
+			Password: scyllaPass,
+		}
+	}
+	clusterCfg.NumConns = 4
+	clusterCfg.Consistency = gocql.One
+	clusterCfg.Timeout = time.Second * 12
+	clusterCfg.WriteTimeout = time.Second * 15
+	clusterCfg.RetryPolicy = &gocql.ExponentialBackoffRetryPolicy{
+		NumRetries: 2,
+		Min:        500 * time.Millisecond,
+		Max:        1 * time.Second,
+	}
 	clusterCfg.PoolConfig = gocql.PoolConfig{
 		HostSelectionPolicy: gocql.TokenAwareHostPolicy(gocql.RoundRobinHostPolicy()),
 	}
 
 	tf.Scylla, err = clusterCfg.CreateSession()
 	if err != nil {
-		tf.Scylla.Close()
 		return err
 	}
-	for _, stmt := range getScyllaSchemaConfigurationCQL() {
+	for _, stmt := range scylla.GetScyllaSchemaConfigurationCQL() {
 		if err = tf.Scylla.Query(stmt).Exec(); err != nil {
 			tf.Scylla.Close()
 			return err
 		}
 	}
 
-	go shutdownHandler(ctx, wg, func() { tf.Scylla.Close() })
+	go util.ShutdownHandler(ctx, wg, func() { tf.Scylla.Close() })
 	return nil
 }
 
@@ -228,7 +237,7 @@ func initTempStorage(ctx context.Context, wg *sync.WaitGroup) error {
 		return err
 	}
 
-	go shutdownHandler(ctx, wg, func() { file.RemoveTempDirectories() })
+	go util.ShutdownHandler(ctx, wg, func() { file.RemoveTempDirectories() })
 	return nil
 }
 
@@ -277,20 +286,16 @@ func initWebServer(ctx context.Context, wg *sync.WaitGroup) error {
 		}
 		return res.UserID
 	}
-	uploadLimitCheck := func(_ *model.Upload) error {
-		return nil
-	}
 
 	config := web.ServerConfig{
 		AdminAPIAuthValidator:    adminAPIAuthValidator,
 		ExternalAPIAuthValidator: externalAPIAuthValidator,
 		GetWorkspaceUser:         getWorkspaceUser,
 		GetUserID:                getUserID,
-		UploadLimitCheck:         uploadLimitCheck,
 	}
 	server := web.StartWebServer(config)
 
-	go shutdownHandler(ctx, wg, func() {
+	go util.ShutdownHandler(ctx, wg, func() {
 		if err := server.Shutdown(ctx); err != nil {
 			tf.Log.Fatalw("API server forced to shutdown", "error", err)
 		}
@@ -311,29 +316,4 @@ func getDatabaseConfigurationSQL() string {
 		    constraint initialized check (initialized)
 		);
 	`
-}
-
-func getScyllaKeyspaceConfigurationCQL() string {
-	return `
-		create keyspace if not exists tableflow
-		    with replication = { 'class' : 'NetworkTopologyStrategy', 'replication_factor' : 1}
-		     and durable_writes = true;
-	`
-}
-
-func getScyllaSchemaConfigurationCQL() []string {
-	return []string{
-		`create table if not exists upload_rows (
-		    upload_id  uuid,
-		    row_index int,
-		    values     map<int, text>,
-		    primary key ((upload_id),row_index)
-		);`,
-		`create table if not exists import_rows (
-		    import_id  uuid,
-		    row_index int,
-		    values     map<text, text>,
-		    primary key ((import_id),row_index)
-		);`,
-	}
 }

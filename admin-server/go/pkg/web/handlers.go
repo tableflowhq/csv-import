@@ -5,6 +5,7 @@ import (
 	"github.com/tus/tusd/pkg/filestore"
 	"github.com/tus/tusd/pkg/handler"
 	"net/http"
+	"os"
 	"strings"
 	"tableflow/go/pkg/file"
 	"tableflow/go/pkg/model"
@@ -36,7 +37,7 @@ func APIKeyAuthMiddleware(isAuthorized func(c *gin.Context, apiKey string) bool)
 }
 
 // tusFileHandler TODO: Break this out into its own service eventually
-func tusFileHandler(uploadAdditionalStorageHandler func(*model.Upload)) *handler.UnroutedHandler {
+func tusFileHandler(uploadAdditionalStorageHandler, uploadLimitCheck func(*model.Upload, *os.File) error) *handler.UnroutedHandler {
 	store := filestore.FileStore{
 		Path: file.TempUploadsDirectory,
 	}
@@ -57,7 +58,7 @@ func tusFileHandler(uploadAdditionalStorageHandler func(*model.Upload)) *handler
 		for {
 			event := <-fileHandler.CompleteUploads
 			tf.Log.Infow("File upload to disk completed", "tus_id", event.Upload.ID)
-			go file.UploadCompleteHandler(event, uploadAdditionalStorageHandler)
+			go file.UploadCompleteHandler(event, uploadAdditionalStorageHandler, uploadLimitCheck)
 		}
 	}()
 	return fileHandler

@@ -275,6 +275,16 @@ definitions:
           $ref: '#/definitions/model.User'
         type: array
     type: object
+  types.ImportRow:
+    properties:
+      index:
+        example: 0
+        type: integer
+      values:
+        additionalProperties:
+          type: string
+        type: object
+    type: object
   types.Res:
     properties:
       error:
@@ -470,6 +480,26 @@ paths:
       tags:
       - Importer
   /admin/v1/importer/{id}:
+    delete:
+      description: Delete an importer
+      parameters:
+      - description: Importer ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.Res'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/types.Res'
+      summary: Delete importer
+      tags:
+      - Importer
     get:
       description: Get a single importer
       parameters:
@@ -862,6 +892,40 @@ paths:
           schema:
             $ref: '#/definitions/types.Res'
       summary: Download import
+      tags:
+      - External API
+  /v1/import/{id}/rows:
+    get:
+      description: Paginate the rows of an import
+      parameters:
+      - description: Import ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Pagination offset
+        in: query
+        minimum: 0
+        name: offset
+        type: integer
+      - description: Pagination limit
+        in: query
+        maximum: 1000
+        minimum: 1
+        name: limit
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/types.ImportRow'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/types.Res'
+      summary: Get import rows
       tags:
       - External API
 securityDefinitions:

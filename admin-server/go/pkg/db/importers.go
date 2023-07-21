@@ -23,6 +23,22 @@ func GetImporter(id string) (*model.Importer, error) {
 	return &importer, nil
 }
 
+func GetImporterUnscoped(id string) (*model.Importer, error) {
+	if len(id) == 0 {
+		return nil, errors.New("no importer ID provided")
+	}
+	var importer model.Importer
+	err := tf.DB.Unscoped().Preload("Template.TemplateColumns").
+		First(&importer, model.ParseID(id)).Error
+	if err != nil {
+		return nil, err
+	}
+	if !importer.ID.Valid {
+		return nil, gorm.ErrRecordNotFound
+	}
+	return &importer, nil
+}
+
 func GetImporterWithoutTemplate(id string) (*model.Importer, error) {
 	if len(id) == 0 {
 		return nil, errors.New("no importer ID provided")

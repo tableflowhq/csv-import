@@ -33,7 +33,7 @@ yarn add @tableflow/js
 Create an importer, define your template, and retrieve data at https://app.tableflow.com/importers
 
 ```javascript
-import { tableFlowImporter } from "@tableflow/js";
+import { createTableFlowImporter } from "@tableflow/js";
 
 const args = {
   importerId: "53a84496-819d-4ec6-93b7-b4b56fb676ad", // Replace with your importer ID from https://app.tableflow.com/importers
@@ -45,7 +45,7 @@ const args = {
 
 const uploadButton = document.getElementById("uploadButton");
 
-const dialog = tableFlowImporter(args);
+const dialog = createTableFlowImporter(args);
 
 uploadButton.addEventListener("click", () => {
   dialog?.showModal();
@@ -55,7 +55,7 @@ uploadButton.addEventListener("click", () => {
 Or directly in the HTML
 
 ```html
-<script src="CDN-URL.js"></script>
+<script src="https://unpkg.com/@tableflow/js@latest/build/index.js"></script>
 
 <button id="uploadButton">Upload file</button>
 
@@ -70,7 +70,7 @@ Or directly in the HTML
 
   const uploadButton = document.getElementById("uploadButton");
 
-  const dialog = TableFlowImporter(args);
+  const dialog = createTableFlowImporter(args);
 
   uploadButton.addEventListener("click", () => {
     dialog?.showModal();

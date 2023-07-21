@@ -29,10 +29,10 @@ services:
     restart: unless-stopped
     command: --authorizer=AllowAllAuthorizer
     healthcheck:
-      test: ["CMD", "cqlsh", "-e", "describe keyspaces;"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      test: ["CMD-SHELL", "[ $$(nodetool statusgossip) = running ]"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
   backend:
     build: "./admin-server"

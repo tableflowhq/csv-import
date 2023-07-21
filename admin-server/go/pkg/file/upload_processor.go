@@ -25,7 +25,7 @@ type uploadProcessResult struct {
 var maxColumnLimit = int(math.Min(1000, math.MaxInt16))
 var maxRowLimit = 1000 * 1000 * 10 // TODO: Store and configure this on the workspace? But keep a max limit to prevent runaways?
 
-func UploadCompleteHandler(event handler.HookEvent, uploadAdditionalStorageHandler func(*model.Upload)) {
+func UploadCompleteHandler(event handler.HookEvent, uploadAdditionalStorageHandler, uploadLimitCheck func(*model.Upload, *os.File) error) {
 	uploadFileName := event.Upload.MetaData["filename"]
 	uploadFileType := event.Upload.MetaData["filetype"]
 	uploadFileExtension := ""
@@ -74,26 +74,34 @@ func UploadCompleteHandler(event handler.HookEvent, uploadAdditionalStorageHandl
 	}
 
 	file, err := os.Open(fileName)
-	defer file.Close()
 	if err != nil {
 		tf.Log.Errorw("Could not open temp upload file from disk", "error", err, "upload_id", upload.ID)
 		saveUploadError(upload, "An error occurred while processing your upload. Please try again.")
-		removeUploadFileFromDisk(fileName, upload.ID.String())
+		removeUploadFileFromDisk(file, fileName, upload.ID.String())
 		return
 	}
 
+	if uploadLimitCheck != nil {
+		// Check for upload limits on the workspace
+		err = uploadLimitCheck(upload, file)
+		if err != nil {
+			saveUploadError(upload, err.Error())
+			removeUploadFileFromDisk(file, fileName, upload.ID.String())
+			return
+		}
+	}
 	// Parse the column headers, sample data, and retrieve the row count
 	err = processUploadColumns(upload, file)
 	if err != nil {
 		tf.Log.Errorw("Could not parse upload columns", "error", err, "upload_id", upload.ID)
 		saveUploadError(upload, "An error occurred determining the columns in your file. Please check the file and try again.")
-		removeUploadFileFromDisk(fileName, upload.ID.String())
+		removeUploadFileFromDisk(file, fileName, upload.ID.String())
 		return
 	}
 	if len(upload.UploadColumns) == 0 {
 		tf.Log.Warnw("No upload columns found in file", "error", err, "upload_id", upload.ID)
 		saveUploadError(upload, "An error occurred determining the columns in your file. Please check the file and try again.")
-		removeUploadFileFromDisk(fileName, upload.ID.String())
+		removeUploadFileFromDisk(file, fileName, upload.ID.String())
 		return
 	}
 
@@ -101,14 +109,14 @@ func UploadCompleteHandler(event handler.HookEvent, uploadAdditionalStorageHandl
 	if err != nil {
 		tf.Log.Errorw("Could not process upload", "error", err, "upload_id", upload.ID)
 		saveUploadError(upload, "An error occurred processing your file. Please check the file and try again.")
-		removeUploadFileFromDisk(fileName, upload.ID.String())
+		removeUploadFileFromDisk(file, fileName, upload.ID.String())
 		return
 	}
 
 	if uploadResult.NumRows == 0 {
 		tf.Log.Debugw("A file was uploaded with no rows or an error occurred during processing", "upload_id", upload.ID)
 		saveUploadError(upload, "No rows with data were found in your file, please try again with a different file that has a header row and at least one row of data.")
-		removeUploadFileFromDisk(fileName, upload.ID.String())
+		removeUploadFileFromDisk(file, fileName, upload.ID.String())
 		return
 	}
 
@@ -116,7 +124,7 @@ func UploadCompleteHandler(event handler.HookEvent, uploadAdditionalStorageHandl
 	if err != nil {
 		tf.Log.Errorw("Could not create upload columns in database", "error", err, "upload_id", upload.ID)
 		saveUploadError(upload, "An error occurred determining the columns in your file. Please check the file and try again.")
-		removeUploadFileFromDisk(fileName, upload.ID.String())
+		removeUploadFileFromDisk(file, fileName, upload.ID.String())
 		return
 	}
 
@@ -131,16 +139,20 @@ func UploadCompleteHandler(event handler.HookEvent, uploadAdditionalStorageHandl
 	err = tf.DB.Save(upload).Error
 	if err != nil {
 		tf.Log.Errorw("Could not update upload in database", "error", err)
-		removeUploadFileFromDisk(fileName, upload.ID.String())
+		removeUploadFileFromDisk(file, fileName, upload.ID.String())
 		return
 	}
 
 	if uploadAdditionalStorageHandler != nil {
-		go uploadAdditionalStorageHandler(upload)
+		go func(u *model.Upload, f *os.File, fn string) {
+			uploadAdditionalStorageHandler(u, f)
+			removeUploadFileFromDisk(f, fn, u.ID.String())
+			tf.Log.Debugw("Upload complete", "upload_id", u.ID)
+		}(upload, file, fileName)
+	} else {
+		removeUploadFileFromDisk(file, fileName, upload.ID.String())
+		tf.Log.Debugw("Upload complete", "upload_id", upload.ID)
 	}
-
-	removeUploadFileFromDisk(fileName, upload.ID.String())
-	tf.Log.Debugw("Upload complete", "upload_id", upload.ID)
 }
 
 func processAndStoreUpload(upload *model.Upload, file *os.File) (uploadProcessResult, error) {
@@ -157,7 +169,6 @@ func processAndStoreUpload(upload *model.Upload, file *os.File) (uploadProcessRe
 
 	numRows := 0
 	goroutines := 8
-	batchSize := 1000
 	batchCounter := 0
 
 	in := make(chan *gocql.Batch, 0)
@@ -165,7 +176,7 @@ func processAndStoreUpload(upload *model.Upload, file *os.File) (uploadProcessRe
 	for i := 0; i < goroutines; i++ {
 		go scylla.ProcessBatch(in, &wg)
 	}
-	b := tf.Scylla.NewBatch(gocql.LoggedBatch)
+	b := scylla.NewBatchInserter()
 	startTime := time.Now()
 
 	for i := 0; ; i++ {
@@ -198,10 +209,10 @@ func processAndStoreUpload(upload *model.Upload, file *os.File) (uploadProcessRe
 
 		b.Query("insert into upload_rows (upload_id, row_index, values) values (?, ?, ?)", upload.ID.String(), i, uploadRow)
 		batchCounter++
-		if batchCounter == batchSize {
+		if batchCounter == scylla.BatchInsertSize {
 			// Send in the batch and start a new one
 			in <- b
-			b = tf.Scylla.NewBatch(gocql.LoggedBatch)
+			b = scylla.NewBatchInserter()
 			batchCounter = 0
 		}
 	}
@@ -266,7 +277,8 @@ func saveUploadError(upload *model.Upload, errorStr string) {
 	}
 }
 
-func removeUploadFileFromDisk(fileName, uploadID string) {
+func removeUploadFileFromDisk(file *os.File, fileName, uploadID string) {
+	defer file.Close()
 	err := os.Remove(fileName)
 	if err != nil {
 		tf.Log.Errorw("Could not delete upload from file system", "error", err, "upload_id", uploadID)

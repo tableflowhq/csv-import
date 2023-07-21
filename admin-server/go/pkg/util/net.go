@@ -89,38 +89,51 @@ func validPortFromURL(port string) bool {
 	return true
 }
 
-func HTTPRequest(url, method string, body interface{}, headers map[string]string) error {
+func HTTPRequest(url, method string, body interface{}, headers map[string]string) (interface{}, error) {
 	client := &http.Client{
 		Timeout: time.Second * 10,
 	}
 	requestBytes, err := json.Marshal(&body)
 	if err != nil {
 		tf.Log.Errorw("Could not marshal HTTP request body", "error", err, "url", url)
-		return err
+		return nil, err
 	}
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(requestBytes))
 	if err != nil {
 		tf.Log.Errorw("Could not create HTTP request", "error", err, "url", url)
-		return err
+		return nil, err
 	}
 	for k, v := range headers {
 		req.Header.Set(k, v)
 	}
+
 	response, err := client.Do(req)
 	if err != nil {
 		tf.Log.Errorw("Error executing HTTP request", "error", err, "url", url)
-		return err
+		return nil, err
 	}
 	defer response.Body.Close()
-	if response.StatusCode < 200 || response.StatusCode > 299 {
-		bodyBytes, err := io.ReadAll(response.Body)
-		if err != nil {
-			tf.Log.Errorw("Could not read response body on unsuccessful status during HTTP request", "error", err, "url", url)
-		}
-		tf.Log.Warnw("Received non-200 status code while executing http request", "status", response.StatusCode, "body", string(bodyBytes))
-		return errors.New("received non-200 status code while executing http request")
+	responseBody, err := io.ReadAll(response.Body)
+	if err != nil {
+		tf.Log.Errorw("Error reading response body from HTTP request", "error", err, "url", url)
+		return nil, err
 	}
-	return nil
+	if response.StatusCode < 200 || response.StatusCode > 299 {
+		tf.Log.Errorw("Received non-200 status code while executing http request", "status", response.StatusCode, "body", string(responseBody))
+		return nil, errors.New("received non-200 status code while executing http request")
+	}
+
+	var responseData interface{}
+	if responseBody == nil || len(responseBody) == 0 {
+		return responseData, nil
+	}
+	err = json.Unmarshal(responseBody, &responseData)
+	if err != nil {
+		//tf.Log.Debugw("Error marshalling response data from HTTP request", "error", err, "url", url)
+		// Assume non-JSON response
+		return string(responseBody), nil
+	}
+	return responseData, nil
 }
 
 func GetLocalIP() (string, error) {

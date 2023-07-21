@@ -7,14 +7,13 @@ paths:
     get:
       summary: Returns an import.
       parameters:
-      - description: Import ID
-        in: path
-        name: id
-        required: true
-        schema:
-          type: string
-          format: uuid
-          minimum: 1
+        - description: Import ID
+          in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
       responses:
         '200':
           description: OK
@@ -39,12 +38,48 @@ paths:
           schema:
             type: string
             format: uuid
-            minimum: 1
       responses:
         '200':
           description: OK
           content:
-            text/csv: {}
+            text/csv: { }
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+  /import/{id}/rows:
+    get:
+      summary: Paginate the rows of an import
+      parameters:
+        - description: Import ID
+          in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - description: Pagination offset
+          in: query
+          name: offset
+          schema:
+            type: integer
+            minimum: 0
+        - description: Pagination limit
+          in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 1000
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
         "400":
           description: Bad Request
           content:
