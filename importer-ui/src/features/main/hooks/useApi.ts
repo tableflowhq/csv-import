@@ -1,11 +1,11 @@
 import { useMemo } from "react";
-import { useLocalStorage } from "@tableflow/ui-library";
 import { Importer, Template, Upload } from "../../../api/types";
 import useGetImporter from "../../../api/useGetImporter";
 import useGetUpload from "../../../api/useGetUpload";
+import useMutableLocalStorage from "./useMutableLocalStorage";
 
 export default function useApi(importerId: string) {
-  const [tusId, setTusId] = useLocalStorage("tusId", "");
+  const [tusId, setTusId] = useMutableLocalStorage(importerId + "-tusId", "");
 
   const tusWasStored = useMemo(() => !!tusId, []);
 
