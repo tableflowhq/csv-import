@@ -108,14 +108,42 @@ func initDatabase() error {
 	}
 	dbInitialized = true
 	var err error
-	// TODO: Add timezone support
-	// TODO: Support sslmode
-	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable TimeZone=America/Los_Angeles",
-		os.Getenv("POSTGRES_HOST"),
-		os.Getenv("POSTGRES_PORT"),
-		os.Getenv("POSTGRES_USER"),
-		os.Getenv("POSTGRES_PASSWORD"),
-		os.Getenv("POSTGRES_DATABASE_NAME"))
+
+	postgresSSLMode := "disable"        // TODO: Support SSL
+	postgresTZ := "America/Los_Angeles" // TODO: Add timezone support from system
+	postgresDefaultPort := "5432"
+
+	postgresHost := os.Getenv("POSTGRES_HOST")
+	postgresPort := os.Getenv("POSTGRES_PORT")
+	postgresUser := os.Getenv("POSTGRES_USER")
+	postgresPass := os.Getenv("POSTGRES_PASSWORD")
+	postgresName := os.Getenv("POSTGRES_DATABASE_NAME")
+
+	if len(postgresPort) == 0 {
+		postgresPort = postgresDefaultPort
+	}
+	if len(postgresHost) == 0 {
+		return errors.New("missing POSTGRES_HOST in env")
+	}
+	if len(postgresUser) == 0 {
+		return errors.New("missing POSTGRES_USER in env")
+	}
+	if len(postgresPass) == 0 {
+		return errors.New("missing POSTGRES_PASSWORD in env")
+	}
+	if len(postgresName) == 0 {
+		return errors.New("missing POSTGRES_DATABASE_NAME in env")
+	}
+
+	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s TimeZone=%s",
+		postgresHost,
+		postgresPort,
+		postgresUser,
+		postgresPass,
+		postgresName,
+		postgresSSLMode,
+		postgresTZ)
+
 	tf.DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		return err
@@ -171,6 +199,10 @@ func initScylla(ctx context.Context, wg *sync.WaitGroup) error {
 	scyllaUser := os.Getenv("SCYLLA_USER")
 	scyllaPass := os.Getenv("SCYLLA_PASSWORD")
 	authEnabled := len(scyllaUser) != 0 && len(scyllaPass) != 0
+
+	if len(scyllaHost) == 0 {
+		return errors.New("missing SCYLLA_HOST in env")
+	}
 
 	systemCfg := gocql.NewCluster(scyllaHost)
 	systemCfg.Keyspace = "system"
