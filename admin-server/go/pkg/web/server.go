@@ -46,6 +46,7 @@ type ServerConfig struct {
 	UploadAdditionalStorageHandler func(*model.Upload, *os.File) error
 	AdditionalCORSOrigins          []string
 	AdditionalCORSHeaders          []string
+	AdditionalAdminRoutes          func(group *gin.RouterGroup)
 }
 
 func StartWebServer(config ServerConfig) *http.Server {
@@ -149,6 +150,11 @@ func StartWebServer(config ServerConfig) *http.Server {
 
 	/* Upload */
 	adm.GET("/upload/:id", func(c *gin.Context) { getUpload(c, config.GetWorkspaceUser) })
+
+	/* Additional Routes */
+	if config.AdditionalAdminRoutes != nil {
+		config.AdditionalAdminRoutes(adm)
+	}
 
 	/* ---------------------------  API routes  --------------------------- */
 
