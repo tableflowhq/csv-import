@@ -1,3 +1,5 @@
+$desktop-height: 820px;
+
 .container {
   display: flex;
   flex-direction: column;
@@ -12,4 +14,11 @@
   justify-content: center;
   flex-grow: 1;
   gap: var(--m-xl);
+  max-width: calc(100% - var(--m));
+  margin: 0 auto;
+
+  @media (max-height: $desktop-height) {
+    gap: var(--m);
+    margin: var(--m-xs) auto;
+  }
 }
