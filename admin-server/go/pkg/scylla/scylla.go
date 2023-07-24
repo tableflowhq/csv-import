@@ -4,12 +4,14 @@ import (
 	"github.com/gocql/gocql"
 	"strings"
 	"sync"
+	"tableflow/go/pkg/model"
 	"tableflow/go/pkg/tf"
 	"tableflow/go/pkg/types"
 )
 
 const maxPageSize = 10000
 const BatchInsertSize = 1000
+const DefaultPaginationSize = 1000
 
 func PaginateUploadRows(uploadID string, offset, limit int) []map[int]string {
 	if limit > maxPageSize {
@@ -71,6 +73,17 @@ func PaginateImportRows(importID string, offset, limit int) []types.ImportRow {
 		res[i] = row
 	}
 	return res
+}
+
+func RetrieveAllImportRows(imp *model.Import) []types.ImportRow {
+	rows := make([]types.ImportRow, 0, imp.NumRows.Int64)
+	for offset := 0; ; offset += DefaultPaginationSize {
+		if offset > int(imp.NumRows.Int64) {
+			break
+		}
+		rows = append(rows, PaginateImportRows(imp.ID.String(), offset, DefaultPaginationSize)...)
+	}
+	return rows
 }
 
 func NewBatchInserter() *gocql.Batch {
