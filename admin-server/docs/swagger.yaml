@@ -292,6 +292,39 @@ definitions:
       message:
         type: string
     type: object
+  web.ImportServiceImport:
+    properties:
+      created_at:
+        example: 1682366228
+        type: integer
+      id:
+        example: da5554e3-6c87-41b2-9366-5449a2f15b53
+        type: string
+      importer_id:
+        example: 6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353
+        type: string
+      is_stored:
+        example: false
+        type: boolean
+      metadata:
+        $ref: '#/definitions/model.JSONB'
+      num_columns:
+        example: 8
+        type: integer
+      num_processed_values:
+        example: 128
+        type: integer
+      num_rows:
+        example: 256
+        type: integer
+      rows:
+        items:
+          $ref: '#/definitions/types.ImportRow'
+        type: array
+      upload_id:
+        example: 50ca61e1-f683-4b03-9ec4-4b3adb592bf1
+        type: string
+    type: object
   web.ImportServiceImporter:
     properties:
       id:
@@ -767,6 +800,28 @@ paths:
         type: string
       responses: {}
       summary: Patch file (tus)
+      tags:
+      - File Import
+  /file-import/v1/import/{id}:
+    get:
+      description: Get a single import by the upload ID, including the data if the
+        import is complete
+      parameters:
+      - description: Upload ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/web.ImportServiceImport'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/types.Res'
+      summary: Get import by upload ID
       tags:
       - File Import
   /file-import/v1/importer/{id}:

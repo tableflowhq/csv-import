@@ -519,6 +519,38 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/file-import/v1/import/{id}": {
+            "get": {
+                "description": "Get a single import by the upload ID, including the data if the import is complete",
+                "tags": [
+                    "File Import"
+                ],
+                "summary": "Get import by upload ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Upload ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/web.ImportServiceImport"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/types.Res"
+                        }
+                    }
+                }
+            }
+        },
         "/file-import/v1/importer/{id}": {
             "get": {
                 "description": "Get a single importer and its template",
@@ -1165,6 +1197,52 @@ const docTemplate = `{
                 },
                 "message": {
                     "type": "string"
+                }
+            }
+        },
+        "web.ImportServiceImport": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "integer",
+                    "example": 1682366228
+                },
+                "id": {
+                    "type": "string",
+                    "example": "da5554e3-6c87-41b2-9366-5449a2f15b53"
+                },
+                "importer_id": {
+                    "type": "string",
+                    "example": "6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353"
+                },
+                "is_stored": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "metadata": {
+                    "$ref": "#/definitions/model.JSONB"
+                },
+                "num_columns": {
+                    "type": "integer",
+                    "example": 8
+                },
+                "num_processed_values": {
+                    "type": "integer",
+                    "example": 128
+                },
+                "num_rows": {
+                    "type": "integer",
+                    "example": 256
+                },
+                "rows": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/types.ImportRow"
+                    }
+                },
+                "upload_id": {
+                    "type": "string",
+                    "example": "50ca61e1-f683-4b03-9ec4-4b3adb592bf1"
                 }
             }
         },
