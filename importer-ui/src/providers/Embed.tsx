@@ -5,12 +5,17 @@ import useEmbedStore from "../stores/embed";
 import { EmbedProps } from "./types";
 
 export default function Embed({ children }: EmbedProps) {
-  const { importerId, darkMode: darkModeString, primaryColor, metadata, isOpen } = useSearchParams();
+  const { importerId, darkMode: darkModeString, primaryColor, metadata, isOpen, onComplete } = useSearchParams();
 
   // Set importerId & metadata in embed store
   const setEmbedParams = useEmbedStore((state) => state.setEmbedParams);
   useEffect(() => {
-    setEmbedParams({ importerId, metadata, isOpen: isOpen !== "false" && isOpen !== "0" });
+    setEmbedParams({
+      importerId,
+      metadata,
+      isOpen: isOpen !== "false" && isOpen !== "0",
+      onComplete: !!onComplete && onComplete !== "false" && onComplete !== "0",
+    });
   }, [importerId, metadata]);
 
   // Set Light/Dark mode

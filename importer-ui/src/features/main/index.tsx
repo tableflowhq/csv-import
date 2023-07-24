@@ -19,14 +19,14 @@ const steps = [
 
 export default function Main() {
   // Get iframe URL params
-  const { importerId, metadata, isOpen } = useEmbedStore((state) => state.embedParams);
+  const { importerId, metadata, isOpen, onComplete } = useEmbedStore((state) => state.embedParams);
 
   // Stepper handler
   const stepper = useStepper(steps, 0);
   const step = stepper?.step?.id;
 
   // Async data & state
-  const { tusId, tusWasStored, isLoadingImporter, importerError, template, upload, uploadError, isParsed, setTusId } = useApi(importerId);
+  const { tusId, tusWasStored, importerIsLoading, importerError, template, upload, uploadError, isParsed, setTusId } = useApi(importerId);
 
   useEffect(() => {
     if (uploadError && tusWasStored) reload();
@@ -35,7 +35,7 @@ export default function Main() {
   // Delay jump to the second step
   useEffect(() => {
     if (tusId) setTimeout(() => stepper.setCurrent(1), 500);
-  }, [isParsed]);
+  }, [isParsed, tusId]);
 
   // Remove stored tusId on complete
   useEffect(() => {
@@ -47,11 +47,9 @@ export default function Main() {
     if (!isOpen && step === "complete") reload();
   }, [isOpen]);
 
+  // Success
+
   // Actions
-  const requestClose = () => {
-    window?.top?.postMessage("close", "*");
-    window?.parent?.postMessage("close", "*");
-  };
 
   const reload = () => {
     setTusId("");
@@ -59,9 +57,28 @@ export default function Main() {
     location.reload();
   };
 
+  // Send messages to parent (SDK iframe)
+
+  const requestClose = () => {
+    window?.top?.postMessage("close", "*") || window?.parent?.postMessage("close", "*");
+  };
+
+  const handleComplete = (data: any, error: string) => {
+    setTusId("");
+
+    if (onComplete) {
+      const message = JSON.stringify({
+        data,
+        error,
+        type: "complete",
+      });
+      window?.top?.postMessage(message, "*") || window?.parent?.postMessage(message, "*");
+    }
+  };
+
   // Render
 
-  if (isLoadingImporter) return null;
+  if (importerIsLoading) return null;
 
   if (!importerId)
     return (
@@ -77,6 +94,8 @@ export default function Main() {
       </div>
     );
 
+  console.log(isParsed, step);
+
   const content =
     step === "upload" || !!uploadError ? (
       <Uploader template={template} importerId={importerId} metadata={metadata} onSuccess={setTusId} endpoint={TUS_ENDPOINT} />
@@ -85,7 +104,7 @@ export default function Main() {
     ) : step === "review" && !!isParsed ? (
       <Review template={template} upload={upload} onSuccess={() => stepper.setCurrent(2)} onCancel={reload} />
     ) : !uploadError && step === "complete" ? (
-      <Complete reload={reload} close={requestClose} />
+      <Complete reload={reload} close={requestClose} onSuccess={handleComplete} />
     ) : null;
 
   return (

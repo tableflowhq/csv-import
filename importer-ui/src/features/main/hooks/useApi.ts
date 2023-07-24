@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { Importer, Template, Upload } from "../../../api/types";
 import useGetImporter from "../../../api/useGetImporter";
 import useGetUpload from "../../../api/useGetUpload";
+import usePostUpload from "../../../api/usePostUpload";
 import useMutableLocalStorage from "./useMutableLocalStorage";
 
 export default function useApi(importerId: string) {
@@ -10,12 +11,39 @@ export default function useApi(importerId: string) {
   const tusWasStored = useMemo(() => !!tusId, []);
 
   // Load importer & template for the first step
-  const { data: importer = {} as Importer, isLoading: isLoadingImporter, error: importerError } = useGetImporter(importerId);
+  const { data: importer = {} as Importer, isLoading: importerIsLoading, error: importerError } = useGetImporter(importerId);
   const { template = {} as Template } = importer;
 
   // Load upload for the second step
   const { data: upload = {} as Upload, error: uploadError } = useGetUpload(tusId);
   const { is_parsed: isParsed } = upload;
 
-  return { tusId, tusWasStored, importer, isLoadingImporter, importerError, template, upload, uploadError, isParsed, setTusId };
+  // Save the upload
+  const {
+    data: postResponse,
+    mutate: uploadMutate,
+    error: postError,
+    isSuccess: postSuccess,
+    isLoading: postIsLoading,
+  } = usePostUpload((isParsed && upload?.id) || "");
+  const { is_parsed: postIsParsed } = postResponse?.data || {};
+
+  return {
+    tusId,
+    tusWasStored,
+    importer,
+    importerIsLoading,
+    importerError,
+    template,
+    upload,
+    uploadError,
+    isParsed,
+    setTusId,
+    uploadMutate,
+    postError,
+    postSuccess,
+    postIsLoading,
+    postResponse,
+    postIsParsed,
+  };
 }
