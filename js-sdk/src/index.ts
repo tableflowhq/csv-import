@@ -4,7 +4,7 @@ import cross from "./assets/cross";
 
 export default function createTableFlowImporter({
   elementId = "tableflow-importer",
-  isOpen = true,
+  isOpen = false,
   onRequestClose = () => null,
   importerId,
   hostUrl,
@@ -12,6 +12,7 @@ export default function createTableFlowImporter({
   primaryColor = "#7a5ef8",
   metadata = "{}",
   closeOnClickOutside,
+  onComplete,
   className,
 }: TableFlowImporterProps) {
   // CSS classes
@@ -45,6 +46,7 @@ export default function createTableFlowImporter({
     primaryColor,
     metadata,
     isOpen: isOpen.toString(),
+    onComplete: onComplete ? "true" : "false",
   };
   const searchParams = new URLSearchParams(urlParams);
   const defaultImporterUrl = "https://importer.tableflow.com";
@@ -61,6 +63,23 @@ export default function createTableFlowImporter({
   }
 
   window.onmessage = function (e) {
+    if (onComplete) {
+      let messageData;
+
+      try {
+        messageData = JSON.parse(e.data);
+      } catch (e) {
+        // do nothing
+      }
+
+      if (messageData?.type === "complete") {
+        onComplete({
+          data: messageData?.data || null,
+          error: messageData?.error || null,
+        });
+      }
+    }
+
     if (e.data == "close") {
       onRequestClose();
     }

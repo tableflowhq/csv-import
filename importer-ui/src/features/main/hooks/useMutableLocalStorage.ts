@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 
-type initialValueType = any;
-
-export default function useMutableLocalStorage(key: string, initialValue: initialValueType) {
+export default function useMutableLocalStorage(key: string, initialValue: any) {
   // State to store our value
   // Pass initial state function to useState so logic is only executed once
   const getLocalStorage = () => {
@@ -28,7 +26,7 @@ export default function useMutableLocalStorage(key: string, initialValue: initia
 
   // Return a wrapped version of useState's setter function that ...
   // ... persists the new value to localStorage.
-  const setValue = (value: initialValueType) => {
+  const setValue = (value: any) => {
     try {
       // Allow value to be a function so we have same API as useState
       const valueToStore = value instanceof Function ? value(storedValue) : value;
@@ -42,5 +40,6 @@ export default function useMutableLocalStorage(key: string, initialValue: initia
       console.log(error);
     }
   };
+
   return [storedValue, setValue];
 }

@@ -60,12 +60,15 @@ Or directly in the HTML
 <button id="uploadButton">Upload file</button>
 
 <script>
+  let isOpen = false;
+
   const args = {
     importerId: "53a84496-819d-4ec6-93b7-b4b56fb676ad", // Replace with your importer ID from https://app.tableflow.com/importers
     darkMode: true,
     primaryColor: "#7a5ef8",
     metadata: '{"userId": 1234, "userEmail": "test@example.com"}',
     onRequestClose: () => dialog.close(),
+    onComplete: (data, error) => console.log(data, error),
   };
 
   const uploadButton = document.getElementById("uploadButton");

@@ -1,4 +1,4 @@
-type SearchParams = Record<"importerId" | "darkMode" | "primaryColor" | "metadata" | "isOpen", string>;
+type SearchParams = Record<"importerId" | "darkMode" | "primaryColor" | "metadata" | "isOpen" | "onComplete", string>;
 
 export default function useSearchParams() {
   const search = new URLSearchParams(document.location.search);
