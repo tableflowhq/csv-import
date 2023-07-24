@@ -118,6 +118,7 @@ func StartWebServer(config ServerConfig) *http.Server {
 
 	importer.GET("/importer/:id", getImporterForImportService)
 	importer.GET("/upload/:id", getUploadForImportService)
+	importer.GET("/import/:id", getImportForImportService)
 	importer.POST("/upload-column-mapping/:id", setUploadColumnMappingAndImportData)
 
 	/* ---------------------------  Admin routes  ---------------------------- */

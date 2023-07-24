@@ -53,3 +53,18 @@ func GetImportsForAdminAPI(workspaceID string) ([]*model.Import, error) {
 	}
 	return imports, nil
 }
+
+func GetImportByUploadID(uploadID string) (*model.Import, error) {
+	if len(uploadID) == 0 {
+		return nil, errors.New("no upload ID provided")
+	}
+	var imp model.Import
+	err := tf.DB.First(&imp, "upload_id = ?", model.ParseID(uploadID)).Error
+	if err != nil {
+		return nil, err
+	}
+	if !imp.ID.Valid {
+		return nil, gorm.ErrRecordNotFound
+	}
+	return &imp, nil
+}

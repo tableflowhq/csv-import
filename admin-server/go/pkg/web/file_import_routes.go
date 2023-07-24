@@ -2,6 +2,7 @@ package web
 
 import (
 	"errors"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/gocql/gocql"
 	"github.com/guregu/null"
@@ -63,11 +64,29 @@ type ImportServiceUploadColumn struct {
 	SampleData pq.StringArray `json:"sample_data" gorm:"type:text[]" swaggertype:"array,string" example:"test@example.com"`
 }
 
+type ImportServiceImport struct {
+	ID                 model.ID          `json:"id" swaggertype:"string" example:"da5554e3-6c87-41b2-9366-5449a2f15b53"`
+	UploadID           model.ID          `json:"upload_id" swaggertype:"string" example:"50ca61e1-f683-4b03-9ec4-4b3adb592bf1"`
+	ImporterID         model.ID          `json:"importer_id" swaggertype:"string" example:"6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353"`
+	NumRows            null.Int          `json:"num_rows" swaggertype:"integer" example:"256"`
+	NumColumns         null.Int          `json:"num_columns" swaggertype:"integer" example:"8"`
+	NumProcessedValues null.Int          `json:"num_processed_values" swaggertype:"integer" example:"128"`
+	Metadata           model.JSONB       `json:"metadata"`
+	IsStored           bool              `json:"is_stored" example:"false"`
+	CreatedAt          model.NullTime    `json:"created_at" swaggertype:"integer" example:"1682366228"`
+	Error              null.String       `json:"error,omitempty" swaggerignore:"true"`
+	Rows               []types.ImportRow `json:"rows"`
+}
+
 type importProcessResult struct {
 	NumRows          int
 	NumColumns       int
 	NumNonEmptyCells int
 }
+
+// importServiceMaxNumRowsToPassData If the import has more rows than this value, then don't pass the data back to the
+// frontend callback. It must be retrieved from the API.
+const importServiceMaxNumRowsForFrontendPassThrough = 25000
 
 // tusPostFile
 //
@@ -252,6 +271,56 @@ func getUploadForImportService(c *gin.Context) {
 		UploadColumns: importerUploadColumns,
 	}
 	c.JSON(http.StatusOK, importerUpload)
+}
+
+// getImportForImportService
+//
+//	@Summary		Get import by upload ID
+//	@Description	Get a single import by the upload ID, including the data if the import is complete
+//	@Tags			File Import
+//	@Success		200	{object}	ImportServiceImport
+//	@Failure		400	{object}	types.Res
+//	@Router			/file-import/v1/import/{id} [get]
+//	@Param			id	path	string	true	"Upload ID"
+func getImportForImportService(c *gin.Context) {
+	id := c.Param("id")
+	if len(id) == 0 {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No upload ID provided"})
+		return
+	}
+	imp, err := db.GetImportByUploadID(id)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusOK, gin.H{})
+		return
+	}
+	importerImport := &ImportServiceImport{
+		ID:                 imp.ID,
+		UploadID:           imp.UploadID,
+		ImporterID:         imp.ImporterID,
+		NumRows:            imp.NumRows,
+		NumColumns:         imp.NumColumns,
+		NumProcessedValues: imp.NumProcessedValues,
+		Metadata:           imp.Metadata,
+		IsStored:           imp.IsStored,
+		CreatedAt:          imp.CreatedAt,
+		Rows:               []types.ImportRow{},
+	}
+	if imp.NumRows.Int64 > importServiceMaxNumRowsForFrontendPassThrough {
+		importerImport.Error = null.StringFrom(fmt.Sprintf("This import has %v rows which exceeds the max "+
+			"allowed number of rows for frontend passthrough (%v). Use the API to retrieve the data.",
+			imp.NumRows.Int64, importServiceMaxNumRowsForFrontendPassThrough))
+		c.JSON(http.StatusOK, importerImport)
+		return
+	}
+	if !imp.IsStored {
+		// Don't attempt to retrieve the data in Scylla if it's not stored
+		c.JSON(http.StatusOK, importerImport)
+		return
+	}
+
+	importerImport.Rows = scylla.RetrieveAllImportRows(imp)
+
+	c.JSON(http.StatusOK, importerImport)
 }
 
 // setUploadColumnMappingAndImportData

@@ -212,12 +212,11 @@ func downloadImportForExternalAPI(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, types.Res{Err: "Could not download import"})
 		return
 	}
-	paginationPageSize := 1000
-	for offset := 0; ; offset += paginationPageSize {
+	for offset := 0; ; offset += scylla.DefaultPaginationSize {
 		if offset > int(imp.NumRows.Int64) {
 			break
 		}
-		importRows := scylla.PaginateImportRows(imp.ID.String(), offset, paginationPageSize)
+		importRows := scylla.PaginateImportRows(imp.ID.String(), offset, scylla.DefaultPaginationSize)
 		for pageRowIndex := 0; pageRowIndex < len(importRows); pageRowIndex++ {
 			row := make([]string, len(columnHeaders), len(columnHeaders))
 			for i, key := range columnHeaders {
