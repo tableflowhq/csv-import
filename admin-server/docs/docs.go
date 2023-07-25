@@ -796,18 +796,6 @@ const docTemplate = `{
                     "type": "integer",
                     "example": 1682366228
                 },
-                "file_extension": {
-                    "type": "string",
-                    "example": "csv"
-                },
-                "file_size": {
-                    "type": "integer",
-                    "example": 1024
-                },
-                "file_type": {
-                    "type": "string",
-                    "example": "text/csv"
-                },
                 "id": {
                     "type": "string",
                     "example": "da5554e3-6c87-41b2-9366-5449a2f15b53"
@@ -882,9 +870,9 @@ const docTemplate = `{
                 "updated_by": {
                     "$ref": "#/definitions/model.User"
                 },
-                "webhook_url": {
-                    "type": "string",
-                    "example": "https://api.tableflow.com/hooks"
+                "webhooks_enabled": {
+                    "type": "boolean",
+                    "example": true
                 },
                 "workspace_id": {
                     "type": "string",
@@ -1408,9 +1396,9 @@ const docTemplate = `{
                     "type": "string",
                     "example": "Test Importer"
                 },
-                "webhook_url": {
-                    "type": "string",
-                    "example": "https://example.com/webhook"
+                "webhooks_enabled": {
+                    "type": "boolean",
+                    "example": true
                 }
             }
         },

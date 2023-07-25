@@ -5,15 +5,6 @@ definitions:
       created_at:
         example: 1682366228
         type: integer
-      file_extension:
-        example: csv
-        type: string
-      file_size:
-        example: 1024
-        type: integer
-      file_type:
-        example: text/csv
-        type: string
       id:
         example: da5554e3-6c87-41b2-9366-5449a2f15b53
         type: string
@@ -67,9 +58,9 @@ definitions:
         type: integer
       updated_by:
         $ref: '#/definitions/model.User'
-      webhook_url:
-        example: https://api.tableflow.com/hooks
-        type: string
+      webhooks_enabled:
+        example: true
+        type: boolean
       workspace_id:
         example: b2079476-261a-41fe-8019-46eb51c537f7
         type: string
@@ -439,9 +430,9 @@ definitions:
       name:
         example: Test Importer
         type: string
-      webhook_url:
-        example: https://example.com/webhook
-        type: string
+      webhooks_enabled:
+        example: true
+        type: boolean
     type: object
   web.TemplateColumnCreateRequest:
     properties:
