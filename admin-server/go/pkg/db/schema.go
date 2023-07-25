@@ -169,17 +169,17 @@ func GetDatabaseSchemaInitSQL() string {
 		create index if not exists workspace_users_user_id_idx on workspace_users(user_id);
 
 		create table if not exists importers (
-		    id              uuid primary key         not null default gen_random_uuid(),
-		    workspace_id    uuid                     not null,
-		    name            text                     not null,
-		    allowed_domains text[]                   not null,
-		    webhook_url     text,
-		    created_by      uuid                     not null,
-		    created_at      timestamp with time zone not null,
-		    updated_by      uuid                     not null,
-		    updated_at      timestamp with time zone not null,
-		    deleted_by      uuid,
-		    deleted_at      timestamp with time zone,
+		    id               uuid primary key         not null default gen_random_uuid(),
+		    workspace_id     uuid                     not null,
+		    name             text                     not null,
+		    allowed_domains  text[]                   not null,
+		    webhooks_enabled bool                     not null,
+		    created_by       uuid                     not null,
+		    created_at       timestamp with time zone not null,
+		    updated_by       uuid                     not null,
+		    updated_at       timestamp with time zone not null,
+		    deleted_by       uuid,
+		    deleted_at       timestamp with time zone,
 		    constraint fk_workspace_id
 		        foreign key (workspace_id)
 		            references workspaces(id)
@@ -296,5 +296,25 @@ func GetDatabaseSchemaInitSQL() string {
 		create index if not exists imports_workspace_id_created_at_idx on imports(workspace_id, created_at);
 		create index if not exists imports_importer_id_idx on imports(importer_id);
 		create unique index if not exists imports_upload_id_idx on imports(upload_id);
+
+
+		/* Schema Update SQL */
+
+		alter table uploads
+		    drop column if exists storage_bucket;
+
+		alter table imports
+		    drop column if exists file_type;
+		alter table imports
+		    drop column if exists file_extension;
+		alter table imports
+		    drop column if exists file_size;
+		alter table imports
+		    drop column if exists storage_bucket;
+
+		alter table importers
+			add column if not exists webhooks_enabled bool not null default false;
+		alter table importers
+		    drop column if exists webhook_url;
 	`
 }

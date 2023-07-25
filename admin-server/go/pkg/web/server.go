@@ -44,6 +44,7 @@ type ServerConfig struct {
 	GetUserID                      func(c *gin.Context) string
 	UploadLimitCheck               func(*model.Upload, *os.File) error
 	UploadAdditionalStorageHandler func(*model.Upload, *os.File) error
+	ImportCompleteHandler          func(*model.Import)
 	AdditionalCORSOrigins          []string
 	AdditionalCORSHeaders          []string
 	AdditionalAdminRoutes          func(group *gin.RouterGroup)
@@ -119,7 +120,7 @@ func StartWebServer(config ServerConfig) *http.Server {
 	importer.GET("/importer/:id", getImporterForImportService)
 	importer.GET("/upload/:id", getUploadForImportService)
 	importer.GET("/import/:id", getImportForImportService)
-	importer.POST("/upload-column-mapping/:id", setUploadColumnMappingAndImportData)
+	importer.POST("/upload-column-mapping/:id", func(c *gin.Context) { setUploadColumnMappingAndImportData(c, config.ImportCompleteHandler) })
 
 	/* ---------------------------  Admin routes  ---------------------------- */
 

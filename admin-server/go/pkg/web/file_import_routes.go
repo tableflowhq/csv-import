@@ -333,7 +333,7 @@ func getImportForImportService(c *gin.Context) {
 //	@Router			/file-import/v1/upload-column-mapping/{id} [post]
 //	@Param			id		path	string				true	"Upload ID"
 //	@Param			body	body	map[string]string	true	"Request body"
-func setUploadColumnMappingAndImportData(c *gin.Context) {
+func setUploadColumnMappingAndImportData(c *gin.Context, importCompleteHandler func(*model.Import)) {
 	id := c.Param("id")
 	if len(id) == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No upload ID provided"})
@@ -391,12 +391,12 @@ func setUploadColumnMappingAndImportData(c *gin.Context) {
 
 	// Trigger the import
 	// This will be its own endpoint or attached to the review stage once that is implemented
-	go importData(upload, template)
+	go importData(upload, template, importCompleteHandler)
 
 	c.JSON(http.StatusOK, types.Res{Message: "success"})
 }
 
-func importData(upload *model.Upload, template *model.Template) {
+func importData(upload *model.Upload, template *model.Template, importCompleteHandler func(*model.Import)) {
 	imp := &model.Import{
 		ID:          model.NewID(),
 		UploadID:    upload.ID,
@@ -441,6 +441,11 @@ func importData(upload *model.Upload, template *model.Template) {
 		tf.Log.Errorw("Could not update import in database", "error", err, "import_id", imp.ID)
 		return
 	}
+
+	if importCompleteHandler != nil {
+		importCompleteHandler(imp)
+	}
+
 	tf.Log.Debugw("Import complete", "import_id", imp.ID)
 }
 

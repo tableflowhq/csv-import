@@ -3,7 +3,6 @@ package web
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/guregu/null"
 	"github.com/samber/lo"
 	"gorm.io/gorm"
 	"net/http"
@@ -22,9 +21,9 @@ type ImporterCreateRequest struct {
 }
 
 type ImporterEditRequest struct {
-	Name           *string   `json:"name" example:"Test Importer"`
-	AllowedDomains *[]string `json:"allowed_domains" example:"example.com"`
-	WebhookURL     *string   `json:"webhook_url" example:"https://example.com/webhook"`
+	Name            *string   `json:"name" example:"Test Importer"`
+	AllowedDomains  *[]string `json:"allowed_domains" example:"example.com"`
+	WebhooksEnabled *bool     `json:"webhooks_enabled" example:"true"`
 }
 
 // createImporter
@@ -178,16 +177,8 @@ func editImporter(c *gin.Context, getWorkspaceUser func(*gin.Context, string) (s
 		importer.Name = *req.Name
 		save = true
 	}
-	if req.WebhookURL != nil && *req.WebhookURL != importer.WebhookURL.String {
-		if len(*req.WebhookURL) == 0 {
-			importer.WebhookURL = null.NewString("", false)
-		} else {
-			if !util.IsValidURL(*req.WebhookURL) {
-				c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Invalid webhook URL"})
-				return
-			}
-			importer.WebhookURL = null.StringFromPtr(req.WebhookURL)
-		}
+	if req.WebhooksEnabled != nil && *req.WebhooksEnabled != importer.WebhooksEnabled {
+		importer.WebhooksEnabled = *req.WebhooksEnabled
 		save = true
 	}
 	if req.AllowedDomains != nil && !util.EqualContents(*req.AllowedDomains, importer.AllowedDomains) {

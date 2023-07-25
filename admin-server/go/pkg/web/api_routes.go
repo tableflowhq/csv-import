@@ -231,7 +231,7 @@ func downloadImportForExternalAPI(c *gin.Context) {
 
 	// Set the appropriate response headers
 	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%s", fmt.Sprintf("%s.csv", imp.ID.String())))
-	c.Header("Content-Type", imp.FileType.String)
+	c.Header("Content-Type", "text/csv")
 	fileSize, _ := util.GetFileSize(downloadFile)
 	c.Header("Content-Length", strconv.Itoa(int(fileSize)))
 

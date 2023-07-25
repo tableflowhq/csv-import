@@ -2,9 +2,25 @@ package db
 
 import (
 	"errors"
+	"gorm.io/gorm"
 	"tableflow/go/pkg/model"
 	"tableflow/go/pkg/tf"
 )
+
+func GetWorkspace(id string) (*model.Workspace, error) {
+	if len(id) == 0 {
+		return nil, errors.New("no workspace ID provided")
+	}
+	var workspace model.Workspace
+	err := tf.DB.First(&workspace, model.ParseID(id)).Error
+	if err != nil {
+		return nil, err
+	}
+	if !workspace.ID.Valid {
+		return nil, gorm.ErrRecordNotFound
+	}
+	return &workspace, nil
+}
 
 func GetAPIKey(workspaceID string) (string, error) {
 	if len(workspaceID) == 0 {
