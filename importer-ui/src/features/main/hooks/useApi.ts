@@ -2,7 +2,6 @@ import { useMemo } from "react";
 import { Importer, Template, Upload } from "../../../api/types";
 import useGetImporter from "../../../api/useGetImporter";
 import useGetUpload from "../../../api/useGetUpload";
-import usePostUpload from "../../../api/usePostUpload";
 import useMutableLocalStorage from "./useMutableLocalStorage";
 
 export default function useApi(importerId: string) {
@@ -16,17 +15,7 @@ export default function useApi(importerId: string) {
 
   // Load upload for the second step
   const { data: upload = {} as Upload, error: uploadError } = useGetUpload(tusId);
-  const { is_parsed: isParsed } = upload;
-
-  // Save the upload
-  const {
-    data: postResponse,
-    mutate: uploadMutate,
-    error: postError,
-    isSuccess: postSuccess,
-    isLoading: postIsLoading,
-  } = usePostUpload((isParsed && upload?.id) || "");
-  const { is_parsed: postIsParsed } = postResponse?.data || {};
+  const { is_stored: isStored } = upload;
 
   return {
     tusId,
@@ -37,13 +26,7 @@ export default function useApi(importerId: string) {
     template,
     upload,
     uploadError,
-    isParsed,
+    isStored,
     setTusId,
-    uploadMutate,
-    postError,
-    postSuccess,
-    postIsLoading,
-    postResponse,
-    postIsParsed,
   };
 }

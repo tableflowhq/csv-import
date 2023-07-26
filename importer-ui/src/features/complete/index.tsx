@@ -1,12 +1,19 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { Box, Button, Icon } from "@tableflow/ui-library";
+import Spinner from "../../components/Spinner";
+import useGetImport from "../../api/useGetImport";
 import { CompleteProps } from "./types";
 import style from "./style/Complete.module.scss";
 
-export default function Complete({ reload, close, onSuccess }: CompleteProps) {
+export default function Complete({ reload, close, onSuccess, upload }: CompleteProps) {
+  const uploadMemo = useMemo(() => upload, [upload]);
+
+  const { data, isLoading, error } = useGetImport(uploadMemo?.id || "");
+  const { is_stored: isStored } = data || {};
+
   useEffect(() => {
-    onSuccess({ message: "Return processed data coming soon..." }, "");
-  }, []);
+    if (isStored || error) onSuccess(data, data?.error || error?.toString() || null);
+  }, [isStored, error]);
 
   return (
     <Box className={style.content} variants={[]}>
@@ -22,7 +29,7 @@ export default function Complete({ reload, close, onSuccess }: CompleteProps) {
           Upload another file
         </Button>
       </div>
-      {/* {isLoading && <div className={style.loading}>Loading...</div>} */}
+      {isLoading && <Spinner className={style.spinner}>Storing data...</Spinner>}
     </Box>
   );
 }

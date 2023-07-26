@@ -16,6 +16,7 @@
   flex-direction: column;
   gap: var(--m);
   text-align: center;
+  position: relative;
 
   .icon {
     width: 64px;
@@ -55,5 +56,15 @@
     & > * {
       flex: 1 0 170px;
     }
+  }
+}
+
+.spinner {
+  position: absolute;
+  bottom: var(--m);
+
+  svg {
+    width: 36px;
+    height: 36px;
   }
 }

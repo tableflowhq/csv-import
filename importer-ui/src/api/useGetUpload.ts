@@ -1,10 +1,8 @@
 import { useState } from "react";
 import { useQuery, UseQueryResult } from "react-query";
-import useIsParsed from "./hooks/useIsParsed";
+import useIsStored from "./hooks/useIsStored";
 import { ApiResponse, Upload } from "./types";
 import { get } from "./api";
-
-const config = { keepPreviousData: true };
 
 export default function useGetUpload(tusId: string): UseQueryResult<Upload> {
   const [configOverrides, setConfigOverrides] = useState({});
@@ -15,10 +13,10 @@ export default function useGetUpload(tusId: string): UseQueryResult<Upload> {
       setRefetchCount((count) => count + 1);
       return tusId ? getUpload(tusId) : {};
     },
-    { ...config, ...configOverrides }
+    { keepPreviousData: true, ...configOverrides }
   );
 
-  const { customError, setRefetchCount } = useIsParsed(tusId, setConfigOverrides, query?.data, query?.error);
+  const { customError, setRefetchCount } = useIsStored(tusId, setConfigOverrides, query?.data, query?.error);
 
   return customError ? ({ ...query, error: customError } as any) : query;
 }
