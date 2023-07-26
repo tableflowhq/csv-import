@@ -38,7 +38,6 @@ export type Upload = {
   file_type: string;
   id: string;
   is_stored: boolean;
-  is_stored: boolean;
   metadata: any;
   template_id: string;
   tus_id: string;
