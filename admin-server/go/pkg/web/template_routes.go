@@ -29,8 +29,8 @@ type TemplateColumnCreateRequest struct {
 //	@Failure		400	{object}	types.Res
 //	@Router			/admin/v1/template/{id} [get]
 //	@Param			id	path	string	true	"Template ID"
-// This function retrieves a single template using the provided template ID. It first checks if the template ID is provided, then retrieves the template from the database, and finally checks if the user has access to the workspace where the template is located.
 func getTemplate(c *gin.Context, getWorkspaceUser func(*gin.Context, string) (string, error)) {
+// This function retrieves a single template using the provided template ID. It first checks if the template ID is provided, then retrieves the template from the database, and finally checks if the user has access to the workspace where the template is located.
 	id := c.Param("id")
 	if len(id) == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No template ID provided"})
@@ -58,8 +58,8 @@ func getTemplate(c *gin.Context, getWorkspaceUser func(*gin.Context, string) (st
 //	@Failure		400	{object}	types.Res
 //	@Router			/admin/v1/template-column [post]
 //	@Param			body	body	TemplateColumnCreateRequest	true	"Request body"
-// This function creates a new template column. It first binds the request body to a struct, then retrieves the template from the database, and finally creates the new template column in the database.
 func createTemplateColumn(c *gin.Context, getWorkspaceUser func(*gin.Context, string) (string, error)) {
+// This function creates a new template column. It first binds the request body to a struct, then retrieves the template from the database, and finally creates the new template column in the database.
 	req := TemplateColumnCreateRequest{}
 	if err := c.BindJSON(&req); err != nil {
 		tf.Log.Warnw("Could not bind JSON", "error", err)
@@ -123,8 +123,8 @@ func createTemplateColumn(c *gin.Context, getWorkspaceUser func(*gin.Context, st
 //	@Failure		400	{object}	types.Res
 //	@Router			/admin/v1/template-column/{id} [delete]
 //	@Param			id	path	string	true	"Template column ID"
-// This function deletes a template column. It first checks if the template column ID is provided, then retrieves the template from the database, and finally deletes the template column from the database.
 func deleteTemplateColumn(c *gin.Context, getWorkspaceUser func(*gin.Context, string) (string, error)) {
+// This function deletes a template column. It first checks if the template column ID is provided, then retrieves the template from the database, and finally deletes the template column from the database.
 	id := c.Param("id")
 	if len(id) == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No template column ID provided"})
