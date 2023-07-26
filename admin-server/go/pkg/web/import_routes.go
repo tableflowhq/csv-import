@@ -16,6 +16,7 @@ import (
 //	@Failure		400	{object}	types.Res
 //	@Router			/admin/v1/import/{id} [get]
 //	@Param			id	path	string	true	"Import ID"
+// This function retrieves a single import using the provided import ID. It first checks if the import ID is provided, then retrieves the import from the database, and finally checks if the user has access to the workspace where the import is located.
 func getImport(c *gin.Context, getWorkspaceUser func(*gin.Context, string) (string, error)) {
 	id := c.Param("id")
 	if len(id) == 0 {
@@ -44,6 +45,7 @@ func getImport(c *gin.Context, getWorkspaceUser func(*gin.Context, string) (stri
 //	@Failure		400	{object}	types.Res
 //	@Router			/admin/v1/imports/{workspace-id} [get]
 //	@Param			workspace-id	path	string	true	"Workspace ID"
+// This function retrieves a list of imports for a specific workspace. It first checks if the workspace ID is provided, then retrieves the user from the workspace, and finally retrieves the list of imports from the database.
 func getImports(c *gin.Context, getWorkspaceUser func(*gin.Context, string) (string, error)) {
 	workspaceID := c.Param("workspace-id")
 	if len(workspaceID) == 0 {
