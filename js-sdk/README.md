@@ -42,7 +42,7 @@ const args = {
   metadata: '{"userId": 1234, "userEmail": "test@example.com"}',
   onRequestClose: () => importer.close(),
   onComplete: (data, error) => {
-    if(error) {
+    if (error) {
       // Handle import error
       alert(error);
     } else {

@@ -52,7 +52,7 @@ function MyComponent() {
         closeOnClickOutside={true}
         metadata={"{\"userId\": 1234, \"userEmail\": \"test@example.com\"}"}
         onComplete: {(data, error) => {
-          if(error) {
+          if (error) {
             // Handle import error
             alert(error);
           } else {
