@@ -30,13 +30,16 @@ func PaginateUploadRows(uploadID string, offset, limit int) []map[int]string {
 					limit ?`,
 		uploadID, offset, offset+limit, limit).Iter()
 
-	res := make([]map[int]string, iter.NumRows(), iter.NumRows())
+	res := make([]map[int]string, 0, limit)
 	for i := 0; ; i++ {
 		row := types.UploadRow{}
 		if !iter.Scan(&row.Index, &row.Values) {
 			break
 		}
-		res[i] = row.Values
+		res = append(res, row.Values)
+	}
+	if err := iter.Close(); err != nil {
+		tf.Log.Errorw("An error occurred closing the iterator while paginating upload rows", "upload_id", uploadID, "error", err)
 	}
 	return res
 }
@@ -64,13 +67,16 @@ func PaginateImportRows(importID string, offset, limit int) []types.ImportRow {
 					limit ?`,
 		importID, offset, offset+limit, limit).Iter()
 
-	res := make([]types.ImportRow, iter.NumRows(), iter.NumRows())
+	res := make([]types.ImportRow, 0, limit)
 	for i := 0; ; i++ {
 		row := types.ImportRow{}
 		if !iter.Scan(&row.Index, &row.Values) {
 			break
 		}
-		res[i] = row
+		res = append(res, row)
+	}
+	if err := iter.Close(); err != nil {
+		tf.Log.Errorw("An error occurred closing the iterator while paginating import rows", "import_id", importID, "error", err)
 	}
 	return res
 }
@@ -87,7 +93,7 @@ func RetrieveAllImportRows(imp *model.Import) []types.ImportRow {
 }
 
 func NewBatchInserter() *gocql.Batch {
-	b := tf.Scylla.NewBatch(gocql.UnloggedBatch)
+	b := tf.Scylla.NewBatch(gocql.LoggedBatch)
 	//b.SetConsistency(gocql.One)
 	//b.RetryPolicy(&gocql.SimpleRetryPolicy{NumRetries: 1})
 	return b
