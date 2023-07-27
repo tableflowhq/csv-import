@@ -51,7 +51,7 @@ function MyComponent() {
         primaryColor="#7A5EF8"
         closeOnClickOutside={true}
         metadata={"{\"userId\": 1234, \"userEmail\": \"test@example.com\"}"}
-        onComplete: {(data, error) => {
+        onComplete={(data, error) => {
           if (error) {
             // Handle import error
             alert(error);
