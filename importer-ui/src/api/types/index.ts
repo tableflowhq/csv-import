@@ -37,7 +37,6 @@ export type Upload = {
   file_name: string;
   file_type: string;
   id: string;
-  is_parsed: boolean;
   is_stored: boolean;
   metadata: any;
   template_id: string;
@@ -50,4 +49,22 @@ export type UploadColumn = {
   index: number;
   name: string;
   sample_data: string[];
+};
+
+export type Import = {
+  error?: string | null;
+  created_at: number;
+  file_extension: string;
+  file_size: number;
+  file_type: string;
+  id: string;
+  importer_id: string;
+  is_stored: boolean;
+  metadata: Record<string, any>;
+  num_columns: number;
+  num_processed_values: number;
+  num_rows: number;
+  upload_id: string;
+  workspace_id: string;
+  importer?: Importer;
 };

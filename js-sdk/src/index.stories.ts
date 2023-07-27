@@ -13,7 +13,6 @@ const meta = {
   },
   argTypes: {
     elementId: { control: "text" },
-    isOpen: { control: "boolean" },
     importerId: { control: "text" },
     hostUrl: { control: "text" },
     darkMode: { control: "boolean" },
@@ -29,12 +28,12 @@ type Story = StoryObj<TableFlowImporterProps>;
 export const App: Story = {
   args: {
     elementId: "tableflow-importer",
-    isOpen: true,
     importerId: "4b805f5f-ee9c-4248-bb9c-8afd77ea933f",
     hostUrl: "http://localhost:3001",
     darkMode: true,
     primaryColor: "#7a5ef8",
     metadata: '{"userId": 1234, "userEmail": "test@example.com"}',
+    onComplete: (data: any) => console.log(data),
   },
 };
 

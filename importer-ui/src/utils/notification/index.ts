@@ -17,11 +17,11 @@ const styles = (type: string) => () => ({
 });
 
 export default function notification({ type = "success", ...props }: Notification) {
-  console.log({
-    ...props,
-    styles: styles(type),
-    autoClose: 5000,
-  });
+  // console.log({
+  //   ...props,
+  //   styles: styles(type),
+  //   autoClose: 5000,
+  // });
   // notifications.show({
   //   ...props,
   //   styles: styles(type),

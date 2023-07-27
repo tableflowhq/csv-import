@@ -8,4 +8,5 @@ export type TableFlowImporterProps = HTMLDialogElement & {
   primaryColor?: string;
   closeOnClickOutside?: boolean;
   metadata?: string;
+  onComplete?: (data: { data: any; error: any }) => void;
 };
