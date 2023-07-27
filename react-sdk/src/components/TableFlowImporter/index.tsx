@@ -14,6 +14,7 @@ export default function TableFlowImporter({
     metadata = "{}",
     closeOnClickOutside,
     className,
+    onComplete,
     ...props
 }: TableFlowImporterProps) {
     const ref = useRef(null);
@@ -36,6 +37,7 @@ export default function TableFlowImporter({
         primaryColor,
         metadata,
         isOpen: isOpen.toString(),
+        onComplete: onComplete ? "true" : "false",
     };
     const searchParams = new URLSearchParams(urlParams);
     const defaultImporterUrl = "https://importer.tableflow.com";
@@ -52,6 +54,23 @@ export default function TableFlowImporter({
 
     useEffect(() => {
         window.onmessage = function (e) {
+            if (onComplete) {
+                let messageData;
+
+                try {
+                    messageData = JSON.parse(e.data);
+                } catch (e) {
+                    // do nothing
+                }
+
+                if (messageData?.type === "complete") {
+                    onComplete({
+                        data: messageData?.data || null,
+                        error: messageData?.error || null,
+                    });
+                }
+            }
+
             if (e.data == "close") {
                 onRequestClose();
             }
