@@ -29,7 +29,7 @@ export default function Complete({ reload, close, onSuccess, upload }: CompleteP
           Upload another file
         </Button>
       </div>
-      {isLoading && <Spinner className={style.spinner}>Storing data...</Spinner>}
+      {/*{isLoading && <Spinner className={style.spinner}>Storing data...</Spinner>}*/}
     </Box>
   );
 }
