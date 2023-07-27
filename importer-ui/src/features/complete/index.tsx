@@ -1,6 +1,5 @@
 import { useEffect, useMemo } from "react";
 import { Box, Button, Icon } from "@tableflow/ui-library";
-import Spinner from "../../components/Spinner";
 import useGetImport from "../../api/useGetImport";
 import { CompleteProps } from "./types";
 import style from "./style/Complete.module.scss";
