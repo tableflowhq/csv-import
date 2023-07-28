@@ -307,7 +307,7 @@ func getImportForImportService(c *gin.Context) {
 	}
 	if imp.NumRows.Int64 > importServiceMaxNumRowsForFrontendPassThrough {
 		importerImport.Error = null.StringFrom(fmt.Sprintf("This import has %v rows which exceeds the max "+
-			"allowed number of rows for frontend passthrough (%v). Use the API to retrieve the data.",
+			"allowed number of rows for frontend callback (%v). Use the API to retrieve the data.",
 			imp.NumRows.Int64, importServiceMaxNumRowsForFrontendPassThrough))
 		c.JSON(http.StatusOK, importerImport)
 		return
