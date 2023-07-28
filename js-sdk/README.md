@@ -43,11 +43,9 @@ const args = {
   onRequestClose: () => importer.close(),
   onComplete: (data, error) => {
     if (error) {
-      // Handle import error
-      alert(error);
+      alert(error); // Handle import error
     } else {
-      // Use import data
-      console.log(data);
+      console.log(data); // Use import data
     }
   }
 };
@@ -76,11 +74,9 @@ Or directly in HTML
       onRequestClose: () => importer.close(),
       onComplete: (data, error) => {
         if (error) {
-          // Handle import error
-          alert(error);
+          alert(error); // Handle import error
         } else {
-          // Use import data
-          console.log(data);
+          console.log(data); // Use import data
         }
       },
     };

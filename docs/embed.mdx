@@ -1,8 +1,11 @@
 ---
 title: Embed Importer
-description: Embed the TableFlow importer in your app
+description: Embed the TableFlow importer in your frontend application with either React or JavaScript
 ---
 
+<br/>
+
+# React
 ### 1. Install the TableFlow React SDK
 
 **NPM**
@@ -25,21 +28,109 @@ Create an importer, define your template, and retrieve data at https://app.table
 import { useState } from "react";
 import { TableFlowImporter } from "@tableflow/react";
 
-function MyComponent(){
+function MyComponent() {
   const [isOpen, setIsOpen] = useState(false);
 
-  return <>
-    <button onClick={() => setIsOpen(true)}>Open TableFlow Importer</button>
+  return (
+    <>
+      <button onClick={() => setIsOpen(true)}>Open TableFlow Importer</button>
 
-    <TableFlowImporter
-      isOpen={isOpen}
-      onRequestClose={() => setIsOpen(false)}
-      importerId={"53a84496-819d-4ec6-93b7-b4b56fb676ad"} // Replace with your importer ID from https://app.tableflow.com/importers
-      darkMode={true}
-      primaryColor="#7A5EF8"
-      closeOnClickOutside={true}
-      metadata={"{\"userId\": 1234, \"userEmail\": \"test@example.com\"}"}
-    />
-  </>
+      <TableFlowImporter
+        isOpen={isOpen}
+        onRequestClose={() => setIsOpen(false)}
+        importerId={"53a84496-819d-4ec6-93b7-b4b56fb676ad"} // Replace with your importer ID from https://app.tableflow.com/importers
+        darkMode={true}
+        primaryColor="#7A5EF8"
+        closeOnClickOutside={true}
+        metadata={"{\"userId\": 1234, \"userEmail\": \"test@example.com\"}"}
+        onComplete={(data, error) => {
+          if (error) {
+            alert(error); // Handle import error
+          } else {
+            console.log(data); // Use import data
+          }
+        }}
+      />
+    </>
+  );
 }
+```
+
+<br/>
+<br/>
+# JavaScript
+### 1. Install the TableFlow JS SDK
+
+**NPM**
+
+```bash
+npm install @tableflow/js
+```
+
+**Yarn**
+
+```bash
+yarn add @tableflow/js
+```
+
+### 2. Add the Importer to your application
+
+Create an importer, define your template, and retrieve data at https://app.tableflow.com/importers
+
+```javascript
+import createTableFlowImporter from "@tableflow/js";
+
+const args = {
+  importerId: "53a84496-819d-4ec6-93b7-b4b56fb676ad", // Replace with your importer ID from https://app.tableflow.com/importers
+  darkMode: true,
+  primaryColor: "#7a5ef8",
+  metadata: '{"userId": 1234, "userEmail": "test@example.com"}',
+  onRequestClose: () => importer.close(),
+  onComplete: (data, error) => {
+    if (error) {
+      alert(error); // Handle import error
+    } else {
+      console.log(data); // Use import data
+    }
+  }
+};
+const importer = createTableFlowImporter(args);
+
+const uploadButton = document.getElementById("uploadButton");
+uploadButton.addEventListener("click", () => {
+  importer?.showModal();
+});
+```
+
+Or directly in HTML
+
+```html
+<head>
+  <script src="https://unpkg.com/@tableflow/js@latest/build/index.js"></script>
+</head>
+<body>
+  <button id="uploadButton">Upload file</button>
+  <script>
+    const args = {
+      importerId: "53a84496-819d-4ec6-93b7-b4b56fb676ad", // Replace with your importer ID from https://app.tableflow.com/importers
+      darkMode: true,
+      primaryColor: "#7a5ef8",
+      metadata: '{"userId": 1234, "userEmail": "test@example.com"}',
+      onRequestClose: () => importer.close(),
+      onComplete: (data, error) => {
+        if (error) {
+          alert(error); // Handle import error
+        } else {
+          console.log(data); // Use import data
+        }
+      },
+    };
+    const importer = createTableFlowImporter(args);
+
+    const uploadButton = document.getElementById("uploadButton");
+    uploadButton.addEventListener("click", () => {
+      importer?.showModal();
+    });
+  </script>
+</body>
 ```
