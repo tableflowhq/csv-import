@@ -1,4 +1,3 @@
-import { Box } from "@tableflow/ui-library";
 import ApiKey from "../forms/ApiKey";
 import useComponentsStore from "../../stores/componentsStore";
 import style from "./style/SettingsPage.module.scss";
