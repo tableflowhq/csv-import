@@ -1,8 +1,8 @@
 import { Components } from "./types";
 
 const components: Components = {
-  settingsPage: () => <>Settings page</>,
-  importerSettings: () => <>Importer settings</>,
+  settingsPage: () => <></>,
+  importerSettings: () => <></>,
 };
 
 export default components;
