@@ -36,7 +36,6 @@
     "rebuild-backend": "docker-compose -f ../docker-compose.dev-frontend.yml up -d --build backend",
     "start": "cross-env PORT=3000 react-scripts start",
     "build": "react-scripts build",
-    "deploy": "react-scripts build && aws s3 sync --cache-control 'max-age=604800' --exclude index.html build/ s3://tableflow-admin-cdn && aws s3 sync --cache-control 'no-cache' build/ s3://tableflow-admin-cdn && aws cloudfront create-invalidation --distribution-id EKBO9G2CH0AXD --paths \"/*\"",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "lint": "eslint .",
