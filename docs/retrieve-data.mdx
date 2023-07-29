@@ -1,0 +1,75 @@
+---
+title: Retrieve Data
+description: Consume imported data into your application
+---
+
+After a user completes a CSV or Excel file import, you have a few options for how to retrieve the cleaned and mapped data.
+
+# 1. Frontend Callback
+
+The [React](https://www.npmjs.com/package/@tableflow/react) and [JavaScript](https://www.npmjs.com/package/@tableflow/js) SDKs have an `onComplete` event that is triggered when an import is completed. It contains the actual row data along with other information about the import.
+```javascript
+onComplete: (data, error) => {
+  if (error) {
+    alert(error); // Handle import error
+  } else {
+    console.log(data); // Use import data
+  }
+}
+```
+
+With this callback function you’ll receive two parameters: `data` and `error`
+
+`data` is an object that contains the actual row data along with information about the completed import such as the number of rows imported:
+```javascript
+{
+  "data": {
+    "id": "f7ecdlb4-bfd6-460e-b524-7f23d70d9500",
+    "importer_id": "b0fldb1d-9888-4fcb-b185-22b984bcb227",
+    "num_rows": 5,
+    "num_columns": 3,
+    "num_processed_values": 13,
+    "metadata": {
+      "userEmail": "test@example.com",
+      "userId": 1234
+    },
+    "created_at": 1690565037,
+    "rows": [
+      {
+        "index": 0,
+        "values": {
+          "email": "laura@example.com",
+          "first_name": "Laura",
+          "last_name": "Jenkins"
+        }
+      },
+      {
+        "index": 1,
+        "values": {
+          "email": "craig@example.com",
+          "first_name": "Craig",
+          "last_name": "Johnson"
+        }
+      }
+    ]
+  }
+}
+```
+
+`error` is a string that will be non-empty if an error occurs during an import:
+```javascript
+"This import has 50000 rows which exceeds the max allowed number of rows for frontend callback (25000). Use the API to retrieve the data."
+```
+
+It's important to note that there is a 25,000 row limit when using frontend callbacks. `error` will be set if the number of rows imported exceeds this and the row data will be empty to prevent using an incomplete dataset. For large imports that exceed this limit, we recommend using the API directly.
+
+
+# 2. Data API
+
+TableFlow provides an API to paginate the row data of an import, view metadata about an import, or download an import directly as a CSV.
+
+- [Get Import Rows](https://tableflow.com/docs/api-reference/get-import-rows)
+- [Get Import Metadata](https://tableflow.com/docs/api-reference/get-import)
+- [Download Import CSV](https://tableflow.com/docs/api-reference/download-import)
+
+You can also use [Webhooks (coming soon)](https://tableflow.com/docs/webhooks) to get notified when an import has been completed. This allows your backend application to load the imported data as soon as an import has completed.

@@ -1,6 +1,5 @@
 import { useEffect, useMemo } from "react";
 import { Box, Button, Icon } from "@tableflow/ui-library";
-import Spinner from "../../components/Spinner";
 import useGetImport from "../../api/useGetImport";
 import { CompleteProps } from "./types";
 import style from "./style/Complete.module.scss";
@@ -29,7 +28,7 @@ export default function Complete({ reload, close, onSuccess, upload }: CompleteP
           Upload another file
         </Button>
       </div>
-      {isLoading && <Spinner className={style.spinner}>Storing data...</Spinner>}
+      {/*{isLoading && <Spinner className={style.spinner}>Storing data...</Spinner>}*/}
     </Box>
   );
 }

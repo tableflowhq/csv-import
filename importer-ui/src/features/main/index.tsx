@@ -65,7 +65,11 @@ export default function Main() {
         error,
         type: "complete",
       });
-      window?.top?.postMessage(message, "*") || window?.parent?.postMessage(message, "*");
+      if (window?.top?.postMessage) {
+        window?.top?.postMessage(message, "*");
+      } else {
+        window?.parent?.postMessage(message, "*");
+      }
     }
     setTusId("");
   };

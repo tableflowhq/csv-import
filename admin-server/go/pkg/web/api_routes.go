@@ -200,8 +200,12 @@ func downloadImportForExternalAPI(c *gin.Context) {
 	columnHeaders := make([]string, len(sampleImportRow.Values), len(sampleImportRow.Values))
 	pos := 0
 	for i, _ := range importer.Template.TemplateColumns {
-		tc := importer.Template.TemplateColumns[i]
+		tc := *importer.Template.TemplateColumns[i]
 		if _, ok := sampleImportRow.Values[tc.Key]; ok {
+			if pos >= len(columnHeaders) {
+				tf.Log.Errorw("Error downloading import while setting column headers. The current position is greater than the size of the headers", "import_id", id, "template_column_key", tc.Key, "pos", pos, "column_headers", columnHeaders, "sample_import_row_values", sampleImportRow.Values)
+				continue
+			}
 			columnHeaders[pos] = tc.Key
 			pos++
 		}

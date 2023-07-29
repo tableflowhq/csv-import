@@ -307,7 +307,7 @@ func getImportForImportService(c *gin.Context) {
 	}
 	if imp.NumRows.Int64 > importServiceMaxNumRowsForFrontendPassThrough {
 		importerImport.Error = null.StringFrom(fmt.Sprintf("This import has %v rows which exceeds the max "+
-			"allowed number of rows for frontend passthrough (%v). Use the API to retrieve the data.",
+			"allowed number of rows for frontend callback (%v). Use the API to retrieve the data.",
 			imp.NumRows.Int64, importServiceMaxNumRowsForFrontendPassThrough))
 		c.JSON(http.StatusOK, importerImport)
 		return
@@ -456,6 +456,9 @@ func processAndStoreImport(columnKeyMap map[int]string, template *model.Template
 
 	goroutines := 8
 	batchCounter := 0
+	batchSize := 0                      // cumulative batch size in bytes
+	maxMutationSize := 16 * 1024 * 1024 // 16MB
+	safetyMargin := 0.75
 
 	in := make(chan *gocql.Batch, 0)
 	var wg sync.WaitGroup
@@ -478,22 +481,32 @@ func processAndStoreImport(columnKeyMap map[int]string, template *model.Template
 				3. now you have the template column key
 				4. store to the import row value map
 			*/
+			approxMutationSize := 0
 			importRowValue := make(map[string]string, columnLength)
 			for colPos, cellVal := range uploadRows[pageRowIndex] {
 				if key, ok := columnKeyMap[colPos]; ok {
 					importRowValue[key] = cellVal
+					approxMutationSize += len(cellVal)
 					if len(strings.TrimSpace(cellVal)) != 0 {
 						numNonEmptyCells++
 					}
 				}
 			}
-			b.Query("insert into import_rows (import_id, row_index, values) values (?, ?, ?)", imp.ID.String(), importRowIndex, importRowValue)
 			batchCounter++
-			if batchCounter == scylla.BatchInsertSize {
+			batchSize += approxMutationSize
+
+			b.Query("insert into import_rows (import_id, row_index, values) values (?, ?, ?)", imp.ID.String(), importRowIndex, importRowValue)
+
+			batchSizeApproachingLimit := batchSize > int(float64(maxMutationSize)*safetyMargin)
+			if batchSizeApproachingLimit {
+				tf.Log.Infow("Sending in batch early due to limit approaching", "import_id", imp.ID, "batch_size", batchSize, "batch_counter", batchCounter)
+			}
+			if batchCounter == scylla.BatchInsertSize || batchSizeApproachingLimit {
 				// Send in the batch and start a new one
 				in <- b
 				b = scylla.NewBatchInserter()
 				batchCounter = 0
+				batchSize = 0
 			}
 			importRowIndex++
 		}

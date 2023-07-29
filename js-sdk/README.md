@@ -33,52 +33,61 @@ yarn add @tableflow/js
 Create an importer, define your template, and retrieve data at https://app.tableflow.com/importers
 
 ```javascript
-import { createTableFlowImporter } from "@tableflow/js";
+import createTableFlowImporter from "@tableflow/js";
 
 const args = {
   importerId: "53a84496-819d-4ec6-93b7-b4b56fb676ad", // Replace with your importer ID from https://app.tableflow.com/importers
   darkMode: true,
   primaryColor: "#7a5ef8",
   metadata: '{"userId": 1234, "userEmail": "test@example.com"}',
-  onRequestClose: () => dialog.close(),
+  onRequestClose: () => importer.close(),
+  onComplete: (data, error) => {
+    if (error) {
+      alert(error); // Handle import error
+    } else {
+      console.log(data); // Use import data
+    }
+  }
 };
+const importer = createTableFlowImporter(args);
 
 const uploadButton = document.getElementById("uploadButton");
-
-const dialog = createTableFlowImporter(args);
-
 uploadButton.addEventListener("click", () => {
-  dialog?.showModal();
+  importer?.showModal();
 });
 ```
 
-Or directly in the HTML
+Or directly in HTML
 
 ```html
-<script src="https://unpkg.com/@tableflow/js@latest/build/index.js"></script>
-
-<button id="uploadButton">Upload file</button>
-
-<script>
-  let isOpen = false;
-
-  const args = {
-    importerId: "53a84496-819d-4ec6-93b7-b4b56fb676ad", // Replace with your importer ID from https://app.tableflow.com/importers
-    darkMode: true,
-    primaryColor: "#7a5ef8",
-    metadata: '{"userId": 1234, "userEmail": "test@example.com"}',
-    onRequestClose: () => dialog.close(),
-    onComplete: (data, error) => console.log(data, error),
-  };
-
-  const uploadButton = document.getElementById("uploadButton");
-
-  const dialog = createTableFlowImporter(args);
-
-  uploadButton.addEventListener("click", () => {
-    dialog?.showModal();
-  });
-</script>
+<head>
+  <script src="https://unpkg.com/@tableflow/js@latest/build/index.js"></script>
+</head>
+<body>
+  <button id="uploadButton">Upload file</button>
+  <script>
+    const args = {
+      importerId: "53a84496-819d-4ec6-93b7-b4b56fb676ad", // Replace with your importer ID from https://app.tableflow.com/importers
+      darkMode: true,
+      primaryColor: "#7a5ef8",
+      metadata: '{"userId": 1234, "userEmail": "test@example.com"}',
+      onRequestClose: () => importer.close(),
+      onComplete: (data, error) => {
+        if (error) {
+          alert(error); // Handle import error
+        } else {
+          console.log(data); // Use import data
+        }
+      },
+    };
+    const importer = createTableFlowImporter(args);
+  
+    const uploadButton = document.getElementById("uploadButton");
+    uploadButton.addEventListener("click", () => {
+      importer?.showModal();
+    });
+  </script>
+</body>
 ```
 
 \

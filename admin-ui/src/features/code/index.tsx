@@ -1,17 +1,17 @@
 import { useMemo } from "react";
 import { Button, Input, useLocalStorage } from "@tableflow/ui-library";
 import notification from "../../utils/notification";
-import getCodeReact from "./utils/getCodeReact";
 import getCodeJavaScript from "./utils/getCodeJavaScript";
+import getCodeReact from "./utils/getCodeReact";
 import { CodeProps } from "./types";
 import style from "./style/Code.module.scss";
 
 export default function Code(props: CodeProps) {
-  const [framework, setFramework] = useLocalStorage("frameworka", "react");
+  const [framework, setFramework] = useLocalStorage("framework", "react");
 
   const options = {
     React: { value: "react" },
-    "JavaScript": { value: "javascript" },
+    JavaScript: { value: "javascript" },
   };
 
   const code = useMemo(() => (framework === "react" ? getCodeReact(props) : getCodeJavaScript(props)), [JSON.stringify(props), framework]);

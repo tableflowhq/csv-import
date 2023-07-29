@@ -170,6 +170,9 @@ func processAndStoreUpload(upload *model.Upload, file *os.File) (uploadProcessRe
 	numRows := 0
 	goroutines := 8
 	batchCounter := 0
+	batchSize := 0                      // cumulative batch size in bytes
+	maxMutationSize := 16 * 1024 * 1024 // 16MB
+	safetyMargin := 0.75
 
 	in := make(chan *gocql.Batch, 0)
 	var wg sync.WaitGroup
@@ -196,6 +199,7 @@ func processAndStoreUpload(upload *model.Upload, file *os.File) (uploadProcessRe
 			continue
 		}
 
+		approxMutationSize := 0
 		uploadRow := make(map[int16]string)
 		for columnIndex, columnValue := range row {
 			if columnIndex >= len(upload.UploadColumns) {
@@ -204,16 +208,25 @@ func processAndStoreUpload(upload *model.Upload, file *os.File) (uploadProcessRe
 			}
 			// TODO: Deal with invalid characters better, determine charsets programmatically? Or just surface these to the user?
 			uploadRow[int16(columnIndex)] = strings.ToValidUTF8(columnValue, "")
+			approxMutationSize += len(columnValue)
 		}
+
 		numRows++
+		batchCounter++
+		batchSize += approxMutationSize
 
 		b.Query("insert into upload_rows (upload_id, row_index, values) values (?, ?, ?)", upload.ID.String(), i, uploadRow)
-		batchCounter++
-		if batchCounter == scylla.BatchInsertSize {
+
+		batchSizeApproachingLimit := batchSize > int(float64(maxMutationSize)*safetyMargin)
+		if batchSizeApproachingLimit {
+			tf.Log.Infow("Sending in batch early due to limit approaching", "upload_id", upload.ID, "batch_size", batchSize, "batch_counter", batchCounter, "num_rows", numRows)
+		}
+		if batchCounter == scylla.BatchInsertSize || batchSizeApproachingLimit {
 			// Send in the batch and start a new one
 			in <- b
 			b = scylla.NewBatchInserter()
 			batchCounter = 0
+			batchSize = 0
 		}
 	}
 
