@@ -1,9 +1,13 @@
 import { Box } from "@tableflow/ui-library";
 import { Importer } from "../../api/types";
+import useComponentsStore from "../../stores/componentsStore";
 import Domains from "./forms/Domains";
 import style from "./style/Settings.module.scss";
 
 export default function Settings({ importer }: { importer: Importer }) {
+  const components = useComponentsStore((state) => state.components);
+  const { importerSettings: SettingsComponents } = components;
+
   return (
     <div className={style.container}>
       <div className={style.column}>
@@ -15,13 +19,11 @@ export default function Settings({ importer }: { importer: Importer }) {
         </Box>
       </div>
 
-      <div className={style.column}>
-        {/*<h3>Webhook URL</h3>*/}
-        {/*<p>Notifications on import completion</p>*/}
-        {/*<Box className={style.box}>*/}
-        {/*  <Webhook importer={importer} />*/}
-        {/*</Box>*/}
-      </div>
+      {SettingsComponents && (
+        <div className={style.column}>
+          <SettingsComponents />
+        </div>
+      )}
     </div>
   );
 }

@@ -8,7 +8,7 @@ import style from "../style/Form.module.scss";
 export default function Domains({ importer }: { importer: Importer }) {
   const [allowed_domains, setAllowedDomains] = useState<string[]>(importer.allowed_domains || []);
 
-  const { mutate, isLoading, error } = usePostImporter(importer.id);
+  const { mutate, isLoading, error } = usePostImporter("", importer.id);
 
   useEffect(() => {
     if (allowed_domains !== importer.allowed_domains) mutate({ id: importer.id, allowed_domains });

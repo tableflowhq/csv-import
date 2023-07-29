@@ -1,3 +1,3 @@
 import { ReactElement } from "react";
 
-export type Anchors = { [key: string]: () => ReactElement };
+export type Components = { [key: string]: () => ReactElement };

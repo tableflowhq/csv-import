@@ -1,9 +1,9 @@
 import { Navigate, Routes } from "react-router-dom";
-import ApiKey from "../features/forms/ApiKey";
 import Imports from "../features/imports";
 import Frame from "../features/layouts/frame";
 import Main from "../features/layouts/main";
 import Profile from "../features/profile";
+import SettingsPage from "../features/settingsPage";
 import parseRoutes from "./utils/parseRoutes";
 import { RoutesType } from "./types";
 import ImporterRoutes from "./ImporterRoutes";
@@ -26,7 +26,7 @@ const routes: RoutesType = [
   {
     paths: "settings",
     layout: Main,
-    children: <ApiKey />,
+    children: <SettingsPage />,
   },
   {
     paths: "*",

@@ -1,0 +1,7 @@
+.wrapper {
+  & > * {
+    & > * + * {
+      margin-top: var(--m-l);
+    }
+  }
+}

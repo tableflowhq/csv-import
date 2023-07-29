@@ -1,6 +1,4 @@
-import { useMemo } from "react";
-import { Box, Button, classes, Errors, Icon, Input, Modal, useEntitySelection, useModal, usePassword } from "@tableflow/ui-library";
-import ImporterDelete from "../Importer/ImporterDelete";
+import { Box, Button, classes, Errors, Icon, Input, Modal, useModal, usePassword } from "@tableflow/ui-library";
 import useApiKey from "../../../api/useApiKey";
 import useGetOrganization from "../../../api/useGetOrganization";
 import notification from "../../../utils/notification";
@@ -37,35 +35,33 @@ export default function ApiKey() {
 
   return (
     <div className={style.apiKey}>
-      <div className="container">
-        <div className={style.header}>
-          <div className={classes([style.title, style.smallInnerSpace])}>
-            <h1>API Key</h1>
-            <small>View and update your API key used to access the data from your imports</small>
-          </div>
+      <div className={style.header}>
+        <div className={classes([style.title, style.smallInnerSpace])}>
+          <h1>API Key</h1>
+          <small>View and update your API key used to access the data from your imports</small>
         </div>
-        <Box variants={["bg-shade"]}>
-          <form onSubmit={onSubmit}>
-            <div className={style.inputWithIcon}>
-              <Input label="API Key" {...password} value={apiKey} readOnly />
-
-              {apiKey && (
-                <Button type="button" variants={["bare", "square"]} onClick={() => copyToClipboard(apiKey)} title="Copy to clipboard">
-                  <Icon icon="copy" size="m" className={style.iconFix} />
-                </Button>
-              )}
-            </div>
-
-            <div className={style.actions}>
-              <Button type="submit" variants={["primary", "small"]} className={style.button}>
-                Regenerate Key
-              </Button>
-            </div>
-
-            {error && <Errors error={error} />}
-          </form>
-        </Box>
       </div>
+      <Box variants={["bg-shade"]}>
+        <form onSubmit={onSubmit}>
+          <div className={style.inputWithIcon}>
+            <Input label="API Key" {...password} value={apiKey} readOnly />
+
+            {apiKey && (
+              <Button type="button" variants={["bare", "square"]} onClick={() => copyToClipboard(apiKey)} title="Copy to clipboard">
+                <Icon icon="copy" size="m" className={style.iconFix} />
+              </Button>
+            )}
+          </div>
+
+          <div className={style.actions}>
+            <Button type="submit" variants={["primary", "small"]} className={style.button}>
+              Regenerate Key
+            </Button>
+          </div>
+
+          {error && <Errors error={error} />}
+        </form>
+      </Box>
 
       {modal.openDelayed && (
         <Modal {...modal} useBox={false} useCloseButton>

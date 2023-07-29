@@ -1,7 +1,11 @@
 .container {
+  margin-top: var(--m-l);
   display: flex;
   gap: var(--m-xl);
-  margin-top: var(--m-l);
+
+  @media (max-width: 900px) {
+    flex-direction: column;
+  }
 }
 
 .column {
