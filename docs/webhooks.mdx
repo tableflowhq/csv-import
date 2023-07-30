@@ -13,17 +13,20 @@ TableFlow uses webhooks to push real-time notifications about your data imports.
 
 To get started, create an endpoint where you can receive webhooks. For this example, we’ll use [Svix Play](https://play.svix.com/) to easily set up a test endpoint.
 
-#### 1. Go to [play.svix.com](https://play.svix.com/) and copy the provided URL that will receive webhooks. You can also provide your own endpoint URL instead.
+#### 1. Create an endpoint
+Go to [play.svix.com](https://play.svix.com/) and copy the provided URL that will receive webhooks. You can also provide your own endpoint URL instead.
 <Frame>
 ![Svix Play](assets/webhooks-play.jpg)
 </Frame>
 
-#### 2. Navigate to your [workspace settings](https://app.tableflow.com/settings) in TableFlow cloud. Under the “Webhooks” section, there is where we’ll add the endpoint we just created and choose the `import.completed event` to be notified when users complete a file import:
+#### 2. Add the endpoint to TableFlow
+Navigate to your [workspace settings](https://app.tableflow.com/settings) in TableFlow cloud. Under the “Webhooks” section, there is where we’ll add the endpoint we just created and choose the `import.completed event` to be notified when users complete a file import:
 <Frame>
 ![Add Endpoint](assets/webhooks-add-endpoint.jpg)
 </Frame>
 
-#### 3. Send a test event to your webhook by navigating to the “Testing” tab, selected the event to send, and pressing “Send Example”:
+#### 3. Send a test event
+Send a test event to your webhook by navigating to the “Testing” tab, selected the event to send, and pressing “Send Example”:
 <Frame>
 ![Testing](assets/webhooks-testing.jpg)
 </Frame>
