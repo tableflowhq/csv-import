@@ -38,7 +38,12 @@ export default function ApiKey() {
       <div className={style.header}>
         <div className={classes([style.title, style.smallInnerSpace])}>
           <h1>API Key</h1>
-          <small>View and update your API key used to access the data from your imports</small>
+          <small>
+            View and update your API key used to access the data from your imports. The API docs can be found{" "}
+            <a href="https://tableflow.com/docs/api-reference/get-import-rows" target="_blank">
+              here
+            </a>
+          </small>
         </div>
       </div>
       <Box variants={["bg-shade"]}>
