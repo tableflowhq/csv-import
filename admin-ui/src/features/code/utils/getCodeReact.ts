@@ -6,7 +6,7 @@ export default function getCodeReact(props: CodeProps) {
     hostUrlLine = `\n        hostUrl={"${props.hostUrl}"}`;
   }
   return `import { useState } from "react";
-import { TableFlowImporter } from "@tableflow/react-sdk";
+import { TableFlowImporter } from "@tableflow/react";
 
 function MyComponent() {
   const [isOpen, setIsOpen] = useState(false);
