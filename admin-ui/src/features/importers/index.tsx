@@ -16,6 +16,7 @@ import ImporterDelete from "../forms/Importer/ImporterDelete";
 import { Importer } from "../../api/types";
 import useGetImporters from "../../api/useGetImporters";
 import useGetOrganization from "../../api/useGetOrganization";
+import useComponentsStore from "../../stores/componentsStore";
 import { importersTable } from "./utils/importersTable";
 import style from "./style/Importers.module.scss";
 
@@ -62,6 +63,9 @@ export default function Importers() {
   // Data to table format
 
   const tableData = importersTable(dataPage as any, update);
+
+  const components = useComponentsStore((state) => state.components);
+  const { mainPage: MainComponents } = components;
 
   if (isLoading) return null;
 
@@ -112,6 +116,8 @@ export default function Importers() {
           {modalContent}
         </Modal>
       )}
+
+      {MainComponents && <MainComponents />}
     </div>
   );
 }
