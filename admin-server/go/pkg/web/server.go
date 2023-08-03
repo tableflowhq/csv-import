@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gin-contrib/cors"
+	"github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	"github.com/samber/lo"
 	"github.com/swaggo/files"
@@ -48,6 +49,7 @@ type ServerConfig struct {
 	AdditionalCORSOrigins          []string
 	AdditionalCORSHeaders          []string
 	AdditionalAdminRoutes          func(group *gin.RouterGroup)
+	UseZapLogger                   bool
 }
 
 func StartWebServer(config ServerConfig) *http.Server {
@@ -82,8 +84,15 @@ func StartWebServer(config ServerConfig) *http.Server {
 		AllowWildcard:    true,
 		MaxAge:           12 * time.Hour,
 	}))
-	router.Use(gin.Logger())
-	router.Use(gin.Recovery())
+
+	if config.UseZapLogger {
+		ginLogger := tf.Log.Desugar()
+		router.Use(ginzap.Ginzap(ginLogger, time.RFC3339, true))
+		router.Use(ginzap.RecoveryWithZap(ginLogger, true))
+	} else {
+		router.Use(gin.Logger())
+		router.Use(gin.Recovery())
+	}
 	if config.AuthMiddleware != nil {
 		router.Use(config.AuthMiddleware)
 	}
