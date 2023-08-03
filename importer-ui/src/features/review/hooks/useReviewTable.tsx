@@ -20,11 +20,7 @@ export default function useReviewTable(items: UploadColumn[] = [], templateColum
   const templateFields = useMemo(
     () =>
       templateColumns.reduce((acc, field) => {
-        let name = field.name;
-        if (field.required) {
-          name = name + " *";
-        }
-        return { ...acc, [name]: { value: field.id } };
+        return { ...acc, [field.name]: { value: field.id, required: field.required } };
       }, {}),
     [JSON.stringify(templateColumns)]
   );
