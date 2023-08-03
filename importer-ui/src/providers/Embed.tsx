@@ -5,7 +5,7 @@ import useEmbedStore from "../stores/embed";
 import { EmbedProps } from "./types";
 
 export default function Embed({ children }: EmbedProps) {
-  const { importerId, darkMode: darkModeString, primaryColor, metadata, isOpen, onComplete } = useSearchParams();
+  const { importerId, darkMode: darkModeString, primaryColor, metadata, isOpen, onComplete, styles } = useSearchParams();
 
   // Set importerId & metadata in embed store
   const setEmbedParams = useEmbedStore((state) => state.setEmbedParams);
@@ -33,6 +33,19 @@ export default function Embed({ children }: EmbedProps) {
       root.style.setProperty("--color-primary", primaryColor);
     }
   }, [primaryColor]);
+
+  useEffect(() => {
+    const parsedStyles = styles && JSON.parse(styles);
+
+    styles &&
+      Object.keys(parsedStyles).forEach((key) => {
+        if (key.indexOf("--") === 0) {
+          const root = document.documentElement;
+          const value = parsedStyles?.[key as any];
+          root.style.setProperty(key, value);
+        }
+      });
+  }, [styles]);
 
   return <>{children}</>;
 }
