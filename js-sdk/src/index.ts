@@ -13,6 +13,7 @@ export default function createTableFlowImporter({
   metadata = "{}",
   closeOnClickOutside,
   onComplete,
+  customStyles,
   className,
 }: TableFlowImporterProps) {
   // CSS classes
@@ -47,6 +48,7 @@ export default function createTableFlowImporter({
     metadata,
     isOpen: isOpen.toString(),
     onComplete: onComplete ? "true" : "false",
+    customStyles: JSON.stringify(customStyles),
   };
   const searchParams = new URLSearchParams(urlParams);
   const defaultImporterUrl = "https://importer.tableflow.com";

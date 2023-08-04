@@ -5,7 +5,7 @@ import useEmbedStore from "../stores/embed";
 import { EmbedProps } from "./types";
 
 export default function Embed({ children }: EmbedProps) {
-  const { importerId, darkMode: darkModeString, primaryColor, metadata, isOpen, onComplete, styles } = useSearchParams();
+  const { importerId, darkMode: darkModeString, primaryColor, metadata, isOpen, onComplete, customStyles } = useSearchParams();
 
   // Set importerId & metadata in embed store
   const setEmbedParams = useEmbedStore((state) => state.setEmbedParams);
@@ -35,17 +35,21 @@ export default function Embed({ children }: EmbedProps) {
   }, [primaryColor]);
 
   useEffect(() => {
-    const parsedStyles = styles && JSON.parse(styles);
+    try {
+      const parsedStyles = customStyles && JSON.parse(customStyles);
 
-    styles &&
-      Object.keys(parsedStyles).forEach((key) => {
-        if (key.indexOf("--") === 0) {
-          const root = document.documentElement;
-          const value = parsedStyles?.[key as any];
-          root.style.setProperty(key, value);
-        }
-      });
-  }, [styles]);
+      customStyles &&
+        Object.keys(parsedStyles).forEach((key) => {
+          if (key.indexOf("--") === 0) {
+            const root = document.documentElement;
+            const value = parsedStyles?.[key as any];
+            root.style.setProperty(key, value);
+          }
+        });
+    } catch (e) {
+      console.error('The "customStyles" prop is not a valid JSON string. Please check the documentation for more details.');
+    }
+  }, [customStyles]);
 
   return <>{children}</>;
 }

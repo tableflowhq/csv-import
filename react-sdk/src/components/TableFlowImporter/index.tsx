@@ -15,7 +15,7 @@ export default function TableFlowImporter({
     closeOnClickOutside,
     className,
     onComplete,
-    styles,
+    customStyles,
     ...props
 }: TableFlowImporterProps) {
     const ref = useRef(null);
@@ -39,7 +39,7 @@ export default function TableFlowImporter({
         metadata,
         isOpen: isOpen.toString(),
         onComplete: onComplete ? "true" : "false",
-        styles: JSON.stringify(styles),
+        customStyles: JSON.stringify(customStyles),
     };
     const searchParams = new URLSearchParams(urlParams);
     const defaultImporterUrl = "https://importer.tableflow.com";

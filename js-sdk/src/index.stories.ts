@@ -34,6 +34,7 @@ export const App: Story = {
     primaryColor: "#7a5ef8",
     metadata: '{"userId": 1234, "userEmail": "test@example.com"}',
     onComplete: (data: any) => console.log(data),
+    customStyles: { "--font-family-1": "monospace" },
   },
 };
 

@@ -6,7 +6,7 @@ const defaults: TableFlowImporterProps = {
     metadata: '{"userId": 1234, "userEmail": "test@example.com"}',
     darkMode: true,
     onComplete: ({ data, error }) => console.log("onComplete", data, error),
-    styles: { "--font-family-1": "monospace" },
+    customStyles: { "--font-family-1": "monospace" },
 };
 
 export default defaults;
