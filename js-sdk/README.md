@@ -47,7 +47,7 @@ const args = {
     } else {
       console.log(data); // Use import data
     }
-  }
+  },
 };
 const importer = createTableFlowImporter(args);
 
@@ -79,9 +79,10 @@ Or directly in HTML
           console.log(data); // Use import data
         }
       },
+      customStyles: {}, // See the options in https://tableflow.com/docs/embed
     };
     const importer = createTableFlowImporter(args);
-  
+
     const uploadButton = document.getElementById("uploadButton");
     uploadButton.addEventListener("click", () => {
       importer?.showModal();

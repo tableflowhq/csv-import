@@ -37,30 +37,31 @@ import { useState } from "react";
 import { TableFlowImporter } from "@tableflow/react";
 
 function MyComponent() {
-  const [isOpen, setIsOpen] = useState(false);
+    const [isOpen, setIsOpen] = useState(false);
 
-  return (
-    <>
-      <button onClick={() => setIsOpen(true)}>Open TableFlow Importer</button>
+    return (
+        <>
+            <button onClick={() => setIsOpen(true)}>Open TableFlow Importer</button>
 
-      <TableFlowImporter
-        isOpen={isOpen}
-        onRequestClose={() => setIsOpen(false)}
-        importerId={"53a84496-819d-4ec6-93b7-b4b56fb676ad"} // Replace with your importer ID from https://app.tableflow.com/importers
-        darkMode={true}
-        primaryColor="#7A5EF8"
-        closeOnClickOutside={true}
-        metadata={"{\"userId\": 1234, \"userEmail\": \"test@example.com\"}"}
-        onComplete={(data, error) => {
-          if (error) {
-            alert(error); // Handle import error
-          } else {
-            console.log(data); // Use import data
-          }
-        }}
-      />
-    </>
-  );
+            <TableFlowImporter
+                isOpen={isOpen}
+                onRequestClose={() => setIsOpen(false)}
+                importerId={"53a84496-819d-4ec6-93b7-b4b56fb676ad"} // Replace with your importer ID from https://app.tableflow.com/importers
+                darkMode={true}
+                primaryColor="#7A5EF8"
+                closeOnClickOutside={true}
+                metadata={'{"userId": 1234, "userEmail": "test@example.com"}'}
+                onComplete={(data, error) => {
+                    if (error) {
+                        alert(error); // Handle import error
+                    } else {
+                        console.log(data); // Use import data
+                    }
+                }}
+                customStyles={{}} // See the options in https://tableflow.com/docs/embed
+            />
+        </>
+    );
 }
 ```
 

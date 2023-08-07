@@ -19,7 +19,8 @@ const args = {
     } else {
       console.log(data); // Use import data
     }
-  }
+  },
+  customStyles: { "--font-family-1": "monospace" },
 }
 const importer = createTableFlowImporter(args);
 
