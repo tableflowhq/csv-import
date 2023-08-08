@@ -49,12 +49,12 @@ Paste the Slack Webhook URL from the section above into the Endpoint URL field. 
 Navigate to the "Advanced" section of the endpoint settings and find "Transformations". Toggle on the "Enabled" switch.
 ![Enable Transformations](/assets/tableflow-enable-transformations.png)
 
-#### 4. Enable Transformations
+#### 4. Edit Transformation Code
 Click "Edit transformation" and find the code block to modify the webhook payload. Update the handler to the code below and click "Save".
 ```
 function handler(webhook) {
 
-  webhook.payload = {"text": "TableFlow Import Completed - number of rows:" + webhook.payload.num_rows}
+  webhook.payload = {"text": "TableFlow Import Completed - number of rows: " + webhook.payload.num_rows}
 
   return webhook
 }
