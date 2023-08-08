@@ -38,7 +38,14 @@
 
 .branding {
   position: absolute;
-  bottom: var(--m-s);
-  right: var(--m-s);
-  color: var(--color-text-on-secondary-disabled);
+  bottom: var(--m);
+  width: 130px;
+  left: 50%;
+  transform: translateX(-50%);
+
+  svg {
+    display: block;
+    max-width: 100%;
+    height: auto;
+  }
 }

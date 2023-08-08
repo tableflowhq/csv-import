@@ -5,6 +5,7 @@ import { getAPIBaseURL } from "../../api/api";
 import useEmbedStore from "../../stores/embed";
 import useApi from "./hooks/useApi";
 import style from "./style/Main.module.scss";
+import { ReactComponent as Logo } from "../../assets/TableFlow-gray-logo.svg";
 import Complete from "../complete";
 import Review from "../review";
 import Uploader from "../uploader";
@@ -119,7 +120,9 @@ export default function Main() {
           </Button>
         </div>
       )}
-      <div className={style.branding}>Powered by TableFlow</div>
+      <div className={style.branding}>
+        <Logo />
+      </div>
     </div>
   );
 }
