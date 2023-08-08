@@ -35,3 +35,10 @@
   padding: var(--m);
   border-radius: var(--border-radius-1);
 }
+
+.branding {
+  position: absolute;
+  bottom: var(--m-s);
+  right: var(--m-s);
+  color: var(--color-text-on-secondary-disabled);
+}

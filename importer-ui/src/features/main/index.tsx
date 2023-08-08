@@ -119,6 +119,7 @@ export default function Main() {
           </Button>
         </div>
       )}
+      <div className={style.branding}>Powered by TableFlow</div>
     </div>
   );
 }
