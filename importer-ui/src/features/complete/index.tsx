@@ -10,6 +10,8 @@ export default function Complete({ reload, close, onSuccess, upload }: CompleteP
   const { data, isLoading, error } = useGetImport(uploadMemo?.id || "");
   const { is_stored: isStored } = data || {};
 
+  const isEmbeddedInIframe = window?.top !== window?.self;
+
   useEffect(() => {
     if (isStored || error) onSuccess(data, data?.error || error?.toString() || null);
   }, [isStored, error]);
@@ -21,9 +23,11 @@ export default function Complete({ reload, close, onSuccess, upload }: CompleteP
       </span>
       <div>Upload Successful</div>
       <div className={style.actions}>
-        <Button type="button" variants={["tertiary"]} icon="cross" onClick={close}>
-          Close
-        </Button>
+        {isEmbeddedInIframe && (
+          <Button type="button" variants={["tertiary"]} icon="cross" onClick={close}>
+            Close
+          </Button>
+        )}
         <Button type="button" variants={["primary"]} icon="update" onClick={reload}>
           Upload another file
         </Button>

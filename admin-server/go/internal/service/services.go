@@ -10,6 +10,7 @@ import (
 	"go.uber.org/zap"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"log"
 	"os"
 	"sync"
 	"tableflow/go/pkg/db"
@@ -32,16 +33,17 @@ func InitServices(ctx context.Context, wg *sync.WaitGroup) {
 	var err error
 
 	/* Logger */
-	err = initLogger()
+	wg.Add(1)
+	err = initLogger(ctx, wg)
 	if err != nil {
-		tf.Log.Fatalw("Error initializing logger", "error", err.Error())
+		log.Printf("Error initializing logger: %v", err.Error())
 		return
 	}
 
 	/* Environment */
 	err = initEnv()
 	if err != nil {
-		tf.Log.Errorw("Error loading initializing env", "error", err.Error())
+		tf.Log.Errorw("Error initializing env", "error", err.Error())
 		return
 	}
 
@@ -77,14 +79,16 @@ func InitServices(ctx context.Context, wg *sync.WaitGroup) {
 	}
 }
 
-func initLogger() error {
+func initLogger(ctx context.Context, wg *sync.WaitGroup) error {
 	if loggerInitialized {
 		return errors.New("logger already initialized")
 	}
 	loggerInitialized = true
+
 	zapLogger, _ := zap.NewDevelopment()
-	defer zapLogger.Sync()
 	tf.Log = zapLogger.Sugar()
+
+	go util.ShutdownHandler(ctx, wg, func() { tf.Log.Sync() })
 	return nil
 }
 
