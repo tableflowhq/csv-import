@@ -37,19 +37,23 @@ Great, now you've got a Slack App that's ready to receive incoming webhooks. Scr
 
 Now that you've got the incoming webhook ready in Slack, you can now trigger it from TableFlow.
 
-#### 1. Add Endpoint
+#### 1. Enable Webhooks for Importer(s)
+Navigate to the importer(s) that you'd like to send webhooks, and under "Settings" toggle the "Enable Webhooks" setting to on.
+![Enable Webhooks](/assets/tableflow-enable-webhooks.png)
+
+#### 2. Add Endpoint
 Navigate to the "Webhooks" section of the TableFlow settings and click the "Add Endpoint" button.
 ![Webhooks Settings](/assets/tableflow-webhooks-settings.png)
 
-#### 2. Set Slack Webhook URL
+#### 3. Set Slack Webhook URL
 Paste the Slack Webhook URL from the section above into the Endpoint URL field. Then scroll to the bottom of the page and click "Create".
 ![Set Slack URL](/assets/tableflow-set-slack-url.png)
 
-#### 3. Enable Transformations
+#### 4. Enable Transformations
 Navigate to the "Advanced" section of the endpoint settings and find "Transformations". Toggle on the "Enabled" switch.
 ![Enable Transformations](/assets/tableflow-enable-transformations.png)
 
-#### 4. Edit Transformation Code
+#### 5. Edit Transformation Code
 Click "Edit transformation" and find the code block to modify the webhook payload. Update the handler to the code below and click "Save".
 ```
 function handler(webhook) {
