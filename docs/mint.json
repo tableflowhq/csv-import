@@ -57,7 +57,8 @@
         "how-it-works",
         "embed",
         "retrieve-data",
-        "webhooks"
+        "webhooks",
+        "slack-notifications"
       ]
     },
     {
