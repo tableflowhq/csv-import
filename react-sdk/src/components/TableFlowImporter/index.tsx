@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import cross from "./assets/cross";
 import { TableFlowImporterProps } from "./types";
 import "./style/button.css";
@@ -15,10 +15,14 @@ export default function TableFlowImporter({
     closeOnClickOutside,
     className,
     onComplete,
+    showImportLoadingStatus,
     ...props
 }: TableFlowImporterProps) {
     const ref = useRef(null);
     const current = ref.current as any;
+    const [isLoading, setIsLoading] = useState(false);
+    const loadingRef = useRef(null);
+
     useEffect(() => {
         if (current) {
             if (isOpen) current.showModal();
@@ -30,6 +34,7 @@ export default function TableFlowImporter({
     const themeClass = darkMode && `${baseClass}-dark`;
     const dialogClass = [`${baseClass}-dialog`, themeClass, className].filter((i) => i).join(" ");
     const closeClass = `${baseClass}-close`;
+    const loadingClass = `${baseClass}-loading`;
 
     const urlParams = {
         importerId,
@@ -77,12 +82,24 @@ export default function TableFlowImporter({
         };
     }, []);
 
+    useEffect(() => {
+        if (showImportLoadingStatus) {
+            setIsLoading(true);
+        }
+    }, [showImportLoadingStatus]);
+    
+
     return (
         <dialog ref={ref} className={dialogClass} onClick={backdropClick} {...props}>
             <iframe src={uploaderUrl} />
             <button className={closeClass} onClick={() => onRequestClose()}>
                 <span dangerouslySetInnerHTML={{ __html: cross }} />
             </button>
+            {isLoading && (
+            <div ref={loadingRef} className={loadingClass}>
+                Loading...
+            </div>
+        )}
         </dialog>
     );
 }

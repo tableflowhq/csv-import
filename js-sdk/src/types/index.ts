@@ -9,4 +9,5 @@ export type TableFlowImporterProps = HTMLDialogElement & {
   closeOnClickOutside?: boolean;
   metadata?: string;
   onComplete?: (data: { data: any; error: any }) => void;
+  showImportLoadingStatus?: boolean;
 };

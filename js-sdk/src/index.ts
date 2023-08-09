@@ -14,6 +14,7 @@ export default function createTableFlowImporter({
   closeOnClickOutside,
   onComplete,
   className,
+  showImportLoadingStatus
 }: TableFlowImporterProps) {
   // CSS classes
   const baseClass = "TableFlowImporter";
