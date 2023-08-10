@@ -38,7 +38,12 @@ export default function Review({ upload, template, onSuccess, onCancel, showImpo
             <Table data={rows} background="dark" columnWidths={["20%", "30%", "30%", "20%"]} columnAlignments={["", "", "", "center"]} fixHeader />
           </div>
         ) : (
-          showImportLoadingStatus && isLoading && <Spinner className={style.spinner}>Submitting data...</Spinner>
+          showImportLoadingStatus &&
+          isLoading && (
+            <div className={style.containerSpinner}>
+              <Spinner className={style.spinner}>Submitting data...</Spinner>
+            </div>
+          )
         )}
 
         <div className={style.actions}>
