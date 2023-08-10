@@ -1,11 +1,12 @@
 import { FormEvent, useEffect } from "react";
 import { Button, Errors, Table } from "@tableflow/ui-library";
+import Spinner from "../../components/Spinner";
 import usePostUpload from "../../api/usePostUpload";
 import useReviewTable from "./hooks/useReviewTable";
 import { ReviewProps } from "./types";
 import style from "./style/Review.module.scss";
 
-export default function Review({ upload, template, onSuccess, onCancel }: ReviewProps) {
+export default function Review({ upload, template, onSuccess, onCancel, showImportLoadingStatus }: ReviewProps) {
   const { rows, formValues } = useReviewTable(upload?.upload_columns, template?.template_columns);
 
   const { mutate, error, isSuccess, isLoading } = usePostUpload(upload?.id || "");
@@ -37,7 +38,7 @@ export default function Review({ upload, template, onSuccess, onCancel }: Review
             <Table data={rows} background="dark" columnWidths={["20%", "30%", "30%", "20%"]} columnAlignments={["", "", "", "center"]} fixHeader />
           </div>
         ) : (
-          <>Loading...</>
+          showImportLoadingStatus && (isLoading ? <Spinner /> : "Loading...")
         )}
 
         <div className={style.actions}>
@@ -52,6 +53,7 @@ export default function Review({ upload, template, onSuccess, onCancel }: Review
         {!isLoading && !!error && <Errors error={error} />}
 
         {isSuccess && <p>Success!</p>}
+        {showImportLoadingStatus && (isLoading ? <Spinner /> : null)}
       </form>
     </div>
   );

@@ -20,8 +20,6 @@ export default function TableFlowImporter({
 }: TableFlowImporterProps) {
     const ref = useRef(null);
     const current = ref.current as any;
-    const [isLoading, setIsLoading] = useState(false);
-    const loadingRef = useRef(null);
 
     useEffect(() => {
         if (current) {
@@ -34,7 +32,6 @@ export default function TableFlowImporter({
     const themeClass = darkMode && `${baseClass}-dark`;
     const dialogClass = [`${baseClass}-dialog`, themeClass, className].filter((i) => i).join(" ");
     const closeClass = `${baseClass}-close`;
-    const loadingClass = `${baseClass}-loading`;
 
     const urlParams = {
         importerId,
@@ -43,6 +40,7 @@ export default function TableFlowImporter({
         metadata,
         isOpen: isOpen.toString(),
         onComplete: onComplete ? "true" : "false",
+        showImportLoadingStatus: showImportLoadingStatus ? "true" : "false",
     };
     const searchParams = new URLSearchParams(urlParams);
     const defaultImporterUrl = "https://importer.tableflow.com";
@@ -80,14 +78,7 @@ export default function TableFlowImporter({
                 onRequestClose();
             }
         };
-    }, []);
-
-    useEffect(() => {
-        if (showImportLoadingStatus) {
-            setIsLoading(true);
-        }
-    }, [showImportLoadingStatus]);
-    
+    }, []);  
 
     return (
         <dialog ref={ref} className={dialogClass} onClick={backdropClick} {...props}>
@@ -95,11 +86,6 @@ export default function TableFlowImporter({
             <button className={closeClass} onClick={() => onRequestClose()}>
                 <span dangerouslySetInnerHTML={{ __html: cross }} />
             </button>
-            {isLoading && (
-            <div ref={loadingRef} className={loadingClass}>
-                Loading...
-            </div>
-        )}
         </dialog>
     );
 }

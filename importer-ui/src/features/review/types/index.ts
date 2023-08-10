@@ -5,4 +5,5 @@ export type ReviewProps = {
   template: Template;
   onSuccess: (uploadId: string) => void;
   onCancel: () => void;
+  showImportLoadingStatus?: boolean;
 };
