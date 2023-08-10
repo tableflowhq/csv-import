@@ -56,21 +56,23 @@ export default function Main() {
   // Send messages to parent (SDK iframe)
 
   const requestClose = () => {
-    const message = JSON.stringify({
+    const message = {
       type: "close",
       importerId,
-    });
+      source: "tableflow-importer",
+    };
     postMessage(message);
   };
 
   const handleComplete = (data: any, error: string | null) => {
     if (onComplete) {
-      const message = JSON.stringify({
+      const message = {
         data,
         error,
         type: "complete",
         importerId,
-      });
+        source: "tableflow-importer",
+      };
       postMessage(message);
     }
     setTusId("");
