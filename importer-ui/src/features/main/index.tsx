@@ -3,6 +3,7 @@ import { Button, Errors, Stepper, useStepper } from "@tableflow/ui-library";
 import Spinner from "../../components/Spinner";
 import { getAPIBaseURL } from "../../api/api";
 import useEmbedStore from "../../stores/embed";
+import postMessage from "../../utils/postMessage";
 import useApi from "./hooks/useApi";
 import style from "./style/Main.module.scss";
 import Complete from "../complete";
@@ -55,7 +56,11 @@ export default function Main() {
   // Send messages to parent (SDK iframe)
 
   const requestClose = () => {
-    window?.top?.postMessage("close", "*") || window?.parent?.postMessage("close", "*");
+    const message = JSON.stringify({
+      type: "close",
+      importerId,
+    });
+    postMessage(message);
   };
 
   const handleComplete = (data: any, error: string | null) => {
@@ -64,12 +69,9 @@ export default function Main() {
         data,
         error,
         type: "complete",
+        importerId,
       });
-      if (window?.top?.postMessage) {
-        window?.top?.postMessage(message, "*");
-      } else {
-        window?.parent?.postMessage(message, "*");
-      }
+      postMessage(message);
     }
     setTusId("");
   };

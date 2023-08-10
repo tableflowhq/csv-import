@@ -63,25 +63,25 @@ export default function createTableFlowImporter({
   }
 
   window.onmessage = function (e) {
-    if (onComplete) {
-      let messageData;
+    let messageData;
 
-      try {
-        messageData = JSON.parse(e.data);
-      } catch (e) {
-        // do nothing
-      }
+    try {
+      messageData = JSON.parse(e.data);
+    } catch (e) {
+      console.error("Message from iframe is not a valid JSON", e);
+    }
 
-      if (messageData?.type === "complete") {
+    if (messageData?.importerId === importerId) {
+      if (messageData?.type === "complete" && onComplete) {
         onComplete({
           data: messageData?.data || null,
           error: messageData?.error || null,
         });
       }
-    }
 
-    if (e.data == "close") {
-      onRequestClose();
+      if (messageData?.type === "close" && onRequestClose) {
+        onRequestClose();
+      }
     }
   };
 
