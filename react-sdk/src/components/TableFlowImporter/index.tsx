@@ -53,27 +53,30 @@ export default function TableFlowImporter({
     }, [metadata]);
 
     useEffect(() => {
-        window.onmessage = function (e) {
-            let messageData;
-
-            try {
-                messageData = JSON.parse(e.data);
-            } catch (e) {
-                console.error("Message from iframe is not a valid JSON", e);
+        function messageListener(e: any) {
+            if (!e || !e.data) {
+                return;
             }
-
-            if (messageData?.importerId === importerId) {
-                if (messageData?.type === "complete" && onComplete) {
-                    onComplete({
-                        data: messageData?.data || null,
-                        error: messageData?.error || null,
-                    });
-                }
-
-                if (messageData?.type === "close" && onRequestClose) {
-                    onRequestClose();
-                }
+            const messageData = e.data;
+            if (messageData?.source !== "tableflow-importer") {
+                return;
             }
+            if (messageData?.importerId !== importerId) {
+                return;
+            }
+            if (messageData?.type === "complete" && onComplete) {
+                onComplete({
+                    data: messageData?.data || null,
+                    error: messageData?.error || null,
+                });
+            }
+            if (messageData?.type === "close" && onRequestClose) {
+                onRequestClose();
+            }
+        }
+        window.addEventListener("message", messageListener);
+        return () => {
+            window.removeEventListener("message", messageListener);
         };
     }, []);
 
