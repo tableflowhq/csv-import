@@ -1,8 +1,8 @@
 function postMessage(message: string) {
-  if (window?.parent?.postMessage) {
-    window.parent.postMessage(message, "*");
+  if (window?.top?.postMessage) {
+    window.top.postMessage(message, "*");
   } else {
-    window?.top?.postMessage(message, "*");
+    window?.parent?.postMessage(message, "*");
   }
 }
 
