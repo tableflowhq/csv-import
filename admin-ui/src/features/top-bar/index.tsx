@@ -17,16 +17,6 @@ export default function TopBar() {
   }
 
   const userMenu: DialogItem[] = [
-    ...(sessionExists && verified
-      ? [
-          {
-            children: "My profile",
-            onClick: () => navigate("/profile"),
-            icon: "userSimple",
-            iconPosition: "left",
-          } as DialogItem,
-        ]
-      : []),
     {
       children: "Log out",
       onClick: () => onLogout(),
