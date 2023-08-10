@@ -33,12 +33,12 @@ export default function Review({ upload, template, onSuccess, onCancel, showImpo
   return (
     <div className={style.content}>
       <form onSubmit={onSubmit}>
-        {upload ? (
+        {upload && !isLoading ? (
           <div className={style.tableWrapper}>
             <Table data={rows} background="dark" columnWidths={["20%", "30%", "30%", "20%"]} columnAlignments={["", "", "", "center"]} fixHeader />
           </div>
         ) : (
-          showImportLoadingStatus && (isLoading ? <Spinner /> : "Loading...")
+          showImportLoadingStatus && isLoading && <Spinner className={style.spinner}>Submitting data...</Spinner>
         )}
 
         <div className={style.actions}>
@@ -53,7 +53,6 @@ export default function Review({ upload, template, onSuccess, onCancel, showImpo
         {!isLoading && !!error && <Errors error={error} />}
 
         {isSuccess && <p>Success!</p>}
-        {showImportLoadingStatus && (isLoading ? <Spinner /> : null)}
       </form>
     </div>
   );
