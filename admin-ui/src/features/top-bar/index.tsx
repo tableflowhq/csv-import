@@ -17,6 +17,16 @@ export default function TopBar() {
   }
 
   const userMenu: DialogItem[] = [
+    ...(sessionExists && verified
+      ? [
+          {
+            children: "Settings",
+            onClick: () => navigate("/settings"),
+            icon: "gear",
+            iconPosition: "left",
+          } as DialogItem,
+        ]
+      : []),
     {
       children: "Log out",
       onClick: () => onLogout(),
@@ -37,10 +47,6 @@ export default function TopBar() {
         <div className={style.separator} />
 
         <ThemeToggle />
-
-        {sessionExists && verified && (
-          <Button icon="gear" variants={["tertiary", "small"]} onClick={() => navigate("/settings")} className={style.settingsButton} />
-        )}
 
         {sessionExists && showProfile && (
           <Dialog items={userMenu} icon="userSimple" variants={["tertiary", "small"]} className={style.profileButton} />
