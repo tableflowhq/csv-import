@@ -27,12 +27,16 @@ export default function TopBar() {
           } as DialogItem,
         ]
       : []),
-    {
-      children: "Log out",
-      onClick: () => onLogout(),
-      icon: "logOut",
-      iconPosition: "left",
-    },
+    ...(sessionExists && showProfile
+      ? [
+          {
+            children: "Log out",
+            onClick: () => onLogout(),
+            icon: "logOut",
+            iconPosition: "left",
+          } as DialogItem,
+        ]
+      : []),
   ];
 
   return (
@@ -48,9 +52,7 @@ export default function TopBar() {
 
         <ThemeToggle />
 
-        {sessionExists && showProfile && (
-          <Dialog items={userMenu} icon="userSimple" variants={["tertiary", "small"]} className={style.profileButton} />
-        )}
+        {sessionExists && verified && <Dialog items={userMenu} icon="userSimple" variants={["tertiary", "small"]} className={style.profileButton} />}
       </div>
     </div>
   );
