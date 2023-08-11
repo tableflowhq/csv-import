@@ -106,7 +106,7 @@ export default function Main() {
         showImportLoadingStatus={showImportLoadingStatus}
       />
     ) : !uploadError && step === "complete" ? (
-      <Complete reload={reload} close={requestClose} onSuccess={handleComplete} upload={upload} />
+      <Complete reload={reload} close={requestClose} onSuccess={handleComplete} upload={upload} showImportLoadingStatus={showImportLoadingStatus} />
     ) : null;
 
   return (
