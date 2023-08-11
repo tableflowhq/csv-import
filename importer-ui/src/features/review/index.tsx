@@ -31,34 +31,48 @@ export default function Review({ upload, template, onSuccess, onCancel, showImpo
   if (!rows || !rows?.length) return null;
 
   return (
-    <div className={style.content}>
-      <form onSubmit={onSubmit}>
-        {upload && !isLoading ? (
-          <div className={style.tableWrapper}>
-            <Table data={rows} background="dark" columnWidths={["20%", "30%", "30%", "20%"]} columnAlignments={["", "", "", "center"]} fixHeader />
-          </div>
-        ) : (
-          showImportLoadingStatus &&
-          isLoading && (
-            <div className={style.containerSpinner}>
-              <Spinner className={style.spinner}>Submitting data...</Spinner>
-            </div>
-          )
-        )}
-
-        <div className={style.actions}>
-          <Button type="button" variants={["secondary"]} onClick={onCancel}>
-            Cancel
-          </Button>
-          <Button variants={["primary"]} disabled={isLoading}>
-            Submit
-          </Button>
+    <>
+      {showImportLoadingStatus && isLoading ? (
+        <div className={style.containerSpinner}>
+          <Spinner className={style.spinner}>Submitting data...</Spinner>
         </div>
+      ) : (
+        <div className={style.content}>
+          <form onSubmit={onSubmit}>
+            {upload && !isLoading ? (
+              <div className={style.tableWrapper}>
+                <Table
+                  data={rows}
+                  background="dark"
+                  columnWidths={["20%", "30%", "30%", "20%"]}
+                  columnAlignments={["", "", "", "center"]}
+                  fixHeader
+                />
+              </div>
+            ) : (
+              showImportLoadingStatus &&
+              isLoading && (
+                <div className={style.containerSpinner}>
+                  <Spinner className={style.spinner}>Submitting data...</Spinner>
+                </div>
+              )
+            )}
 
-        {!isLoading && !!error && <Errors error={error} />}
+            <div className={style.actions}>
+              <Button type="button" variants={["secondary"]} onClick={onCancel}>
+                Cancel
+              </Button>
+              <Button variants={["primary"]} disabled={isLoading}>
+                Submit
+              </Button>
+            </div>
 
-        {isSuccess && <p>Success!</p>}
-      </form>
-    </div>
+            {!isLoading && !!error && <Errors error={error} />}
+
+            {isSuccess && <p>Success!</p>}
+          </form>
+        </div>
+      )}
+    </>
   );
 }

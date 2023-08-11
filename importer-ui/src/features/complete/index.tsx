@@ -20,9 +20,7 @@ export default function Complete({ reload, close, onSuccess, upload, showImportL
   return (
     <>
       {isLoading && showImportLoadingStatus ? (
-        <div className={style.containerSpinner}>
-          <Spinner className={style.spinner}>Storing data...</Spinner>
-        </div>
+        <Spinner className={style.spinner}>Storing data...</Spinner>
       ) : (
         <Box className={style.content} variants={[]}>
           <span className={style.icon}>
@@ -39,7 +37,6 @@ export default function Complete({ reload, close, onSuccess, upload, showImportL
               Upload another file
             </Button>
           </div>
-          {/*{isLoading && <Spinner className={style.spinner}>Storing data...</Spinner>}*/}
         </Box>
       )}
     </>
