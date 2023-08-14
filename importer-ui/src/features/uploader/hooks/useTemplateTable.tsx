@@ -1,11 +1,19 @@
 import { useMemo } from "react";
 import { Icon } from "@tableflow/ui-library";
+import Tooltip from "../../../components/Tooltip";
 import { TemplateColumn } from "../../../api/types";
 
 export default function useTemplateTable(fields: TemplateColumn[] = []) {
   const result = useMemo(() => {
     return fields.map((item) => ({
-      Name: item.name,
+      Name: {
+        raw: item.name,
+        content: (
+          <div>
+            <Tooltip title={item?.description || "Lorem ipsum dolor sit amet"}>{item.name}</Tooltip>
+          </div>
+        ),
+      },
       Required: { raw: item?.required ? 1 : 0, content: item?.required ? <Icon icon="check" /> : <></> },
     }));
   }, [fields]);

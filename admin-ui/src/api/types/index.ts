@@ -88,6 +88,7 @@ export type TemplateColumnFormFields = {
   id: string;
   key: string;
   name: string;
+  description?: string;
   required: boolean;
 };
 

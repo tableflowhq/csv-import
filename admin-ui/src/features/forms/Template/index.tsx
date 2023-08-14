@@ -18,6 +18,7 @@ export default function TemplateColumnForm({
     initialValues: {
       template_id: context?.templateId || "",
       name: column?.name || "",
+      description: column?.description || "",
       key: column?.key || "",
       required: column?.required || false,
     },
@@ -68,7 +69,7 @@ export default function TemplateColumnForm({
         <fieldset disabled={isLoading}>
           <Input
             placeholder={!isEditForm ? "name" : `${column?.name}`}
-            label="Column name"
+            label="Column name *"
             name="name"
             {...form.getInputProps("name")}
             autoFocus={!isEditForm}
@@ -77,13 +78,13 @@ export default function TemplateColumnForm({
           />
           <Input
             placeholder={!isEditForm ? "key" : `${column?.key}`}
-            label="Column key"
+            label="Column key *"
             name="key"
             {...form.getInputProps("key")}
-            autoFocus={!isEditForm}
             onChange={onKeyChange}
             required
           />
+          <Input as="textarea" placeholder="description" label="Description" name="description" {...form.getInputProps("description")} />
           <label>
             <Switch name="required" {...form.getInputProps("required")} label="Required" inputFirst />
           </label>
