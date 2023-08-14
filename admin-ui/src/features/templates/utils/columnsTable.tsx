@@ -13,7 +13,7 @@ export function columnsTable(columns: TemplateColumn[] = [], update: Update): Ta
     return {
       id: column.id,
       "Column Name": column.name,
-      ...(hasDescription ? { Description: column?.description } : { Description: "Aequam memento rebus in arduis servare mentem" }),
+      ...(hasDescription ? { Description: column?.description } : {}),
       Key: column.key,
       Required: {
         raw: column.required,
