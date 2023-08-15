@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import cross from "./assets/cross";
 import { TableFlowImporterProps } from "./types";
 import "./style/button.css";
@@ -15,10 +15,12 @@ export default function TableFlowImporter({
     closeOnClickOutside,
     className,
     onComplete,
+    showImportLoadingStatus,
     ...props
 }: TableFlowImporterProps) {
     const ref = useRef(null);
     const current = ref.current as any;
+
     useEffect(() => {
         if (current) {
             if (isOpen) current.showModal();
@@ -38,6 +40,7 @@ export default function TableFlowImporter({
         metadata,
         isOpen: isOpen.toString(),
         onComplete: onComplete ? "true" : "false",
+        showImportLoadingStatus: showImportLoadingStatus ? "true" : "false",
     };
     const searchParams = new URLSearchParams(urlParams);
     const defaultImporterUrl = "https://importer.tableflow.com";
@@ -78,7 +81,7 @@ export default function TableFlowImporter({
         return () => {
             window.removeEventListener("message", messageListener);
         };
-    }, []);
+    }, []);  
 
     return (
         <dialog ref={ref} className={dialogClass} onClick={backdropClick} {...props}>

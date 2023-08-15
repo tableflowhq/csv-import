@@ -5,7 +5,7 @@ import useEmbedStore from "../stores/embed";
 import { EmbedProps } from "./types";
 
 export default function Embed({ children }: EmbedProps) {
-  const { importerId, darkMode: darkModeString, primaryColor, metadata, isOpen, onComplete } = useSearchParams();
+  const { importerId, darkMode: darkModeString, primaryColor, metadata, isOpen, onComplete, showImportLoadingStatus } = useSearchParams();
 
   // Set importerId & metadata in embed store
   const setEmbedParams = useEmbedStore((state) => state.setEmbedParams);
@@ -15,6 +15,7 @@ export default function Embed({ children }: EmbedProps) {
       metadata,
       isOpen: isOpen !== "false" && isOpen !== "0",
       onComplete: !!onComplete && onComplete !== "false" && onComplete !== "0",
+      showImportLoadingStatus: !!showImportLoadingStatus && showImportLoadingStatus !== "false" && showImportLoadingStatus !== "0",
     });
   }, [importerId, metadata]);
 
