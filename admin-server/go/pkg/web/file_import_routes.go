@@ -132,7 +132,7 @@ func validateAllowedDomains(c *gin.Context, importer *model.Importer) error {
 		}
 	}
 	if !containsAllowedDomain {
-		tf.Log.Errorw("Upload request blocked coming from unauthorized domain", "importer_id", importer.ID, "referer", referer, "allowed_domains", importer.AllowedDomains)
+		tf.Log.Infow("Upload request blocked coming from unauthorized domain", "importer_id", importer.ID, "referer", referer, "allowed_domains", importer.AllowedDomains)
 		return errors.New("Uploads are only allowed from authorized domains. Please contact support.")
 	}
 	return nil
