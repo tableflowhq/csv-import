@@ -27,17 +27,13 @@ export default function useReviewTable(items: UploadColumn[] = [], templateColum
     setValues((prev) => {
       const oldTemplate = prev[id].template;
       setSelectedTemplates((currentSelected) => {
-        let newSelectedTemplates = [...currentSelected];
-        if (oldTemplate) {
-          newSelectedTemplates = newSelectedTemplates.filter((t) => t !== oldTemplate);
-        }
-
+        const newSelectedTemplates = currentSelected.filter((t) => t !== oldTemplate);
         if (template) {
           newSelectedTemplates.push(template);
         }
-
         return newSelectedTemplates;
       });
+
       return { ...prev, [id]: { ...prev[id], template, use: !!template } };
     });
   };
@@ -49,17 +45,16 @@ export default function useReviewTable(items: UploadColumn[] = [], templateColum
   const rows = useMemo(() => {
     return items.map((item) => {
       const { id, name, sample_data } = item;
-      const suggestion = values?.[id] || "";
+      const suggestion = values?.[id] || {};
       const samples = sample_data.filter((d) => d);
 
       const currentOptions = Object.keys(templateFields)
-        .filter((key) => templateFields[key].value && !selectedTemplates.includes(templateFields[key].value as string))
+        .filter((key) => !selectedTemplates.includes(templateFields[key].value as string) || templateFields[key].value === suggestion.template)
         .reduce((acc, key) => {
           acc[key] = templateFields[key];
           return acc;
         }, {} as { [key: string]: InputOption });
-      console.log("currentOptions", typeof currentOptions);
-      console.log("selectedTemplates", typeof templateFields);
+
       return {
         "Column in File": {
           raw: name || false,
