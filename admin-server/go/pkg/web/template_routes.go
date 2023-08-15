@@ -3,6 +3,7 @@ package web
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/guregu/null"
 	"github.com/samber/lo"
 	"gorm.io/gorm"
 	"net/http"
@@ -14,10 +15,11 @@ import (
 )
 
 type TemplateColumnCreateRequest struct {
-	TemplateID string `json:"template_id" example:"f0797968-becc-422a-b135-19de1d8c5d46"`
-	Name       string `json:"name" example:"First Name"`
-	Key        string `json:"key" example:"first_name"`
-	Required   bool   `json:"required" example:"false"`
+	TemplateID  string `json:"template_id" example:"f0797968-becc-422a-b135-19de1d8c5d46"`
+	Name        string `json:"name" example:"First Name"`
+	Key         string `json:"key" example:"first_name"`
+	Required    bool   `json:"required" example:"false"`
+	Description string `json:"description" example:"The first name"`
 }
 
 // getTemplate
@@ -94,13 +96,14 @@ func createTemplateColumn(c *gin.Context, getWorkspaceUser func(*gin.Context, st
 	}
 
 	templateColumn := model.TemplateColumn{
-		ID:         model.NewID(),
-		TemplateID: template.ID,
-		Name:       req.Name,
-		Key:        req.Key,
-		Required:   req.Required,
-		CreatedBy:  user.ID,
-		UpdatedBy:  user.ID,
+		ID:          model.NewID(),
+		TemplateID:  template.ID,
+		Name:        req.Name,
+		Key:         req.Key,
+		Required:    req.Required,
+		Description: null.NewString(req.Description, len(req.Description) != 0),
+		CreatedBy:   user.ID,
+		UpdatedBy:   user.ID,
 	}
 	err = tf.DB.Create(&templateColumn).Error
 	if err != nil {

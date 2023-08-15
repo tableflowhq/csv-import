@@ -28,6 +28,7 @@ export type Template = {
 export type TemplateColumn = {
   id: string;
   name: string;
+  description?: string;
   required?: boolean;
 };
 

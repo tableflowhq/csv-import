@@ -316,5 +316,8 @@ func GetDatabaseSchemaInitSQL() string {
 			add column if not exists webhooks_enabled bool not null default false;
 		alter table importers
 		    drop column if exists webhook_url;
+
+		alter table template_columns
+		    add column if not exists description text;
 	`
 }
