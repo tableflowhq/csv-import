@@ -20,7 +20,7 @@ const steps = [
 
 export default function Main() {
   // Get iframe URL params
-  const { importerId, metadata, isOpen, onComplete } = useEmbedStore((state) => state.embedParams);
+  const { importerId, metadata, isOpen, onComplete, showImportLoadingStatus } = useEmbedStore((state) => state.embedParams);
 
   // Stepper handler
   const stepper = useStepper(steps, 0);
@@ -104,7 +104,7 @@ export default function Main() {
     ) : step === "review" && !!isStored ? (
       <Review template={template} upload={upload} onSuccess={() => stepper.setCurrent(2)} onCancel={reload} />
     ) : !uploadError && step === "complete" ? (
-      <Complete reload={reload} close={requestClose} onSuccess={handleComplete} upload={upload} />
+      <Complete reload={reload} close={requestClose} onSuccess={handleComplete} upload={upload} showImportLoadingStatus={showImportLoadingStatus} />
     ) : null;
 
   return (

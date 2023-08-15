@@ -19,6 +19,7 @@ const meta = {
     primaryColor: { control: "color" },
     metadata: { control: "text" },
     closeOnClickOutside: { control: "boolean" },
+    showImportLoadingStatus: { control: "boolean" },
   },
 } satisfies Meta<TableFlowImporterProps>;
 

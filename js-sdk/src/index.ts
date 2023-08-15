@@ -14,6 +14,7 @@ export default function createTableFlowImporter({
   closeOnClickOutside,
   onComplete,
   className,
+  showImportLoadingStatus
 }: TableFlowImporterProps) {
   // CSS classes
   const baseClass = "TableFlowImporter";
@@ -47,6 +48,7 @@ export default function createTableFlowImporter({
     metadata,
     isOpen: isOpen.toString(),
     onComplete: onComplete ? "true" : "false",
+    showImportLoadingStatus: showImportLoadingStatus ? "true" : "false",
   };
   const searchParams = new URLSearchParams(urlParams);
   const defaultImporterUrl = "https://importer.tableflow.com";

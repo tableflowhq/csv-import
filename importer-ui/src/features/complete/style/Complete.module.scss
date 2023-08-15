@@ -60,11 +60,8 @@
 }
 
 .spinner {
-  position: absolute;
-  bottom: var(--m);
-
-  svg {
-    width: 36px;
-    height: 36px;
-  }
+  border: 1px solid var(--color-border);
+  margin-top: var(--m);
+  padding: var(--m);
+  border-radius: var(--border-radius-1);
 }
