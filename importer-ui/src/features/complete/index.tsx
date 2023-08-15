@@ -9,24 +9,28 @@ export default function Complete({ reload, close, onSuccess, upload, showImportL
   const uploadMemo = useMemo(() => upload, [upload]);
 
   const { data, isLoading, error } = useGetImport(uploadMemo?.id || "");
+  const [showLoading, setShowLoading] = useState(true);
   const { is_stored: isStored } = data || {};
 
   const isEmbeddedInIframe = window?.top !== window?.self;
 
   useEffect(() => {
-    if (isStored || error) onSuccess(data, data?.error || error?.toString() || null);
+    if (isStored || error) {
+      setShowLoading(false);
+      onSuccess(data, data?.error || error?.toString() || null);
+    }
   }, [isStored, error]);
 
   return (
     <>
-      {isLoading && showImportLoadingStatus ? (
-        <Spinner className={style.spinner}>Storing data...</Spinner>
+      {showLoading && showImportLoadingStatus ? (
+        <Spinner className={style.spinner}>Importing your data...</Spinner>
       ) : (
         <Box className={style.content} variants={[]}>
           <span className={style.icon}>
             <Icon icon="check" />
           </span>
-          <div>Upload Successful</div>
+          <div>Import Successful</div>
           <div className={style.actions}>
             {isEmbeddedInIframe && (
               <Button type="button" variants={["tertiary"]} icon="cross" onClick={close}>

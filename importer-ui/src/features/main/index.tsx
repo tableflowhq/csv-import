@@ -102,13 +102,7 @@ export default function Main() {
     ) : step === "review" && !isStored ? (
       <Spinner className={style.spinner}>Processing your file...</Spinner>
     ) : step === "review" && !!isStored ? (
-      <Review
-        template={template}
-        upload={upload}
-        onSuccess={() => stepper.setCurrent(2)}
-        onCancel={reload}
-        showImportLoadingStatus={showImportLoadingStatus}
-      />
+      <Review template={template} upload={upload} onSuccess={() => stepper.setCurrent(2)} onCancel={reload} />
     ) : !uploadError && step === "complete" ? (
       <Complete reload={reload} close={requestClose} onSuccess={handleComplete} upload={upload} showImportLoadingStatus={showImportLoadingStatus} />
     ) : null;

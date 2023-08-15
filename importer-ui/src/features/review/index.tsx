@@ -1,12 +1,11 @@
 import { FormEvent, useEffect } from "react";
 import { Button, Errors, Table } from "@tableflow/ui-library";
-import Spinner from "../../components/Spinner";
 import usePostUpload from "../../api/usePostUpload";
 import useReviewTable from "./hooks/useReviewTable";
 import { ReviewProps } from "./types";
 import style from "./style/Review.module.scss";
 
-export default function Review({ upload, template, onSuccess, onCancel, showImportLoadingStatus }: ReviewProps) {
+export default function Review({ upload, template, onSuccess, onCancel }: ReviewProps) {
   const { rows, formValues } = useReviewTable(upload?.upload_columns, template?.template_columns);
 
   const { mutate, error, isSuccess, isLoading } = usePostUpload(upload?.id || "");
@@ -31,48 +30,29 @@ export default function Review({ upload, template, onSuccess, onCancel, showImpo
   if (!rows || !rows?.length) return null;
 
   return (
-    <>
-      {showImportLoadingStatus && isLoading ? (
-        <div className={style.containerSpinner}>
-          <Spinner className={style.spinner}>Submitting data...</Spinner>
+    <div className={style.content}>
+      <form onSubmit={onSubmit}>
+        {upload ? (
+          <div className={style.tableWrapper}>
+            <Table data={rows} background="dark" columnWidths={["20%", "30%", "30%", "20%"]} columnAlignments={["", "", "", "center"]} fixHeader />
+          </div>
+        ) : (
+          <>Loading...</>
+        )}
+
+        <div className={style.actions}>
+          <Button type="button" variants={["secondary"]} onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button variants={["primary"]} disabled={isLoading}>
+            Submit
+          </Button>
         </div>
-      ) : (
-        <div className={style.content}>
-          <form onSubmit={onSubmit}>
-            {upload && !isLoading ? (
-              <div className={style.tableWrapper}>
-                <Table
-                  data={rows}
-                  background="dark"
-                  columnWidths={["20%", "30%", "30%", "20%"]}
-                  columnAlignments={["", "", "", "center"]}
-                  fixHeader
-                />
-              </div>
-            ) : (
-              showImportLoadingStatus &&
-              isLoading && (
-                <div className={style.containerSpinner}>
-                  <Spinner className={style.spinner}>Submitting data...</Spinner>
-                </div>
-              )
-            )}
 
-            <div className={style.actions}>
-              <Button type="button" variants={["secondary"]} onClick={onCancel}>
-                Cancel
-              </Button>
-              <Button variants={["primary"]} disabled={isLoading}>
-                Submit
-              </Button>
-            </div>
+        {!isLoading && !!error && <Errors error={error} />}
 
-            {!isLoading && !!error && <Errors error={error} />}
-
-            {isSuccess && <p>Success!</p>}
-          </form>
-        </div>
-      )}
-    </>
+        {isSuccess && <p>Success!</p>}
+      </form>
+    </div>
   );
 }
