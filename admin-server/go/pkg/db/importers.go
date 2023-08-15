@@ -28,7 +28,9 @@ func GetImporterUnscoped(id string) (*model.Importer, error) {
 		return nil, errors.New("no importer ID provided")
 	}
 	var importer model.Importer
-	err := tf.DB.Unscoped().Preload("Template.TemplateColumns").
+	err := tf.DB.Unscoped().
+		Preload("Template", "templates.deleted_at is null").
+		Preload("Template.TemplateColumns", "template_columns.deleted_at is null").
 		First(&importer, model.ParseID(id)).Error
 	if err != nil {
 		return nil, err

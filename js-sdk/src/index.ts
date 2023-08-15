@@ -64,28 +64,28 @@ export default function createTableFlowImporter({
     );
   }
 
-  window.onmessage = function (e) {
-    if (onComplete) {
-      let messageData;
-
-      try {
-        messageData = JSON.parse(e.data);
-      } catch (e) {
-        // do nothing
-      }
-
-      if (messageData?.type === "complete") {
-        onComplete({
-          data: messageData?.data || null,
-          error: messageData?.error || null,
-        });
-      }
+  function messageListener(e: any) {
+    if (!e || !e.data) {
+      return;
     }
-
-    if (e.data == "close") {
+    const messageData = e.data;
+    if (messageData?.source !== "tableflow-importer") {
+      return;
+    }
+    if (messageData?.importerId !== importerId) {
+      return;
+    }
+    if (messageData?.type === "complete" && onComplete) {
+      onComplete({
+        data: messageData?.data || null,
+        error: messageData?.error || null,
+      });
+    }
+    if (messageData?.type === "close" && onRequestClose) {
       onRequestClose();
     }
-  };
+  }
+  window.addEventListener("message", messageListener);
 
   dialog.innerHTML = `<iframe src="${uploaderUrl}" />`;
 
