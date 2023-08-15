@@ -38,7 +38,7 @@ const adminUIDefaultURL = "http://localhost:3000"
 const importerUIDefaultURL = "http://localhost:3001"
 
 type ServerConfig struct {
-	AuthMiddleware                 gin.HandlerFunc
+	Middlewares                    []gin.HandlerFunc
 	AdminAPIAuthValidator          gin.HandlerFunc
 	ExternalAPIAuthValidator       func(c *gin.Context, apiKey string) bool
 	GetWorkspaceUser               func(c *gin.Context, workspaceID string) (string, error)
@@ -93,8 +93,8 @@ func StartWebServer(config ServerConfig) *http.Server {
 		router.Use(gin.Logger())
 		router.Use(gin.Recovery())
 	}
-	if config.AuthMiddleware != nil {
-		router.Use(config.AuthMiddleware)
+	for _, middleware := range config.Middlewares {
+		router.Use(middleware)
 	}
 
 	port, err := util.ParsePort(os.Getenv("TABLEFLOW_API_SERVER_PORT"))
