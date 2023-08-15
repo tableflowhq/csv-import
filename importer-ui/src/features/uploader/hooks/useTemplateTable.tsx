@@ -11,7 +11,7 @@ export default function useTemplateTable(fields: TemplateColumn[] = []) {
             raw: item.name,
             content: (
               <div>
-                <Tooltip title={item?.description || "Lorem ipsum dolor sit amet"}>{item.name}</Tooltip>
+                <Tooltip title={item?.description}>{item.name}</Tooltip>
               </div>
             ),
           }

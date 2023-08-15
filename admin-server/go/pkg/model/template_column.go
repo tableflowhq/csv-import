@@ -1,6 +1,7 @@
 package model
 
 import (
+	"github.com/guregu/null"
 	"gorm.io/gorm"
 	"regexp"
 )
@@ -11,6 +12,7 @@ type TemplateColumn struct {
 	Name          string         `json:"name" example:"Email"`
 	Key           string         `json:"key" example:"email"`
 	Required      bool           `json:"required" example:"false"`
+	Description   null.String    `json:"description" swaggertype:"string" example:"An email address"`
 	CreatedBy     ID             `json:"-"`
 	CreatedByUser *User          `json:"created_by,omitempty" gorm:"foreignKey:ID;references:CreatedBy"`
 	CreatedAt     NullTime       `json:"created_at" swaggertype:"integer" example:"1682366228"`

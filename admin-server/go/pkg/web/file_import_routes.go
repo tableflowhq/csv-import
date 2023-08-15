@@ -36,9 +36,10 @@ type ImportServiceTemplate struct {
 }
 
 type ImportServiceTemplateColumn struct {
-	ID       model.ID `json:"id" swaggertype:"string" example:"a1ed136d-33ce-4b7e-a7a4-8a5ccfe54cd5"`
-	Name     string   `json:"name" example:"Work Email"`
-	Required bool     `json:"required" example:"false"`
+	ID          model.ID `json:"id" swaggertype:"string" example:"a1ed136d-33ce-4b7e-a7a4-8a5ccfe54cd5"`
+	Name        string   `json:"name" example:"First Name"`
+	Required    bool     `json:"required" example:"false"`
+	Description string   `json:"description" example:"The first name"`
 }
 
 type ImportServiceUpload struct {
@@ -205,9 +206,10 @@ func getImporterForImportService(c *gin.Context) {
 	importerTemplateColumns := make([]*ImportServiceTemplateColumn, len(template.TemplateColumns))
 	for n, tc := range template.TemplateColumns {
 		importerTemplateColumns[n] = &ImportServiceTemplateColumn{
-			ID:       tc.ID,
-			Name:     tc.Name,
-			Required: tc.Required,
+			ID:          tc.ID,
+			Name:        tc.Name,
+			Required:    tc.Required,
+			Description: tc.Description.String,
 		}
 	}
 	importerTemplate := &ImportServiceTemplate{
