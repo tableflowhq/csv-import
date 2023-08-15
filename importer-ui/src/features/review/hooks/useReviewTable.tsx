@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Input, Switch } from "@tableflow/ui-library";
+import { InputOption } from "@tableflow/ui-library/build/Input/types";
 import { TemplateColumn, UploadColumn } from "../../../api/types";
 import stringsSimilarity from "../../../utils/stringSimilarity";
 import style from "../style/Review.module.scss";
@@ -16,14 +17,29 @@ export default function useReviewTable(items: UploadColumn[] = [], templateColum
       return { ...acc, [item.id]: { template: suggestion || "", use: !!suggestion } };
     }, {})
   );
-
-  const templateFields = useMemo(
+  const [selectedTemplates, setSelectedTemplates] = useState<string[]>([]);
+  const templateFields: { [key: string]: InputOption } = useMemo(
     () => templateColumns.reduce((acc, field) => ({ ...acc, [field.name]: { value: field.id, required: field.required } }), {}),
     [JSON.stringify(templateColumns)]
   );
 
   const handleTemplateChange = (id: string, template: string) => {
-    setValues((prev) => ({ ...prev, [id]: { ...prev[id], template, use: !!template } }));
+    setValues((prev) => {
+      const oldTemplate = prev[id].template;
+      setSelectedTemplates((currentSelected) => {
+        let newSelectedTemplates = [...currentSelected];
+        if (oldTemplate) {
+          newSelectedTemplates = newSelectedTemplates.filter((t) => t !== oldTemplate);
+        }
+
+        if (template) {
+          newSelectedTemplates.push(template);
+        }
+
+        return newSelectedTemplates;
+      });
+      return { ...prev, [id]: { ...prev[id], template, use: !!template } };
+    });
   };
 
   const handleUseChange = (id: string, value: boolean) => {
@@ -36,6 +52,14 @@ export default function useReviewTable(items: UploadColumn[] = [], templateColum
       const suggestion = values?.[id] || "";
       const samples = sample_data.filter((d) => d);
 
+      const currentOptions = Object.keys(templateFields)
+        .filter((key) => templateFields[key].value && !selectedTemplates.includes(templateFields[key].value as string))
+        .reduce((acc, key) => {
+          acc[key] = templateFields[key];
+          return acc;
+        }, {} as { [key: string]: InputOption });
+      console.log("currentOptions", typeof currentOptions);
+      console.log("selectedTemplates", typeof templateFields);
       return {
         "Column in File": {
           raw: name || false,
@@ -55,7 +79,7 @@ export default function useReviewTable(items: UploadColumn[] = [], templateColum
           raw: "",
           content: (
             <Input
-              options={templateFields}
+              options={currentOptions}
               value={suggestion.template}
               placeholder="- Select one -"
               variants={["small"]}
