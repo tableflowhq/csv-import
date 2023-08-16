@@ -38,11 +38,15 @@ export default function ImporterForm({ title = "Importer form", importer = {} as
             {...form.getInputProps("name")}
             autoFocus={!isEditForm}
             className={style.sqlTextarea}
+            required
           />
         </fieldset>
 
         <div className={classes([style.actions, style.compact])}>
-          <Button type="submit" variants={["primary", "noMargin"]} disabled={isLoading || !form.isDirty()}>
+          <Button
+            type="submit"
+            variants={["primary", "noMargin"]}
+            disabled={isLoading || !form.isDirty() || form.getInputProps("name").value.length === 0}>
             {isLoading ? "Please wait..." : isEditForm ? "Save importer" : "Create"}
           </Button>
         </div>

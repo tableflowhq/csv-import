@@ -10,7 +10,7 @@ export default function Tooltip<T extends keyof AsMap>({ as, className, title, c
     <Tag {...props} className={wrapperClasses}>
       {children}
       <span className={style.icon}>
-        <Icon icon="help" />
+        <Icon icon="info" />
         <span className={style.message}>{title}</span>
       </span>
     </Tag>

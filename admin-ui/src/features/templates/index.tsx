@@ -35,6 +35,16 @@ export default function Templates({ importer }: TemplatesProps) {
             context={{ templateId: template?.id }}
           />
         </Box>
+      ) : action === "edit" ? (
+        <Box variants={["wide", "space-mid"]}>
+          <TemplateColumnForm
+            title="Edit Column"
+            buttonLabel="Save"
+            onSuccess={modal.handleClose}
+            column={column}
+            context={{ templateId: template?.id }}
+          />
+        </Box>
       ) : action === "delete" ? (
         <Box variants={["wide", "space-mid"]}>
           <TemplateColumnDelete column={column} onSuccess={modal.handleClose} context={{ templateId: template?.id }} />{" "}

@@ -16,6 +16,7 @@ export default function TemplateColumnForm({
   const [userModifiedKey, setUserModifiedKey] = useState(false);
   const form = useForm({
     initialValues: {
+      id: column?.id || "",
       template_id: context?.templateId || "",
       name: column?.name || "",
       description: column?.description || "",
@@ -23,7 +24,7 @@ export default function TemplateColumnForm({
       required: column?.required || false,
     },
   });
-  const { mutate, isLoading, error, isSuccess } = usePostTemplateColumn(context?.templateId);
+  const { mutate, isLoading, error, isSuccess } = usePostTemplateColumn(context?.templateId, column?.id);
 
   useEffect(() => {
     if (isSuccess && !error && !isLoading && onSuccess) onSuccess();
@@ -92,7 +93,7 @@ export default function TemplateColumnForm({
 
         <div className={classes([style.actions, style.compact])}>
           <Button type="submit" variants={["primary", "noMargin"]} disabled={isLoading || !form.isDirty()}>
-            {isLoading ? "Please wait..." : isEditForm ? "Save column" : "Add"}
+            {isLoading ? "Please wait..." : isEditForm ? "Save" : "Add"}
           </Button>
         </div>
 

@@ -5,7 +5,7 @@
   "dependencies": {
     "@mantine/core": "^6.0.10",
     "@mantine/form": "^6.0.4",
-    "@tableflow/ui-library": "^1.37.0",
+    "@tableflow/ui-library": "^1.40.0",
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^13.0.0",
     "@testing-library/user-event": "^13.2.1",
