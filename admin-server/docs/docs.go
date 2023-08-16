@@ -974,6 +974,10 @@ const docTemplate = `{
                 "created_by": {
                     "$ref": "#/definitions/model.User"
                 },
+                "description": {
+                    "type": "string",
+                    "example": "An email address"
+                },
                 "id": {
                     "type": "string",
                     "example": "a1ed136d-33ce-4b7e-a7a4-8a5ccfe54cd5"
@@ -1272,13 +1276,17 @@ const docTemplate = `{
         "web.ImportServiceTemplateColumn": {
             "type": "object",
             "properties": {
+                "description": {
+                    "type": "string",
+                    "example": "The first name"
+                },
                 "id": {
                     "type": "string",
                     "example": "a1ed136d-33ce-4b7e-a7a4-8a5ccfe54cd5"
                 },
                 "name": {
                     "type": "string",
-                    "example": "Work Email"
+                    "example": "First Name"
                 },
                 "required": {
                     "type": "boolean",
@@ -1405,6 +1413,10 @@ const docTemplate = `{
         "web.TemplateColumnCreateRequest": {
             "type": "object",
             "properties": {
+                "description": {
+                    "type": "string",
+                    "example": "The first name"
+                },
                 "key": {
                     "type": "string",
                     "example": "first_name"

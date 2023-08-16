@@ -153,6 +153,7 @@ func StartWebServer(config ServerConfig) *http.Server {
 	/* Template */
 	adm.GET("/template/:id", func(c *gin.Context) { getTemplate(c, config.GetWorkspaceUser) })
 	adm.POST("/template-column", func(c *gin.Context) { createTemplateColumn(c, config.GetWorkspaceUser) })
+	adm.POST("/template-column/:id", func(c *gin.Context) { editTemplateColumn(c, config.GetWorkspaceUser) })
 	adm.DELETE("/template-column/:id", func(c *gin.Context) { deleteTemplateColumn(c, config.GetWorkspaceUser) })
 
 	/* Import */
