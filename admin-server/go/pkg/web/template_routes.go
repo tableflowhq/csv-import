@@ -130,7 +130,7 @@ func createTemplateColumn(c *gin.Context, getWorkspaceUser func(*gin.Context, st
 //	@Success		200	{object}	model.Template
 //	@Failure		400	{object}	types.Res
 //	@Router			/admin/v1/template-column/{id} [post]
-//	@Param			id	path	string	true	"Template column ID"
+//	@Param			id		path	string						true	"Template column ID"
 //	@Param			body	body	TemplateColumnEditRequest	true	"Request body"
 func editTemplateColumn(c *gin.Context, getWorkspaceUser func(*gin.Context, string) (string, error)) {
 	id := c.Param("id")
