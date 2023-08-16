@@ -178,9 +178,6 @@ definitions:
       importer_id:
         example: 6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353
         type: string
-      is_parsed:
-        example: false
-        type: boolean
       is_stored:
         example: false
         type: boolean
@@ -381,9 +378,6 @@ definitions:
       importer_id:
         example: 6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353
         type: string
-      is_parsed:
-        example: false
-        type: boolean
       is_stored:
         example: false
         type: boolean
@@ -457,6 +451,21 @@ definitions:
       template_id:
         example: f0797968-becc-422a-b135-19de1d8c5d46
         type: string
+    type: object
+  web.TemplateColumnEditRequest:
+    properties:
+      description:
+        example: The first name
+        type: string
+      key:
+        example: first_name
+        type: string
+      name:
+        example: First Name
+        type: string
+      required:
+        example: false
+        type: boolean
     type: object
 host: localhost:3003
 info:
@@ -682,6 +691,32 @@ paths:
           schema:
             $ref: '#/definitions/types.Res'
       summary: Delete template column
+      tags:
+      - Template
+    post:
+      description: Edit a template column
+      parameters:
+      - description: Template column ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/web.TemplateColumnEditRequest'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Template'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/types.Res'
+      summary: Edit template column
       tags:
       - Template
   /admin/v1/template/{id}:

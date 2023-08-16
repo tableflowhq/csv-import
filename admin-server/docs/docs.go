@@ -316,6 +316,45 @@ const docTemplate = `{
             }
         },
         "/admin/v1/template-column/{id}": {
+            "post": {
+                "description": "Edit a template column",
+                "tags": [
+                    "Template"
+                ],
+                "summary": "Edit template column",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Template column ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/web.TemplateColumnEditRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Template"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/types.Res"
+                        }
+                    }
+                }
+            },
             "delete": {
                 "description": "Delete a template column",
                 "tags": [
@@ -1038,10 +1077,6 @@ const docTemplate = `{
                     "type": "string",
                     "example": "6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353"
                 },
-                "is_parsed": {
-                    "type": "boolean",
-                    "example": false
-                },
                 "is_stored": {
                     "type": "boolean",
                     "example": false
@@ -1325,10 +1360,6 @@ const docTemplate = `{
                     "type": "string",
                     "example": "6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353"
                 },
-                "is_parsed": {
-                    "type": "boolean",
-                    "example": false
-                },
                 "is_stored": {
                     "type": "boolean",
                     "example": false
@@ -1432,6 +1463,27 @@ const docTemplate = `{
                 "template_id": {
                     "type": "string",
                     "example": "f0797968-becc-422a-b135-19de1d8c5d46"
+                }
+            }
+        },
+        "web.TemplateColumnEditRequest": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "example": "The first name"
+                },
+                "key": {
+                    "type": "string",
+                    "example": "first_name"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "First Name"
+                },
+                "required": {
+                    "type": "boolean",
+                    "example": false
                 }
             }
         }
