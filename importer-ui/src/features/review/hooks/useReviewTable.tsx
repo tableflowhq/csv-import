@@ -54,18 +54,26 @@ export default function useReviewTable(items: UploadColumn[] = [], templateColum
         }
         return acc;
       }, {} as { [key: string]: Include });
+      let currentOptions;
 
-      const currentOptions = Object.keys(templateFields)
-        .filter((key) => {
+      if (selectedTemplates && selectedTemplates.length > 0) {
+        currentOptions = Object.keys(templateFields).filter((key) => {
           const isTemplateSelected = selectedTemplates.includes(templateFields[key].value as string);
           const isSuggestionTemplate = templateFields[key].value === suggestion.template;
           const isTemplateUsed = Object.values(filteredUsedValues).some((val) => val.template === templateFields[key].value);
           return (!isTemplateSelected || isSuggestionTemplate) && !isTemplateUsed;
-        })
-        .reduce((acc, key) => {
-          acc[key] = templateFields[key];
-          return acc;
-        }, {} as { [key: string]: InputOption });
+        });
+      } else {
+        currentOptions = Object.keys(templateFields).filter((key) => {
+          const isSuggestionTemplate = templateFields[key].value === suggestion.template;
+          const isTemplateUsed = Object.values(filteredUsedValues).some((val) => val.template === templateFields[key].value);
+          return isSuggestionTemplate || !isTemplateUsed;
+        });
+      }
+      currentOptions = currentOptions?.reduce((acc, key) => {
+        acc[key] = templateFields[key];
+        return acc;
+      }, {} as { [key: string]: InputOption });
 
       return {
         "Column in File": {
