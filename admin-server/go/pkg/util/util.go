@@ -9,6 +9,7 @@ import (
 	"golang.org/x/text/message"
 	"net/mail"
 	"sync"
+	"unicode"
 )
 
 func JsonPrettyPrint(in string) string {
@@ -33,6 +34,25 @@ func IsValidJSONBytes(bytes []byte) bool {
 func IsEmailValid(email string) bool {
 	_, err := mail.ParseAddress(email)
 	return err == nil
+}
+
+func IsBlankUnicode(s string) bool {
+	for _, r := range s {
+		if !unicode.IsSpace(r) {
+			return false
+		}
+	}
+	return true
+}
+
+func IsBlankASCII(s string) bool {
+	for i := 0; i < len(s); i++ {
+		c := s[i]
+		if c != ' ' && c != '\t' && c != '\n' && c != '\r' {
+			return false
+		}
+	}
+	return true
 }
 
 func HasDuplicateValues(m map[string]string) bool {

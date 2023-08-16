@@ -79,9 +79,9 @@ type ImportServiceImport struct {
 }
 
 type importProcessResult struct {
-	NumRows          int
-	NumColumns       int
-	NumNonEmptyCells int
+	NumRows            int
+	NumColumns         int
+	NumProcessedValues int
 }
 
 // importServiceMaxNumRowsToPassData If the import has more rows than this value, then don't pass the data back to the
@@ -434,7 +434,7 @@ func importData(upload *model.Upload, template *model.Template, importCompleteHa
 	imp.IsStored = true
 	imp.NumRows = null.IntFrom(int64(importResult.NumRows))
 	imp.NumColumns = null.IntFrom(int64(importResult.NumColumns))
-	imp.NumProcessedValues = null.IntFrom(int64(importResult.NumNonEmptyCells))
+	imp.NumProcessedValues = null.IntFrom(int64(importResult.NumProcessedValues))
 
 	err = tf.DB.Save(imp).Error
 	if err != nil {
@@ -451,7 +451,7 @@ func importData(upload *model.Upload, template *model.Template, importCompleteHa
 
 func processAndStoreImport(columnKeyMap map[int]string, template *model.Template, upload *model.Upload, imp *model.Import) (importProcessResult, error) {
 	importRowIndex := 0
-	numNonEmptyCells := 0
+	numProcessedValues := 0
 	columnLength := len(template.TemplateColumns)
 
 	goroutines := 8
@@ -487,9 +487,7 @@ func processAndStoreImport(columnKeyMap map[int]string, template *model.Template
 				if key, ok := columnKeyMap[colPos]; ok {
 					importRowValue[key] = cellVal
 					approxMutationSize += len(cellVal)
-					if len(strings.TrimSpace(cellVal)) != 0 {
-						numNonEmptyCells++
-					}
+					numProcessedValues++
 				}
 			}
 			batchCounter++
@@ -516,8 +514,8 @@ func processAndStoreImport(columnKeyMap map[int]string, template *model.Template
 	wg.Wait()
 
 	return importProcessResult{
-		NumRows:          importRowIndex,
-		NumColumns:       columnLength,
-		NumNonEmptyCells: numNonEmptyCells,
+		NumRows:            importRowIndex,
+		NumColumns:         columnLength,
+		NumProcessedValues: numProcessedValues,
 	}, nil
 }

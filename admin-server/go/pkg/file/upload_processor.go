@@ -114,7 +114,7 @@ func UploadCompleteHandler(event handler.HookEvent, uploadAdditionalStorageHandl
 	}
 
 	if uploadResult.NumRows == 0 {
-		tf.Log.Debugw("A file was uploaded with no rows or an error occurred during processing", "upload_id", upload.ID)
+		tf.Log.Infow("A file was uploaded with no rows or an error occurred during processing", "upload_id", upload.ID)
 		saveUploadError(upload, "No rows with data were found in your file, please try again with a different file that has a header row and at least one row of data.")
 		removeUploadFileFromDisk(file, fileName, upload.ID.String())
 		return
@@ -197,16 +197,30 @@ func processAndStoreUpload(upload *model.Upload, file *os.File) (uploadProcessRe
 			continue
 		}
 
+		numBlankRows := 0
 		approxMutationSize := 0
 		uploadRow := make(map[int16]string)
+
+		// TODO: Excel files ending in empty rows don't include all the rows
+		// Figure out how to include the blank rows in the columnIndex
+		// Iterate over the column header instead? and get the value of row[that] if it exists?
+
 		for columnIndex, columnValue := range row {
 			if columnIndex >= len(upload.UploadColumns) {
 				tf.Log.Warnw("Index out of range for row", "column_index", columnIndex, "row_index", i, "upload_id", upload.ID)
 				break
 			}
+			if util.IsBlankUnicode(columnValue) {
+				numBlankRows++
+			}
 			// TODO: Deal with invalid characters better, determine charsets programmatically? Or just surface these to the user?
 			uploadRow[int16(columnIndex)] = strings.ToValidUTF8(columnValue, "")
 			approxMutationSize += len(columnValue)
+		}
+
+		// If all rows are blank, don't process it
+		if len(row) == 0 || numBlankRows == len(row) {
+			continue
 		}
 
 		numRows++
