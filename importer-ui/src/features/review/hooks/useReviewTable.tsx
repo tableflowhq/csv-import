@@ -48,8 +48,20 @@ export default function useReviewTable(items: UploadColumn[] = [], templateColum
       const suggestion = values?.[id] || {};
       const samples = sample_data.filter((d) => d);
 
+      const filteredUsedValues = Object.entries(values).reduce((acc, [key, value]) => {
+        if (value.use && key !== id) {
+          acc[key] = value;
+        }
+        return acc;
+      }, {} as { [key: string]: Include });
+
       const currentOptions = Object.keys(templateFields)
-        .filter((key) => !selectedTemplates.includes(templateFields[key].value as string) || templateFields[key].value === suggestion.template)
+        .filter((key) => {
+          const isTemplateSelected = selectedTemplates.includes(templateFields[key].value as string);
+          const isSuggestionTemplate = templateFields[key].value === suggestion.template;
+          const isTemplateUsed = Object.values(filteredUsedValues).some((val) => val.template === templateFields[key].value);
+          return (!isTemplateSelected || isSuggestionTemplate) && !isTemplateUsed;
+        })
         .reduce((acc, key) => {
           acc[key] = templateFields[key];
           return acc;
