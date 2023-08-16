@@ -131,6 +131,9 @@ definitions:
         type: integer
       created_by:
         $ref: '#/definitions/model.User'
+      description:
+        example: An email address
+        type: string
       id:
         example: a1ed136d-33ce-4b7e-a7a4-8a5ccfe54cd5
         type: string
@@ -342,11 +345,14 @@ definitions:
     type: object
   web.ImportServiceTemplateColumn:
     properties:
+      description:
+        example: The first name
+        type: string
       id:
         example: a1ed136d-33ce-4b7e-a7a4-8a5ccfe54cd5
         type: string
       name:
-        example: Work Email
+        example: First Name
         type: string
       required:
         example: false
@@ -436,6 +442,9 @@ definitions:
     type: object
   web.TemplateColumnCreateRequest:
     properties:
+      description:
+        example: The first name
+        type: string
       key:
         example: first_name
         type: string
