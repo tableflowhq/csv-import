@@ -48,8 +48,8 @@ func GetUploadByTusID(tusID string) (*model.Upload, error) {
 	if !upload.ID.Valid {
 		return nil, gorm.ErrRecordNotFound
 	}
-	if upload.IsParsed {
-		// If the upload has been parsed, retrieve the upload columns as well
+	if upload.IsStored {
+		// If the upload has been stored, retrieve the upload columns as well
 		var uploadColumns []*model.UploadColumn
 		tf.DB.Where("upload_id = ?", upload.ID).Find(&uploadColumns)
 		upload.UploadColumns = uploadColumns

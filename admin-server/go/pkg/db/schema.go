@@ -237,7 +237,7 @@ func GetDatabaseSchemaInitSQL() string {
 		    num_rows       int,
 		    num_columns    int,
 		    metadata       jsonb            not null default '{}'::jsonb, -- Optional custom data the client can send from the SDK, i.e. their user ID
-		    is_parsed      bool             not null default false,       -- Are the upload_columns created and ready for the user to map?
+		    is_parsed      bool             not null default false,       -- REMOVED: Are the upload_columns created and ready for the user to map?
 		    is_stored      bool             not null default false,       -- Have all the records been stored?
 		    error          text,
 		    created_at     timestamptz      not null default now(),
@@ -319,5 +319,8 @@ func GetDatabaseSchemaInitSQL() string {
 
 		alter table template_columns
 		    add column if not exists description text;
+
+		alter table uploads
+		    drop column if exists is_parsed;
 	`
 }

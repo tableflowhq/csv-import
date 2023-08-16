@@ -51,7 +51,6 @@ type ImportServiceUpload struct {
 	FileExtension null.String    `json:"file_extension" swaggertype:"string" example:"csv"`
 	FileSize      null.Int       `json:"file_size" swaggertype:"integer" example:"1024"`
 	Metadata      model.JSONB    `json:"metadata" swaggertype:"string" example:"{\"user_id\": 1234}"`
-	IsParsed      bool           `json:"is_parsed" example:"false"`
 	IsStored      bool           `json:"is_stored" example:"false"`
 	CreatedAt     model.NullTime `json:"created_at" swaggertype:"integer" example:"1682366228"`
 
@@ -267,7 +266,6 @@ func getUploadForImportService(c *gin.Context) {
 		FileExtension: upload.FileExtension,
 		FileSize:      upload.FileSize,
 		Metadata:      upload.Metadata,
-		IsParsed:      upload.IsParsed,
 		IsStored:      upload.IsStored,
 		CreatedAt:     upload.CreatedAt,
 		UploadColumns: importerUploadColumns,
