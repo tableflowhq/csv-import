@@ -132,8 +132,6 @@ func UploadCompleteHandler(event handler.HookEvent, uploadAdditionalStorageHandl
 	fileSize, err := util.GetFileSize(file)
 	upload.FileSize = null.NewInt(fileSize, err == nil)
 	upload.NumRows = null.IntFrom(int64(uploadResult.NumRows))
-
-	upload.IsParsed = true
 	upload.IsStored = true
 
 	err = tf.DB.Save(upload).Error

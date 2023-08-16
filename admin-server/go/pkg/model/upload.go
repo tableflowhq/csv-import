@@ -17,7 +17,6 @@ type Upload struct {
 	NumRows       null.Int    `json:"num_rows" swaggertype:"integer" example:"256"`
 	NumColumns    null.Int    `json:"num_columns" swaggertype:"integer" example:"8"`
 	Metadata      JSONB       `json:"metadata" swaggertype:"string" example:"{\"user_id\": 1234}"`
-	IsParsed      bool        `json:"is_parsed" example:"false"`
 	IsStored      bool        `json:"is_stored" example:"false"`
 	Error         null.String `json:"-" swaggerignore:"true"`
 	CreatedAt     NullTime    `json:"created_at" swaggertype:"integer" example:"1682366228"`
