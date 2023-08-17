@@ -31,37 +31,29 @@ yarn add @tableflow/react
 ### 2. Add the Importer to your application
 
 Create an importer, define your template, and retrieve data at https://app.tableflow.com/importers
+\
+The full SDK reference is available in our docs: https://tableflow.com/docs/sdk-reference/react
 
 ```javascript
 import { useState } from "react";
 import { TableFlowImporter } from "@tableflow/react";
 
 function MyComponent() {
-    const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
-    return (
-        <>
-            <button onClick={() => setIsOpen(true)}>Open TableFlow Importer</button>
+  return (
+    <>
+      <button onClick={() => setIsOpen(true)}>Open TableFlow Importer</button>
 
-            <TableFlowImporter
-                isOpen={isOpen}
-                onRequestClose={() => setIsOpen(false)}
-                importerId={"53a84496-819d-4ec6-93b7-b4b56fb676ad"} // Replace with your importer ID from https://app.tableflow.com/importers
-                darkMode={true}
-                primaryColor="#7A5EF8"
-                closeOnClickOutside={true}
-                metadata={'{"userId": 1234, "userEmail": "test@example.com"}'}
-                onComplete={(data, error) => {
-                    if (error) {
-                        alert(error); // Handle import error
-                    } else {
-                        console.log(data); // Use import data
-                    }
-                }}
-                customStyles={{}} // See the options in https://tableflow.com/docs/embed
-            />
-        </>
-    );
+      <TableFlowImporter
+        importerId={"b0fadb1d-9888-4fcb-b185-21b984bcb227"} // Use your importer ID from https://app.tableflow.com/importers
+        isOpen={isOpen}
+        onRequestClose={() => setIsOpen(false)}
+        darkMode={true}
+        onComplete={(data, error) => console.log(data)}
+      />
+    </>
+  );
 }
 ```
 

@@ -15,14 +15,12 @@ export default function createTableFlowImporter({
   onComplete,
   customStyles,
   className,
-  showImportLoadingStatus
+  showImportLoadingStatus,
 }: TableFlowImporterProps) {
   // CSS classes
   const baseClass = "TableFlowImporter";
   const themeClass = darkMode && `${baseClass}-dark`;
-  const dialogClass = [`${baseClass}-dialog`, themeClass, className]
-    .filter((i) => i)
-    .join(" ");
+  const dialogClass = [`${baseClass}-dialog`, themeClass, className].filter((i) => i).join(" ");
   const closeClass = `${baseClass}-close`;
 
   // dialog element
@@ -54,16 +52,12 @@ export default function createTableFlowImporter({
   };
   const searchParams = new URLSearchParams(urlParams);
   const defaultImporterUrl = "https://importer.tableflow.com";
-  const uploaderUrl = `${
-    hostUrl ? hostUrl : defaultImporterUrl
-  }?${searchParams}`;
+  const uploaderUrl = `${hostUrl ? hostUrl : defaultImporterUrl}?${searchParams}`;
 
   try {
     JSON.parse(metadata);
   } catch (e) {
-    console.error(
-      'The "metadata" prop is not a valid JSON string. Please check the documentation for more details.'
-    );
+    console.error('The "metadata" prop is not a valid JSON string. Please check the documentation for more details.');
   }
 
   function messageListener(e: any) {
