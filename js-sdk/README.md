@@ -30,9 +30,9 @@ yarn add @tableflow/js
 
 ### 2. Add the Importer to your application
 
-Create an importer, define your template, and retrieve data at https://app.tableflow.com/importers
+Create an importer, define your template, and retrieve data on [TableFlow](https://app.tableflow.com/importers).
 \
-The full SDK reference is available in our docs: https://tableflow.com/docs/sdk-reference/javascript
+The full SDK reference is available in our [docs](https://tableflow.com/docs/sdk-reference/javascript).
 
 ```javascript
 import createTableFlowImporter from "@tableflow/js";
