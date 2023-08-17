@@ -59,6 +59,8 @@ export default function TemplateColumnForm({
     form.setFieldValue("key", value);
   };
 
+  const requiredFieldEmpty = form.getInputProps("name").value.length === 0 || form.getInputProps("key").value.length === 0;
+
   return (
     <div className={style.container}>
       {title && (
@@ -92,7 +94,7 @@ export default function TemplateColumnForm({
         </fieldset>
 
         <div className={classes([style.actions, style.compact])}>
-          <Button type="submit" variants={["primary", "noMargin"]} disabled={isLoading || !form.isDirty()}>
+          <Button type="submit" variants={["primary", "noMargin"]} disabled={isLoading || !form.isDirty() || requiredFieldEmpty}>
             {isLoading ? "Please wait..." : isEditForm ? "Save" : "Add"}
           </Button>
         </div>
