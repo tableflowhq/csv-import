@@ -31,6 +31,10 @@
         }
       }
 
+      &-browse {
+        color: var(--importer-link);
+      }
+
       &-dropFilesHereHint {
         padding: 0;
         background-image: none;

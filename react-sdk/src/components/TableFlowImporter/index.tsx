@@ -15,6 +15,7 @@ export default function TableFlowImporter({
     closeOnClickOutside,
     className,
     onComplete,
+    customStyles,
     showImportLoadingStatus,
     ...props
 }: TableFlowImporterProps) {
@@ -40,6 +41,7 @@ export default function TableFlowImporter({
         metadata,
         isOpen: isOpen.toString(),
         onComplete: onComplete ? "true" : "false",
+        customStyles: JSON.stringify(customStyles),
         showImportLoadingStatus: showImportLoadingStatus ? "true" : "false",
     };
     const searchParams = new URLSearchParams(urlParams);
