@@ -1,0 +1,152 @@
+---
+title: React
+description: SDK reference
+---
+
+## Installation
+
+Use NPM or Yarn to install the [SDK package](https://www.npmjs.com/package/@tableflow/react).
+
+**NPM**
+```bash
+npm install @tableflow/react
+```
+**Yarn**
+```bash
+yarn add @tableflow/react
+```
+
+## Example
+
+```javascript
+import { useState } from "react";
+import { TableFlowImporter } from "@tableflow/react";
+
+function MyComponent() {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <>
+      <button onClick={() => setIsOpen(true)}>Open TableFlow Importer</button>
+
+      <TableFlowImporter
+        importerId={"b0fadb1d-9888-4fcb-b185-21b984bcb227"} // Use your importer ID from https://app.tableflow.com/importers
+        isOpen={isOpen}
+        onRequestClose={() => setIsOpen(false)}
+        darkMode={true}
+        onComplete={(data, error) => console.log(data)}
+      />
+    </>
+  );
+}
+```
+
+## Properties
+
+<ResponseField name="importerId" type="string" required>
+  The unique ID for the importer. Obtain from your importer on [TableFlow](https://app.tableflow.com/importers).
+</ResponseField>
+
+<ResponseField name="isOpen" type="boolean" required>
+  Controls the importer modal being open or closed.
+</ResponseField>
+
+<ResponseField name="onRequestClose" type="function" required>
+  A function called when the user clicks the close button or clicks outside of (when used with `closeOnClickOutside`)
+  the importer. `useState` can be used to control the importer modal opening and closing.
+  ```javascript
+  const [isOpen, setIsOpen] = useState(false);
+  ```
+  ```jsx
+  <button onClick={() => setIsOpen(true)}>Open TableFlow Importer</button>
+  <TableFlowImporter
+    isOpen={isOpen}
+    onRequestClose={() => setIsOpen(false)}
+    ...
+  />
+  ```
+</ResponseField>
+
+<ResponseField name="closeOnClickOutside" type="boolean">
+  If `true`, clicking outside of the modal will close the importer modal.
+</ResponseField>
+
+<ResponseField name="darkMode" type="boolean">
+  Toggle between dark mode (`true`) and light mode (`false`).
+</ResponseField>
+
+<ResponseField name="primaryColor" type="string">
+  Specifies the primary color for the importer in hex format. Use `customStyles` to customize the UI in more detail.
+  ```jsx
+  primaryColor="#7A5EF8"
+  ```
+</ResponseField>
+
+<ResponseField name="className" type="string">
+  Provides a CSS class for the container.
+</ResponseField>
+
+<ResponseField name="customStyles" type="object">
+  Apply custom styles to the importer with an object containing CSS properties and values. Note that custom style
+  properties
+  will override `primaryColor` and any default styles from `darkMode`.
+  Available options:
+  ```jsx
+  customStyles={{
+    "font-family": "cursive",
+    "font-size": "15px",
+    "base-spacing": "2rem",
+    "border-radius": "8px",
+    "color-primary": "salmon",
+    "color-primary-hover": "crimson",
+    "color-secondary": "indianRed",
+    "color-secondary-hover": "crimson",
+    "color-border": "lightCoral",
+    "color-text": "brown",
+    "color-text-soft": "rgba(165, 42, 42, .5)",
+    "color-text-on-primary": "#fff",
+    "color-text-on-secondary": "#ffffff",
+    "color-background": "bisque",
+    "color-background-modal": "blanchedAlmond",
+    "color-input-background": "blanchedAlmond",
+    "color-input-background-soft": "white",
+    "color-background-menu-hover": "bisque",
+    "color-importer-link": "indigo",
+    "color-progress-bar": "darkGreen"
+}}
+  ```
+</ResponseField>
+
+<ResponseField name="metadata" type="string">
+  Pass metadata as a JSON formatted string. This metadata will be available when retrieving imported data via the API.
+  An example use case is associating a user ID in your application to an import so when the data is retrieved, you'll
+  know which user the data belongs to.
+  ```jsx
+  metadata={"{\"userId\": 1234, \"userEmail\": \"test@example.com\"}"}
+  ```
+</ResponseField>
+
+<ResponseField name="onComplete" type="function" required>
+  Callback function that fires when a user completes an import. It received two parameters: `data` is an object that
+  contains the importer row data and information about the import such as the number of rows and `error` contains any
+  errors that occurred during the import.
+  ```jsx
+  onComplete={(data, error) => {
+    if(error) {
+      alert(error); // Handle any errors that occurred during the import
+    } else {
+      console.log(data); // Use the imported data directly in your frontend
+    }
+}}
+  ```
+</ResponseField>
+
+<ResponseField name="showImportLoadingStatus" type="boolean">
+  When set to `true`, show a loading indicator while data is being imported at the final stage of an import. The loading
+  indicator will show until the `onComplete` callback is fired. This can be useful if you want to use the imported data
+  in your frontend after it has finished processing.
+</ResponseField>
+
+<ResponseField name="hostUrl" type="string">
+  The URL of where the importer iframe is hosted. This should only be set when self-hosting TableFlow.
+</ResponseField>
