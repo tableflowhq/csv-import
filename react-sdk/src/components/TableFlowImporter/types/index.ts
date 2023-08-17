@@ -1,4 +1,4 @@
-import { HTMLAttributes } from "react";
+import { CSSProperties, HTMLAttributes } from "react";
 
 export type TableFlowImporterProps = HTMLAttributes<HTMLDialogElement> & {
     isOpen?: boolean;
@@ -10,5 +10,6 @@ export type TableFlowImporterProps = HTMLAttributes<HTMLDialogElement> & {
     closeOnClickOutside?: boolean;
     metadata?: string;
     onComplete?: (data: { data: any; error: any }) => void;
+    customStyles?: Record<string, string> | CSSProperties;
     showImportLoadingStatus?: boolean;
 };
