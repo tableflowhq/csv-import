@@ -27,13 +27,14 @@ export default function useReviewTable(items: UploadColumn[] = [], templateColum
     setValues((prev) => {
       const oldTemplate = prev[id].template;
       setSelectedTemplates((currentSelected) => {
-        const newSelectedTemplates = currentSelected.filter((t) => t !== oldTemplate);
-        if (template) {
-          newSelectedTemplates.push(template);
+        if (currentSelected.includes(oldTemplate)) {
+          return currentSelected.filter((t) => t !== oldTemplate);
         }
-        return newSelectedTemplates;
+        if (template && !currentSelected.includes(template)) {
+          return [...currentSelected, template];
+        }
+        return currentSelected;
       });
-
       return { ...prev, [id]: { ...prev[id], template, use: !!template } };
     });
   };
@@ -60,14 +61,16 @@ export default function useReviewTable(items: UploadColumn[] = [], templateColum
         currentOptions = Object.keys(templateFields).filter((key) => {
           const isTemplateSelected = selectedTemplates.includes(templateFields[key].value as string);
           const isSuggestionTemplate = templateFields[key].value === suggestion.template;
-          const isTemplateUsed = Object.values(filteredUsedValues).some((val) => val.template === templateFields[key].value);
-          return (!isTemplateSelected || isSuggestionTemplate) && !isTemplateUsed;
+          return !isTemplateSelected || isSuggestionTemplate;
         });
       } else {
+        if (suggestion.use) {
+          setSelectedTemplates((prevTemplates) => [...prevTemplates, suggestion.template]);
+        }
         currentOptions = Object.keys(templateFields).filter((key) => {
           const isSuggestionTemplate = templateFields[key].value === suggestion.template;
           const isTemplateUsed = Object.values(filteredUsedValues).some((val) => val.template === templateFields[key].value);
-          return isSuggestionTemplate || !isTemplateUsed;
+          return !isTemplateUsed || isSuggestionTemplate;
         });
       }
       currentOptions = currentOptions?.reduce((acc, key) => {
