@@ -1,8 +1,6 @@
 import { Navigate, Routes } from "react-router-dom";
 import Imports from "../features/imports";
-import Frame from "../features/layouts/frame";
 import Main from "../features/layouts/main";
-import Profile from "../features/profile";
 import SettingsPage from "../features/settingsPage";
 import parseRoutes from "./utils/parseRoutes";
 import { RoutesType } from "./types";
@@ -17,11 +15,6 @@ const routes: RoutesType = [
     paths: "data",
     layout: Main,
     children: <Imports />,
-  },
-  {
-    paths: "profile",
-    layout: Frame,
-    children: <Profile />,
   },
   {
     paths: "settings",

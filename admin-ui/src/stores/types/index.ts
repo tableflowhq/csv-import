@@ -1,3 +1,5 @@
-import { ReactElement } from "react";
+import { JSXElementConstructor, ReactElement } from "react";
 
-export type Components = { [key: string]: () => ReactElement };
+export type Components = {
+  [key: string]: () => ReactElement<any, string | JSXElementConstructor<any>> | null;
+};

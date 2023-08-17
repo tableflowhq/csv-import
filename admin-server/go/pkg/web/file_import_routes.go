@@ -36,9 +36,10 @@ type ImportServiceTemplate struct {
 }
 
 type ImportServiceTemplateColumn struct {
-	ID       model.ID `json:"id" swaggertype:"string" example:"a1ed136d-33ce-4b7e-a7a4-8a5ccfe54cd5"`
-	Name     string   `json:"name" example:"Work Email"`
-	Required bool     `json:"required" example:"false"`
+	ID          model.ID `json:"id" swaggertype:"string" example:"a1ed136d-33ce-4b7e-a7a4-8a5ccfe54cd5"`
+	Name        string   `json:"name" example:"First Name"`
+	Required    bool     `json:"required" example:"false"`
+	Description string   `json:"description" example:"The first name"`
 }
 
 type ImportServiceUpload struct {
@@ -50,7 +51,6 @@ type ImportServiceUpload struct {
 	FileExtension null.String    `json:"file_extension" swaggertype:"string" example:"csv"`
 	FileSize      null.Int       `json:"file_size" swaggertype:"integer" example:"1024"`
 	Metadata      model.JSONB    `json:"metadata" swaggertype:"string" example:"{\"user_id\": 1234}"`
-	IsParsed      bool           `json:"is_parsed" example:"false"`
 	IsStored      bool           `json:"is_stored" example:"false"`
 	CreatedAt     model.NullTime `json:"created_at" swaggertype:"integer" example:"1682366228"`
 
@@ -132,7 +132,7 @@ func validateAllowedDomains(c *gin.Context, importer *model.Importer) error {
 		}
 	}
 	if !containsAllowedDomain {
-		tf.Log.Errorw("Upload request blocked coming from unauthorized domain", "importer_id", importer.ID, "referer", referer, "allowed_domains", importer.AllowedDomains)
+		tf.Log.Infow("Upload request blocked coming from unauthorized domain", "importer_id", importer.ID, "referer", referer, "allowed_domains", importer.AllowedDomains)
 		return errors.New("Uploads are only allowed from authorized domains. Please contact support.")
 	}
 	return nil
@@ -205,9 +205,10 @@ func getImporterForImportService(c *gin.Context) {
 	importerTemplateColumns := make([]*ImportServiceTemplateColumn, len(template.TemplateColumns))
 	for n, tc := range template.TemplateColumns {
 		importerTemplateColumns[n] = &ImportServiceTemplateColumn{
-			ID:       tc.ID,
-			Name:     tc.Name,
-			Required: tc.Required,
+			ID:          tc.ID,
+			Name:        tc.Name,
+			Required:    tc.Required,
+			Description: tc.Description.String,
 		}
 	}
 	importerTemplate := &ImportServiceTemplate{
@@ -265,7 +266,6 @@ func getUploadForImportService(c *gin.Context) {
 		FileExtension: upload.FileExtension,
 		FileSize:      upload.FileSize,
 		Metadata:      upload.Metadata,
-		IsParsed:      upload.IsParsed,
 		IsStored:      upload.IsStored,
 		CreatedAt:     upload.CreatedAt,
 		UploadColumns: importerUploadColumns,

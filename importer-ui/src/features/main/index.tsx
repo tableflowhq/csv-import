@@ -3,6 +3,7 @@ import { Button, Errors, Stepper, useStepper } from "@tableflow/ui-library";
 import Spinner from "../../components/Spinner";
 import { getAPIBaseURL } from "../../api/api";
 import useEmbedStore from "../../stores/embed";
+import postMessage from "../../utils/postMessage";
 import useApi from "./hooks/useApi";
 import style from "./style/Main.module.scss";
 import Complete from "../complete";
@@ -19,7 +20,7 @@ const steps = [
 
 export default function Main() {
   // Get iframe URL params
-  const { importerId, metadata, isOpen, onComplete } = useEmbedStore((state) => state.embedParams);
+  const { importerId, metadata, isOpen, onComplete, showImportLoadingStatus } = useEmbedStore((state) => state.embedParams);
 
   // Stepper handler
   const stepper = useStepper(steps, 0);
@@ -55,21 +56,24 @@ export default function Main() {
   // Send messages to parent (SDK iframe)
 
   const requestClose = () => {
-    window?.top?.postMessage("close", "*") || window?.parent?.postMessage("close", "*");
+    const message = {
+      type: "close",
+      importerId,
+      source: "tableflow-importer",
+    };
+    postMessage(message);
   };
 
   const handleComplete = (data: any, error: string | null) => {
     if (onComplete) {
-      const message = JSON.stringify({
+      const message = {
         data,
         error,
         type: "complete",
-      });
-      if (window?.top?.postMessage) {
-        window?.top?.postMessage(message, "*");
-      } else {
-        window?.parent?.postMessage(message, "*");
-      }
+        importerId,
+        source: "tableflow-importer",
+      };
+      postMessage(message);
     }
     setTusId("");
   };
@@ -100,7 +104,7 @@ export default function Main() {
     ) : step === "review" && !!isStored ? (
       <Review template={template} upload={upload} onSuccess={() => stepper.setCurrent(2)} onCancel={reload} />
     ) : !uploadError && step === "complete" ? (
-      <Complete reload={reload} close={requestClose} onSuccess={handleComplete} upload={upload} />
+      <Complete reload={reload} close={requestClose} onSuccess={handleComplete} upload={upload} showImportLoadingStatus={showImportLoadingStatus} />
     ) : null;
 
   return (

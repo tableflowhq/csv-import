@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import cross from "./assets/cross";
 import { TableFlowImporterProps } from "./types";
 import "./style/button.css";
@@ -16,10 +16,12 @@ export default function TableFlowImporter({
     className,
     onComplete,
     customStyles,
+    showImportLoadingStatus,
     ...props
 }: TableFlowImporterProps) {
     const ref = useRef(null);
     const current = ref.current as any;
+
     useEffect(() => {
         if (current) {
             if (isOpen) current.showModal();
@@ -40,6 +42,7 @@ export default function TableFlowImporter({
         isOpen: isOpen.toString(),
         onComplete: onComplete ? "true" : "false",
         customStyles: JSON.stringify(customStyles),
+        showImportLoadingStatus: showImportLoadingStatus ? "true" : "false",
     };
     const searchParams = new URLSearchParams(urlParams);
     const defaultImporterUrl = "https://importer.tableflow.com";
@@ -55,29 +58,32 @@ export default function TableFlowImporter({
     }, [metadata]);
 
     useEffect(() => {
-        window.onmessage = function (e) {
-            if (onComplete) {
-                let messageData;
-
-                try {
-                    messageData = JSON.parse(e.data);
-                } catch (e) {
-                    // do nothing
-                }
-
-                if (messageData?.type === "complete") {
-                    onComplete({
-                        data: messageData?.data || null,
-                        error: messageData?.error || null,
-                    });
-                }
+        function messageListener(e: any) {
+            if (!e || !e.data) {
+                return;
             }
-
-            if (e.data == "close") {
+            const messageData = e.data;
+            if (messageData?.source !== "tableflow-importer") {
+                return;
+            }
+            if (messageData?.importerId !== importerId) {
+                return;
+            }
+            if (messageData?.type === "complete" && onComplete) {
+                onComplete({
+                    data: messageData?.data || null,
+                    error: messageData?.error || null,
+                });
+            }
+            if (messageData?.type === "close" && onRequestClose) {
                 onRequestClose();
             }
+        }
+        window.addEventListener("message", messageListener);
+        return () => {
+            window.removeEventListener("message", messageListener);
         };
-    }, []);
+    }, []);  
 
     return (
         <dialog ref={ref} className={dialogClass} onClick={backdropClick} {...props}>

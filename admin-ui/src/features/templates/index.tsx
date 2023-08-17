@@ -35,6 +35,16 @@ export default function Templates({ importer }: TemplatesProps) {
             context={{ templateId: template?.id }}
           />
         </Box>
+      ) : action === "edit" ? (
+        <Box variants={["wide", "space-mid"]}>
+          <TemplateColumnForm
+            title="Edit Column"
+            buttonLabel="Save"
+            onSuccess={modal.handleClose}
+            column={column}
+            context={{ templateId: template?.id }}
+          />
+        </Box>
       ) : action === "delete" ? (
         <Box variants={["wide", "space-mid"]}>
           <TemplateColumnDelete column={column} onSuccess={modal.handleClose} context={{ templateId: template?.id }} />{" "}
@@ -55,6 +65,8 @@ export default function Templates({ importer }: TemplatesProps) {
   // Data to table format
 
   const tableData = columnsTable(dataPage as any, update);
+  const hasDescription = tableData?.[0]?.hasOwnProperty("Description");
+  const columnWidths = hasDescription ? ["24%", "30%", "20%", "20%", "6%"] : ["54%", "20%", "20%", "6%"];
 
   return (
     <div className={style.templates}>
@@ -70,13 +82,7 @@ export default function Templates({ importer }: TemplatesProps) {
           </div>
         </div>
 
-        {columns && (
-          <Table
-            data={tableData}
-            /* heading={<Heading {...{ setSort, sortKey, sortAsc }} />} */ background="zebra"
-            columnWidths={["54%", "20%", "20%", "6%"]}
-          />
-        )}
+        {columns && <Table data={tableData} background="zebra" columnWidths={columnWidths} />}
 
         {!!(totalItems && totalItems > itemsPerPage) && (
           <Pagination totalItems={totalItems} itemsPerPage={itemsPerPage} onPageChange={paginate} initialPage={page} />

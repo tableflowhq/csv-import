@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gin-contrib/cors"
+	"github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	"github.com/samber/lo"
 	"github.com/swaggo/files"
@@ -37,7 +38,7 @@ const adminUIDefaultURL = "http://localhost:3000"
 const importerUIDefaultURL = "http://localhost:3001"
 
 type ServerConfig struct {
-	AuthMiddleware                 gin.HandlerFunc
+	Middlewares                    []gin.HandlerFunc
 	AdminAPIAuthValidator          gin.HandlerFunc
 	ExternalAPIAuthValidator       func(c *gin.Context, apiKey string) bool
 	GetWorkspaceUser               func(c *gin.Context, workspaceID string) (string, error)
@@ -48,6 +49,7 @@ type ServerConfig struct {
 	AdditionalCORSOrigins          []string
 	AdditionalCORSHeaders          []string
 	AdditionalAdminRoutes          func(group *gin.RouterGroup)
+	UseZapLogger                   bool
 }
 
 func StartWebServer(config ServerConfig) *http.Server {
@@ -82,10 +84,17 @@ func StartWebServer(config ServerConfig) *http.Server {
 		AllowWildcard:    true,
 		MaxAge:           12 * time.Hour,
 	}))
-	router.Use(gin.Logger())
-	router.Use(gin.Recovery())
-	if config.AuthMiddleware != nil {
-		router.Use(config.AuthMiddleware)
+
+	if config.UseZapLogger {
+		ginLogger := tf.Log.Desugar()
+		router.Use(ginzap.Ginzap(ginLogger, time.RFC3339, true))
+		router.Use(ginzap.RecoveryWithZap(ginLogger, true))
+	} else {
+		router.Use(gin.Logger())
+		router.Use(gin.Recovery())
+	}
+	for _, middleware := range config.Middlewares {
+		router.Use(middleware)
 	}
 
 	port, err := util.ParsePort(os.Getenv("TABLEFLOW_API_SERVER_PORT"))
@@ -144,6 +153,7 @@ func StartWebServer(config ServerConfig) *http.Server {
 	/* Template */
 	adm.GET("/template/:id", func(c *gin.Context) { getTemplate(c, config.GetWorkspaceUser) })
 	adm.POST("/template-column", func(c *gin.Context) { createTemplateColumn(c, config.GetWorkspaceUser) })
+	adm.POST("/template-column/:id", func(c *gin.Context) { editTemplateColumn(c, config.GetWorkspaceUser) })
 	adm.DELETE("/template-column/:id", func(c *gin.Context) { deleteTemplateColumn(c, config.GetWorkspaceUser) })
 
 	/* Import */
