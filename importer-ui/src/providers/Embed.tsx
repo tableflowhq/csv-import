@@ -40,11 +40,9 @@ export default function Embed({ children }: EmbedProps) {
 
       customStyles &&
         Object.keys(parsedStyles).forEach((key) => {
-          if (key.indexOf("--") === 0) {
-            const root = document.documentElement;
-            const value = parsedStyles?.[key as any];
-            root.style.setProperty(key, value);
-          }
+          const root = document.documentElement;
+          const value = parsedStyles?.[key as any];
+          root.style.setProperty("--" + key, value);
         });
     } catch (e) {
       console.error('The "customStyles" prop is not a valid JSON string. Please check the documentation for more details.');
