@@ -15,7 +15,7 @@ const TUS_ENDPOINT = getAPIBaseURL("v1") + "files";
 
 const steps = [
   { label: "Upload", id: "upload" },
-  { label: "Row Selection", id: "row-selection" },
+  { label: "Select header row", id: "row-selection" },
   { label: "Review", id: "review" },
   { label: "Complete", id: "complete" },
 ];
@@ -29,7 +29,7 @@ export default function Main() {
   const step = stepper?.step?.id;
 
   // Async data & state
-  const { tusId, tusWasStored, importerIsLoading, importerError, template, upload, uploadError, isStored, setTusId } = useApi(importerId);
+  const { tusId, tusWasStored, importerIsLoading, importerError, template, upload, uploadError, isStored, setTusId, importer } = useApi(importerId);
 
   useEffect(() => {
     if (uploadError && tusWasStored) reload();
@@ -53,6 +53,10 @@ export default function Main() {
     setTusId("");
     stepper.setCurrent(0);
     location.reload();
+  };
+
+  const rowSelection = () => {
+    stepper.setCurrent(1);
   };
 
   // Send messages to parent (SDK iframe)
@@ -101,12 +105,12 @@ export default function Main() {
   const content =
     step === "upload" || !!uploadError ? (
       <Uploader template={template} importerId={importerId} metadata={metadata} onSuccess={setTusId} endpoint={TUS_ENDPOINT} />
-    ) : step === "row-selection" ? (
-      <RowSelection />
-    ) : step === "review" && !isStored ? (
+    ) : step === "row-selection" && !isStored ? (
       <Spinner className={style.spinner}>Processing your file...</Spinner>
+    ) : step === "row-selection" && !!isStored ? (
+      <RowSelection upload={upload} onCancel={reload} onSuccess={() => stepper.setCurrent(2)} />
     ) : step === "review" && !!isStored ? (
-      <Review template={template} upload={upload} onSuccess={() => stepper.setCurrent(2)} onCancel={reload} />
+      <Review template={template} upload={upload} onSuccess={() => stepper.setCurrent(3)} onCancel={rowSelection} />
     ) : !uploadError && step === "complete" ? (
       <Complete reload={reload} close={requestClose} onSuccess={handleComplete} upload={upload} showImportLoadingStatus={showImportLoadingStatus} />
     ) : null;

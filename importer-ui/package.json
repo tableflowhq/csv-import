@@ -3,8 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@mantine/core": "^6.0.10",
+    "@mantine/core": "^6.0.19",
     "@mantine/form": "^6.0.4",
+    "@mantine/hooks": "^6.0.19",
+    "@mantine/styles": "^6.0.19",
     "@tableflow/ui-library": "^1.37.0",
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^13.0.0",

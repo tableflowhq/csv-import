@@ -1,0 +1,81 @@
+const mockData = [
+  {
+    id: 1,
+    "Selecte header row": "Mike Johnson",
+    __Age: 28,
+    __Email: "mike.johnson@example.com",
+    selected: false,
+  },
+  {
+    id: 2,
+    Name: "Emily Davis",
+    Age: 32,
+    Email: "emily.davis@example.com",
+    selected: false,
+  },
+  {
+    id: 3,
+    Name: "Alex Wilson",
+    Age: 27,
+    Email: "alex.wilson@example.com",
+    selected: false,
+  },
+  {
+    id: 4,
+    Name: "Sarah Thompson",
+    Age: 29,
+    Email: "sarah.thompson@example.com",
+    selected: false,
+  },
+  {
+    id: 5,
+    Name: "Daniel Anderson",
+    Age: 31,
+    Email: "daniel.anderson@example.com",
+    selected: false,
+  },
+  {
+    id: 6,
+    Name: "Michelle Brown",
+    Age: 26,
+    Email: "michelle.brown@example.com",
+    selected: false,
+  },
+  {
+    id: 7,
+    Name: "Robert Taylor",
+    Age: 33,
+    Email: "robert.taylor@example.com",
+    selected: false,
+  },
+  {
+    id: 8,
+    Name: "Laura Miller",
+    Age: 28,
+    Email: "laura.miller@example.com",
+    selected: false,
+  },
+  {
+    id: 9,
+    Name: "Michael Johnson",
+    Age: 35,
+    email: "michael.johnson@example.com",
+    selected: false,
+  },
+  {
+    id: 10,
+    Name: "Jessica Davis",
+    Age: 27,
+    email: "jessica.davis@example.com",
+    selected: false,
+  },
+  {
+    id: 11,
+    Name: "Andrew Smith",
+    Age: 32,
+    email: "andrew.smith@example.com",
+    selected: false,
+  },
+];
+
+export default mockData;

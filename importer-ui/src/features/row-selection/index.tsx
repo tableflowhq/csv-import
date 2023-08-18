@@ -1,27 +1,37 @@
-import { FormEvent, useEffect } from "react";
-import { Radio } from "@mantine/core";
-import { Table } from "@tableflow/ui-library";
+import { FormEvent, useEffect, useState } from "react";
+// import { Radio } from "@mantine/core";
+import { Button, Table } from "@tableflow/ui-library";
+import { RowSelectionProps } from "./types";
+import style from "./style/RowSelection.module.scss";
+import mockData from "./mockData";
 
-// import style from "./style/Review.module.scss";
+export default function RowSelection({ upload, onSuccess, onCancel }: RowSelectionProps) {
+  const [data, setData] = useState(mockData);
 
-// TODO: correct props
-// TODO: Add types
-export default function RowSelection({ upload, template, onSuccess, onCancel }: any) {
-  const mockData = [
-    {
-      id: 1,
-      __select: { raw: "", content: <input type="radio" /> }, // TODO: this can probably be taken from mantine?
-      "Row Selection": "John Doe",
-      __age: { raw: 33, content: "33" },
-      __data: "john.doe@example.com",
-    },
-    {
-      id: 2,
-      __select: { raw: "", content: <input type="radio" /> }, // TODO: this can probably be taken from mantine?
-      "Row Selection": "Jane Doe",
-      __age: { raw: 33, content: "33" },
-      __data: "red",
-    },
-  ];
-  return <Table data={mockData} background="dark" columnWidths={["20%", "30%", "30%", "20%"]} columnAlignments={["", "", "", "center"]} fixHeader />;
+  const handleSelect = (id: number) => {
+    setData((prevData) => prevData.map((item) => (item.id === id ? { ...item, selected: !item.selected } : item)));
+  };
+
+  return (
+    <div className={style.content}>
+      <form>
+        {upload ? (
+          <div className={style.tableWrapper}>
+            <Table data={data} background="dark" columnWidths={["20%", "30%", "30%", "20%"]} columnAlignments={["", "", "", "center"]} fixHeader />
+          </div>
+        ) : (
+          <>Loading...</>
+        )}
+
+        <div className={style.actions}>
+          <Button type="button" variants={["secondary"]} onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button variants={["primary"]} onClick={() => upload && onSuccess(upload?.id)}>
+            Next
+          </Button>
+        </div>
+      </form>
+    </div>
+  );
 }
