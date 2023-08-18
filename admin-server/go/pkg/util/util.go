@@ -9,6 +9,7 @@ import (
 	"golang.org/x/text/message"
 	"net/mail"
 	"sync"
+	"unicode"
 )
 
 func JsonPrettyPrint(in string) string {
@@ -33,6 +34,25 @@ func IsValidJSONBytes(bytes []byte) bool {
 func IsEmailValid(email string) bool {
 	_, err := mail.ParseAddress(email)
 	return err == nil
+}
+
+func IsBlankUnicode(s string) bool {
+	for _, r := range s {
+		if !unicode.IsSpace(r) {
+			return false
+		}
+	}
+	return true
+}
+
+func IsBlankASCII(s string) bool {
+	for i := 0; i < len(s); i++ {
+		c := s[i]
+		if c != ' ' && c != '\t' && c != '\n' && c != '\r' {
+			return false
+		}
+	}
+	return true
 }
 
 func HasDuplicateValues(m map[string]string) bool {
@@ -77,6 +97,15 @@ func DecodeBase64(encodedString string) (string, error) {
 func CommaFormat(num int64) string {
 	p := message.NewPrinter(language.English)
 	return p.Sprintf("%d", num)
+}
+
+// SafeAccess returns the element at the given index if it exists
+func SafeAccess[T any](slice []T, index int) (T, bool) {
+	var zeroValue T
+	if index < 0 || index >= len(slice) {
+		return zeroValue, false
+	}
+	return slice[index], true
 }
 
 func ShutdownHandler(ctx context.Context, wg *sync.WaitGroup, close func()) {
