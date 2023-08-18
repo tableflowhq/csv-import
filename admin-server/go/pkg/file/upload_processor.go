@@ -165,6 +165,7 @@ func processAndStoreUpload(upload *model.Upload, file *os.File) (uploadProcessRe
 		return uploadProcessResult{}, err
 	}
 
+	numColumns := len(upload.UploadColumns)
 	numRows := 0
 	goroutines := 8
 	batchCounter := 0
@@ -197,29 +198,26 @@ func processAndStoreUpload(upload *model.Upload, file *os.File) (uploadProcessRe
 			continue
 		}
 
-		numBlankRows := 0
+		numBlankCells := 0
 		approxMutationSize := 0
-		uploadRow := make(map[int16]string)
+		uploadRow := make(map[int16]string, numColumns)
 
-		// TODO: Excel files ending in empty rows don't include all the rows
-		// Figure out how to include the blank rows in the columnIndex
-		// Iterate over the column header instead? and get the value of row[that] if it exists?
+		// Iterate over the columns instead of the row, as rows ending in blank values may not be picked up by the iterator (i.e. excel)
+		// This also ensures the row length cannot be out of the range of columns
+		for columnIndex := 0; columnIndex < numColumns; columnIndex++ {
 
-		for columnIndex, columnValue := range row {
-			if columnIndex >= len(upload.UploadColumns) {
-				tf.Log.Warnw("Index out of range for row", "column_index", columnIndex, "row_index", i, "upload_id", upload.ID)
-				break
-			}
-			if util.IsBlankUnicode(columnValue) {
-				numBlankRows++
+			// If the row has fewer values than the number of columns, still process the missing cells as blank
+			cellValue, _ := util.SafeAccess(row, columnIndex)
+			if util.IsBlankUnicode(cellValue) {
+				numBlankCells++
 			}
 			// TODO: Deal with invalid characters better, determine charsets programmatically? Or just surface these to the user?
-			uploadRow[int16(columnIndex)] = strings.ToValidUTF8(columnValue, "")
-			approxMutationSize += len(columnValue)
+			uploadRow[int16(columnIndex)] = strings.ToValidUTF8(cellValue, "")
+			approxMutationSize += len(cellValue)
 		}
 
 		// If all rows are blank, don't process it
-		if len(row) == 0 || numBlankRows == len(row) {
+		if len(row) == 0 || numBlankCells == numColumns {
 			continue
 		}
 

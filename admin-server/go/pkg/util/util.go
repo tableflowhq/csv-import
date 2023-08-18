@@ -99,6 +99,15 @@ func CommaFormat(num int64) string {
 	return p.Sprintf("%d", num)
 }
 
+// SafeAccess returns the element at the given index if it exists
+func SafeAccess[T any](slice []T, index int) (T, bool) {
+	var zeroValue T
+	if index < 0 || index >= len(slice) {
+		return zeroValue, false
+	}
+	return slice[index], true
+}
+
 func ShutdownHandler(ctx context.Context, wg *sync.WaitGroup, close func()) {
 	defer wg.Done()
 	for {
