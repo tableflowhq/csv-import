@@ -165,15 +165,16 @@ func editImporter(c *gin.Context, getWorkspaceUser func(*gin.Context, string) (s
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return
 	}
-	_, err = getWorkspaceUser(c, importer.WorkspaceID.String())
+	userID, err := getWorkspaceUser(c, importer.WorkspaceID.String())
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, types.Res{Err: err.Error()})
 		return
 	}
+	user := model.User{ID: model.ParseID(userID)}
 
 	// Change any field that exists on the request and are different
 	save := false
-	if req.Name != nil && *req.Name != importer.Name {
+	if req.Name != nil && *req.Name != importer.Name && len(*req.Name) != 0 {
 		importer.Name = *req.Name
 		save = true
 	}
@@ -201,6 +202,7 @@ func editImporter(c *gin.Context, getWorkspaceUser func(*gin.Context, string) (s
 	}
 
 	if save {
+		importer.UpdatedBy = user.ID
 		err = tf.DB.Save(importer).Error
 		if err != nil {
 			tf.Log.Errorw("Could not save importer", "error", err, "importer_id", importer.ID)

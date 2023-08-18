@@ -2,7 +2,7 @@ import { useMutation, UseMutationResult, useQueryClient } from "react-query";
 import { ApiResponse, TemplateColumnFormFields } from "./types";
 import { post } from "./api";
 
-export default function usePostTemplateColumn(templateId?: string): UseMutationResult<ApiResponse<any>> {
+export default function usePostTemplateColumn(templateId?: string, id?: string): UseMutationResult<ApiResponse<any>> {
   const queryClient = useQueryClient();
 
   return useMutation((values) => postTemplateColumn(values as TemplateColumnFormFields), {
@@ -12,8 +12,9 @@ export default function usePostTemplateColumn(templateId?: string): UseMutationR
   });
 }
 
-async function postTemplateColumn(values: TemplateColumnFormFields): Promise<ApiResponse<any>> {
-  const response = await post("template-column", values);
+async function postTemplateColumn({ id, ...values }: TemplateColumnFormFields): Promise<ApiResponse<any>> {
+  const endpoint = "template-column" + (id ? `/${id}` : "");
+  const response = await post(endpoint, values);
 
   if (!response.ok) throw response.error;
 

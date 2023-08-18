@@ -5,23 +5,14 @@ export default function getCodeJavaScript(props: CodeProps) {
   if (props.hostUrl) {
     hostUrlLine = `\n  hostUrl: "${props.hostUrl}",`;
   }
-  return `import createTableFlowImporter from "@tableflow/js";";
+  return `import createTableFlowImporter from "@tableflow/js";
 
-const args = {
+const importer = createTableFlowImporter({
   importerId: "${props.importerId || "YOUR_IMPORTER_ID"}",${hostUrlLine}
+  onRequestClose: () => importer.close(),
+  onComplete: (data, error) => console.log(data),
   darkMode: ${props.theme !== "light"},
-  primaryColor: "#7a5ef8",
-  metadata: '{"userId": 1234, "userEmail": "test@example.com"}',
-  onRequestClose: () => dialog.close(),
-  onComplete: (data, error) => {
-    if (error) {
-      alert(error); // Handle import error
-    } else {
-      console.log(data); // Use import data
-    }
-  }
-}
-const importer = createTableFlowImporter(args);
+});
 
 const uploadButton = document.getElementById("uploadButton");
 uploadButton.addEventListener("click", () => {

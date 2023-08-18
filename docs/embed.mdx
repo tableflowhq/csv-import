@@ -36,20 +36,11 @@ function MyComponent() {
       <button onClick={() => setIsOpen(true)}>Open TableFlow Importer</button>
 
       <TableFlowImporter
+        importerId={"b0fadb1d-9888-4fcb-b185-21b984bcb227"} // Use your importer ID from https://app.tableflow.com/importers
         isOpen={isOpen}
         onRequestClose={() => setIsOpen(false)}
-        importerId={"53a84496-819d-4ec6-93b7-b4b56fb676ad"} // Replace with your importer ID from https://app.tableflow.com/importers
         darkMode={true}
-        primaryColor="#7A5EF8"
-        closeOnClickOutside={true}
-        metadata={"{\"userId\": 1234, \"userEmail\": \"test@example.com\"}"}
-        onComplete={(data, error) => {
-          if (error) {
-            alert(error); // Handle import error
-          } else {
-            console.log(data); // Use import data
-          }
-        }}
+        onComplete={(data, error) => console.log(data)}
       />
     </>
   );
@@ -80,21 +71,12 @@ Create an importer, define your template, and retrieve data at https://app.table
 ```javascript
 import createTableFlowImporter from "@tableflow/js";
 
-const args = {
-  importerId: "53a84496-819d-4ec6-93b7-b4b56fb676ad", // Replace with your importer ID from https://app.tableflow.com/importers
-  darkMode: true,
-  primaryColor: "#7a5ef8",
-  metadata: '{"userId": 1234, "userEmail": "test@example.com"}',
+const importer = createTableFlowImporter({
+  importerId: "6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353", // Use your importer ID from https://app.tableflow.com/importers
   onRequestClose: () => importer.close(),
-  onComplete: (data, error) => {
-    if (error) {
-      alert(error); // Handle import error
-    } else {
-      console.log(data); // Use import data
-    }
-  }
-};
-const importer = createTableFlowImporter(args);
+  onComplete: (data, error) => console.log(data),
+  darkMode: true,
+});
 
 const uploadButton = document.getElementById("uploadButton");
 uploadButton.addEventListener("click", () => {
@@ -103,29 +85,19 @@ uploadButton.addEventListener("click", () => {
 ```
 
 Or directly in HTML
-
 ```html
 <head>
   <script src="https://unpkg.com/@tableflow/js@latest/build/index.js"></script>
 </head>
 <body>
-  <button id="uploadButton">Upload file</button>
+  <button id="uploadButton">Open TableFlow Importer</button>
   <script>
-    const args = {
-      importerId: "53a84496-819d-4ec6-93b7-b4b56fb676ad", // Replace with your importer ID from https://app.tableflow.com/importers
-      darkMode: true,
-      primaryColor: "#7a5ef8",
-      metadata: '{"userId": 1234, "userEmail": "test@example.com"}',
+    const importer = createTableFlowImporter({
+      importerId: "6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353", // Use your importer ID from https://app.tableflow.com/importers
       onRequestClose: () => importer.close(),
-      onComplete: (data, error) => {
-        if (error) {
-          alert(error); // Handle import error
-        } else {
-          console.log(data); // Use import data
-        }
-      },
-    };
-    const importer = createTableFlowImporter(args);
+      onComplete: (data, error) => console.log(data),
+      darkMode: true,
+    });
 
     const uploadButton = document.getElementById("uploadButton");
     uploadButton.addEventListener("click", () => {
