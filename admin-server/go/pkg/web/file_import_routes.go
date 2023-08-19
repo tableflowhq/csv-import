@@ -411,20 +411,8 @@ func importData(upload *model.Upload, template *model.Template, importCompleteHa
 	}
 
 	importStartTime := time.Now()
-	// template column ID -> template column key
-	templateRowMap := make(map[string]string)
-	for _, tc := range template.TemplateColumns {
-		templateRowMap[tc.ID.String()] = tc.Key
-	}
-	// upload column index -> template column key
-	columnKeyMap := make(map[int]string)
-	for _, uc := range upload.UploadColumns {
-		if key, ok := templateRowMap[uc.TemplateColumnID.String()]; ok {
-			columnKeyMap[uc.Index] = key
-		}
-	}
 
-	importResult, err := processAndStoreImport(columnKeyMap, template, upload, imp)
+	importResult, err := processAndStoreImport(template, upload, imp)
 	if err != nil {
 		tf.Log.Errorw("Could not process and store import", "error", err, "import_id", imp.ID)
 		return
@@ -449,10 +437,12 @@ func importData(upload *model.Upload, template *model.Template, importCompleteHa
 	tf.Log.Debugw("Import complete", "import_id", imp.ID)
 }
 
-func processAndStoreImport(columnKeyMap map[int]string, template *model.Template, upload *model.Upload, imp *model.Import) (importProcessResult, error) {
+func processAndStoreImport(template *model.Template, upload *model.Upload, imp *model.Import) (importProcessResult, error) {
+	columnKeyMap := generateColumnKeyMap(template, upload)
+	numColumns := len(columnKeyMap)
+
 	importRowIndex := 0
 	numProcessedValues := 0
-	columnLength := len(template.TemplateColumns)
 
 	goroutines := 8
 	batchCounter := 0
@@ -474,26 +464,43 @@ func processAndStoreImport(columnKeyMap map[int]string, template *model.Template
 			break
 		}
 		uploadRows := scylla.PaginateUploadRows(upload.ID.String(), offset, paginationPageSize)
+
+		// Iterate over the upload rows in pages returned from Scylla
 		for pageRowIndex := 0; pageRowIndex < len(uploadRows); pageRowIndex++ {
-			/*
-				1. iterate through the row
-				2. get the upload column from the index of the row (map[int] uploadColumn)
-				3. now you have the template column key
-				4. store to the import row value map
-			*/
 			approxMutationSize := 0
-			importRowValue := make(map[string]string, columnLength)
-			for colPos, cellVal := range uploadRows[pageRowIndex] {
-				if key, ok := columnKeyMap[colPos]; ok {
-					importRowValue[key] = cellVal
-					approxMutationSize += len(cellVal)
-					numProcessedValues++
-				}
+
+			// uploadRow example:
+			// {0: 'Mary', 1: 'Jenkins', 2: 'mary@example.com', 3: '02/22/2020', 4: ''}
+			uploadRow := uploadRows[pageRowIndex]
+
+			// importRowValues example:
+			// {'first_name': 'Mary', 'last_name': 'Jenkins', 'email': 'mary@example.com'}
+			importRowValues := make(map[string]string, numColumns)
+
+			// Iterate over columnKeyMap, the columns that have mappings set
+			// Rows ending in blank values may not exist in the uploadRow (i.e. excel), but we still want to set empty
+			// values for those cells as they are logically empty in the source file
+			//
+			// columnKeyMap example:
+			// {0: 'first_name', 1: 'last_name', 2: 'email'}
+			for uploadColumnIndex, templateColumnKey := range columnKeyMap {
+
+				// uploadColumnIndex = 0
+				// cellValue         = Mary
+				// templateColumnKey = first_name
+				// importRowValue    = {'first_name': 'Mary'}
+
+				cellValue := uploadRow[uploadColumnIndex]
+				importRowValues[templateColumnKey] = cellValue
+
+				approxMutationSize += len(cellValue)
+				numProcessedValues++
 			}
+
 			batchCounter++
 			batchSize += approxMutationSize
 
-			b.Query("insert into import_rows (import_id, row_index, values) values (?, ?, ?)", imp.ID.String(), importRowIndex, importRowValue)
+			b.Query("insert into import_rows (import_id, row_index, values) values (?, ?, ?)", imp.ID.String(), importRowIndex, importRowValues)
 
 			batchSizeApproachingLimit := batchSize > int(float64(maxMutationSize)*safetyMargin)
 			if batchSizeApproachingLimit {
@@ -515,7 +522,31 @@ func processAndStoreImport(columnKeyMap map[int]string, template *model.Template
 
 	return importProcessResult{
 		NumRows:            importRowIndex,
-		NumColumns:         columnLength,
+		NumColumns:         numColumns,
 		NumProcessedValues: numProcessedValues,
 	}, nil
+}
+
+// generateColumnKeyMap
+// For the columns that a user set a mapping for, create a map of the upload column indexes to the template column key
+// This is used to store the import data in Scylla by the template column key
+func generateColumnKeyMap(template *model.Template, upload *model.Upload) map[int]string {
+
+	// templateRowMap == template column ID -> template column key
+	templateRowMap := make(map[string]string)
+	for _, tc := range template.TemplateColumns {
+		templateRowMap[tc.ID.String()] = tc.Key
+	}
+
+	// columnKeyMap == upload column index -> template column key
+	columnKeyMap := make(map[int]string)
+	for _, uc := range upload.UploadColumns {
+		if !uc.TemplateColumnID.Valid {
+			continue
+		}
+		if key, ok := templateRowMap[uc.TemplateColumnID.String()]; ok {
+			columnKeyMap[uc.Index] = key
+		}
+	}
+	return columnKeyMap
 }

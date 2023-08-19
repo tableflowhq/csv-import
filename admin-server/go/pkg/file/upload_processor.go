@@ -202,12 +202,31 @@ func processAndStoreUpload(upload *model.Upload, file *os.File) (uploadProcessRe
 		approxMutationSize := 0
 		uploadRow := make(map[int16]string, numColumns)
 
-		// Iterate over the columns instead of the row, as rows ending in blank values may not be picked up by the iterator (i.e. excel)
-		// This also ensures the row length cannot be out of the range of columns
-		for columnIndex := 0; columnIndex < numColumns; columnIndex++ {
+		// Note that rows ending in blank values may not be picked up by the iterator (i.e. excel)
+		// In this example file the last row will be of length 2:
+		//
+		// first , last , age
+		// sara  , cook , 30
+		// john  , chen , 29
+		// lisa  , ford ,
+		//
+		// This means that an uploadRow may not have values set for every column. Using the example above, the
+		// uploadRows in Scylla would look like:
+		//
+		// {0: 'sara', 1: 'cook', 2: '30'}
+		// {0: 'john', 1: 'chen', 2: '30'}
+		// {0: 'lisa', 1: 'ford'}
 
-			// If the row has fewer values than the number of columns, still process the missing cells as blank
-			cellValue, _ := util.SafeAccess(row, columnIndex)
+		for columnIndex, cellValue := range row {
+			if columnIndex >= numColumns {
+				tf.Log.Debugw("Column index greater than number of upload columns for row",
+					"upload_id", upload.ID,
+					"column_index", columnIndex,
+					"row_index", i,
+					"row_values", strings.Join(row, ","),
+				)
+				break
+			}
 			if util.IsBlankUnicode(cellValue) {
 				numBlankCells++
 			}
@@ -216,8 +235,8 @@ func processAndStoreUpload(upload *model.Upload, file *os.File) (uploadProcessRe
 			approxMutationSize += len(cellValue)
 		}
 
-		// If all rows are blank, don't process it
-		if len(row) == 0 || numBlankCells == numColumns {
+		// If all cells are blank in the row, don't process it
+		if len(row) == 0 || numBlankCells == len(row) {
 			continue
 		}
 
