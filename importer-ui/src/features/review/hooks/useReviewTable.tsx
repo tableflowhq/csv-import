@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Input, Switch } from "@tableflow/ui-library";
+import { InputOption } from "@tableflow/ui-library/build/Input/types";
 import { TemplateColumn, UploadColumn } from "../../../api/types";
 import stringsSimilarity from "../../../utils/stringSimilarity";
 import style from "../style/Review.module.scss";
@@ -16,14 +17,26 @@ export default function useReviewTable(items: UploadColumn[] = [], templateColum
       return { ...acc, [item.id]: { template: suggestion || "", use: !!suggestion } };
     }, {})
   );
-
-  const templateFields = useMemo(
+  const [selectedTemplates, setSelectedTemplates] = useState<string[]>([]);
+  const templateFields: { [key: string]: InputOption } = useMemo(
     () => templateColumns.reduce((acc, field) => ({ ...acc, [field.name]: { value: field.id, required: field.required } }), {}),
     [JSON.stringify(templateColumns)]
   );
 
   const handleTemplateChange = (id: string, template: string) => {
-    setValues((prev) => ({ ...prev, [id]: { ...prev[id], template, use: !!template } }));
+    setValues((prev) => {
+      const oldTemplate = prev[id].template;
+      setSelectedTemplates((currentSelected) => {
+        if (currentSelected.includes(oldTemplate)) {
+          return currentSelected.filter((t) => t !== oldTemplate);
+        }
+        if (template && !currentSelected.includes(template)) {
+          return [...currentSelected, template];
+        }
+        return currentSelected;
+      });
+      return { ...prev, [id]: { ...prev[id], template, use: !!template } };
+    });
   };
 
   const handleUseChange = (id: string, value: boolean) => {
@@ -33,8 +46,37 @@ export default function useReviewTable(items: UploadColumn[] = [], templateColum
   const rows = useMemo(() => {
     return items.map((item) => {
       const { id, name, sample_data } = item;
-      const suggestion = values?.[id] || "";
+      const suggestion = values?.[id] || {};
       const samples = sample_data.filter((d) => d);
+
+      const filteredUsedValues = Object.entries(values).reduce((acc, [key, value]) => {
+        if (value.use && key !== id) {
+          acc[key] = value;
+        }
+        return acc;
+      }, {} as { [key: string]: Include });
+      let currentOptions;
+
+      if (selectedTemplates && selectedTemplates.length > 0) {
+        currentOptions = Object.keys(templateFields).filter((key) => {
+          const isTemplateSelected = selectedTemplates.includes(templateFields[key].value as string);
+          const isSuggestionTemplate = templateFields[key].value === suggestion.template;
+          return !isTemplateSelected || isSuggestionTemplate;
+        });
+      } else {
+        if (suggestion.use) {
+          setSelectedTemplates((prevTemplates) => [...prevTemplates, suggestion.template]);
+        }
+        currentOptions = Object.keys(templateFields).filter((key) => {
+          const isSuggestionTemplate = templateFields[key].value === suggestion.template;
+          const isTemplateUsed = Object.values(filteredUsedValues).some((val) => val.template === templateFields[key].value);
+          return !isTemplateUsed || isSuggestionTemplate;
+        });
+      }
+      currentOptions = currentOptions?.reduce((acc, key) => {
+        acc[key] = templateFields[key];
+        return acc;
+      }, {} as { [key: string]: InputOption });
 
       return {
         "Column in File": {
@@ -55,7 +97,7 @@ export default function useReviewTable(items: UploadColumn[] = [], templateColum
           raw: "",
           content: (
             <Input
-              options={templateFields}
+              options={currentOptions}
               value={suggestion.template}
               placeholder="- Select one -"
               variants={["small"]}

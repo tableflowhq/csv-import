@@ -89,7 +89,7 @@ export default function TemplateColumnForm({
           />
           <Input as="textarea" placeholder="description" label="Description" name="description" {...form.getInputProps("description")} />
           <label>
-            <Switch name="required" {...form.getInputProps("required")} label="Required" inputFirst />
+            <Switch name="required" {...form.getInputProps("required", { type: "checkbox" })} label="Required" inputFirst />
           </label>
         </fieldset>
 
