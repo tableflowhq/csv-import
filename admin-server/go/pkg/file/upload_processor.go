@@ -22,7 +22,7 @@ type uploadProcessResult struct {
 	NumRows int
 }
 
-var maxColumnLimit = int(math.Min(1000, math.MaxInt16))
+var maxColumnLimit = int(math.Min(500, math.MaxInt16))
 var maxRowLimit = 1000 * 1000 * 10 // TODO: Store and configure this on the workspace? But keep a max limit to prevent runaways?
 
 func UploadCompleteHandler(event handler.HookEvent, uploadAdditionalStorageHandler, uploadLimitCheck func(*model.Upload, *os.File) error) {
@@ -165,7 +165,6 @@ func processAndStoreUpload(upload *model.Upload, file *os.File) (uploadProcessRe
 		return uploadProcessResult{}, err
 	}
 
-	numColumns := len(upload.UploadColumns)
 	numRows := 0
 	goroutines := 8
 	batchCounter := 0
@@ -200,7 +199,7 @@ func processAndStoreUpload(upload *model.Upload, file *os.File) (uploadProcessRe
 
 		numBlankCells := 0
 		approxMutationSize := 0
-		uploadRow := make(map[int16]string, numColumns)
+		uploadRow := make(map[int16]string)
 
 		// Note that rows ending in blank values may not be picked up by the iterator (i.e. excel)
 		// In this example file the last row will be of length 2:
@@ -218,13 +217,8 @@ func processAndStoreUpload(upload *model.Upload, file *os.File) (uploadProcessRe
 		// {0: 'lisa', 1: 'ford'}
 
 		for columnIndex, cellValue := range row {
-			if columnIndex >= numColumns {
-				tf.Log.Debugw("Column index greater than number of upload columns for row",
-					"upload_id", upload.ID,
-					"column_index", columnIndex,
-					"row_index", i,
-					"row_values", strings.Join(row, ","),
-				)
+			if columnIndex >= maxColumnLimit {
+				tf.Log.Warnw("Max column limit reached for row", "column_index", columnIndex, "row_index", i, "upload_id", upload.ID)
 				break
 			}
 			if util.IsBlankUnicode(cellValue) {
