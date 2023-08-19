@@ -35,3 +35,19 @@
   padding: var(--m);
   border-radius: var(--border-radius-1);
 }
+
+.close.close {
+  position: absolute;
+  right: var(--m);
+  top: var(--m);
+  border-radius: 50%;
+  padding: var(--m-xs);
+  width: 2em;
+  height: 2em;
+  aspect-ratio: 1;
+
+  svg {
+    width: var(--m-xs);
+    height: var(--m-xs);
+  }
+}
