@@ -46,14 +46,17 @@ export default function Embed({ children }: EmbedProps) {
 
   useEffect(() => {
     try {
-      const parsedStyles = customStyles && JSON.parse(customStyles);
+      if (customStyles && customStyles !== "undefined") {
+        const parsedStyles = JSON.parse(customStyles);
 
-      customStyles &&
-        Object.keys(parsedStyles).forEach((key) => {
-          const root = document.documentElement;
-          const value = parsedStyles?.[key as any];
-          root.style.setProperty("--" + key, value);
-        });
+        if (customStyles && parsedStyles) {
+          Object.keys(parsedStyles).forEach((key) => {
+            const root = document.documentElement;
+            const value = parsedStyles?.[key as any];
+            root.style.setProperty("--" + key, value);
+          });
+        }
+      }
     } catch (e) {
       console.error('The "customStyles" prop is not a valid JSON string. Please check the documentation for more details.');
     }
