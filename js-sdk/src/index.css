@@ -48,28 +48,3 @@
   min-height: 650px;
   border: none;
 }
-
-.TableFlowImporter-close {
-  position: absolute;
-  top: 2rem;
-  right: 2rem;
-  background-color: white;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  width: 2rem;
-  height: 2rem;
-  border-radius: 50%;
-  transition: filter 0.2s ease-out;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.TableFlowImporter-close svg {
-  display: block;
-}
-
-.TableFlowImporter-close svg path {
-  stroke: #0e1116 !important;
-}

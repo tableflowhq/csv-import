@@ -1,6 +1,7 @@
 import { TableFlowImporterProps } from "./types/index";
 import "./index.css";
-import cross from "./assets/cross";
+
+let postMessages: string[] = [];
 
 export default function createTableFlowImporter({
   elementId = "tableflow-importer",
@@ -61,36 +62,35 @@ export default function createTableFlowImporter({
   }
 
   function messageListener(e: any) {
-    if (!e || !e.data) {
-      return;
-    }
+    if (!e || !e?.data) return;
+
     const messageData = e.data;
-    if (messageData?.source !== "tableflow-importer") {
+
+    if (
+      messageData?.source !== "tableflow-importer" ||
+      messageData?.importerId !== importerId ||
+      !messageData?.id ||
+      postMessages.includes(messageData.id)
+    ) {
       return;
     }
-    if (messageData?.importerId !== importerId) {
-      return;
-    }
+
     if (messageData?.type === "complete" && onComplete) {
       onComplete({
         data: messageData?.data || null,
         error: messageData?.error || null,
       });
+      postMessages.push(messageData?.id);
     }
     if (messageData?.type === "close" && onRequestClose) {
       onRequestClose();
+      postMessages.push(messageData?.id);
     }
   }
+
   window.addEventListener("message", messageListener);
 
   dialog.innerHTML = `<iframe src="${uploaderUrl}" />`;
-
-  // close button
-  const close = document.createElement("button");
-  close.setAttribute("class", closeClass);
-  close.addEventListener("click", () => onRequestClose());
-  close.innerHTML = `<span>${cross}</span>`;
-  dialog.appendChild(close);
 
   return dialog;
 }
