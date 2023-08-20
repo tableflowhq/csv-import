@@ -8,7 +8,7 @@ import style from "./style/Complete.module.scss";
 export default function Complete({ reload, close, onSuccess, upload, showImportLoadingStatus }: CompleteProps) {
   const uploadMemo = useMemo(() => upload, [upload]);
 
-  const { data, isLoading, error } = useGetImport(uploadMemo?.id || "");
+  const { data, error } = useGetImport(uploadMemo?.id || "");
   const [showLoading, setShowLoading] = useState(true);
   const { is_stored: isStored } = data || {};
 

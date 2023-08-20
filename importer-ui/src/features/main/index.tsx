@@ -107,6 +107,8 @@ export default function Main() {
       <Complete reload={reload} close={requestClose} onSuccess={handleComplete} upload={upload} showImportLoadingStatus={showImportLoadingStatus} />
     ) : null;
 
+  const isEmbeddedInIframe = window?.top !== window?.self;
+
   return (
     <div className={style.wrapper}>
       <div className={style.header}>
@@ -122,6 +124,10 @@ export default function Main() {
             Reload
           </Button>
         </div>
+      )}
+
+      {isEmbeddedInIframe && (
+        <Button className={style.close} variants={["square", "secondary", "small"]} onClick={() => requestClose()} icon="cross" />
       )}
     </div>
   );
