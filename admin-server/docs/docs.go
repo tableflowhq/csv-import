@@ -666,6 +666,47 @@ const docTemplate = `{
                 }
             }
         },
+        "/file-import/v1/upload/:id/set-header-row": {
+            "post": {
+                "description": "Set the header row index on the upload",
+                "tags": [
+                    "File Import"
+                ],
+                "summary": "Set upload header row",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Upload ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/web.ImporterServiceUploadHeaderRowSelection"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/web.ImportServiceUpload"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/types.Res"
+                        }
+                    }
+                }
+            }
+        },
         "/file-import/v1/upload/{id}": {
             "get": {
                 "description": "Get a single upload by the tus ID provided to the client from the upload",
@@ -899,6 +940,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "Test Importer"
                 },
+                "skip_header_row_selection": {
+                    "type": "boolean",
+                    "example": false
+                },
                 "template": {
                     "$ref": "#/definitions/model.Template"
                 },
@@ -1069,6 +1114,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "text/csv"
                 },
+                "header_row_index": {
+                    "type": "integer",
+                    "example": 0
+                },
                 "id": {
                     "type": "string",
                     "example": "50ca61e1-f683-4b03-9ec4-4b3adb592bf1"
@@ -1227,6 +1276,21 @@ const docTemplate = `{
                 }
             }
         },
+        "types.UploadRow": {
+            "type": "object",
+            "properties": {
+                "index": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "values": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
         "web.ImportServiceImport": {
             "type": "object",
             "properties": {
@@ -1283,6 +1347,10 @@ const docTemplate = `{
                 "name": {
                     "type": "string",
                     "example": "Test Importer"
+                },
+                "skip_header_row_selection": {
+                    "type": "boolean",
+                    "example": false
                 },
                 "template": {
                     "$ref": "#/definitions/web.ImportServiceTemplate"
@@ -1352,6 +1420,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "text/csv"
                 },
+                "header_row_index": {
+                    "type": "integer",
+                    "example": 0
+                },
                 "id": {
                     "type": "string",
                     "example": "50ca61e1-f683-4b03-9ec4-4b3adb592bf1"
@@ -1376,6 +1448,12 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/web.ImportServiceUploadColumn"
+                    }
+                },
+                "upload_rows": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/types.UploadRow"
                     }
                 }
             }
@@ -1438,6 +1516,15 @@ const docTemplate = `{
                 "webhooks_enabled": {
                     "type": "boolean",
                     "example": true
+                }
+            }
+        },
+        "web.ImporterServiceUploadHeaderRowSelection": {
+            "type": "object",
+            "properties": {
+                "index": {
+                    "type": "integer",
+                    "example": 0
                 }
             }
         },

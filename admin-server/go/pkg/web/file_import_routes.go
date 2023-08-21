@@ -283,7 +283,7 @@ func getUploadForImportService(c *gin.Context) {
 //	@Success		200	{object}	ImportServiceUpload
 //	@Failure		400	{object}	types.Res
 //	@Router			/file-import/v1/upload/:id/set-header-row [post]
-//	@Param			id		path	string				true	"Upload ID"
+//	@Param			id		path	string									true	"Upload ID"
 //	@Param			body	body	ImporterServiceUploadHeaderRowSelection	true	"Request body"
 func setUploadHeaderRowForImportService(c *gin.Context) {
 	id := c.Param("id")
