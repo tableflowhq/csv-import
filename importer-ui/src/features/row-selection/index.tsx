@@ -12,13 +12,25 @@ export default function RowSelection({ upload, onSuccess, onCancel }: RowSelecti
     setSelectedId(String(e.target.value));
   };
 
-  const dataWithRadios = mockData.map((row) => ({
-    ...row,
-    __select: {
-      ...row.__select,
-      content: <input type="radio" name="rowSelection" value={row.id} onChange={handleRadioChange} />,
-    },
-  }));
+  const dataWithRadios = mockData.map((row) => {
+    const nameWithRadio = (
+      <>
+        <input type="radio" className={style.inputRadio} name="rowSelection" value={row.index} onChange={handleRadioChange} />
+        {row.values[0]}
+      </>
+    );
+
+    return {
+      ...row.values,
+      0: {
+        raw: row.values[0],
+        content: nameWithRadio,
+      },
+    };
+  });
+  const numberOfColumns = Object.keys(mockData[0].values).length + 1;
+  const widthPercentage = 100 / numberOfColumns;
+  const columnWidths = Array(numberOfColumns).fill(`${widthPercentage}%`);
 
   const handleNextClick = () => {
     if (upload && selectedId) {
@@ -33,9 +45,11 @@ export default function RowSelection({ upload, onSuccess, onCancel }: RowSelecti
           <div className={style.tableWrapper}>
             <Table
               data={dataWithRadios}
+              heading={<div className={style.headingCaption}>Select header row</div>}
+              keyAsId="index"
               background="dark"
-              columnWidths={["20%", "30%", "30%", "20%"]}
-              columnAlignments={["", "", "", "center"]}
+              columnWidths={columnWidths}
+              columnAlignments={Array(numberOfColumns).fill("left")}
               fixHeader
             />
           </div>
