@@ -21,9 +21,10 @@ type ImporterCreateRequest struct {
 }
 
 type ImporterEditRequest struct {
-	Name            *string   `json:"name" example:"Test Importer"`
-	AllowedDomains  *[]string `json:"allowed_domains" example:"example.com"`
-	WebhooksEnabled *bool     `json:"webhooks_enabled" example:"true"`
+	Name                   *string   `json:"name" example:"Test Importer"`
+	AllowedDomains         *[]string `json:"allowed_domains" example:"example.com"`
+	WebhooksEnabled        *bool     `json:"webhooks_enabled" example:"true"`
+	SkipHeaderRowSelection *bool     `json:"skip_header_row_selection" example:"false"`
 }
 
 // createImporter
@@ -165,20 +166,25 @@ func editImporter(c *gin.Context, getWorkspaceUser func(*gin.Context, string) (s
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return
 	}
-	_, err = getWorkspaceUser(c, importer.WorkspaceID.String())
+	userID, err := getWorkspaceUser(c, importer.WorkspaceID.String())
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, types.Res{Err: err.Error()})
 		return
 	}
+	user := model.User{ID: model.ParseID(userID)}
 
 	// Change any field that exists on the request and are different
 	save := false
-	if req.Name != nil && *req.Name != importer.Name {
+	if req.Name != nil && *req.Name != importer.Name && len(*req.Name) != 0 {
 		importer.Name = *req.Name
 		save = true
 	}
 	if req.WebhooksEnabled != nil && *req.WebhooksEnabled != importer.WebhooksEnabled {
 		importer.WebhooksEnabled = *req.WebhooksEnabled
+		save = true
+	}
+	if req.SkipHeaderRowSelection != nil && *req.SkipHeaderRowSelection != importer.SkipHeaderRowSelection {
+		importer.SkipHeaderRowSelection = *req.SkipHeaderRowSelection
 		save = true
 	}
 	if req.AllowedDomains != nil && !util.EqualContents(*req.AllowedDomains, importer.AllowedDomains) {
@@ -201,6 +207,7 @@ func editImporter(c *gin.Context, getWorkspaceUser func(*gin.Context, string) (s
 	}
 
 	if save {
+		importer.UpdatedBy = user.ID
 		err = tf.DB.Save(importer).Error
 		if err != nil {
 			tf.Log.Errorw("Could not save importer", "error", err, "importer_id", importer.ID)

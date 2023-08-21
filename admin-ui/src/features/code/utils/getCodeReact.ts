@@ -16,20 +16,11 @@ function MyComponent() {
       <button onClick={() => setIsOpen(true)}>Open TableFlow Importer</button>
 
       <TableFlowImporter
+        importerId={"${props.importerId || "YOUR_IMPORTER_ID"}"}${hostUrlLine}
         isOpen={isOpen}
         onRequestClose={() => setIsOpen(false)}
-        importerId={"${props.importerId || "YOUR_IMPORTER_ID"}"}${hostUrlLine}
         darkMode={${props.theme !== "light"}}
-        primaryColor="#7A5EF8"
-        closeOnClickOutside={true}
-        metadata={"{\\"userId\\": 1234, \\"userEmail\\": \\"test@example.com\\"}"}
-        onComplete={(data, error) => {
-          if (error) {
-            alert(error); // Handle import error
-          } else {
-            console.log(data); // Use import data
-          }
-        }}
+        onComplete={(data, error) => console.log(data)}
       />
     </>
   );

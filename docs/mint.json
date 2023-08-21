@@ -43,7 +43,7 @@
       "url": "https://github.com/tableflowhq/tableflow"
     },
     {
-      "name": "Community",
+      "name": "Slack",
       "icon": "slack",
       "url": "https://join.slack.com/t/tableflow/shared_invite/zt-1psu47idh-vnItf_BaWcIWih8flGZ0fw"
     }
@@ -56,17 +56,35 @@
         "quick-start",
         "how-it-works",
         "embed",
-        "retrieve-data",
-        "webhooks",
-        "slack-notifications"
+        "retrieve-data"
       ]
     },
     {
-      "group": "Imports",
+      "group": "Guides",
+      "pages": [
+        "guides/webhooks",
+        "guides/slack-notifications"
+      ]
+    },
+    {
+      "group": "SDK Reference",
+      "pages": [
+        "sdk-reference/react",
+        "sdk-reference/javascript"
+      ]
+    },
+    {
+      "group": "API Reference",
       "pages": [
         "api-reference/get-import-rows",
         "api-reference/get-import",
         "api-reference/download-import"
+      ]
+    },
+    {
+      "group": "Support",
+      "pages": [
+        "get-help"
       ]
     }
   ],
