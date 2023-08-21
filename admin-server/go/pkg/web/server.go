@@ -128,7 +128,11 @@ func StartWebServer(config ServerConfig) *http.Server {
 
 	importer.GET("/importer/:id", getImporterForImportService)
 	importer.GET("/upload/:id", getUploadForImportService)
+	importer.POST("/upload/:id/set-header-row", setUploadHeaderRowForImportService)
+	importer.POST("/upload/:id/set-column-mapping", func(c *gin.Context) { setUploadColumnMappingAndImportData(c, config.ImportCompleteHandler) })
 	importer.GET("/import/:id", getImportForImportService)
+
+	// Deprecated, use POST /upload/:id/set-column-mapping
 	importer.POST("/upload-column-mapping/:id", func(c *gin.Context) { setUploadColumnMappingAndImportData(c, config.ImportCompleteHandler) })
 
 	/* ---------------------------  Admin routes  ---------------------------- */
