@@ -6,7 +6,7 @@ import style from "./style/RowSelection.module.scss";
 import mockData from "./mockData";
 
 export default function RowSelection({ upload, onSuccess, onCancel }: RowSelectionProps) {
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(String(mockData[0]?.index));
 
   const handleRadioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedId(String(e.target.value));
@@ -15,7 +15,14 @@ export default function RowSelection({ upload, onSuccess, onCancel }: RowSelecti
   const dataWithRadios = mockData.map((row) => {
     const nameWithRadio = (
       <>
-        <input type="radio" className={style.inputRadio} name="rowSelection" value={row.index} onChange={handleRadioChange} />
+        <input
+          type="radio"
+          className={style.inputRadio}
+          name="rowSelection"
+          value={row.index}
+          checked={selectedId === String(row.index)}
+          onChange={handleRadioChange}
+        />
         {row.values[0]}
       </>
     );
