@@ -261,7 +261,6 @@ func getUploadForImportService(c *gin.Context) {
 	numRowsToPreview := 25
 	uploadRows := make([]types.UploadRow, 0, numRowsToPreview)
 
-	// TODO: Consider not getting data from Scylla if the header row is already set. We'd only need this if we want to support a preview still.
 	if upload.IsStored {
 		uploadRowData := scylla.PaginateUploadRows(upload.ID.String(), 0, numRowsToPreview)
 		for i, row := range uploadRowData {
@@ -296,10 +295,6 @@ func setUploadHeaderRowForImportService(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return
 	}
-	if len(upload.UploadColumns) != 0 {
-		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "The header row has already been set"})
-		return
-	}
 
 	// Validate and set the header row index on the upload
 	req := ImporterServiceUploadHeaderRowSelection{}
@@ -325,6 +320,26 @@ func setUploadHeaderRowForImportService(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "The header row cannot be greater than the number of rows in the file"})
 		return
 	}
+
+	// Allow the header row to be set again if the corresponding import does not exist by deleting the upload columns
+	if len(upload.UploadColumns) != 0 {
+		importExists, err := db.DoesImportExistByUploadID(upload.ID.String())
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+			return
+		}
+		if importExists {
+			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "The header row cannot be set again since the import is already complete"})
+			return
+		}
+		err = db.DeleteUploadColumns(upload.ID.String())
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("Could not delete upload columns to reselect header row: %v", err.Error())})
+			return
+		}
+		upload.UploadColumns = make([]*model.UploadColumn, 0)
+	}
+
 	upload.HeaderRowIndex = null.IntFrom(index)
 
 	// Retrieve row data from Scylla to create the upload columns

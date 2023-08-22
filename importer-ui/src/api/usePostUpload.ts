@@ -9,7 +9,7 @@ export default function usePostUpload(uploadId: string): UseMutationResult<ApiRe
 }
 
 async function mutateColumnMap(uploadId: string, columns: ColumnMap): Promise<ApiResponse<any>> {
-  const endpoint = "upload-column-mapping" + (uploadId ? `/${uploadId}` : "");
+  const endpoint = `upload/${uploadId}/set-column-mapping`;
 
   const response = await post(endpoint, columns);
 
