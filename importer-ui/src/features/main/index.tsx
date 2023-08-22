@@ -15,14 +15,14 @@ const TUS_ENDPOINT = getAPIBaseURL("v1") + "files";
 
 const steps = [
   { label: "Upload", id: "upload" },
-  { label: "Select header row", id: "row-selection" },
+  { label: "Select Header Row", id: "row-selection" },
   { label: "Review", id: "review" },
   { label: "Complete", id: "complete" },
 ];
 
 export default function Main() {
   // Get iframe URL params
-  const { importerId, metadata, isOpen, onComplete, showImportLoadingStatus } = useEmbedStore((state) => state.embedParams);
+  const { importerId, metadata, isOpen, onComplete, showImportLoadingStatus, skipHeaderRowSelection } = useEmbedStore((state) => state.embedParams);
 
   // Stepper handler
   const stepper = useStepper(steps, 0);
@@ -104,9 +104,17 @@ export default function Main() {
       </div>
     );
 
+  // TODO: Carlos: Don't show the "Select Header Row" title and skip the screen if skipHeaderRowSelection === true
   const content =
     step === "upload" || !!uploadError ? (
-      <Uploader template={template} importerId={importerId} metadata={metadata} onSuccess={setTusId} endpoint={TUS_ENDPOINT} />
+      <Uploader
+        template={template}
+        importerId={importerId}
+        metadata={metadata}
+        skipHeaderRowSelection={skipHeaderRowSelection}
+        onSuccess={setTusId}
+        endpoint={TUS_ENDPOINT}
+      />
     ) : step === "row-selection" && !isStored ? (
       <Spinner className={style.spinner}>Processing your file...</Spinner>
     ) : step === "row-selection" && !!isStored ? (
