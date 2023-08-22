@@ -43,7 +43,7 @@ export default function Main() {
   useEffect(() => {
     if (tusId) {
       setTimeout(() => {
-        if (!skipHeaderRowSelection) {
+        if (skipHeaderRowSelection) {
           stepper.setCurrent(2);
         } else {
           stepper.setCurrent(1);
@@ -137,7 +137,14 @@ export default function Main() {
         }}
       />
     ) : step === "review" && !!isStored ? (
-      <Review template={template} upload={uploadColumnsRow} onSuccess={() => stepper.setCurrent(3)} onCancel={rowSelection} />
+      <Review
+        template={template}
+        upload={uploadColumnsRow}
+        onSuccess={() => {
+          skipHeaderRowSelection ? stepper.setCurrent(2) : stepper.setCurrent(3);
+        }}
+        onCancel={rowSelection}
+      />
     ) : !uploadError && step === "complete" ? (
       <Complete reload={reload} close={requestClose} onSuccess={handleComplete} upload={upload} showImportLoadingStatus={showImportLoadingStatus} />
     ) : null;
