@@ -149,6 +149,11 @@ Or directly in HTML
   in your frontend after it has finished processing.
 </ResponseField>
 
+<ResponseField name="skipHeaderRowSelection" type="boolean">
+  When set to `true`, the importer will not display and skip the Header Row Selection step and always choose the first
+  row in the file as the header.
+</ResponseField>
+
 <ResponseField name="hostUrl" type="string">
   The URL of where the importer iframe is hosted. This should only be set when self-hosting TableFlow.
 </ResponseField>
