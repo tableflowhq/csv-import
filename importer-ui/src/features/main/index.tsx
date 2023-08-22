@@ -57,6 +57,10 @@ export default function Main() {
     location.reload();
   };
 
+  const rowSelection = () => {
+    stepper.setCurrent(1);
+  };
+
   // Send messages to parent (SDK iframe)
 
   const requestClose = () => {
@@ -115,7 +119,7 @@ export default function Main() {
         }}
       />
     ) : step === "review" && !!isStored ? (
-      <Review template={template} upload={uploadColumnsRow} onSuccess={() => stepper.setCurrent(3)} onCancel={reload} />
+      <Review template={template} upload={uploadColumnsRow} onSuccess={() => stepper.setCurrent(3)} onCancel={rowSelection} />
     ) : !uploadError && step === "complete" ? (
       <Complete reload={reload} close={requestClose} onSuccess={handleComplete} upload={upload} showImportLoadingStatus={showImportLoadingStatus} />
     ) : null;
