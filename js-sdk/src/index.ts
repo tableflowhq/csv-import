@@ -16,6 +16,7 @@ export default function createTableFlowImporter({
   customStyles,
   className,
   showImportLoadingStatus,
+  skipHeaderRowSelection,
 }: TableFlowImporterProps) {
   // CSS classes
   const baseClass = "TableFlowImporter";
@@ -49,6 +50,7 @@ export default function createTableFlowImporter({
     onComplete: onComplete ? "true" : "false",
     customStyles: JSON.stringify(customStyles),
     showImportLoadingStatus: showImportLoadingStatus ? "true" : "false",
+    skipHeaderRowSelection: skipHeaderRowSelection ? "true" : "false",
   };
   const searchParams = new URLSearchParams(urlParams);
   const defaultImporterUrl = "https://importer.tableflow.com";
