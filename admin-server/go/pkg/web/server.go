@@ -75,7 +75,7 @@ func StartWebServer(config ServerConfig) *http.Server {
 		AllowHeaders: append([]string{"Accept", "Authorization", "X-Requested-With", "X-Request-ID",
 			"X-HTTP-Method-Override", "Upload-Length", "Upload-Offset", "Tus-Resumable", "Upload-Metadata",
 			"Upload-Defer-Length", "Upload-Concat", "User-Agent", "Referrer", "Origin", "Content-Type", "Content-Length",
-			"X-Importer-ID", "X-Import-Metadata"},
+			"X-Importer-ID", "X-Import-Metadata", "X-Import-SkipHeaderRowSelection"},
 			config.AdditionalCORSHeaders...),
 		ExposeHeaders: []string{"Upload-Offset", "Location", "Upload-Length", "Tus-Version", "Tus-Resumable",
 			"Tus-Max-Size", "Tus-Extension", "Upload-Metadata", "Upload-Defer-Length", "Upload-Concat", "Location",
