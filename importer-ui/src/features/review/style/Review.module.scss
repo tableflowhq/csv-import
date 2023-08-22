@@ -49,3 +49,7 @@
   padding: var(--m);
   border-radius: var(--border-radius-1);
 }
+.errorContainer {
+  display: flex;
+  justify-content: center;
+}

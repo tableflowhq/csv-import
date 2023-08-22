@@ -80,7 +80,11 @@ export default function RowSelection({ upload, onSuccess, onCancel }: RowSelecti
             Next
           </Button>
         </div>
-        {!isLoading && !!error && <Errors error={error} />}
+        {!isLoading && !!error && (
+          <div className={style.errorContainer}>
+            <Errors error={error} />
+          </div>
+        )}
       </form>
     </div>
   );

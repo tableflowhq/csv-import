@@ -49,7 +49,11 @@ export default function Review({ upload, template, onSuccess, onCancel }: Review
           </Button>
         </div>
 
-        {!isLoading && !!error && <Errors error={error} />}
+        {!isLoading && !!error && (
+          <div className={style.errorContainer}>
+            <Errors error={error} />
+          </div>
+        )}
 
         {isSuccess && <p>Success!</p>}
       </form>
