@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useState } from "react";
 // import { Radio } from "@mantine/core";
 import { Button, Table } from "@tableflow/ui-library";
+import usePostSetHeader from "../../api/usePostSetHeader";
 import { RowSelectionProps } from "./types";
 import style from "./style/RowSelection.module.scss";
 import mockData from "./mockData";
@@ -8,11 +9,13 @@ import mockData from "./mockData";
 export default function RowSelection({ upload, onSuccess, onCancel }: RowSelectionProps) {
   const [selectedId, setSelectedId] = useState<string | null>(String(mockData[0]?.index));
 
+  const { mutate, error, isSuccess, isLoading, data } = usePostSetHeader(upload?.id || "");
+
   const handleRadioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedId(String(e.target.value));
   };
 
-  const dataWithRadios = mockData.map((row) => {
+  const dataWithRadios = upload?.upload_rows?.map((row) => {
     const nameWithRadio = (
       <>
         <input
@@ -39,11 +42,16 @@ export default function RowSelection({ upload, onSuccess, onCancel }: RowSelecti
   const widthPercentage = 100 / numberOfColumns;
   const columnWidths = Array(numberOfColumns).fill(`${widthPercentage}%`);
 
-  const handleNextClick = () => {
-    if (upload && selectedId) {
-      onSuccess(upload?.id, selectedId);
-    }
+  const handleNextClick = (e: any) => {
+    e.preventDefault();
+    mutate({ selectedRow: selectedId });
   };
+
+  useEffect(() => {
+    if (isSuccess && !error && !isLoading && upload) {
+      onSuccess(data.data);
+    }
+  }, [isSuccess]);
 
   return (
     <div className={style.content}>
@@ -51,7 +59,7 @@ export default function RowSelection({ upload, onSuccess, onCancel }: RowSelecti
         {upload ? (
           <div className={style.tableWrapper}>
             <Table
-              data={dataWithRadios}
+              data={dataWithRadios || []}
               heading={<div className={style.headingCaption}>Select header row</div>}
               keyAsId="index"
               background="dark"

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Button, Errors, Stepper, useStepper } from "@tableflow/ui-library";
 import Spinner from "../../components/Spinner";
 import { getAPIBaseURL } from "../../api/api";
@@ -31,6 +31,8 @@ export default function Main() {
   // Async data & state
   const { tusId, tusWasStored, importerIsLoading, importerError, template, upload, uploadError, isStored, setTusId, importer } = useApi(importerId);
 
+  const [uploadColumnsRow, setUploadColumnsRow] = useState<any | null>(null);
+
   useEffect(() => {
     if (uploadError && tusWasStored) reload();
   }, [uploadError]);
@@ -53,10 +55,6 @@ export default function Main() {
     setTusId("");
     stepper.setCurrent(0);
     location.reload();
-  };
-
-  const rowSelection = () => {
-    stepper.setCurrent(1);
   };
 
   // Send messages to parent (SDK iframe)
@@ -108,9 +106,16 @@ export default function Main() {
     ) : step === "row-selection" && !isStored ? (
       <Spinner className={style.spinner}>Processing your file...</Spinner>
     ) : step === "row-selection" && !!isStored ? (
-      <RowSelection upload={upload} onCancel={reload} onSuccess={() => stepper.setCurrent(2)} />
+      <RowSelection
+        upload={upload}
+        onCancel={reload}
+        onSuccess={(uploadColumnsRow: any) => {
+          stepper.setCurrent(2);
+          setUploadColumnsRow(uploadColumnsRow);
+        }}
+      />
     ) : step === "review" && !!isStored ? (
-      <Review template={template} upload={upload} onSuccess={() => stepper.setCurrent(3)} onCancel={rowSelection} />
+      <Review template={template} upload={uploadColumnsRow} onSuccess={() => stepper.setCurrent(3)} onCancel={reload} />
     ) : !uploadError && step === "complete" ? (
       <Complete reload={reload} close={requestClose} onSuccess={handleComplete} upload={upload} showImportLoadingStatus={showImportLoadingStatus} />
     ) : null;

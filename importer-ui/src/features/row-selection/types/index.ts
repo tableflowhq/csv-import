@@ -2,6 +2,6 @@ import { Upload } from "../../../api/types";
 
 export type RowSelectionProps = {
   upload?: Upload;
-  onSuccess: (uploadId: string, selectedHeaderId: string) => void;
+  onSuccess: (uploadColumns: any) => void;
   onCancel: () => void;
 };

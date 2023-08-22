@@ -42,7 +42,7 @@ export default function Review({ upload, template, onSuccess, onCancel }: Review
 
         <div className={style.actions}>
           <Button type="button" variants={["secondary"]} onClick={onCancel}>
-            Back
+            Cancel
           </Button>
           <Button variants={["primary"]} disabled={isLoading}>
             Submit
