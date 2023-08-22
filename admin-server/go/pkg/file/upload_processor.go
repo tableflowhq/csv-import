@@ -25,8 +25,8 @@ type uploadProcessResult struct {
 }
 
 var maxColumnLimit = int(math.Min(500, math.MaxInt16))
-var maxRowLimit = 1000 * 1000 * 10 // TODO: Store and configure this on the workspace? But keep a max limit to prevent runaways?
-const UploadColumnSampleDataSize = 3
+var maxRowLimit = 1000 * 1000 * 10       // TODO: Store and configure this on the workspace? But keep a max limit to prevent runaways?
+const UploadColumnSampleDataSize = 1 + 3 // 1 header row + 3 sample rows
 
 func UploadCompleteHandler(event handler.HookEvent, uploadAdditionalStorageHandler, uploadLimitCheck func(*model.Upload, *os.File) error) {
 	uploadFileName := event.Upload.MetaData["filename"]
