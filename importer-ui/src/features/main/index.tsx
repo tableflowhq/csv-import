@@ -24,8 +24,10 @@ export default function Main() {
   // Get iframe URL params
   const { importerId, metadata, isOpen, onComplete, showImportLoadingStatus, skipHeaderRowSelection } = useEmbedStore((state) => state.embedParams);
 
+  const modifiedSteps = skipHeaderRowSelection ? steps.filter((step) => step.id !== "row-selection") : steps;
+
   // Stepper handler
-  const stepper = useStepper(steps, 0);
+  const stepper = useStepper(modifiedSteps, 0);
   const step = stepper?.step?.id;
 
   // Async data & state
@@ -39,7 +41,15 @@ export default function Main() {
 
   // Delay jump to the second step
   useEffect(() => {
-    if (tusId) setTimeout(() => stepper.setCurrent(1), 500);
+    if (tusId) {
+      setTimeout(() => {
+        if (!skipHeaderRowSelection) {
+          stepper.setCurrent(2);
+        } else {
+          stepper.setCurrent(1);
+        }
+      }, 500);
+    }
   }, [isStored, tusId]);
 
   // Reload on close modal if completed

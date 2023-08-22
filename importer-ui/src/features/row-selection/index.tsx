@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useState } from "react";
 // import { Radio } from "@mantine/core";
-import { Button, Table } from "@tableflow/ui-library";
+import { Button, Errors, Table } from "@tableflow/ui-library";
 import usePostSetHeader from "../../api/usePostSetHeader";
 import { RowSelectionProps } from "./types";
 import style from "./style/RowSelection.module.scss";
@@ -80,6 +80,7 @@ export default function RowSelection({ upload, onSuccess, onCancel }: RowSelecti
             Next
           </Button>
         </div>
+        {!isLoading && !!error && <Errors error={error} />}
       </form>
     </div>
   );
