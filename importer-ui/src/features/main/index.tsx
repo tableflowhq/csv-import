@@ -42,15 +42,7 @@ export default function Main() {
 
   // Delay jump to the second step
   useEffect(() => {
-    if (tusId) {
-      setTimeout(() => {
-        if (skipHeaderRowSelection) {
-          stepper.setCurrent(2);
-        } else {
-          stepper.setCurrent(1);
-        }
-      }, 500);
-    }
+    if (tusId) setTimeout(() => stepper.setCurrent(1), 500);
   }, [isStored, tusId]);
 
   // Reload on close modal if completed
@@ -114,14 +106,14 @@ export default function Main() {
       </div>
     );
 
-  if (importerError)
+  if (importerError) {
     return (
       <div className={style.wrapper}>
         <Errors error={importerError.toString()} />
       </div>
     );
+  }
 
-  // TODO: Carlos: Don't show the "Select Header Row" title and skip the screen if skipHeaderRowSelection === true
   const content =
     step === "upload" || !!uploadError ? (
       <Uploader
@@ -148,11 +140,12 @@ export default function Main() {
     ) : step === "review" && !!isStored ? (
       <Review
         template={template}
-        upload={uploadColumnsRow}
+        upload={skipHeaderRowSelection ? upload : uploadColumnsRow}
         onSuccess={() => {
           skipHeaderRowSelection ? stepper.setCurrent(2) : stepper.setCurrent(3);
         }}
-        onCancel={rowSelection}
+        skipHeaderRowSelection={skipHeaderRowSelection}
+        onCancel={skipHeaderRowSelection ? reload : rowSelection}
       />
     ) : !uploadError && step === "complete" ? (
       <Complete reload={reload} close={requestClose} onSuccess={handleComplete} upload={upload} showImportLoadingStatus={showImportLoadingStatus} />
