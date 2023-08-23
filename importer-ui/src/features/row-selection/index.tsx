@@ -3,11 +3,12 @@ import { FormEvent, useEffect, useState } from "react";
 import { Button, Table } from "@tableflow/ui-library";
 import usePostSetHeader from "../../api/usePostSetHeader";
 import { RowSelectionProps } from "./types";
+import tableTheme from "../../style/Table.module.scss";
 import style from "./style/RowSelection.module.scss";
 import mockData from "./mockData";
 
-export default function RowSelection({ upload, onSuccess, onCancel }: RowSelectionProps) {
-  const [selectedId, setSelectedId] = useState<string | null>(String(mockData[0]?.index));
+export default function RowSelection({ upload, onSuccess, onCancel, selectedId, setSelectedId }: RowSelectionProps) {
+  //const [selectedId, setSelectedId] = useState<string | null>(String(mockData[0]?.index));
 
   const { mutate, error, isSuccess, isLoading, data } = usePostSetHeader(upload?.id || "");
 
@@ -20,13 +21,14 @@ export default function RowSelection({ upload, onSuccess, onCancel }: RowSelecti
       <>
         <input
           type="radio"
+          id={`radio-${row.index}`}
           className={style.inputRadio}
           name="rowSelection"
           value={row.index}
           checked={selectedId === String(row.index)}
           onChange={handleRadioChange}
         />
-        {row.values[0]}
+        <label htmlFor={`radio-${row.index}`}>{row.values[0]}</label>
       </>
     );
 
@@ -59,10 +61,11 @@ export default function RowSelection({ upload, onSuccess, onCancel }: RowSelecti
         {upload ? (
           <div className={style.tableWrapper}>
             <Table
+              theme={tableTheme}
               data={dataWithRadios || []}
-              heading={<div className={style.headingCaption}>Select header row</div>}
+              heading={<div className={style.headingCaption}>Select Header Row</div>}
               keyAsId="index"
-              background="dark"
+              background="zebra"
               columnWidths={columnWidths}
               columnAlignments={Array(numberOfColumns).fill("left")}
               fixHeader

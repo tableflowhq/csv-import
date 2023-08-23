@@ -32,6 +32,7 @@ export default function Main() {
   const { tusId, tusWasStored, importerIsLoading, importerError, template, upload, uploadError, isStored, setTusId, importer } = useApi(importerId);
 
   const [uploadColumnsRow, setUploadColumnsRow] = useState<any | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   useEffect(() => {
     if (uploadError && tusWasStored) reload();
@@ -46,6 +47,12 @@ export default function Main() {
   useEffect(() => {
     if (!isOpen && step === "complete") reload();
   }, [isOpen]);
+
+  useEffect(() => {
+    if (!selectedId) {
+      setSelectedId("0");
+    }
+  }, []);
 
   // Success
 
@@ -125,6 +132,8 @@ export default function Main() {
           stepper.setCurrent(2);
           setUploadColumnsRow(uploadColumnsRow);
         }}
+        selectedId={selectedId}
+        setSelectedId={setSelectedId}
       />
     ) : step === "review" && !!isStored ? (
       <Review template={template} upload={uploadColumnsRow} onSuccess={() => stepper.setCurrent(3)} onCancel={rowSelection} />
