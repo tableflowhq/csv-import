@@ -22,7 +22,6 @@ export default function createTableFlowImporter({
   const baseClass = "TableFlowImporter";
   const themeClass = darkMode && `${baseClass}-dark`;
   const dialogClass = [`${baseClass}-dialog`, themeClass, className].filter((i) => i).join(" ");
-  const closeClass = `${baseClass}-close`;
 
   // dialog element
   let dialog = document.getElementById(elementId) as HTMLDialogElement;
@@ -41,19 +40,18 @@ export default function createTableFlowImporter({
   dialog.setAttribute("class", dialogClass);
 
   // iframe element
-  const urlParams = {
+  let urlParams = {
     importerId,
     darkMode: darkMode.toString(),
     primaryColor,
     metadata,
-    isOpen: isOpen.toString(),
+    isOpen: "true",
     onComplete: onComplete ? "true" : "false",
     customStyles: JSON.stringify(customStyles),
     showImportLoadingStatus: showImportLoadingStatus ? "true" : "false",
   };
-  const searchParams = new URLSearchParams(urlParams);
-  const defaultImporterUrl = "https://importer.tableflow.com";
-  const uploaderUrl = `${hostUrl ? hostUrl : defaultImporterUrl}?${searchParams}`;
+
+  const uploaderUrl = getUploaderUrl(urlParams, hostUrl);
 
   try {
     JSON.parse(metadata);
@@ -75,6 +73,13 @@ export default function createTableFlowImporter({
       return;
     }
 
+    if (messageData?.type === "start" && urlParams.isOpen !== "true") {
+      urlParams = { ...urlParams, isOpen: "true" };
+      const uploaderUrl = getUploaderUrl(urlParams, hostUrl);
+      dialog.innerHTML = `<iframe src="${uploaderUrl}" />`;
+      console.log("started");
+    }
+
     if (messageData?.type === "complete" && onComplete) {
       onComplete({
         data: messageData?.data || null,
@@ -82,9 +87,17 @@ export default function createTableFlowImporter({
       });
       postMessages.push(messageData?.id);
     }
+
     if (messageData?.type === "close" && onRequestClose) {
       onRequestClose();
       postMessages.push(messageData?.id);
+
+      if (urlParams.isOpen !== "false") {
+        urlParams = { ...urlParams, isOpen: "false" };
+        const uploaderUrl = getUploaderUrl(urlParams, hostUrl);
+        dialog.innerHTML = `<iframe src="${uploaderUrl}" />`;
+        console.log("closed");
+      }
     }
   }
 
@@ -93,4 +106,10 @@ export default function createTableFlowImporter({
   dialog.innerHTML = `<iframe src="${uploaderUrl}" />`;
 
   return dialog;
+}
+
+function getUploaderUrl(urlParams: any, hostUrl?: string) {
+  const searchParams = new URLSearchParams(urlParams);
+  const defaultImporterUrl = "https://importer.tableflow.com";
+  return `${hostUrl ? hostUrl : defaultImporterUrl}?${searchParams}`;
 }

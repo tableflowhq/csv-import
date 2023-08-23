@@ -2,7 +2,6 @@ import { useMemo } from "react";
 import { Importer, Template, Upload } from "../../../api/types";
 import useGetImporter from "../../../api/useGetImporter";
 import useGetUpload from "../../../api/useGetUpload";
-import usePostUpload from "../../../api/usePostUpload";
 import useMutableLocalStorage from "./useMutableLocalStorage";
 
 export default function useApi(importerId: string) {
