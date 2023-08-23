@@ -6,7 +6,7 @@ import { Import } from "../../../api/types";
 export function importsTable(imports: Import[] = [], apiKey: string): TableData {
   return imports.map((importItem) => {
     return {
-      "File ID": importItem.id,
+      "Import ID": importItem.id,
       Importer: importItem.importer?.name,
       Rows: importItem.num_rows,
       "Created": timeToText(importItem.created_at),
