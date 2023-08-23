@@ -1,6 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import useListenMessage from "../../hooks/useListenMessage";
-import cross from "./assets/cross";
 import { TableFlowImporterProps } from "./types";
 import "./style/button.css";
 
@@ -35,7 +34,6 @@ export default function TableFlowImporter({
   const themeClass = darkMode && `${baseClass}-dark`;
   const dialogClass = [`${baseClass}-dialog`, themeClass, className].filter((i) => i).join(" ");
 
-
   const urlParams = {
     importerId,
     darkMode: darkMode.toString(),
@@ -65,6 +63,6 @@ export default function TableFlowImporter({
   return (
     <dialog ref={ref} className={dialogClass} onClick={backdropClick} {...props}>
       <iframe src={uploaderUrl} />
-      </dialog>
+    </dialog>
   );
 }
