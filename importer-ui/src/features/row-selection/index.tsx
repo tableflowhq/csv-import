@@ -27,15 +27,17 @@ export default function RowSelection({ upload, onSuccess, onCancel, selectedId, 
         {row.values[0]}
       </span>
     );
-
-    return {
-      ...row.values,
-      0: {
-        raw: row.values[0],
-        content: nameWithRadio,
-        tooltip: row.values[0],
-      },
-    };
+    const mappedRow = Object.entries(row.values).map(([key, value]) => {
+      return [
+        key,
+        {
+          raw: value,
+          content: key === "0" ? nameWithRadio : <span>{value}</span>,
+          tooltip: value,
+        },
+      ];
+    });
+    return Object.fromEntries(mappedRow);
   });
   const maxNumberOfColumns = 7;
   const uploadRow = upload?.upload_rows[0] ?? { values: {} };
