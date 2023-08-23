@@ -55,10 +55,10 @@
   }
 
   .headingCaption {
-    padding: 10px 0px 10px 0px
-  }
-  
-  .errorContainer {
-    display: flex;
-    justify-content: center;
+    padding: 12px 0px 10px 0px;
+    color: var(--color-text);
+    font-weight: 600;
+    height: 48px;
+    vertical-align: middle;
+    text-align: center;
   }
