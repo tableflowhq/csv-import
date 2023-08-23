@@ -322,5 +322,10 @@ func GetDatabaseSchemaInitSQL() string {
 
 		alter table uploads
 		    drop column if exists is_parsed;
+
+		alter table uploads
+		    add column if not exists header_row_index integer;
+		alter table importers
+		    add column if not exists skip_header_row_selection bool not null default false;
 	`
 }

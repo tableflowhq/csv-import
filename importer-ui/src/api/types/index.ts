@@ -43,6 +43,7 @@ export type Upload = {
   template_id: string;
   tus_id: string;
   upload_columns: UploadColumn[];
+  upload_rows: UploadRow[];
 };
 
 export type UploadColumn = {
@@ -50,6 +51,11 @@ export type UploadColumn = {
   index: number;
   name: string;
   sample_data: string[];
+};
+
+export type UploadRow = {
+  index: number;
+  values: Record<string, string>;
 };
 
 export type Import = {

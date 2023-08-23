@@ -5,29 +5,29 @@ import ImporterComponent from ".";
 import { TableFlowImporterProps } from "./types";
 
 export default {
-    title: "User Interface/Importer",
-    component: ImporterComponent,
-    argTypes: {
-        primaryColor: {
-            control: { type: "color" },
-        },
-        labelColor: {
-            control: { type: "color" },
-        },
+  title: "User Interface/Importer",
+  component: ImporterComponent,
+  argTypes: {
+    primaryColor: {
+      control: { type: "color" },
     },
+    labelColor: {
+      control: { type: "color" },
+    },
+  },
 } as ComponentMeta<typeof ImporterComponent>;
 
 const Template: ComponentStory<typeof ImporterComponent> = (args: TableFlowImporterProps) => {
-    const [isOpen, setIsOpen] = useState(false);
-    return (
-        <div>
-            <button onClick={() => setIsOpen(true)}>Import</button>
-            <ImporterComponent {...args} isOpen={isOpen} onRequestClose={() => setIsOpen(false)} />
-        </div>
-    );
+  const [isOpen, setIsOpen] = useState(false);
+  return (
+    <div>
+      <button onClick={() => setIsOpen(true)}>Import</button>
+      <ImporterComponent {...args} isOpen={isOpen} onRequestClose={() => setIsOpen(false)} />
+    </div>
+  );
 };
 
 export const Importer = Template.bind({});
 Importer.args = {
-    ...defaults,
+  ...defaults,
 };

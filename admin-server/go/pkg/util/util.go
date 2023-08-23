@@ -8,6 +8,7 @@ import (
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 	"net/mail"
+	"sort"
 	"sync"
 	"unicode"
 )
@@ -106,6 +107,27 @@ func SafeAccess[T any](slice []T, index int) (T, bool) {
 		return zeroValue, false
 	}
 	return slice[index], true
+}
+
+// MapToKeyOrderedSlice converts a map[int]string to a []string such that the resulting
+// slice is populated in the ascending order of the map's keys
+func MapToKeyOrderedSlice(m map[int]string) []string {
+	// 1. Extract keys from the map
+	keys := make([]int, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+
+	// 2. Sort the keys in ascending order
+	sort.Ints(keys)
+
+	// 3. Populate the result slice using the sorted keys
+	result := make([]string, len(keys))
+	for i, k := range keys {
+		result[i] = m[k]
+	}
+
+	return result
 }
 
 func ShutdownHandler(ctx context.Context, wg *sync.WaitGroup, close func()) {
