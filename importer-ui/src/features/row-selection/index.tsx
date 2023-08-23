@@ -60,6 +60,7 @@ export default function RowSelection({ upload, onSuccess, onCancel, selectedId, 
           <div className={style.tableWrapper}>
             <Table
               theme={tableTheme}
+              mergeThemes={true}
               data={dataWithRadios || []}
               heading={<div className={style.headingCaption}>Select Header Row</div>}
               keyAsId="index"
