@@ -5,7 +5,6 @@ let postMessages: string[] = [];
 
 export default function createTableFlowImporter({
   elementId = "tableflow-importer",
-  isOpen = false,
   onRequestClose = () => null,
   importerId,
   hostUrl,
@@ -77,7 +76,6 @@ export default function createTableFlowImporter({
       urlParams = { ...urlParams, isOpen: "true" };
       const uploaderUrl = getUploaderUrl(urlParams, hostUrl);
       dialog.innerHTML = `<iframe src="${uploaderUrl}" />`;
-      console.log("started");
     }
 
     if (messageData?.type === "complete" && onComplete) {
@@ -96,7 +94,6 @@ export default function createTableFlowImporter({
         urlParams = { ...urlParams, isOpen: "false" };
         const uploaderUrl = getUploaderUrl(urlParams, hostUrl);
         dialog.innerHTML = `<iframe src="${uploaderUrl}" />`;
-        console.log("closed");
       }
     }
   }
