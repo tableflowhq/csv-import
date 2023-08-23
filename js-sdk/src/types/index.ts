@@ -13,4 +13,5 @@ export type TableFlowImporterProps = HTMLDialogElement & {
   onComplete?: (data: { data: any; error: any }) => void;
   customStyles?: Record<string, string> | CSSProperties;
   showImportLoadingStatus?: boolean;
+  skipHeaderRowSelection?: boolean;
 };

@@ -1,5 +1,13 @@
 type SearchParams = Record<
-  "importerId" | "darkMode" | "primaryColor" | "metadata" | "isOpen" | "onComplete" | "customStyles" | "showImportLoadingStatus",
+  | "importerId"
+  | "darkMode"
+  | "primaryColor"
+  | "metadata"
+  | "isOpen"
+  | "onComplete"
+  | "customStyles"
+  | "showImportLoadingStatus"
+  | "skipHeaderRowSelection",
   string
 >;
 
