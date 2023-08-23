@@ -14,7 +14,7 @@ export default function RowSelection({ upload, onSuccess, onCancel, selectedId, 
 
   const dataWithRadios = upload?.upload_rows?.map((row) => {
     const nameWithRadio = (
-      <>
+      <span>
         <input
           type="radio"
           id={`radio-${row.index}`}
@@ -24,8 +24,8 @@ export default function RowSelection({ upload, onSuccess, onCancel, selectedId, 
           checked={selectedId === String(row.index)}
           onChange={handleRadioChange}
         />
-        <label htmlFor={`radio-${row.index}`}>{row.values[0]}</label>
-      </>
+        {row.values[0]}
+      </span>
     );
 
     return {
@@ -33,6 +33,7 @@ export default function RowSelection({ upload, onSuccess, onCancel, selectedId, 
       0: {
         raw: row.values[0],
         content: nameWithRadio,
+        tooltip: row.values[0],
       },
     };
   });
@@ -72,6 +73,7 @@ export default function RowSelection({ upload, onSuccess, onCancel, selectedId, 
               columnWidths={columnWidths}
               columnAlignments={Array(numberOfColumns).fill("left")}
               fixHeader
+              onRowClick={(row) => setSelectedId(String(dataWithRadios?.indexOf(row as any)))}
             />
           </div>
         ) : (
