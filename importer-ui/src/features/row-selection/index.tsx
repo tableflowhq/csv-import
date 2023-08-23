@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Button, Errors, Table } from "@tableflow/ui-library";
+import { Button, Errors, Table, Tooltip } from "@tableflow/ui-library";
 import usePostSetHeader from "../../api/usePostSetHeader";
 import { RowSelectionProps } from "./types";
 import tableTheme from "../../style/Table.module.scss";
@@ -62,7 +62,11 @@ export default function RowSelection({ upload, onSuccess, onCancel, selectedId, 
               theme={tableTheme}
               mergeThemes={true}
               data={dataWithRadios || []}
-              heading={<div className={style.headingCaption}>Select Header Row</div>}
+              heading={
+                <div className={style.headingCaption}>
+                  <Tooltip title="Select the row which contains the column headers">Select Header Row</Tooltip>
+                </div>
+              }
               keyAsId="index"
               background="zebra"
               columnWidths={columnWidths}
