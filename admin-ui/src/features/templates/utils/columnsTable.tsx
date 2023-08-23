@@ -16,7 +16,6 @@ export function columnsTable(columns: TemplateColumn[] = [], update: Update): Ta
     return {
       id: column.id,
       "Column Name": column.name,
-      // ...(hasDescription ? { Description: column?.description } : {}),
       ...(hasDescription
         ? {
             Description: {
