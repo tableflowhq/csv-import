@@ -44,6 +44,8 @@ export const App: Story = {
       "color-primary-hover": "crimson",
       "color-secondary": "indianRed",
       "color-secondary-hover": "crimson",
+      "color-tertiary": "indianRed",
+      "color-tertiary-hover": "crimson",
       "color-text-on-primary": "#fff",
       "color-text-on-secondary": "#ffffff",
       "color-background": "bisque",

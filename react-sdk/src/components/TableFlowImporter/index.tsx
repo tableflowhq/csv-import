@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import useListenMessage from "../../hooks/useListenMessage";
 import cross from "./assets/cross";
 import { TableFlowImporterProps } from "./types";
 import "./style/button.css";
@@ -33,7 +34,7 @@ export default function TableFlowImporter({
   const baseClass = "TableFlowImporter";
   const themeClass = darkMode && `${baseClass}-dark`;
   const dialogClass = [`${baseClass}-dialog`, themeClass, className].filter((i) => i).join(" ");
-  const closeClass = `${baseClass}-close`;
+
 
   const urlParams = {
     importerId,
@@ -59,40 +60,11 @@ export default function TableFlowImporter({
     }
   }, [metadata]);
 
-  useEffect(() => {
-    function messageListener(e: any) {
-      if (!e || !e.data) {
-        return;
-      }
-      const messageData = e.data;
-      if (messageData?.source !== "tableflow-importer") {
-        return;
-      }
-      if (messageData?.importerId !== importerId) {
-        return;
-      }
-      if (messageData?.type === "complete" && onComplete) {
-        onComplete({
-          data: messageData?.data || null,
-          error: messageData?.error || null,
-        });
-      }
-      if (messageData?.type === "close" && onRequestClose) {
-        onRequestClose();
-      }
-    }
-    window.addEventListener("message", messageListener);
-    return () => {
-      window.removeEventListener("message", messageListener);
-    };
-  }, []);
+  useListenMessage(importerId, onComplete, onRequestClose);
 
   return (
     <dialog ref={ref} className={dialogClass} onClick={backdropClick} {...props}>
       <iframe src={uploaderUrl} />
-      <button className={closeClass} onClick={() => onRequestClose()}>
-        <span dangerouslySetInnerHTML={{ __html: cross }} />
-      </button>
-    </dialog>
+      </dialog>
   );
 }
