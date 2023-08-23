@@ -8,8 +8,6 @@ import style from "./style/RowSelection.module.scss";
 import mockData from "./mockData";
 
 export default function RowSelection({ upload, onSuccess, onCancel, selectedId, setSelectedId }: RowSelectionProps) {
-  //const [selectedId, setSelectedId] = useState<string | null>(String(mockData[0]?.index));
-
   const { mutate, error, isSuccess, isLoading, data } = usePostSetHeader(upload?.id || "");
 
   const handleRadioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
