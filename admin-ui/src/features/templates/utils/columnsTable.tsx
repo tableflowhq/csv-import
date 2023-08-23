@@ -16,11 +16,12 @@ export function columnsTable(columns: TemplateColumn[] = [], update: Update): Ta
     return {
       id: column.id,
       "Column Name": column.name,
+      // ...(hasDescription ? { Description: column?.description } : {}),
       ...(hasDescription
         ? {
             Description: {
               raw: column?.description,
-              content: column?.description,
+              content: <span>{column?.description}</span>,
               tooltip: column?.description,
             },
           }
