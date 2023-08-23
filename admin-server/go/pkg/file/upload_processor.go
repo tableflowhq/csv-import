@@ -238,6 +238,7 @@ func processAndStoreUpload(upload *model.Upload, file *os.File) (uploadProcessRe
 
 		// If all cells are blank in the row, don't process it
 		if len(row) == 0 || numBlankCells == len(row) {
+			i--
 			continue
 		}
 
