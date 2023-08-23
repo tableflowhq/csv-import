@@ -1,11 +1,9 @@
-import { FormEvent, useEffect, useState } from "react";
-// import { Radio } from "@mantine/core";
+import { useEffect } from "react";
 import { Button, Errors, Table } from "@tableflow/ui-library";
 import usePostSetHeader from "../../api/usePostSetHeader";
 import { RowSelectionProps } from "./types";
 import tableTheme from "../../style/Table.module.scss";
 import style from "./style/RowSelection.module.scss";
-import mockData from "./mockData";
 
 export default function RowSelection({ upload, onSuccess, onCancel, selectedId, setSelectedId }: RowSelectionProps) {
   const { mutate, error, isSuccess, isLoading, data } = usePostSetHeader(upload?.id || "");
@@ -38,7 +36,9 @@ export default function RowSelection({ upload, onSuccess, onCancel, selectedId, 
       },
     };
   });
-  const numberOfColumns = Object.keys(mockData[0].values).length + 1;
+  const maxNumberOfColumns = 7;
+  const uploadRow = upload?.upload_rows[0] ?? { values: {} };
+  const numberOfColumns = Math.min(Object.keys(uploadRow.values).length + 1, maxNumberOfColumns);
   const widthPercentage = 100 / numberOfColumns;
   const columnWidths = Array(numberOfColumns).fill(`${widthPercentage}%`);
 
