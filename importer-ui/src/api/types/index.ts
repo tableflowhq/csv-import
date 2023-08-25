@@ -37,6 +37,7 @@ export type Upload = {
   file_extension: string;
   file_name: string;
   file_type: string;
+  header_row_index: number;
   id: string;
   is_stored: boolean;
   metadata: any;
