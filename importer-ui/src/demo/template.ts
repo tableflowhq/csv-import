@@ -4,12 +4,12 @@ const demoTemplate: Template = {
   id: "template1",
   name: "Demo Template",
   template_columns: [
-    { id: "1", name: "First Name", required: true },
-    { id: "2", name: "Last Name", required: true },
-    { id: "3", name: "Email", required: true },
-    { id: "4", name: "Phone Number", required: true },
-    { id: "5", name: "First Contacted" },
-    { id: "6", name: "Market Segment" },
+    { id: "1", name: "First Name", key: "first_name", required: true },
+    { id: "2", name: "Last Name", key: "last_name", required: true },
+    { id: "3", name: "Email", key: "email", required: true },
+    { id: "4", name: "Phone Number", key: "Phone Numbe", required: true },
+    { id: "5", name: "First Contacted", key: "first_contacted" },
+    { id: "6", name: "Market Segment", key: "market_segment" },
   ],
 };
 

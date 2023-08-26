@@ -22,7 +22,14 @@ const uppy = new Uppy({
   debug: false,
 }).use(Tus, { limit: 1 });
 
-export default function UppyWrapper({ onSuccess, importerId = "", metadata = "", skipHeaderRowSelection = false, endpoint = "" }: UppyWrapperProps) {
+export default function UppyWrapper({
+  onSuccess,
+  importerId = "",
+  metadata = "",
+  skipHeaderRowSelection = false,
+  endpoint = "",
+  template,
+}: UppyWrapperProps) {
   useEffect(() => {
     const tusInstance = uppy?.getPlugin("Tus");
     tusInstance?.setOptions({
@@ -32,9 +39,13 @@ export default function UppyWrapper({ onSuccess, importerId = "", metadata = "",
         const importMetadataEncoded = metadata ? btoa(metadata) : "";
         req.setHeader("X-Import-Metadata", importMetadataEncoded);
         req.setHeader("X-Import-SkipHeaderRowSelection", String(skipHeaderRowSelection));
+        if (template) {
+          const templateJSON = JSON.stringify(template);
+          req.setHeader("X-Import-Template", btoa(templateJSON));
+        }
       },
     });
-  }, [importerId, metadata, endpoint]);
+  }, [importerId, metadata, endpoint, template]);
 
   useEffect(() => {
     uppy.on("complete", (result) => onSuccess(result as any));

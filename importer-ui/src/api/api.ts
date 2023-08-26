@@ -98,7 +98,7 @@ export async function get(path: string, handleError = true): Promise<ApiResponse
     .catch((error) => (handleError ? errorHandler(error, url, "GET") : { error, ok: false, data: null, status: 0 }));
 }
 
-export async function post(path: string, body: any): Promise<ApiResponse<any>> {
+export async function post(path: string, body?: any): Promise<ApiResponse<any>> {
   const url = `${baseURL}${path}`;
   return axios
     .post(url, body, {

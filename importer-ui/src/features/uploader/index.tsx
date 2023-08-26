@@ -13,6 +13,11 @@ export default function Uploader({ template, importerId, metadata, skipHeaderRow
     onSuccess(tusId);
   };
 
+  let templateOverride;
+  if (template.is_override) {
+    templateOverride = template;
+  }
+
   return (
     <div className={style.content}>
       <UppyWrapper
@@ -21,6 +26,7 @@ export default function Uploader({ template, importerId, metadata, skipHeaderRow
         metadata={metadata}
         skipHeaderRowSelection={skipHeaderRowSelection}
         endpoint={endpoint}
+        template={templateOverride}
       />
       <Table data={fields} background="dark" columnWidths={["65%", "35%"]} columnAlignments={["", "center"]} />
     </div>
