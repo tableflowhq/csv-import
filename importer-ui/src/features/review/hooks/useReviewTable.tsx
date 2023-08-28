@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Input, Switch } from "@tableflow/ui-library";
+import { Checkbox, Input } from "@tableflow/ui-library";
 import { InputOption } from "@tableflow/ui-library/build/Input/types";
 import { TemplateColumn, UploadColumn } from "../../../api/types";
 import stringsSimilarity from "../../../utils/stringSimilarity";
@@ -55,6 +55,7 @@ export default function useReviewTable(items: UploadColumn[] = [], templateColum
         }
         return acc;
       }, {} as { [key: string]: Include });
+
       let currentOptions;
 
       if (selectedTemplates && selectedTemplates.length > 0) {
@@ -77,6 +78,8 @@ export default function useReviewTable(items: UploadColumn[] = [], templateColum
         acc[key] = templateFields[key];
         return acc;
       }, {} as { [key: string]: InputOption });
+
+      const isCurrentOptions = currentOptions && Object.keys(currentOptions).length > 0;
 
       return {
         "File Column": {
@@ -102,12 +105,13 @@ export default function useReviewTable(items: UploadColumn[] = [], templateColum
               placeholder="- Select one -"
               variants={["small"]}
               onChange={(template: any) => handleTemplateChange(id, template)}
+              disabled={!isCurrentOptions}
             />
           ),
         },
         Include: {
           raw: false,
-          content: <Switch checked={suggestion.use} onChange={(e) => handleUseChange(id, e.target.checked)} />,
+          content: <Checkbox checked={suggestion.use} disabled={!suggestion.template} onChange={(e) => handleUseChange(id, e.target.checked)} />,
         },
       };
     });
