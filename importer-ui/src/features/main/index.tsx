@@ -55,13 +55,13 @@ export default function Main() {
   useEffect(() => {
     if (tusId)
       setTimeout(() => {
-        if (upload.header_row_index !== null && upload.header_row_index !== undefined) {
+        if (upload.header_row_index !== null && upload.header_row_index !== undefined && !skipHeaderRowSelection) {
           setUploadColumnsRow(upload);
           stepper.setCurrent(2);
         } else {
           stepper.setCurrent(1);
         }
-      }, 500);
+      }, 250);
   }, [isStored, tusId]);
 
   // Reload on close modal if completed
