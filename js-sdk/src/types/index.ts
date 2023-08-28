@@ -5,6 +5,7 @@ export type TableFlowImporterProps = HTMLDialogElement & {
   isOpen?: boolean;
   onRequestClose?: () => void;
   importerId: string;
+  template?: string;
   hostUrl?: string;
   darkMode?: boolean;
   primaryColor?: string;
