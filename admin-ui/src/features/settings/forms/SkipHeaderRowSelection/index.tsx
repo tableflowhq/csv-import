@@ -1,6 +1,6 @@
 import { ChangeEvent } from "react";
 import { useParams } from "react-router";
-import { Box, Errors, Switch } from "@tableflow/ui-library/build";
+import { Box, Errors, Switch } from "@tableflow/ui-library";
 import useGetImporter from "../../../../api/useGetImporter";
 import usePostImporter from "../../../../api/usePostImporter";
 import style from "./style/SkipHeaderRowSelection.module.scss";

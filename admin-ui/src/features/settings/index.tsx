@@ -13,6 +13,7 @@ export default function Settings({ importer }: { importer: Importer }) {
 
   return (
     <div className={style.container}>
+      {renderedSettings?.type() !== null && <div className={style.column}>{renderedSettings}</div>}
       <div className={style.column}>
         <h3>Allowed Domains</h3>
         <p>Add domains to restrict where the importer can be hosted. If no domains are added, the importer will allow uploads from anywhere.</p>
@@ -21,8 +22,6 @@ export default function Settings({ importer }: { importer: Importer }) {
           <Domains importer={importer} />
         </Box>
       </div>
-
-      {renderedSettings?.type() !== null && <div className={style.column}>{renderedSettings}</div>}
       <div className={style.column}>
         <SkipHeaderRowSelection />
       </div>
