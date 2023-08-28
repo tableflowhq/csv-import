@@ -1,8 +1,7 @@
 import { useMemo, useState } from "react";
-import { Input, Switch } from "@tableflow/ui-library";
+import { Checkbox, Input } from "@tableflow/ui-library";
 import { InputOption } from "@tableflow/ui-library/build/Input/types";
 import { TemplateColumn, UploadColumn } from "../../../api/types";
-import Checkbox from "../../../components/checkbox";
 import stringsSimilarity from "../../../utils/stringSimilarity";
 import style from "../style/Review.module.scss";
 
