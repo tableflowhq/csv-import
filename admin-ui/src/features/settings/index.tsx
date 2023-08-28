@@ -1,4 +1,4 @@
-import React, { ReactElement } from "react";
+import React from "react";
 import { Box } from "@tableflow/ui-library";
 import { Importer } from "../../api/types";
 import useComponentsStore from "../../stores/componentsStore";
