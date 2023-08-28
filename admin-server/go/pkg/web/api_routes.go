@@ -183,13 +183,6 @@ func downloadImportForExternalAPI(c *gin.Context) {
 		_ = downloadFile.Close()
 	}(downloadFile)
 
-	importer, err := db.GetImporterUnscoped(imp.ImporterID.String())
-	if err != nil {
-		tf.Log.Errorw("Could not retrieve importer to download import for external API", "error", err, "import_id", id)
-		c.AbortWithStatusJSON(http.StatusInternalServerError, types.Res{Err: "Could not download import"})
-		return
-	}
-
 	sampleImportRow, err := scylla.GetImportRow(imp.ID.String(), 0)
 	if err != nil {
 		tf.Log.Errorw("Could not retrieve sample import row to download import  for external API", "error", err, "import_id", id)
@@ -199,17 +192,11 @@ func downloadImportForExternalAPI(c *gin.Context) {
 
 	columnHeaders := make([]string, len(sampleImportRow.Values), len(sampleImportRow.Values))
 	pos := 0
-	for i, _ := range importer.Template.TemplateColumns {
-		tc := *importer.Template.TemplateColumns[i]
-		if _, ok := sampleImportRow.Values[tc.Key]; ok {
-			if pos >= len(columnHeaders) {
-				tf.Log.Errorw("Error downloading import while setting column headers. The current position is greater than the size of the headers", "import_id", id, "template_column_key", tc.Key, "pos", pos, "column_headers", columnHeaders, "sample_import_row_values", sampleImportRow.Values)
-				continue
-			}
-			columnHeaders[pos] = tc.Key
-			pos++
-		}
+	for columnKey, _ := range sampleImportRow.Values {
+		columnHeaders[pos] = columnKey
+		pos++
 	}
+
 	w := csv.NewWriter(downloadFile)
 	if err = w.Write(columnHeaders); err != nil {
 		tf.Log.Errorw("Error while writing header row to import file for external API download", "error", err, "import_id", imp.ID)
