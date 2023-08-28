@@ -28,7 +28,7 @@ export default function UppyWrapper({
   metadata = "",
   skipHeaderRowSelection = false,
   endpoint = "",
-  template,
+  sdkDefinedTemplate,
 }: UppyWrapperProps) {
   useEffect(() => {
     const tusInstance = uppy?.getPlugin("Tus");
@@ -39,13 +39,13 @@ export default function UppyWrapper({
         const importMetadataEncoded = metadata ? btoa(metadata) : "";
         req.setHeader("X-Import-Metadata", importMetadataEncoded);
         req.setHeader("X-Import-SkipHeaderRowSelection", String(skipHeaderRowSelection));
-        if (template) {
-          const templateJSON = JSON.stringify(template);
+        if (sdkDefinedTemplate) {
+          const templateJSON = JSON.stringify(sdkDefinedTemplate);
           req.setHeader("X-Import-Template", btoa(templateJSON));
         }
       },
     });
-  }, [importerId, metadata, endpoint, template]);
+  }, [importerId, metadata, endpoint, sdkDefinedTemplate]);
 
   useEffect(() => {
     uppy.on("complete", (result) => onSuccess(result as any));

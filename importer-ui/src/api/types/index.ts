@@ -23,7 +23,7 @@ export type Template = {
   id: string;
   name: string;
   columns: TemplateColumn[];
-  is_override?: boolean;
+  is_sdk_defined?: boolean;
 };
 
 export type TemplateColumn = {

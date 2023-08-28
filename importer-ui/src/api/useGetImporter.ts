@@ -2,17 +2,17 @@ import { useQuery, UseQueryResult } from "react-query";
 import { ApiResponse, Importer } from "./types";
 import { get, post } from "./api";
 
-export default function useGetImporter(importerId: string, templateOverride: string): UseQueryResult<Importer> {
-  return useQuery(["importer", importerId], () => (importerId ? getImporter(importerId, templateOverride) : {}));
+export default function useGetImporter(importerId: string, sdkDefinedTemplate: string): UseQueryResult<Importer> {
+  return useQuery(["importer", importerId], () => (importerId ? getImporter(importerId, sdkDefinedTemplate) : {}));
 }
 
-async function getImporter(importerId: string, templateOverride: string) {
+async function getImporter(importerId: string, sdkDefinedTemplate: string) {
   let body;
-  let isOverride = false;
-  if (templateOverride && templateOverride.length > 0) {
+  let isSDKDefined = false;
+  if (sdkDefinedTemplate && sdkDefinedTemplate.length > 0) {
     try {
-      body = JSON.parse(templateOverride);
-      isOverride = true;
+      body = JSON.parse(sdkDefinedTemplate);
+      isSDKDefined = true;
     } catch (error) {
       throw `Invalid template: ${error}`;
     }
@@ -21,6 +21,6 @@ async function getImporter(importerId: string, templateOverride: string) {
 
   if (!response.ok) throw response.error;
 
-  response.data.template.is_override = isOverride;
+  response.data.template.is_sdk_defined = isSDKDefined;
   return response.data;
 }

@@ -13,9 +13,11 @@ export default function Uploader({ template, importerId, metadata, skipHeaderRow
     onSuccess(tusId);
   };
 
-  let templateOverride;
-  if (template.is_override) {
-    templateOverride = template;
+  let sdkDefinedTemplate;
+  if (template.is_sdk_defined) {
+    // Only pass in the template to the UppyWrapper if it is defined from the SDK, as this is the only time we need to
+    // persist the template with the upload
+    sdkDefinedTemplate = template;
   }
 
   return (
@@ -26,7 +28,7 @@ export default function Uploader({ template, importerId, metadata, skipHeaderRow
         metadata={metadata}
         skipHeaderRowSelection={skipHeaderRowSelection}
         endpoint={endpoint}
-        template={templateOverride}
+        sdkDefinedTemplate={sdkDefinedTemplate}
       />
       <Table data={fields} background="dark" columnWidths={["65%", "35%"]} columnAlignments={["", "center"]} />
     </div>

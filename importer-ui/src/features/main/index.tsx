@@ -29,7 +29,7 @@ export default function Main() {
     onComplete,
     showImportLoadingStatus,
     skipHeaderRowSelection,
-    template: templateOverride,
+    template: sdkDefinedTemplate,
   } = useEmbedStore((state) => state.embedParams);
 
   const modifiedSteps = skipHeaderRowSelection ? steps.filter((step) => step.id !== "row-selection") : steps;
@@ -41,7 +41,7 @@ export default function Main() {
   // Async data & state
   const { tusId, tusWasStored, importerIsLoading, importerError, template, upload, uploadError, isStored, setTusId, importer } = useApi(
     importerId,
-    templateOverride
+    sdkDefinedTemplate
   );
 
   const [uploadColumnsRow, setUploadColumnsRow] = useState<any | null>(null);
