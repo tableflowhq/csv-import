@@ -53,7 +53,15 @@ export default function Main() {
 
   // Delay jump to the second step
   useEffect(() => {
-    if (tusId) setTimeout(() => stepper.setCurrent(1), 500);
+    if (tusId)
+      setTimeout(() => {
+        if (upload.header_row_index !== null && upload.header_row_index !== undefined && !skipHeaderRowSelection) {
+          setUploadColumnsRow(upload);
+          stepper.setCurrent(2);
+        } else {
+          stepper.setCurrent(1);
+        }
+      }, 250);
   }, [isStored, tusId]);
 
   // Reload on close modal if completed
