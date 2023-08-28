@@ -8,6 +8,7 @@ export default function createTableFlowImporter({
   isOpen = false,
   onRequestClose = () => null,
   importerId,
+  template = "",
   hostUrl,
   darkMode = false,
   primaryColor = "#7a5ef8",
@@ -44,6 +45,7 @@ export default function createTableFlowImporter({
   // iframe element
   const urlParams = {
     importerId,
+    template,
     darkMode: darkMode.toString(),
     primaryColor,
     metadata,
@@ -60,7 +62,15 @@ export default function createTableFlowImporter({
   try {
     JSON.parse(metadata);
   } catch (e) {
-    console.error('The "metadata" prop is not a valid JSON string. Please check the documentation for more details.');
+    console.error("The 'metadata' prop is not a valid JSON string. Please check the documentation for more details.");
+  }
+
+  if (template) {
+    try {
+      JSON.parse(template);
+    } catch (e) {
+      console.error("The 'template' prop is not a valid JSON string. Please check the documentation for more details.");
+    }
   }
 
   function messageListener(e: any) {

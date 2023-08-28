@@ -16,6 +16,7 @@ type Upload struct {
 	FileSize       null.Int    `json:"file_size" swaggertype:"integer" example:"1024"`
 	NumRows        null.Int    `json:"num_rows" swaggertype:"integer" example:"256"`
 	NumColumns     null.Int    `json:"num_columns" swaggertype:"integer" example:"8"`
+	Template       JSONB       `json:"template" swaggertype:"string" example:"{}"` // Set if the user passes in a template to the SDK, which overrides the template on the importer
 	Metadata       JSONB       `json:"metadata" swaggertype:"string" example:"{\"user_id\": 1234}"`
 	IsStored       bool        `json:"is_stored" example:"false"`
 	HeaderRowIndex null.Int    `json:"header_row_index" swaggertype:"integer" example:"0"`

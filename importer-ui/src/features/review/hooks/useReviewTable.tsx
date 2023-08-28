@@ -79,7 +79,7 @@ export default function useReviewTable(items: UploadColumn[] = [], templateColum
       }, {} as { [key: string]: InputOption });
 
       return {
-        "Column in File": {
+        "File Column": {
           raw: name || false,
           content: name || <em>- empty -</em>,
         },
@@ -93,7 +93,7 @@ export default function useReviewTable(items: UploadColumn[] = [], templateColum
             </div>
           ),
         },
-        "Template Fields": {
+        "Destination Column": {
           raw: "",
           content: (
             <Input

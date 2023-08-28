@@ -6,7 +6,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gocql/gocql"
 	"github.com/guregu/null"
-	"github.com/lib/pq"
 	"github.com/samber/lo"
 	"github.com/tus/tusd/pkg/handler"
 	"gorm.io/gorm"
@@ -23,68 +22,6 @@ import (
 	"tableflow/go/pkg/util"
 	"time"
 )
-
-type ImportServiceImporter struct {
-	ID                     model.ID               `json:"id" swaggertype:"string" example:"6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353"`
-	Name                   string                 `json:"name" example:"Test Importer"`
-	SkipHeaderRowSelection bool                   `json:"skip_header_row_selection" example:"false"`
-	Template               *ImportServiceTemplate `json:"template"`
-}
-
-type ImportServiceTemplate struct {
-	ID              model.ID                       `json:"id" swaggertype:"string" example:"f0797968-becc-422a-b135-19de1d8c5d46"`
-	Name            string                         `json:"name" example:"My Template"`
-	TemplateColumns []*ImportServiceTemplateColumn `json:"template_columns"`
-}
-
-type ImportServiceTemplateColumn struct {
-	ID          model.ID `json:"id" swaggertype:"string" example:"a1ed136d-33ce-4b7e-a7a4-8a5ccfe54cd5"`
-	Name        string   `json:"name" example:"First Name"`
-	Required    bool     `json:"required" example:"false"`
-	Description string   `json:"description" example:"The first name"`
-}
-
-type ImportServiceUpload struct {
-	ID             model.ID       `json:"id" swaggertype:"string" example:"50ca61e1-f683-4b03-9ec4-4b3adb592bf1"`
-	TusID          string         `json:"tus_id" example:"ee715c254ee61855b465ed61be930487"`
-	ImporterID     model.ID       `json:"importer_id" swaggertype:"string" example:"6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353"`
-	FileName       null.String    `json:"file_name" swaggertype:"string" example:"example.csv"`
-	FileType       null.String    `json:"file_type" swaggertype:"string" example:"text/csv"`
-	FileExtension  null.String    `json:"file_extension" swaggertype:"string" example:"csv"`
-	FileSize       null.Int       `json:"file_size" swaggertype:"integer" example:"1024"`
-	Metadata       model.JSONB    `json:"metadata" swaggertype:"string" example:"{\"user_id\": 1234}"`
-	IsStored       bool           `json:"is_stored" example:"false"`
-	HeaderRowIndex null.Int       `json:"header_row_index" swaggertype:"integer" example:"0"`
-	CreatedAt      model.NullTime `json:"created_at" swaggertype:"integer" example:"1682366228"`
-
-	UploadRows    []types.UploadRow            `json:"upload_rows"`
-	UploadColumns []*ImportServiceUploadColumn `json:"upload_columns"`
-}
-
-type ImportServiceUploadColumn struct {
-	ID         model.ID       `json:"id" swaggertype:"string" example:"3c79e7fd-1018-4a27-8b86-9cee84221cd8"`
-	Name       string         `json:"name" example:"Work Email"`
-	Index      int            `json:"index" example:"0"`
-	SampleData pq.StringArray `json:"sample_data" gorm:"type:text[]" swaggertype:"array,string" example:"test@example.com"`
-}
-
-type ImporterServiceUploadHeaderRowSelection struct {
-	Index *int `json:"index" example:"0"`
-}
-
-type ImportServiceImport struct {
-	ID                 model.ID          `json:"id" swaggertype:"string" example:"da5554e3-6c87-41b2-9366-5449a2f15b53"`
-	UploadID           model.ID          `json:"upload_id" swaggertype:"string" example:"50ca61e1-f683-4b03-9ec4-4b3adb592bf1"`
-	ImporterID         model.ID          `json:"importer_id" swaggertype:"string" example:"6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353"`
-	NumRows            null.Int          `json:"num_rows" swaggertype:"integer" example:"256"`
-	NumColumns         null.Int          `json:"num_columns" swaggertype:"integer" example:"8"`
-	NumProcessedValues null.Int          `json:"num_processed_values" swaggertype:"integer" example:"128"`
-	Metadata           model.JSONB       `json:"metadata"`
-	IsStored           bool              `json:"is_stored" example:"false"`
-	CreatedAt          model.NullTime    `json:"created_at" swaggertype:"integer" example:"1682366228"`
-	Error              null.String       `json:"error,omitempty" swaggerignore:"true"`
-	Rows               []types.ImportRow `json:"rows"`
-}
 
 type importProcessResult struct {
 	NumRows            int
@@ -172,16 +109,16 @@ func tusPatchFile(h *handler.UnroutedHandler) gin.HandlerFunc {
 	}
 }
 
-// getImporterForImportService
+// DEPRECATED_getImporterForImportService
 //
 //	@Summary		Get importer
 //	@Description	Get a single importer and its template
 //	@Tags			File Import
-//	@Success		200	{object}	ImportServiceImporter
+//	@Success		200	{object}	types.ImportServiceImporter
 //	@Failure		400	{object}	types.Res
 //	@Router			/file-import/v1/importer/{id} [get]
 //	@Param			id	path	string	true	"Importer ID"
-func getImporterForImportService(c *gin.Context) {
+func DEPRECATED_getImporterForImportService(c *gin.Context) {
 	id := c.Param("id")
 	if len(id) == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No importer ID provided"})
@@ -190,7 +127,7 @@ func getImporterForImportService(c *gin.Context) {
 	template, err := db.GetTemplateByImporterWithImporter(id)
 	if err != nil {
 		errStr := err.Error()
-		if err == gorm.ErrRecordNotFound {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			errStr = "Importer not found. Check the importerId parameter or reach out to support for assistance."
 		}
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: errStr})
@@ -210,21 +147,22 @@ func getImporterForImportService(c *gin.Context) {
 			return
 		}
 	}
-	importerTemplateColumns := make([]*ImportServiceTemplateColumn, len(template.TemplateColumns))
+	importerTemplateColumns := make([]*types.ImportServiceTemplateColumn, len(template.TemplateColumns))
 	for n, tc := range template.TemplateColumns {
-		importerTemplateColumns[n] = &ImportServiceTemplateColumn{
+		importerTemplateColumns[n] = &types.ImportServiceTemplateColumn{
 			ID:          tc.ID,
 			Name:        tc.Name,
+			Key:         tc.Key,
 			Required:    tc.Required,
 			Description: tc.Description.String,
 		}
 	}
-	importerTemplate := &ImportServiceTemplate{
+	importerTemplate := &types.ImportServiceTemplate{
 		ID:              template.ID,
 		Name:            template.Name,
 		TemplateColumns: importerTemplateColumns,
 	}
-	importer := ImportServiceImporter{
+	importer := types.ImportServiceImporter{
 		ID:                     template.Importer.ID,
 		Name:                   template.Importer.Name,
 		SkipHeaderRowSelection: template.Importer.SkipHeaderRowSelection,
@@ -233,12 +171,109 @@ func getImporterForImportService(c *gin.Context) {
 	c.JSON(http.StatusOK, importer)
 }
 
+// getImporterForImportService
+//
+//	@Summary		Get importer
+//	@Description	Get a single importer and its template
+//	@Tags			File Import
+//	@Success		200	{object}	types.ImportServiceImporter
+//	@Failure		400	{object}	types.Res
+//	@Router			/file-import/v1/importer/{id} [post]
+//	@Param			id		path	string					true	"Importer ID"
+//	@Param			body	body	map[string]interface{}	false	"Request body"
+func getImporterForImportService(c *gin.Context) {
+	id := c.Param("id")
+	if len(id) == 0 {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No importer ID provided"})
+		return
+	}
+
+	// If a template is provided in the request, validate and return that instead of the template attached to the importer
+	if c.Request.ContentLength != 0 {
+		importer, err := db.GetImporterWithoutTemplate(id)
+		if err != nil {
+			errStr := err.Error()
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				errStr = "Importer not found. Check the importerId parameter or reach out to support for assistance."
+			}
+			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: errStr})
+			return
+		}
+		var req map[string]interface{}
+		if err = c.BindJSON(&req); err != nil {
+			tf.Log.Warnw("Could not bind JSON", "error", err)
+			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("Invalid template provided: %v", err.Error())})
+			return
+		}
+		requestTemplate, err := types.ConvertUploadTemplate(req, false)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+			return
+		}
+		importServiceImporter := types.ImportServiceImporter{
+			ID:                     importer.ID,
+			Name:                   importer.Name,
+			SkipHeaderRowSelection: importer.SkipHeaderRowSelection,
+			Template:               requestTemplate,
+		}
+		c.JSON(http.StatusOK, importServiceImporter)
+		return
+	}
+
+	template, err := db.GetTemplateByImporterWithImporter(id)
+	if err != nil {
+		errStr := err.Error()
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			errStr = "Importer not found. Check the importerId parameter or reach out to support for assistance."
+		}
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: errStr})
+		return
+	}
+	if !template.ImporterID.Valid || template.Importer == nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Template not attached to importer"})
+		return
+	}
+	if len(template.Importer.AllowedDomains) != 0 {
+		if err = validateAllowedDomains(c, template.Importer); err != nil {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, err.Error())
+			return
+		}
+	}
+	if len(template.TemplateColumns) == 0 {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No template columns found. Please create at least one template column to use this importer."})
+		return
+	}
+
+	importerTemplateColumns := make([]*types.ImportServiceTemplateColumn, len(template.TemplateColumns))
+	for n, tc := range template.TemplateColumns {
+		importerTemplateColumns[n] = &types.ImportServiceTemplateColumn{
+			ID:          tc.ID,
+			Name:        tc.Name,
+			Key:         tc.Key,
+			Required:    tc.Required,
+			Description: tc.Description.String,
+		}
+	}
+	importerTemplate := &types.ImportServiceTemplate{
+		ID:              template.ID,
+		Name:            template.Name,
+		TemplateColumns: importerTemplateColumns,
+	}
+	importServiceImporter := types.ImportServiceImporter{
+		ID:                     template.Importer.ID,
+		Name:                   template.Importer.Name,
+		SkipHeaderRowSelection: template.Importer.SkipHeaderRowSelection,
+		Template:               importerTemplate,
+	}
+	c.JSON(http.StatusOK, importServiceImporter)
+}
+
 // getUploadForImportService
 //
 //	@Summary		Get upload by tus ID
 //	@Description	Get a single upload by the tus ID provided to the client from the upload
 //	@Tags			File Import
-//	@Success		200	{object}	ImportServiceUpload
+//	@Success		200	{object}	types.ImportServiceUpload
 //	@Failure		400	{object}	types.Res
 //	@Router			/file-import/v1/upload/{id} [get]
 //	@Param			id	path	string	true	"tus ID"
@@ -270,7 +305,11 @@ func getUploadForImportService(c *gin.Context) {
 			})
 		}
 	}
-	importerUpload := CreateImportServiceUploadFromUpload(upload, uploadRows)
+	importerUpload, err := types.ConvertUpload(upload, uploadRows)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+		return
+	}
 	c.JSON(http.StatusOK, importerUpload)
 }
 
@@ -279,11 +318,11 @@ func getUploadForImportService(c *gin.Context) {
 //	@Summary		Set upload header row
 //	@Description	Set the header row index on the upload
 //	@Tags			File Import
-//	@Success		200	{object}	ImportServiceUpload
+//	@Success		200	{object}	types.ImportServiceUpload
 //	@Failure		400	{object}	types.Res
 //	@Router			/file-import/v1/upload/:id/set-header-row [post]
-//	@Param			id		path	string									true	"Upload ID"
-//	@Param			body	body	ImporterServiceUploadHeaderRowSelection	true	"Request body"
+//	@Param			id		path	string											true	"Upload ID"
+//	@Param			body	body	types.ImporterServiceUploadHeaderRowSelection	true	"Request body"
 func setUploadHeaderRowForImportService(c *gin.Context) {
 	id := c.Param("id")
 	if len(id) == 0 {
@@ -297,7 +336,7 @@ func setUploadHeaderRowForImportService(c *gin.Context) {
 	}
 
 	// Validate and set the header row index on the upload
-	req := ImporterServiceUploadHeaderRowSelection{}
+	req := types.ImporterServiceUploadHeaderRowSelection{}
 	if err = c.BindJSON(&req); err != nil {
 		tf.Log.Warnw("Could not bind JSON", "error", err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
@@ -362,7 +401,11 @@ func setUploadHeaderRowForImportService(c *gin.Context) {
 		return
 	}
 
-	importerUpload := CreateImportServiceUploadFromUpload(upload, nil)
+	importerUpload, err := types.ConvertUpload(upload, nil)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+		return
+	}
 	c.JSON(http.StatusOK, importerUpload)
 }
 
@@ -399,11 +442,39 @@ func setUploadColumnMappingAndImportData(c *gin.Context, importCompleteHandler f
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "The header row has not been set"})
 		return
 	}
-	template, err := db.GetTemplateByImporter(upload.ImporterID.String())
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
-		return
+
+	var template *model.Template
+	if upload.Template != nil {
+		// A template was set on the upload, use that instead of the importer template
+		importServiceTemplate, err := types.ConvertUploadTemplate(upload.Template, false)
+		if err != nil {
+			tf.Log.Warnw("Could not convert upload template to import service template during import", "error", err, "upload_id", upload.ID, "upload_template", upload.Template)
+			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+			return
+		}
+		template = &model.Template{
+			Name:        importServiceTemplate.Name,
+			WorkspaceID: upload.WorkspaceID,
+		}
+		for _, importColumn := range importServiceTemplate.TemplateColumns {
+			templateColumn := &model.TemplateColumn{
+				ID:          importColumn.ID,
+				Name:        importColumn.Name,
+				Key:         importColumn.Key,
+				Required:    importColumn.Required,
+				Description: null.NewString(importColumn.Description, len(importColumn.Description) != 0),
+			}
+			template.TemplateColumns = append(template.TemplateColumns, templateColumn)
+		}
+	} else {
+		// Use the importer template
+		template, err = db.GetTemplateByImporter(upload.ImporterID.String())
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+			return
+		}
 	}
+
 	if len(template.TemplateColumns) == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Template does not have columns"})
 		return
@@ -448,7 +519,7 @@ func setUploadColumnMappingAndImportData(c *gin.Context, importCompleteHandler f
 //	@Summary		Get import by upload ID
 //	@Description	Get a single import by the upload ID, including the data if the import is complete
 //	@Tags			File Import
-//	@Success		200	{object}	ImportServiceImport
+//	@Success		200	{object}	types.ImportServiceImport
 //	@Failure		400	{object}	types.Res
 //	@Router			/file-import/v1/import/{id} [get]
 //	@Param			id	path	string	true	"Upload ID"
@@ -463,7 +534,7 @@ func getImportForImportService(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusOK, gin.H{})
 		return
 	}
-	importerImport := &ImportServiceImport{
+	importerImport := &types.ImportServiceImport{
 		ID:                 imp.ID,
 		UploadID:           imp.UploadID,
 		ImporterID:         imp.ImporterID,
@@ -648,35 +719,4 @@ func generateColumnKeyMap(template *model.Template, upload *model.Upload) map[in
 		}
 	}
 	return columnKeyMap
-}
-
-func CreateImportServiceUploadFromUpload(upload *model.Upload, uploadRows []types.UploadRow) *ImportServiceUpload {
-	if uploadRows == nil {
-		uploadRows = make([]types.UploadRow, 0)
-	}
-	importerUploadColumns := make([]*ImportServiceUploadColumn, len(upload.UploadColumns))
-	for n, uc := range upload.UploadColumns {
-		importerUploadColumns[n] = &ImportServiceUploadColumn{
-			ID:         uc.ID,
-			Name:       uc.Name,
-			Index:      uc.Index,
-			SampleData: uc.SampleData,
-		}
-	}
-	importerUpload := &ImportServiceUpload{
-		ID:             upload.ID,
-		TusID:          upload.TusID,
-		ImporterID:     upload.ImporterID,
-		FileName:       upload.FileName,
-		FileType:       upload.FileType,
-		FileExtension:  upload.FileExtension,
-		FileSize:       upload.FileSize,
-		Metadata:       upload.Metadata,
-		IsStored:       upload.IsStored,
-		HeaderRowIndex: upload.HeaderRowIndex,
-		CreatedAt:      upload.CreatedAt,
-		UploadColumns:  importerUploadColumns,
-		UploadRows:     uploadRows,
-	}
-	return importerUpload
 }

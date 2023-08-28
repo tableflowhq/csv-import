@@ -22,7 +22,15 @@ const steps = [
 
 export default function Main() {
   // Get iframe URL params
-  const { importerId, metadata, isOpen, onComplete, showImportLoadingStatus, skipHeaderRowSelection } = useEmbedStore((state) => state.embedParams);
+  const {
+    importerId,
+    metadata,
+    isOpen,
+    onComplete,
+    showImportLoadingStatus,
+    skipHeaderRowSelection,
+    template: sdkDefinedTemplate,
+  } = useEmbedStore((state) => state.embedParams);
 
   const modifiedSteps = skipHeaderRowSelection ? steps.filter((step) => step.id !== "row-selection") : steps;
 
@@ -31,7 +39,10 @@ export default function Main() {
   const step = stepper?.step?.id;
 
   // Async data & state
-  const { tusId, tusWasStored, importerIsLoading, importerError, template, upload, uploadError, isStored, setTusId, importer } = useApi(importerId);
+  const { tusId, tusWasStored, importerIsLoading, importerError, template, upload, uploadError, isStored, setTusId, importer } = useApi(
+    importerId,
+    sdkDefinedTemplate
+  );
 
   const [uploadColumnsRow, setUploadColumnsRow] = useState<any | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -102,7 +113,7 @@ export default function Main() {
   if (!importerId)
     return (
       <div className={style.wrapper}>
-        <Errors error={"importerId is required"} />
+        <Errors error={"The parameter 'importerId' is required"} />
       </div>
     );
 
