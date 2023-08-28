@@ -10,26 +10,32 @@ export default function Embed({ children }: EmbedProps) {
     darkMode: darkModeString,
     primaryColor,
     metadata,
+    template,
     isOpen,
     onComplete,
     customStyles,
     showImportLoadingStatus,
+    skipHeaderRowSelection,
   } = useSearchParams();
 
   // Set importerId & metadata in embed store
   const setEmbedParams = useEmbedStore((state) => state.setEmbedParams);
+  const strToBoolean = (str: string) => !!str && (str.toLowerCase() === "true" || str === "1");
+
   useEffect(() => {
     setEmbedParams({
       importerId,
       metadata,
-      isOpen: isOpen !== "false" && isOpen !== "0",
-      onComplete: !!onComplete && onComplete !== "false" && onComplete !== "0",
-      showImportLoadingStatus: !!showImportLoadingStatus && showImportLoadingStatus !== "false" && showImportLoadingStatus !== "0",
+      template,
+      isOpen: strToBoolean(isOpen),
+      onComplete: strToBoolean(onComplete),
+      showImportLoadingStatus: strToBoolean(showImportLoadingStatus),
+      skipHeaderRowSelection: strToBoolean(skipHeaderRowSelection),
     });
   }, [importerId, metadata]);
 
   // Set Light/Dark mode
-  const darkMode = darkModeString === "true";
+  const darkMode = strToBoolean(darkModeString);
   const setTheme = useThemeStore((state) => state.setTheme);
 
   useEffect(() => {

@@ -4,6 +4,7 @@ export type TableFlowImporterProps = HTMLDialogElement & {
   elementId?: string;
   onRequestClose?: () => void;
   importerId: string;
+  template?: string;
   hostUrl?: string;
   darkMode?: boolean;
   primaryColor?: string;
@@ -12,4 +13,5 @@ export type TableFlowImporterProps = HTMLDialogElement & {
   onComplete?: (data: { data: any; error: any }) => void;
   customStyles?: Record<string, string> | CSSProperties;
   showImportLoadingStatus?: boolean;
+  skipHeaderRowSelection?: boolean;
 };

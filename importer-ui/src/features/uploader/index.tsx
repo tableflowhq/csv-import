@@ -4,8 +4,8 @@ import useTemplateTable from "./hooks/useTemplateTable";
 import { UploaderProps } from "./types";
 import style from "./style/Uploader.module.scss";
 
-export default function Uploader({ template, importerId, metadata, endpoint, onSuccess }: UploaderProps) {
-  const fields = useTemplateTable(template.template_columns);
+export default function Uploader({ template, importerId, metadata, skipHeaderRowSelection, endpoint, onSuccess }: UploaderProps) {
+  const fields = useTemplateTable(template.columns);
 
   const onFileUpload = (result: any) => {
     // Get tusId from the uploadURL
@@ -13,9 +13,23 @@ export default function Uploader({ template, importerId, metadata, endpoint, onS
     onSuccess(tusId);
   };
 
+  let sdkDefinedTemplate;
+  if (template.is_sdk_defined) {
+    // Only pass in the template to the UppyWrapper if it is defined from the SDK, as this is the only time we need to
+    // persist the template with the upload
+    sdkDefinedTemplate = template;
+  }
+
   return (
     <div className={style.content}>
-      <UppyWrapper onSuccess={onFileUpload} importerId={importerId} metadata={metadata} endpoint={endpoint} />
+      <UppyWrapper
+        onSuccess={onFileUpload}
+        importerId={importerId}
+        metadata={metadata}
+        skipHeaderRowSelection={skipHeaderRowSelection}
+        endpoint={endpoint}
+        sdkDefinedTemplate={sdkDefinedTemplate}
+      />
       <Table data={fields} background="dark" columnWidths={["65%", "35%"]} columnAlignments={["", "center"]} />
     </div>
   );

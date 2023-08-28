@@ -263,7 +263,7 @@ func GetDatabaseSchemaInitSQL() string {
 		    constraint fk_upload_id
 		        foreign key (upload_id)
 		            references uploads(id),
-		    constraint fk_template_column_id
+		    constraint fk_template_column_id              -- REMOVED: To support transient templates set on the upload
 		        foreign key (template_column_id)
 		            references template_columns(id)
 		);
@@ -322,5 +322,15 @@ func GetDatabaseSchemaInitSQL() string {
 
 		alter table uploads
 		    drop column if exists is_parsed;
+
+		alter table uploads
+		    add column if not exists header_row_index integer;
+		alter table importers
+		    add column if not exists skip_header_row_selection bool not null default false;
+
+		alter table uploads
+		    add column if not exists template jsonb;
+		alter table upload_columns
+		    drop constraint if exists fk_template_column_id;
 	`
 }

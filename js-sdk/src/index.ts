@@ -7,6 +7,7 @@ export default function createTableFlowImporter({
   elementId = "tableflow-importer",
   onRequestClose = () => null,
   importerId,
+  template = "",
   hostUrl,
   darkMode = false,
   primaryColor = "#7a5ef8",
@@ -16,6 +17,7 @@ export default function createTableFlowImporter({
   customStyles,
   className,
   showImportLoadingStatus,
+  skipHeaderRowSelection,
 }: TableFlowImporterProps) {
   // CSS classes
   const baseClass = "TableFlowImporter";
@@ -41,6 +43,7 @@ export default function createTableFlowImporter({
   // iframe element
   let urlParams = {
     importerId,
+    template,
     darkMode: darkMode.toString(),
     primaryColor,
     metadata,
@@ -48,6 +51,7 @@ export default function createTableFlowImporter({
     onComplete: onComplete ? "true" : "false",
     customStyles: JSON.stringify(customStyles),
     showImportLoadingStatus: showImportLoadingStatus ? "true" : "false",
+    skipHeaderRowSelection: skipHeaderRowSelection ? "true" : "false",
   };
 
   const uploaderUrl = getUploaderUrl(urlParams, hostUrl);
@@ -55,7 +59,15 @@ export default function createTableFlowImporter({
   try {
     JSON.parse(metadata);
   } catch (e) {
-    console.error('The "metadata" prop is not a valid JSON string. Please check the documentation for more details.');
+    console.error("The 'metadata' prop is not a valid JSON string. Please check the documentation for more details.");
+  }
+
+  if (template) {
+    try {
+      JSON.parse(template);
+    } catch (e) {
+      console.error("The 'template' prop is not a valid JSON string. Please check the documentation for more details.");
+    }
   }
 
   function messageListener(e: any) {

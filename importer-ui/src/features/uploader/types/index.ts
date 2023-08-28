@@ -4,6 +4,7 @@ export type UploaderProps = {
   template: Template;
   metadata: string;
   importerId: string;
+  skipHeaderRowSelection: boolean;
   endpoint: string;
   onSuccess: (tusId: string) => void;
 };

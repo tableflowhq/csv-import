@@ -51,6 +51,9 @@ definitions:
       name:
         example: Test Importer
         type: string
+      skip_header_row_selection:
+        example: false
+        type: boolean
       template:
         $ref: '#/definitions/model.Template'
       updated_at:
@@ -172,6 +175,9 @@ definitions:
       file_type:
         example: text/csv
         type: string
+      header_row_index:
+        example: 0
+        type: integer
       id:
         example: 50ca61e1-f683-4b03-9ec4-4b3adb592bf1
         type: string
@@ -190,6 +196,11 @@ definitions:
       num_rows:
         example: 256
         type: integer
+      template:
+        description: Set if the user passes in a template to the SDK, which overrides
+          the template on the importer
+        example: '{}'
+        type: string
       tus_id:
         example: ee715c254ee61855b465ed61be930487
         type: string
@@ -276,14 +287,7 @@ definitions:
           type: string
         type: object
     type: object
-  types.Res:
-    properties:
-      error:
-        type: string
-      message:
-        type: string
-    type: object
-  web.ImportServiceImport:
+  types.ImportServiceImport:
     properties:
       created_at:
         example: 1682366228
@@ -316,7 +320,7 @@ definitions:
         example: 50ca61e1-f683-4b03-9ec4-4b3adb592bf1
         type: string
     type: object
-  web.ImportServiceImporter:
+  types.ImportServiceImporter:
     properties:
       id:
         example: 6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353
@@ -324,29 +328,35 @@ definitions:
       name:
         example: Test Importer
         type: string
+      skip_header_row_selection:
+        example: false
+        type: boolean
       template:
-        $ref: '#/definitions/web.ImportServiceTemplate'
+        $ref: '#/definitions/types.ImportServiceTemplate'
     type: object
-  web.ImportServiceTemplate:
+  types.ImportServiceTemplate:
     properties:
+      columns:
+        items:
+          $ref: '#/definitions/types.ImportServiceTemplateColumn'
+        type: array
       id:
         example: f0797968-becc-422a-b135-19de1d8c5d46
         type: string
       name:
         example: My Template
         type: string
-      template_columns:
-        items:
-          $ref: '#/definitions/web.ImportServiceTemplateColumn'
-        type: array
     type: object
-  web.ImportServiceTemplateColumn:
+  types.ImportServiceTemplateColumn:
     properties:
       description:
         example: The first name
         type: string
       id:
         example: a1ed136d-33ce-4b7e-a7a4-8a5ccfe54cd5
+        type: string
+      key:
+        example: email
         type: string
       name:
         example: First Name
@@ -355,7 +365,7 @@ definitions:
         example: false
         type: boolean
     type: object
-  web.ImportServiceUpload:
+  types.ImportServiceUpload:
     properties:
       created_at:
         example: 1682366228
@@ -372,6 +382,9 @@ definitions:
       file_type:
         example: text/csv
         type: string
+      header_row_index:
+        example: 0
+        type: integer
       id:
         example: 50ca61e1-f683-4b03-9ec4-4b3adb592bf1
         type: string
@@ -384,15 +397,24 @@ definitions:
       metadata:
         example: '{"user_id": 1234}'
         type: string
+      template:
+        allOf:
+        - $ref: '#/definitions/types.ImportServiceTemplate'
+        description: Set if the user passes in a template to the SDK, which overrides
+          the template on the importer
       tus_id:
         example: ee715c254ee61855b465ed61be930487
         type: string
       upload_columns:
         items:
-          $ref: '#/definitions/web.ImportServiceUploadColumn'
+          $ref: '#/definitions/types.ImportServiceUploadColumn'
+        type: array
+      upload_rows:
+        items:
+          $ref: '#/definitions/types.UploadRow'
         type: array
     type: object
-  web.ImportServiceUploadColumn:
+  types.ImportServiceUploadColumn:
     properties:
       id:
         example: 3c79e7fd-1018-4a27-8b86-9cee84221cd8
@@ -409,6 +431,29 @@ definitions:
         items:
           type: string
         type: array
+    type: object
+  types.ImporterServiceUploadHeaderRowSelection:
+    properties:
+      index:
+        example: 0
+        type: integer
+    type: object
+  types.Res:
+    properties:
+      error:
+        type: string
+      message:
+        type: string
+    type: object
+  types.UploadRow:
+    properties:
+      index:
+        example: 0
+        type: integer
+      values:
+        additionalProperties:
+          type: string
+        type: object
     type: object
   web.ImporterCreateRequest:
     properties:
@@ -430,6 +475,9 @@ definitions:
       name:
         example: Test Importer
         type: string
+      skip_header_row_selection:
+        example: false
+        type: boolean
       webhooks_enabled:
         example: true
         type: boolean
@@ -851,7 +899,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/web.ImportServiceImport'
+            $ref: '#/definitions/types.ImportServiceImport'
         "400":
           description: Bad Request
           schema:
@@ -872,7 +920,33 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/web.ImportServiceImporter'
+            $ref: '#/definitions/types.ImportServiceImporter'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/types.Res'
+      summary: Get importer
+      tags:
+      - File Import
+    post:
+      description: Get a single importer and its template
+      parameters:
+      - description: Importer ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: body
+        schema:
+          additionalProperties: true
+          type: object
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.ImportServiceImporter'
         "400":
           description: Bad Request
           schema:
@@ -911,6 +985,33 @@ paths:
       summary: Set upload column mapping and import data
       tags:
       - File Import
+  /file-import/v1/upload/:id/set-header-row:
+    post:
+      description: Set the header row index on the upload
+      parameters:
+      - description: Upload ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/types.ImporterServiceUploadHeaderRowSelection'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.ImportServiceUpload'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/types.Res'
+      summary: Set upload header row
+      tags:
+      - File Import
   /file-import/v1/upload/{id}:
     get:
       description: Get a single upload by the tus ID provided to the client from the
@@ -925,7 +1026,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/web.ImportServiceUpload'
+            $ref: '#/definitions/types.ImportServiceUpload'
         "400":
           description: Bad Request
           schema:
