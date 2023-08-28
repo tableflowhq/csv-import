@@ -1,6 +1,7 @@
 package file
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/gocql/gocql"
@@ -16,6 +17,7 @@ import (
 	"tableflow/go/pkg/model"
 	"tableflow/go/pkg/scylla"
 	"tableflow/go/pkg/tf"
+	"tableflow/go/pkg/types"
 	"tableflow/go/pkg/util"
 	"time"
 )
@@ -47,18 +49,15 @@ func UploadCompleteHandler(event handler.HookEvent, uploadAdditionalStorageHandl
 		return
 	}
 
-	importMetadataEncodedStr := event.HTTPRequest.Header.Get("X-Import-Metadata")
-	importMetadata := model.JSONB{}
-	if len(importMetadataEncodedStr) != 0 {
-		importMetadataStr, err := util.DecodeBase64(importMetadataEncodedStr)
-		if err != nil {
-			tf.Log.Warnw("Could not decode base64 import metadata", "error", err, "tus_id", event.Upload.ID, "importer_id", importerID)
-		} else {
-			importMetadata, err = model.JSONStringToJSONB(importMetadataStr)
-			if err != nil {
-				tf.Log.Warnw("Could not convert import metadata to json", "error", err, "tus_id", event.Upload.ID, "importer_id", importerID)
-			}
-		}
+	importMetadata, err := getImportMetadata(event.HTTPRequest.Header.Get("X-Import-Metadata"))
+	if err != nil {
+		tf.Log.Warnw("Could not retrieve import metadata", "error", err, "tus_id", event.Upload.ID, "importer_id", importerID)
+	}
+
+	// If a template is provided from the SDK, use that instead of the template on the importer
+	uploadTemplate, err := generateUploadTemplate(event.HTTPRequest.Header.Get("X-Import-Template"))
+	if err != nil {
+		tf.Log.Warnw("Could not generate upload template", "error", err, "tus_id", event.Upload.ID, "importer_id", importerID)
 	}
 
 	// Determine if the header row selection step should be skipped, setting the header row to the first row of the file
@@ -78,6 +77,7 @@ func UploadCompleteHandler(event handler.HookEvent, uploadAdditionalStorageHandl
 		FileType:      null.NewString(uploadFileType, len(uploadFileType) > 0),
 		FileExtension: null.NewString(uploadFileExtension, len(uploadFileExtension) > 0),
 		Metadata:      importMetadata,
+		Template:      uploadTemplate,
 	}
 	fileName := fmt.Sprintf("%s/%s", TempUploadsDirectory, upload.TusID)
 	err = tf.DB.Create(upload).Error
@@ -266,6 +266,54 @@ func processAndStoreUpload(upload *model.Upload, file *os.File) (uploadProcessRe
 
 	tf.Log.Debugw("Upload processing and storage complete", "num_records", numRows, "time_taken", time.Since(startTime))
 	return uploadProcessResult{NumRows: numRows}, nil
+}
+
+func getImportMetadata(importMetadataEncodedStr string) (model.JSONB, error) {
+	importMetadata := model.JSONB{}
+	if len(importMetadataEncodedStr) == 0 {
+		return importMetadata, nil
+	}
+	importMetadataStr, err := util.DecodeBase64(importMetadataEncodedStr)
+	if err != nil {
+		return importMetadata, fmt.Errorf("could not decode base64 import metadata: %v", err.Error())
+	}
+	importMetadata, err = model.JSONStringToJSONB(importMetadataStr)
+	if err != nil {
+		return importMetadata, fmt.Errorf("could not convert import metadata to json: %v", err.Error())
+	}
+	return importMetadata, nil
+}
+
+func generateUploadTemplate(uploadTemplateEncodedStr string) (model.JSONB, error) {
+	var uploadTemplate model.JSONB = nil
+
+	if len(uploadTemplateEncodedStr) == 0 {
+		return nil, nil
+	}
+
+	uploadTemplateStr, err := util.DecodeBase64(uploadTemplateEncodedStr)
+	if err != nil {
+		return nil, fmt.Errorf("could not decode base64 upload template: %v", err.Error())
+	}
+
+	uploadTemplate, err = model.JSONStringToJSONB(uploadTemplateStr)
+	if err != nil {
+		return nil, fmt.Errorf("could not convert upload template to json: %v", err.Error())
+	}
+
+	// Convert the JSON to an importer template object to validate it and generate template column IDs
+	template, err := types.ConvertUploadTemplate(uploadTemplate, true)
+	if err != nil {
+		return nil, fmt.Errorf("could not convert upload template: %v", err.Error())
+	}
+
+	// Now convert the validated and updated template object back to JSON to be stored on the upload
+	jsonBytes, err := json.Marshal(template)
+	if err != nil {
+		return nil, fmt.Errorf("could not marshal converted upload template: %v", err.Error())
+	}
+
+	return model.JSONStringToJSONB(string(jsonBytes))
 }
 
 func processUploadColumnsFromFile(upload *model.Upload, file *os.File) error {

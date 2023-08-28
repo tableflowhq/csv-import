@@ -10,6 +10,7 @@ export default function Embed({ children }: EmbedProps) {
     darkMode: darkModeString,
     primaryColor,
     metadata,
+    template,
     isOpen,
     onComplete,
     customStyles,
@@ -25,6 +26,7 @@ export default function Embed({ children }: EmbedProps) {
     setEmbedParams({
       importerId,
       metadata,
+      template,
       isOpen: strToBoolean(isOpen),
       onComplete: strToBoolean(onComplete),
       showImportLoadingStatus: strToBoolean(showImportLoadingStatus),

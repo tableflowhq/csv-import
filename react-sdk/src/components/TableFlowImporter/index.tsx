@@ -9,6 +9,7 @@ export default function TableFlowImporter({
   onRequestClose = () => null,
   importerId,
   hostUrl,
+  template = "",
   darkMode = false,
   primaryColor = "#7a5ef8",
   metadata = "{}",
@@ -36,6 +37,7 @@ export default function TableFlowImporter({
 
   const urlParams = {
     importerId,
+    template,
     darkMode: darkMode.toString(),
     primaryColor,
     metadata,
@@ -54,9 +56,20 @@ export default function TableFlowImporter({
     try {
       JSON.parse(metadata);
     } catch (e) {
-      console.error('The "metadata" prop is not a valid JSON string. Please check the documentation for more details.');
+      console.error("The 'metadata' prop is not a valid JSON string. Please check the documentation for more details.");
     }
   }, [metadata]);
+
+  useEffect(() => {
+    if (!template) {
+      return;
+    }
+    try {
+      JSON.parse(template);
+    } catch (e) {
+      console.error("The 'template' prop is not a valid JSON string. Please check the documentation for more details.");
+    }
+  }, [template]);
 
   useListenMessage(importerId, onComplete, onRequestClose);
 
