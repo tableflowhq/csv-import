@@ -22,7 +22,7 @@ export type Importer = {
 export type Template = {
   id: string;
   name: string;
-  template_columns: TemplateColumn[];
+  columns: TemplateColumn[];
   is_override?: boolean;
 };
 

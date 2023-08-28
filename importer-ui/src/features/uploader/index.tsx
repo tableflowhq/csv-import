@@ -5,7 +5,7 @@ import { UploaderProps } from "./types";
 import style from "./style/Uploader.module.scss";
 
 export default function Uploader({ template, importerId, metadata, skipHeaderRowSelection, endpoint, onSuccess }: UploaderProps) {
-  const fields = useTemplateTable(template.template_columns);
+  const fields = useTemplateTable(template.columns);
 
   const onFileUpload = (result: any) => {
     // Get tusId from the uploadURL

@@ -3,7 +3,7 @@ import { Template } from "../api/types";
 const demoTemplate: Template = {
   id: "template1",
   name: "Demo Template",
-  template_columns: [
+  columns: [
     { id: "1", name: "First Name", key: "first_name", required: true },
     { id: "2", name: "Last Name", key: "last_name", required: true },
     { id: "3", name: "Email", key: "email", required: true },
@@ -15,7 +15,7 @@ const demoTemplate: Template = {
 
 const template = {
   ...demoTemplate,
-  fields: demoTemplate.template_columns.map((item) => ({ ...item, required: item?.required ?? false })),
+  fields: demoTemplate.columns.map((item) => ({ ...item, required: item?.required ?? false })),
 };
 
 export default template;
