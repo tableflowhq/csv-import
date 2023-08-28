@@ -83,11 +83,18 @@ export default function Main() {
 
   // Send messages to parent (SDK iframe)
 
+  useEffect(() => {
+    const message = {
+      type: "start",
+      importerId,
+    };
+    postMessage(message);
+  }, []);
+
   const requestClose = () => {
     const message = {
       type: "close",
       importerId,
-      source: "tableflow-importer",
     };
     postMessage(message);
   };
@@ -99,7 +106,6 @@ export default function Main() {
         error,
         type: "complete",
         importerId,
-        source: "tableflow-importer",
       };
       postMessage(message);
     }

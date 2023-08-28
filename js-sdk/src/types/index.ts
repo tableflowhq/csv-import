@@ -2,7 +2,6 @@ import { CSSProperties } from "react";
 
 export type TableFlowImporterProps = HTMLDialogElement & {
   elementId?: string;
-  isOpen?: boolean;
   onRequestClose?: () => void;
   importerId: string;
   template?: string;
