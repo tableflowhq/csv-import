@@ -49,7 +49,20 @@
   padding: var(--m);
   border-radius: var(--border-radius-1);
 }
-.errorContainer {
-  display: flex;
-  justify-content: center;
+
+.inputRadio {
+  margin-right: 10px;
+}
+
+.headingCaption {
+  padding: 12px 0 10px 0;
+  color: var(--color-text);
+  height: 48px;
+  vertical-align: middle;
+  text-align: center;
+
+  // TODO: Hacky solution to update the tooltip title text, update this
+  span > span:nth-child(1) > span {
+    font-weight: 400;
+  }
 }

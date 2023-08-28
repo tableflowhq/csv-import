@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Button, Errors, Stepper, useStepper } from "@tableflow/ui-library";
 import Spinner from "../../components/Spinner";
 import { getAPIBaseURL } from "../../api/api";
@@ -8,26 +8,44 @@ import useApi from "./hooks/useApi";
 import style from "./style/Main.module.scss";
 import Complete from "../complete";
 import Review from "../review";
+import RowSelection from "../row-selection";
 import Uploader from "../uploader";
 
 const TUS_ENDPOINT = getAPIBaseURL("v1") + "files";
 
 const steps = [
   { label: "Upload", id: "upload" },
+  { label: "Select Header", id: "row-selection" },
   { label: "Review", id: "review" },
   { label: "Complete", id: "complete" },
 ];
 
 export default function Main() {
   // Get iframe URL params
-  const { importerId, metadata, isOpen, onComplete, showImportLoadingStatus } = useEmbedStore((state) => state.embedParams);
+  const {
+    importerId,
+    metadata,
+    isOpen,
+    onComplete,
+    showImportLoadingStatus,
+    skipHeaderRowSelection,
+    template: sdkDefinedTemplate,
+  } = useEmbedStore((state) => state.embedParams);
+
+  const modifiedSteps = skipHeaderRowSelection ? steps.filter((step) => step.id !== "row-selection") : steps;
 
   // Stepper handler
-  const stepper = useStepper(steps, 0);
+  const stepper = useStepper(modifiedSteps, 0);
   const step = stepper?.step?.id;
 
   // Async data & state
-  const { tusId, tusWasStored, importerIsLoading, importerError, template, upload, uploadError, isStored, setTusId } = useApi(importerId);
+  const { tusId, tusWasStored, importerIsLoading, importerError, template, upload, uploadError, isStored, setTusId, importer } = useApi(
+    importerId,
+    sdkDefinedTemplate
+  );
+
+  const [uploadColumnsRow, setUploadColumnsRow] = useState<any | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   useEffect(() => {
     if (uploadError && tusWasStored) reload();
@@ -35,13 +53,27 @@ export default function Main() {
 
   // Delay jump to the second step
   useEffect(() => {
-    if (tusId) setTimeout(() => stepper.setCurrent(1), 500);
+    if (tusId)
+      setTimeout(() => {
+        if (upload.header_row_index !== null && upload.header_row_index !== undefined && !skipHeaderRowSelection) {
+          setUploadColumnsRow(upload);
+          stepper.setCurrent(2);
+        } else {
+          stepper.setCurrent(1);
+        }
+      }, 250);
   }, [isStored, tusId]);
 
   // Reload on close modal if completed
   useEffect(() => {
     if (!isOpen && step === "complete") reload();
   }, [isOpen]);
+
+  useEffect(() => {
+    if (!selectedId) {
+      setSelectedId("0");
+    }
+  }, []);
 
   // Success
 
@@ -53,13 +85,24 @@ export default function Main() {
     location.reload();
   };
 
+  const rowSelection = () => {
+    stepper.setCurrent(1);
+  };
+
   // Send messages to parent (SDK iframe)
+
+  useEffect(() => {
+    const message = {
+      type: "start",
+      importerId,
+    };
+    postMessage(message);
+  }, []);
 
   const requestClose = () => {
     const message = {
       type: "close",
       importerId,
-      source: "tableflow-importer",
     };
     postMessage(message);
   };
@@ -71,7 +114,6 @@ export default function Main() {
         error,
         type: "complete",
         importerId,
-        source: "tableflow-importer",
       };
       postMessage(message);
     }
@@ -85,24 +127,51 @@ export default function Main() {
   if (!importerId)
     return (
       <div className={style.wrapper}>
-        <Errors error={"importerId is required"} />
+        <Errors error={"The parameter 'importerId' is required"} />
       </div>
     );
 
-  if (importerError)
+  if (importerError) {
     return (
       <div className={style.wrapper}>
         <Errors error={importerError.toString()} />
       </div>
     );
+  }
 
   const content =
     step === "upload" || !!uploadError ? (
-      <Uploader template={template} importerId={importerId} metadata={metadata} onSuccess={setTusId} endpoint={TUS_ENDPOINT} />
-    ) : step === "review" && !isStored ? (
+      <Uploader
+        template={template}
+        importerId={importerId}
+        metadata={metadata}
+        skipHeaderRowSelection={skipHeaderRowSelection}
+        onSuccess={setTusId}
+        endpoint={TUS_ENDPOINT}
+      />
+    ) : step === "row-selection" && !isStored ? (
       <Spinner className={style.spinner}>Processing your file...</Spinner>
+    ) : step === "row-selection" && !!isStored ? (
+      <RowSelection
+        upload={upload}
+        onCancel={reload}
+        onSuccess={(uploadColumnsRow: any) => {
+          stepper.setCurrent(2);
+          setUploadColumnsRow(uploadColumnsRow);
+        }}
+        selectedId={selectedId}
+        setSelectedId={setSelectedId}
+      />
     ) : step === "review" && !!isStored ? (
-      <Review template={template} upload={upload} onSuccess={() => stepper.setCurrent(2)} onCancel={reload} />
+      <Review
+        template={template}
+        upload={skipHeaderRowSelection ? upload : uploadColumnsRow}
+        onSuccess={() => {
+          skipHeaderRowSelection ? stepper.setCurrent(2) : stepper.setCurrent(3);
+        }}
+        skipHeaderRowSelection={skipHeaderRowSelection}
+        onCancel={skipHeaderRowSelection ? reload : rowSelection}
+      />
     ) : !uploadError && step === "complete" ? (
       <Complete reload={reload} close={requestClose} onSuccess={handleComplete} upload={upload} showImportLoadingStatus={showImportLoadingStatus} />
     ) : null;

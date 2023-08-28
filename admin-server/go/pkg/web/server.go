@@ -75,7 +75,7 @@ func StartWebServer(config ServerConfig) *http.Server {
 		AllowHeaders: append([]string{"Accept", "Authorization", "X-Requested-With", "X-Request-ID",
 			"X-HTTP-Method-Override", "Upload-Length", "Upload-Offset", "Tus-Resumable", "Upload-Metadata",
 			"Upload-Defer-Length", "Upload-Concat", "User-Agent", "Referrer", "Origin", "Content-Type", "Content-Length",
-			"X-Importer-ID", "X-Import-Metadata"},
+			"X-Importer-ID", "X-Import-Metadata", "X-Import-SkipHeaderRowSelection", "X-Import-Template"},
 			config.AdditionalCORSHeaders...),
 		ExposeHeaders: []string{"Upload-Offset", "Location", "Upload-Length", "Tus-Version", "Tus-Resumable",
 			"Tus-Max-Size", "Tus-Extension", "Upload-Metadata", "Upload-Defer-Length", "Upload-Concat", "Location",
@@ -126,9 +126,14 @@ func StartWebServer(config ServerConfig) *http.Server {
 	importer.HEAD("/files/:id", tusHeadFile(tusHandler))
 	importer.PATCH("/files/:id", tusPatchFile(tusHandler))
 
-	importer.GET("/importer/:id", getImporterForImportService)
+	importer.GET("/importer/:id", DEPRECATED_getImporterForImportService)
+	importer.POST("/importer/:id", getImporterForImportService)
 	importer.GET("/upload/:id", getUploadForImportService)
+	importer.POST("/upload/:id/set-header-row", setUploadHeaderRowForImportService)
+	importer.POST("/upload/:id/set-column-mapping", func(c *gin.Context) { setUploadColumnMappingAndImportData(c, config.ImportCompleteHandler) })
 	importer.GET("/import/:id", getImportForImportService)
+
+	// Deprecated, use POST /upload/:id/set-column-mapping
 	importer.POST("/upload-column-mapping/:id", func(c *gin.Context) { setUploadColumnMappingAndImportData(c, config.ImportCompleteHandler) })
 
 	/* ---------------------------  Admin routes  ---------------------------- */

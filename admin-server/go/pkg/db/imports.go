@@ -68,3 +68,15 @@ func GetImportByUploadID(uploadID string) (*model.Import, error) {
 	}
 	return &imp, nil
 }
+
+func DoesImportExistByUploadID(uploadID string) (bool, error) {
+	if len(uploadID) == 0 {
+		return false, errors.New("no upload ID provided")
+	}
+	type Res struct {
+		Exists bool
+	}
+	var res Res
+	err := tf.DB.Raw("select exists(select 1 from imports where upload_id = ?);", model.ParseID(uploadID)).Scan(&res).Error
+	return res.Exists, err
+}

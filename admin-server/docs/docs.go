@@ -578,7 +578,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/web.ImportServiceImport"
+                            "$ref": "#/definitions/types.ImportServiceImport"
                         }
                     },
                     "400": {
@@ -610,7 +610,46 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/web.ImportServiceImporter"
+                            "$ref": "#/definitions/types.ImportServiceImporter"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/types.Res"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Get a single importer and its template",
+                "tags": [
+                    "File Import"
+                ],
+                "summary": "Get importer",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Importer ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.ImportServiceImporter"
                         }
                     },
                     "400": {
@@ -666,6 +705,47 @@ const docTemplate = `{
                 }
             }
         },
+        "/file-import/v1/upload/:id/set-header-row": {
+            "post": {
+                "description": "Set the header row index on the upload",
+                "tags": [
+                    "File Import"
+                ],
+                "summary": "Set upload header row",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Upload ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.ImporterServiceUploadHeaderRowSelection"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.ImportServiceUpload"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/types.Res"
+                        }
+                    }
+                }
+            }
+        },
         "/file-import/v1/upload/{id}": {
             "get": {
                 "description": "Get a single upload by the tus ID provided to the client from the upload",
@@ -686,7 +766,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/web.ImportServiceUpload"
+                            "$ref": "#/definitions/types.ImportServiceUpload"
                         }
                     },
                     "400": {
@@ -899,6 +979,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "Test Importer"
                 },
+                "skip_header_row_selection": {
+                    "type": "boolean",
+                    "example": false
+                },
                 "template": {
                     "$ref": "#/definitions/model.Template"
                 },
@@ -1069,6 +1153,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "text/csv"
                 },
+                "header_row_index": {
+                    "type": "integer",
+                    "example": 0
+                },
                 "id": {
                     "type": "string",
                     "example": "50ca61e1-f683-4b03-9ec4-4b3adb592bf1"
@@ -1092,6 +1180,11 @@ const docTemplate = `{
                 "num_rows": {
                     "type": "integer",
                     "example": 256
+                },
+                "template": {
+                    "description": "Set if the user passes in a template to the SDK, which overrides the template on the importer",
+                    "type": "string",
+                    "example": "{}"
                 },
                 "tus_id": {
                     "type": "string",
@@ -1216,18 +1309,7 @@ const docTemplate = `{
                 }
             }
         },
-        "types.Res": {
-            "type": "object",
-            "properties": {
-                "error": {
-                    "type": "string"
-                },
-                "message": {
-                    "type": "string"
-                }
-            }
-        },
-        "web.ImportServiceImport": {
+        "types.ImportServiceImport": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -1273,7 +1355,7 @@ const docTemplate = `{
                 }
             }
         },
-        "web.ImportServiceImporter": {
+        "types.ImportServiceImporter": {
             "type": "object",
             "properties": {
                 "id": {
@@ -1284,14 +1366,24 @@ const docTemplate = `{
                     "type": "string",
                     "example": "Test Importer"
                 },
+                "skip_header_row_selection": {
+                    "type": "boolean",
+                    "example": false
+                },
                 "template": {
-                    "$ref": "#/definitions/web.ImportServiceTemplate"
+                    "$ref": "#/definitions/types.ImportServiceTemplate"
                 }
             }
         },
-        "web.ImportServiceTemplate": {
+        "types.ImportServiceTemplate": {
             "type": "object",
             "properties": {
+                "columns": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/types.ImportServiceTemplateColumn"
+                    }
+                },
                 "id": {
                     "type": "string",
                     "example": "f0797968-becc-422a-b135-19de1d8c5d46"
@@ -1299,16 +1391,10 @@ const docTemplate = `{
                 "name": {
                     "type": "string",
                     "example": "My Template"
-                },
-                "template_columns": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/web.ImportServiceTemplateColumn"
-                    }
                 }
             }
         },
-        "web.ImportServiceTemplateColumn": {
+        "types.ImportServiceTemplateColumn": {
             "type": "object",
             "properties": {
                 "description": {
@@ -1318,6 +1404,10 @@ const docTemplate = `{
                 "id": {
                     "type": "string",
                     "example": "a1ed136d-33ce-4b7e-a7a4-8a5ccfe54cd5"
+                },
+                "key": {
+                    "type": "string",
+                    "example": "email"
                 },
                 "name": {
                     "type": "string",
@@ -1329,7 +1419,7 @@ const docTemplate = `{
                 }
             }
         },
-        "web.ImportServiceUpload": {
+        "types.ImportServiceUpload": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -1352,6 +1442,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "text/csv"
                 },
+                "header_row_index": {
+                    "type": "integer",
+                    "example": 0
+                },
                 "id": {
                     "type": "string",
                     "example": "50ca61e1-f683-4b03-9ec4-4b3adb592bf1"
@@ -1368,6 +1462,14 @@ const docTemplate = `{
                     "type": "string",
                     "example": "{\"user_id\": 1234}"
                 },
+                "template": {
+                    "description": "Set if the user passes in a template to the SDK, which overrides the template on the importer",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/types.ImportServiceTemplate"
+                        }
+                    ]
+                },
                 "tus_id": {
                     "type": "string",
                     "example": "ee715c254ee61855b465ed61be930487"
@@ -1375,12 +1477,18 @@ const docTemplate = `{
                 "upload_columns": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/web.ImportServiceUploadColumn"
+                        "$ref": "#/definitions/types.ImportServiceUploadColumn"
+                    }
+                },
+                "upload_rows": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/types.UploadRow"
                     }
                 }
             }
         },
-        "web.ImportServiceUploadColumn": {
+        "types.ImportServiceUploadColumn": {
             "type": "object",
             "properties": {
                 "id": {
@@ -1403,6 +1511,41 @@ const docTemplate = `{
                     "example": [
                         "test@example.com"
                     ]
+                }
+            }
+        },
+        "types.ImporterServiceUploadHeaderRowSelection": {
+            "type": "object",
+            "properties": {
+                "index": {
+                    "type": "integer",
+                    "example": 0
+                }
+            }
+        },
+        "types.Res": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "types.UploadRow": {
+            "type": "object",
+            "properties": {
+                "index": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "values": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
                 }
             }
         },
@@ -1434,6 +1577,10 @@ const docTemplate = `{
                 "name": {
                     "type": "string",
                     "example": "Test Importer"
+                },
+                "skip_header_row_selection": {
+                    "type": "boolean",
+                    "example": false
                 },
                 "webhooks_enabled": {
                     "type": "boolean",

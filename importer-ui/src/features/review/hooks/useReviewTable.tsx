@@ -83,7 +83,7 @@ export default function useReviewTable(items: UploadColumn[] = [], templateColum
       const isCurrentOptions = currentOptions && Object.keys(currentOptions).length > 0;
 
       return {
-        "Column in File": {
+        "File Column": {
           raw: name || false,
           content: name || <em>- empty -</em>,
         },
@@ -97,7 +97,7 @@ export default function useReviewTable(items: UploadColumn[] = [], templateColum
             </div>
           ),
         },
-        "Template Fields": {
+        "Destination Column": {
           raw: "",
           content: (
             <Input

@@ -5,9 +5,9 @@ let postMessages: string[] = [];
 
 export default function createTableFlowImporter({
   elementId = "tableflow-importer",
-  isOpen = false,
   onRequestClose = () => null,
   importerId,
+  template = "",
   hostUrl,
   darkMode = false,
   primaryColor = "#7a5ef8",
@@ -17,12 +17,12 @@ export default function createTableFlowImporter({
   customStyles,
   className,
   showImportLoadingStatus,
+  skipHeaderRowSelection,
 }: TableFlowImporterProps) {
   // CSS classes
   const baseClass = "TableFlowImporter";
   const themeClass = darkMode && `${baseClass}-dark`;
   const dialogClass = [`${baseClass}-dialog`, themeClass, className].filter((i) => i).join(" ");
-  const closeClass = `${baseClass}-close`;
 
   // dialog element
   let dialog = document.getElementById(elementId) as HTMLDialogElement;
@@ -41,24 +41,33 @@ export default function createTableFlowImporter({
   dialog.setAttribute("class", dialogClass);
 
   // iframe element
-  const urlParams = {
+  let urlParams = {
     importerId,
+    template,
     darkMode: darkMode.toString(),
     primaryColor,
     metadata,
-    isOpen: isOpen.toString(),
+    isOpen: "true",
     onComplete: onComplete ? "true" : "false",
     customStyles: JSON.stringify(customStyles),
     showImportLoadingStatus: showImportLoadingStatus ? "true" : "false",
+    skipHeaderRowSelection: skipHeaderRowSelection ? "true" : "false",
   };
-  const searchParams = new URLSearchParams(urlParams);
-  const defaultImporterUrl = "https://importer.tableflow.com";
-  const uploaderUrl = `${hostUrl ? hostUrl : defaultImporterUrl}?${searchParams}`;
+
+  const uploaderUrl = getUploaderUrl(urlParams, hostUrl);
 
   try {
     JSON.parse(metadata);
   } catch (e) {
-    console.error('The "metadata" prop is not a valid JSON string. Please check the documentation for more details.');
+    console.error("The 'metadata' prop is not a valid JSON string. Please check the documentation for more details.");
+  }
+
+  if (template) {
+    try {
+      JSON.parse(template);
+    } catch (e) {
+      console.error("The 'template' prop is not a valid JSON string. Please check the documentation for more details.");
+    }
   }
 
   function messageListener(e: any) {
@@ -75,6 +84,12 @@ export default function createTableFlowImporter({
       return;
     }
 
+    if (messageData?.type === "start" && urlParams.isOpen !== "true") {
+      urlParams = { ...urlParams, isOpen: "true" };
+      const uploaderUrl = getUploaderUrl(urlParams, hostUrl);
+      dialog.innerHTML = `<iframe src="${uploaderUrl}" />`;
+    }
+
     if (messageData?.type === "complete" && onComplete) {
       onComplete({
         data: messageData?.data || null,
@@ -82,9 +97,16 @@ export default function createTableFlowImporter({
       });
       postMessages.push(messageData?.id);
     }
+
     if (messageData?.type === "close" && onRequestClose) {
       onRequestClose();
       postMessages.push(messageData?.id);
+
+      if (urlParams.isOpen !== "false") {
+        urlParams = { ...urlParams, isOpen: "false" };
+        const uploaderUrl = getUploaderUrl(urlParams, hostUrl);
+        dialog.innerHTML = `<iframe src="${uploaderUrl}" />`;
+      }
     }
   }
 
@@ -93,4 +115,10 @@ export default function createTableFlowImporter({
   dialog.innerHTML = `<iframe src="${uploaderUrl}" />`;
 
   return dialog;
+}
+
+function getUploaderUrl(urlParams: any, hostUrl?: string) {
+  const searchParams = new URLSearchParams(urlParams);
+  const defaultImporterUrl = "https://importer.tableflow.com";
+  return `${hostUrl ? hostUrl : defaultImporterUrl}?${searchParams}`;
 }
