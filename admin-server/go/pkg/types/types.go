@@ -35,7 +35,7 @@ type ImportServiceImporter struct {
 type ImportServiceTemplate struct {
 	ID              model.ID                       `json:"id,omitempty" swaggertype:"string" example:"f0797968-becc-422a-b135-19de1d8c5d46"`
 	Name            string                         `json:"name,omitempty" example:"My Template"`
-	TemplateColumns []*ImportServiceTemplateColumn `json:"template_columns"`
+	TemplateColumns []*ImportServiceTemplateColumn `json:"columns"`
 }
 
 type ImportServiceTemplateColumn struct {
@@ -133,14 +133,14 @@ func ConvertUploadTemplate(template map[string]interface{}, generateIDs bool) (*
 	}
 	var columns []*ImportServiceTemplateColumn
 
-	columnData, exists := template["template_columns"]
+	columnData, exists := template["columns"]
 	if !exists {
-		return nil, fmt.Errorf("Invalid template: template_columns key not found")
+		return nil, fmt.Errorf("Invalid template: columns key not found")
 	}
 
 	columnSlice, ok := columnData.([]interface{})
 	if !ok {
-		return nil, fmt.Errorf("Invalid template: template_columns should be an array of objects")
+		return nil, fmt.Errorf("Invalid template: columns should be an array of objects")
 	}
 
 	seenKeys := make(map[string]bool)
@@ -148,7 +148,7 @@ func ConvertUploadTemplate(template map[string]interface{}, generateIDs bool) (*
 	for _, item := range columnSlice {
 		columnMap, ok := item.(map[string]interface{})
 		if !ok {
-			return nil, fmt.Errorf("Invalid template: Each item in template_columns should be an object")
+			return nil, fmt.Errorf("Invalid template: Each item in columns should be an object")
 		}
 
 		id, _ := columnMap["id"].(string)
@@ -158,7 +158,7 @@ func ConvertUploadTemplate(template map[string]interface{}, generateIDs bool) (*
 		description, _ := columnMap["description"].(string)
 
 		if name == "" {
-			return nil, fmt.Errorf("Invalid template: The paramter 'name' is required on each template_column")
+			return nil, fmt.Errorf("Invalid template: The paramter 'name' is required for each column")
 		}
 
 		generatedKey := false
