@@ -19,6 +19,7 @@ export default function useApi(importerId: string, templateOverride: string) {
 
   if (importer?.template?.is_override && upload?.is_stored && upload?.template) {
     importer.template = upload.template;
+  }
 
   return {
     tusId,
