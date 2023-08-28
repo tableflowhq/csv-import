@@ -114,7 +114,7 @@ func tusPatchFile(h *handler.UnroutedHandler) gin.HandlerFunc {
 //	@Summary		Get importer
 //	@Description	Get a single importer and its template
 //	@Tags			File Import
-//	@Success		200	{object}	ImportServiceImporter
+//	@Success		200	{object}	types.ImportServiceImporter
 //	@Failure		400	{object}	types.Res
 //	@Router			/file-import/v1/importer/{id} [get]
 //	@Param			id	path	string	true	"Importer ID"
@@ -176,11 +176,11 @@ func DEPRECATED_getImporterForImportService(c *gin.Context) {
 //	@Summary		Get importer
 //	@Description	Get a single importer and its template
 //	@Tags			File Import
-//	@Success		200	{object}	ImportServiceImporter
+//	@Success		200	{object}	types.ImportServiceImporter
 //	@Failure		400	{object}	types.Res
 //	@Router			/file-import/v1/importer/{id} [post]
-//	@Param			id	path	string	true	"Importer ID"
-//	@Param			body	body	map[string]interface{}	 false	"Request body"
+//	@Param			id		path	string					true	"Importer ID"
+//	@Param			body	body	map[string]interface{}	false	"Request body"
 func getImporterForImportService(c *gin.Context) {
 	id := c.Param("id")
 	if len(id) == 0 {
@@ -321,7 +321,7 @@ func getUploadForImportService(c *gin.Context) {
 //	@Success		200	{object}	types.ImportServiceUpload
 //	@Failure		400	{object}	types.Res
 //	@Router			/file-import/v1/upload/:id/set-header-row [post]
-//	@Param			id		path	string									true	"Upload ID"
+//	@Param			id		path	string											true	"Upload ID"
 //	@Param			body	body	types.ImporterServiceUploadHeaderRowSelection	true	"Request body"
 func setUploadHeaderRowForImportService(c *gin.Context) {
 	id := c.Param("id")
@@ -519,7 +519,7 @@ func setUploadColumnMappingAndImportData(c *gin.Context, importCompleteHandler f
 //	@Summary		Get import by upload ID
 //	@Description	Get a single import by the upload ID, including the data if the import is complete
 //	@Tags			File Import
-//	@Success		200	{object}	ImportServiceImport
+//	@Success		200	{object}	types.ImportServiceImport
 //	@Failure		400	{object}	types.Res
 //	@Router			/file-import/v1/import/{id} [get]
 //	@Param			id	path	string	true	"Upload ID"
