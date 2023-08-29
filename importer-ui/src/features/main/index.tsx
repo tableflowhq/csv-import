@@ -149,7 +149,7 @@ export default function Main() {
         onSuccess={setTusId}
         endpoint={TUS_ENDPOINT}
       />
-    ) : step === "row-selection" && !isStored ? (
+    ) : step === (skipHeaderRowSelection ? "review" : "row-selection") && !isStored ? (
       <Spinner className={style.spinner}>Processing your file...</Spinner>
     ) : step === "row-selection" && !!isStored ? (
       <RowSelection

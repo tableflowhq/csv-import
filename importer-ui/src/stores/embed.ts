@@ -18,7 +18,7 @@ type ParamsStore = {
 const useEmbedStore = create<ParamsStore>()((set) => ({
   embedParams: {
     importerId: "",
-    metadata: "{}",
+    metadata: "",
     isOpen: false,
     onComplete: false,
     showImportLoadingStatus: false,

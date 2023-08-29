@@ -954,7 +954,29 @@ paths:
       summary: Get importer
       tags:
       - File Import
-  /file-import/v1/upload-column-mapping/{id}:
+  /file-import/v1/upload/{id}:
+    get:
+      description: Get a single upload by the tus ID provided to the client from the
+        upload
+      parameters:
+      - description: tus ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.ImportServiceUpload'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/types.Res'
+      summary: Get upload by tus ID
+      tags:
+      - File Import
+  /file-import/v1/upload/{id}/set-column-mapping:
     post:
       description: 'Set the template column IDs for each upload column and trigger
         the import. Note: we will eventually have a separate import endpoint once
@@ -985,7 +1007,7 @@ paths:
       summary: Set upload column mapping and import data
       tags:
       - File Import
-  /file-import/v1/upload/:id/set-header-row:
+  /file-import/v1/upload/{id}/set-header-row:
     post:
       description: Set the header row index on the upload
       parameters:
@@ -1010,28 +1032,6 @@ paths:
           schema:
             $ref: '#/definitions/types.Res'
       summary: Set upload header row
-      tags:
-      - File Import
-  /file-import/v1/upload/{id}:
-    get:
-      description: Get a single upload by the tus ID provided to the client from the
-        upload
-      parameters:
-      - description: tus ID
-        in: path
-        name: id
-        required: true
-        type: string
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/types.ImportServiceUpload'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/types.Res'
-      summary: Get upload by tus ID
       tags:
       - File Import
   /public/health:

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import useListenMessage from "../../hooks/useListenMessage";
-import { TableFlowImporterProps } from "./types";
+import { JSONObject, TableFlowImporterProps } from "./types";
 import "./style/button.css";
 
 export default function TableFlowImporter({
@@ -9,10 +9,10 @@ export default function TableFlowImporter({
   onRequestClose = () => null,
   importerId,
   hostUrl,
-  template = "",
+  template,
   darkMode = false,
   primaryColor = "#7a5ef8",
-  metadata = "{}",
+  metadata,
   closeOnClickOutside,
   className,
   onComplete,
@@ -37,10 +37,10 @@ export default function TableFlowImporter({
 
   const urlParams = {
     importerId,
-    template,
+    template: parseObjectOrStringJSON("template", template),
     darkMode: darkMode.toString(),
     primaryColor,
-    metadata,
+    metadata: parseObjectOrStringJSON("metadata", metadata),
     isOpen: isOpen.toString(),
     onComplete: onComplete ? "true" : "false",
     customStyles: JSON.stringify(customStyles),
@@ -52,25 +52,6 @@ export default function TableFlowImporter({
   const uploaderUrl = `${hostUrl ? hostUrl : defaultImporterUrl}?${searchParams}`;
   const backdropClick = (e: any) => closeOnClickOutside && onRequestClose();
 
-  useEffect(() => {
-    try {
-      JSON.parse(metadata);
-    } catch (e) {
-      console.error("The 'metadata' prop is not a valid JSON string. Please check the documentation for more details.");
-    }
-  }, [metadata]);
-
-  useEffect(() => {
-    if (!template) {
-      return;
-    }
-    try {
-      JSON.parse(template);
-    } catch (e) {
-      console.error("The 'template' prop is not a valid JSON string. Please check the documentation for more details.");
-    }
-  }, [template]);
-
   useListenMessage(importerId, onComplete, onRequestClose);
 
   return (
@@ -79,3 +60,23 @@ export default function TableFlowImporter({
     </dialog>
   );
 }
+
+// Allows for the user to pass in JSON as either an object or a string
+const parseObjectOrStringJSON = (name: string, param?: JSONObject | string): string => {
+  if (param === undefined) {
+    return "";
+  }
+  if (typeof param === "string") {
+    try {
+      const obj = JSON.parse(param);
+      return JSON.stringify(obj);
+    } catch (e) {
+      console.error(
+        `The '${name}' prop is not a valid JSON string. This prop can either be a JSON string or JSON object. Please check the documentation for more details.`
+      );
+    }
+  } else {
+    return JSON.stringify(param);
+  }
+  return "";
+};

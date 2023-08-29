@@ -9,8 +9,6 @@ export type ApiResponse<T> = {
   status: number;
 };
 
-export type SqlCommand = "select" | "insert" | "update" | "delete";
-
 // Entities
 
 export type Importer = {

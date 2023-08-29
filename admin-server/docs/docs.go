@@ -661,7 +661,39 @@ const docTemplate = `{
                 }
             }
         },
-        "/file-import/v1/upload-column-mapping/{id}": {
+        "/file-import/v1/upload/{id}": {
+            "get": {
+                "description": "Get a single upload by the tus ID provided to the client from the upload",
+                "tags": [
+                    "File Import"
+                ],
+                "summary": "Get upload by tus ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "tus ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.ImportServiceUpload"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/types.Res"
+                        }
+                    }
+                }
+            }
+        },
+        "/file-import/v1/upload/{id}/set-column-mapping": {
             "post": {
                 "description": "Set the template column IDs for each upload column and trigger the import. Note: we will eventually have a separate import endpoint once there is a review step in the upload process.",
                 "tags": [
@@ -705,7 +737,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/file-import/v1/upload/:id/set-header-row": {
+        "/file-import/v1/upload/{id}/set-header-row": {
             "post": {
                 "description": "Set the header row index on the upload",
                 "tags": [
@@ -728,38 +760,6 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/types.ImporterServiceUploadHeaderRowSelection"
                         }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/types.ImportServiceUpload"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/types.Res"
-                        }
-                    }
-                }
-            }
-        },
-        "/file-import/v1/upload/{id}": {
-            "get": {
-                "description": "Get a single upload by the tus ID provided to the client from the upload",
-                "tags": [
-                    "File Import"
-                ],
-                "summary": "Get upload by tus ID",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "tus ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
                     }
                 ],
                 "responses": {

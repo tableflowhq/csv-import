@@ -71,6 +71,40 @@ function MyComponent() {
   If `true`, clicking outside of the modal will close the importer modal.
 </ResponseField>
 
+<ResponseField name="template" type="object">
+  Configure the columns used for the import. If provided, this template will override what is defined in your importer
+  on the [TableFlow admin app](https://app.tableflow.com/importers). This can be useful if columns you want your users
+  importing change depending on a condition in your application.
+
+  The schema for the template contains an array of `columns` with the following parameters:
+
+  `name` (required): The name of the column. \
+  `key` (optional): The key of the column which is used when retrieving data. Note this must be unique and only contain
+  letters, numbers, and underscores. If not provided, a key will be generated from the `name`. \
+  `required` (optional): Require the user to map a column in their file to this column. \
+  `description` (optional): Set a description displayed as a tooltip in the importer.
+  ```jsx
+  template={{
+    columns: [
+      {
+        name: "First Name",
+        key: "first_name",
+        required: true,
+        description: "The first name of the user"
+      },
+      {
+        name: "Last Name"
+      },
+      {
+        name: "Email",
+        required: true,
+        description: "The email of the user"
+      }
+    ]
+  }}
+  ```
+</ResponseField>
+
 <ResponseField name="darkMode" type="boolean">
   Toggle between dark mode (`true`) and light mode (`false`).
 </ResponseField>
@@ -119,12 +153,12 @@ function MyComponent() {
   ```
 </ResponseField>
 
-<ResponseField name="metadata" type="string">
-  Pass metadata as a JSON formatted string. This metadata will be available when retrieving imported data via the API.
+<ResponseField name="metadata" type="object">
+  Pass metadata as a JSON object or string. This metadata will be available when retrieving imported data via the API.
   An example use case is associating a user ID in your application to an import so when the data is retrieved, you'll
   know which user the data belongs to.
   ```jsx
-  metadata={"{\"userId\": 1234, \"userEmail\": \"test@example.com\"}"}
+  metadata={{userId: 1234, userEmail: "test@example.com"}}
   ```
 </ResponseField>
 

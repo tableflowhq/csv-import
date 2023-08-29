@@ -1,4 +1,4 @@
-import { TableFlowImporterProps } from "./types/index";
+import { JSONObject, TableFlowImporterProps } from "./types/index";
 import "./index.css";
 
 let postMessages: string[] = [];
@@ -7,7 +7,7 @@ export default function createTableFlowImporter({
   elementId = "tableflow-importer",
   onRequestClose = () => null,
   importerId,
-  template = "",
+  template,
   hostUrl,
   darkMode = false,
   primaryColor = "#7a5ef8",
@@ -43,10 +43,10 @@ export default function createTableFlowImporter({
   // iframe element
   let urlParams = {
     importerId,
-    template,
+    template: parseObjectOrStringJSON("template", template),
     darkMode: darkMode.toString(),
     primaryColor,
-    metadata,
+    metadata: parseObjectOrStringJSON("metadata", metadata),
     isOpen: "true",
     onComplete: onComplete ? "true" : "false",
     customStyles: JSON.stringify(customStyles),
@@ -55,20 +55,6 @@ export default function createTableFlowImporter({
   };
 
   const uploaderUrl = getUploaderUrl(urlParams, hostUrl);
-
-  try {
-    JSON.parse(metadata);
-  } catch (e) {
-    console.error("The 'metadata' prop is not a valid JSON string. Please check the documentation for more details.");
-  }
-
-  if (template) {
-    try {
-      JSON.parse(template);
-    } catch (e) {
-      console.error("The 'template' prop is not a valid JSON string. Please check the documentation for more details.");
-    }
-  }
 
   function messageListener(e: any) {
     if (!e || !e?.data) return;
@@ -122,3 +108,23 @@ function getUploaderUrl(urlParams: any, hostUrl?: string) {
   const defaultImporterUrl = "https://importer.tableflow.com";
   return `${hostUrl ? hostUrl : defaultImporterUrl}?${searchParams}`;
 }
+
+// Allows for the user to pass in JSON as either an object or a string
+const parseObjectOrStringJSON = (name: string, param?: JSONObject | string): string => {
+  if (param === undefined) {
+    return "";
+  }
+  if (typeof param === "string") {
+    try {
+      const obj = JSON.parse(param);
+      return JSON.stringify(obj);
+    } catch (e) {
+      console.error(
+        `The '${name}' prop is not a valid JSON string. This prop can either be a JSON string or JSON object. Please check the documentation for more details.`
+      );
+    }
+  } else {
+    return JSON.stringify(param);
+  }
+  return "";
+};
