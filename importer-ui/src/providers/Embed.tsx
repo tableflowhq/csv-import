@@ -21,12 +21,23 @@ export default function Embed({ children }: EmbedProps) {
   // Set importerId & metadata in embed store
   const setEmbedParams = useEmbedStore((state) => state.setEmbedParams);
   const strToBoolean = (str: string) => !!str && (str.toLowerCase() === "true" || str === "1");
+  const validateJSON = (str: string) => {
+    if (!str) {
+      return "";
+    }
+    try {
+      const obj = JSON.parse(str);
+      return JSON.stringify(obj);
+    } catch (e) {
+      return "";
+    }
+  };
 
   useEffect(() => {
     setEmbedParams({
       importerId,
-      metadata,
-      template,
+      metadata: validateJSON(metadata),
+      template: validateJSON(template),
       isOpen: strToBoolean(isOpen),
       onComplete: strToBoolean(onComplete),
       showImportLoadingStatus: strToBoolean(showImportLoadingStatus),

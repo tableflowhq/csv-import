@@ -17,7 +17,6 @@ const meta = {
     hostUrl: { control: "text" },
     darkMode: { control: "boolean" },
     primaryColor: { control: "color" },
-    metadata: { control: "text" },
     closeOnClickOutside: { control: "boolean" },
     showImportLoadingStatus: { control: "boolean" },
   },
@@ -29,11 +28,21 @@ type Story = StoryObj<TableFlowImporterProps>;
 export const App: Story = {
   args: {
     elementId: "tableflow-importer",
-    importerId: "4b805f5f-ee9c-4248-bb9c-8afd77ea933f",
+    importerId: "7e83ef24-c8f8-479f-8825-046e7da368c4", // 7e83ef24-c8f8-479f-8825-046e7da368c4
     hostUrl: "http://localhost:3001",
     darkMode: true,
     primaryColor: "#7a5ef8",
-    metadata: '{"userId": 1234, "userEmail": "test@example.com"}',
+    metadata: { userId: 1234, userEmail: "test@example.com" },
+    // template: {
+    //   columns: [
+    //     {
+    //       name: "First",
+    //       key: "first_name",
+    //       required: false,
+    //       description: "The first name of the user",
+    //     },
+    //   ],
+    // },
     onComplete: (data: any) => console.log(data),
     customStyles: {
       "font-family": "cursive",

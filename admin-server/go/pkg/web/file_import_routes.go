@@ -61,28 +61,6 @@ func tusPostFile(h *handler.UnroutedHandler) gin.HandlerFunc {
 	}
 }
 
-func validateAllowedDomains(c *gin.Context, importer *model.Importer) error {
-	referer := c.Request.Referer()
-	uri, err := url.ParseRequestURI(referer)
-	if err != nil || len(uri.Host) == 0 {
-		tf.Log.Errorw("Missing or invalid referer header while checking allowed domains during import", "importer_id", importer.ID, "referer", referer)
-		return errors.New("Unable to determine upload origin. Please contact support.")
-	}
-	hostName := uri.Hostname()
-	containsAllowedDomain := false
-	for _, d := range importer.AllowedDomains {
-		if strings.HasSuffix(hostName, strings.ToLower(d)) {
-			containsAllowedDomain = true
-			break
-		}
-	}
-	if !containsAllowedDomain {
-		tf.Log.Infow("Upload request blocked coming from unauthorized domain", "importer_id", importer.ID, "referer", referer, "allowed_domains", importer.AllowedDomains)
-		return errors.New("Uploads are only allowed from authorized domains. Please contact support.")
-	}
-	return nil
-}
-
 // tusHeadFile
 //
 //	@Summary		Head file (tus)
@@ -107,68 +85,6 @@ func tusPatchFile(h *handler.UnroutedHandler) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		h.PatchFile(c.Writer, c.Request)
 	}
-}
-
-// DEPRECATED_getImporterForImportService
-//
-//	@Summary		Get importer
-//	@Description	Get a single importer and its template
-//	@Tags			File Import
-//	@Success		200	{object}	types.ImportServiceImporter
-//	@Failure		400	{object}	types.Res
-//	@Router			/file-import/v1/importer/{id} [get]
-//	@Param			id	path	string	true	"Importer ID"
-func DEPRECATED_getImporterForImportService(c *gin.Context) {
-	id := c.Param("id")
-	if len(id) == 0 {
-		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No importer ID provided"})
-		return
-	}
-	template, err := db.GetTemplateByImporterWithImporter(id)
-	if err != nil {
-		errStr := err.Error()
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			errStr = "Importer not found. Check the importerId parameter or reach out to support for assistance."
-		}
-		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: errStr})
-		return
-	}
-	if !template.ImporterID.Valid || template.Importer == nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Template not attached to importer"})
-		return
-	}
-	if len(template.TemplateColumns) == 0 {
-		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No template columns found. Please create at least one template column to use this importer."})
-		return
-	}
-	if len(template.Importer.AllowedDomains) != 0 {
-		if err = validateAllowedDomains(c, template.Importer); err != nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, err.Error())
-			return
-		}
-	}
-	importerTemplateColumns := make([]*types.ImportServiceTemplateColumn, len(template.TemplateColumns))
-	for n, tc := range template.TemplateColumns {
-		importerTemplateColumns[n] = &types.ImportServiceTemplateColumn{
-			ID:          tc.ID,
-			Name:        tc.Name,
-			Key:         tc.Key,
-			Required:    tc.Required,
-			Description: tc.Description.String,
-		}
-	}
-	importerTemplate := &types.ImportServiceTemplate{
-		ID:              template.ID,
-		Name:            template.Name,
-		TemplateColumns: importerTemplateColumns,
-	}
-	importer := types.ImportServiceImporter{
-		ID:                     template.Importer.ID,
-		Name:                   template.Importer.Name,
-		SkipHeaderRowSelection: template.Importer.SkipHeaderRowSelection,
-		Template:               importerTemplate,
-	}
-	c.JSON(http.StatusOK, importer)
 }
 
 // getImporterForImportService
@@ -320,7 +236,7 @@ func getUploadForImportService(c *gin.Context) {
 //	@Tags			File Import
 //	@Success		200	{object}	types.ImportServiceUpload
 //	@Failure		400	{object}	types.Res
-//	@Router			/file-import/v1/upload/:id/set-header-row [post]
+//	@Router			/file-import/v1/upload/{id}/set-header-row [post]
 //	@Param			id		path	string											true	"Upload ID"
 //	@Param			body	body	types.ImporterServiceUploadHeaderRowSelection	true	"Request body"
 func setUploadHeaderRowForImportService(c *gin.Context) {
@@ -416,7 +332,7 @@ func setUploadHeaderRowForImportService(c *gin.Context) {
 //	@Tags			File Import
 //	@Success		200	{object}	types.Res
 //	@Failure		400	{object}	types.Res
-//	@Router			/file-import/v1/upload-column-mapping/{id} [post]
+//	@Router			/file-import/v1/upload/{id}/set-column-mapping [post]
 //	@Param			id		path	string				true	"Upload ID"
 //	@Param			body	body	map[string]string	true	"Request body"
 func setUploadColumnMappingAndImportData(c *gin.Context, importCompleteHandler func(*model.Import)) {
@@ -719,4 +635,26 @@ func generateColumnKeyMap(template *model.Template, upload *model.Upload) map[in
 		}
 	}
 	return columnKeyMap
+}
+
+func validateAllowedDomains(c *gin.Context, importer *model.Importer) error {
+	referer := c.Request.Referer()
+	uri, err := url.ParseRequestURI(referer)
+	if err != nil || len(uri.Host) == 0 {
+		tf.Log.Errorw("Missing or invalid referer header while checking allowed domains during import", "importer_id", importer.ID, "referer", referer)
+		return errors.New("Unable to determine upload origin. Please contact support.")
+	}
+	hostName := uri.Hostname()
+	containsAllowedDomain := false
+	for _, d := range importer.AllowedDomains {
+		if strings.HasSuffix(hostName, strings.ToLower(d)) {
+			containsAllowedDomain = true
+			break
+		}
+	}
+	if !containsAllowedDomain {
+		tf.Log.Infow("Upload request blocked coming from unauthorized domain", "importer_id", importer.ID, "referer", referer, "allowed_domains", importer.AllowedDomains)
+		return errors.New("Uploads are only allowed from authorized domains. Please contact support.")
+	}
+	return nil
 }
