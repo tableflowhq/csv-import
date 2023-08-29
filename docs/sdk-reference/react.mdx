@@ -85,20 +85,20 @@ function MyComponent() {
   `description` (optional): Set a description displayed as a tooltip in the importer.
   ```jsx
   template={{
-    "columns": [
+    columns: [
       {
-        "name": "First Name",
-        "key": "first_name",
-        "required": true,
-        "description": "The first name of the user"
+        name: "First Name",
+        key: "first_name",
+        required: true,
+        description: "The first name of the user"
       },
       {
-        "name": "Last Name"
+        name: "Last Name"
       },
       {
-        "name": "Email",
-        "required": true,
-        "description": "The email of the user"
+        name: "Email",
+        required: true,
+        description: "The email of the user"
       }
     ]
   }}
@@ -153,12 +153,12 @@ function MyComponent() {
   ```
 </ResponseField>
 
-<ResponseField name="metadata" type="string">
-  Pass metadata as a JSON formatted string. This metadata will be available when retrieving imported data via the API.
+<ResponseField name="metadata" type="object">
+  Pass metadata as a JSON object or string. This metadata will be available when retrieving imported data via the API.
   An example use case is associating a user ID in your application to an import so when the data is retrieved, you'll
   know which user the data belongs to.
   ```jsx
-  metadata={"{\"userId\": 1234, \"userEmail\": \"test@example.com\"}"}
+  metadata={{userId: 1234, userEmail: "test@example.com"}}
   ```
 </ResponseField>
 
