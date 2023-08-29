@@ -24,8 +24,12 @@ export default function SkipHeaderRowSelection() {
     <>
       <h3>Skip Header Row Selection</h3>
       <p>
-        If enabled, the importer will skip the Header Row Selection step and always choose the first row of the file for the column headers. This
-        option can also be enabled in the SDK.
+        If enabled, the importer will skip the Select Header step and always choose the first row of the file for the column headers. This option can
+        also be enabled in the{" "}
+        <a href="https://tableflow.com/docs/sdk-reference/react#properties" target="_blank">
+          SDK
+        </a>
+        .
       </p>
       <Box className={style.box} variants={["bg-shade"]}>
         <div className={style.switchWrapper}>

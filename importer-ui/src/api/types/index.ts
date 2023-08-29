@@ -14,6 +14,7 @@ export type ApiResponse<T> = {
 export type Importer = {
   id: string;
   name: string;
+  skip_header_row_selection: boolean;
   template: Template;
 };
 

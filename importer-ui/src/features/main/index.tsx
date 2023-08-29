@@ -31,12 +31,7 @@ export default function Main() {
     skipHeaderRowSelection,
     template: sdkDefinedTemplate,
   } = useEmbedStore((state) => state.embedParams);
-
-  const modifiedSteps = skipHeaderRowSelection ? steps.filter((step) => step.id !== "row-selection") : steps;
-
-  // Stepper handler
-  const stepper = useStepper(modifiedSteps, 0);
-  const step = stepper?.step?.id;
+  let skipHeader = skipHeaderRowSelection;
 
   // Async data & state
   const { tusId, tusWasStored, importerIsLoading, importerError, template, upload, uploadError, isStored, setTusId, importer } = useApi(
@@ -44,8 +39,19 @@ export default function Main() {
     sdkDefinedTemplate
   );
 
+  // If the skipHeaderRowSelection is not set as a URL param, check the option on the importer
+  if (typeof skipHeader === "undefined") {
+    skipHeader = importer.skip_header_row_selection;
+  }
+
   const [uploadColumnsRow, setUploadColumnsRow] = useState<any | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  const modifiedSteps = skipHeader ? steps.filter((step) => step.id !== "row-selection") : steps;
+
+  // Stepper handler
+  const stepper = useStepper(modifiedSteps, 0);
+  const step = stepper?.step?.id;
 
   useEffect(() => {
     if (uploadError && tusWasStored) reload();
@@ -55,7 +61,7 @@ export default function Main() {
   useEffect(() => {
     if (tusId)
       setTimeout(() => {
-        if (upload.header_row_index !== null && upload.header_row_index !== undefined && !skipHeaderRowSelection) {
+        if (upload.header_row_index !== null && upload.header_row_index !== undefined && !skipHeader) {
           setUploadColumnsRow(upload);
           stepper.setCurrent(2);
         } else {
@@ -145,11 +151,11 @@ export default function Main() {
         template={template}
         importerId={importerId}
         metadata={metadata}
-        skipHeaderRowSelection={skipHeaderRowSelection}
+        skipHeaderRowSelection={skipHeader}
         onSuccess={setTusId}
         endpoint={TUS_ENDPOINT}
       />
-    ) : step === (skipHeaderRowSelection ? "review" : "row-selection") && !isStored ? (
+    ) : step === (skipHeader ? "review" : "row-selection") && !isStored ? (
       <Spinner className={style.spinner}>Processing your file...</Spinner>
     ) : step === "row-selection" && !!isStored ? (
       <RowSelection
@@ -165,12 +171,12 @@ export default function Main() {
     ) : step === "review" && !!isStored ? (
       <Review
         template={template}
-        upload={skipHeaderRowSelection ? upload : uploadColumnsRow}
+        upload={skipHeader ? upload : uploadColumnsRow}
         onSuccess={() => {
-          skipHeaderRowSelection ? stepper.setCurrent(2) : stepper.setCurrent(3);
+          skipHeader ? stepper.setCurrent(2) : stepper.setCurrent(3);
         }}
-        skipHeaderRowSelection={skipHeaderRowSelection}
-        onCancel={skipHeaderRowSelection ? reload : rowSelection}
+        skipHeaderRowSelection={skipHeader}
+        onCancel={skipHeader ? reload : rowSelection}
       />
     ) : !uploadError && step === "complete" ? (
       <Complete reload={reload} close={requestClose} onSuccess={handleComplete} upload={upload} showImportLoadingStatus={showImportLoadingStatus} />
