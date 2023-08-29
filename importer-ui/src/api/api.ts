@@ -71,6 +71,7 @@ const errorHandler = (error: any, url: string, method: string): ApiResponse<any>
     result.status = res.status;
   } else if (error.request) {
     // The request was made but no response was received
+    result.error = "Unable to connect. Check your connection and reach out to support if the problem persists.";
     console.error("No response was received from request", error.request);
   } else {
     // Something happened in setting up the request that triggered an Error
@@ -98,7 +99,7 @@ export async function get(path: string, handleError = true): Promise<ApiResponse
     .catch((error) => (handleError ? errorHandler(error, url, "GET") : { error, ok: false, data: null, status: 0 }));
 }
 
-export async function post(path: string, body: any): Promise<ApiResponse<any>> {
+export async function post(path: string, body?: any): Promise<ApiResponse<any>> {
   const url = `${baseURL}${path}`;
   return axios
     .post(url, body, {

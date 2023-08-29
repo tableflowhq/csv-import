@@ -3,6 +3,7 @@ type SearchParams = Record<
   | "darkMode"
   | "primaryColor"
   | "metadata"
+  | "template"
   | "isOpen"
   | "onComplete"
   | "customStyles"

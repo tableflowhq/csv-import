@@ -9,8 +9,6 @@ export type ApiResponse<T> = {
   status: number;
 };
 
-export type SqlCommand = "select" | "insert" | "update" | "delete";
-
 // Entities
 
 export type Importer = {
@@ -22,12 +20,14 @@ export type Importer = {
 export type Template = {
   id: string;
   name: string;
-  template_columns: TemplateColumn[];
+  columns: TemplateColumn[];
+  is_sdk_defined?: boolean;
 };
 
 export type TemplateColumn = {
   id: string;
   name: string;
+  key: string;
   description?: string;
   required?: boolean;
 };
@@ -37,10 +37,12 @@ export type Upload = {
   file_extension: string;
   file_name: string;
   file_type: string;
+  header_row_index: number;
   id: string;
   is_stored: boolean;
   metadata: any;
   template_id: string;
+  template?: Template;
   tus_id: string;
   upload_columns: UploadColumn[];
   upload_rows: UploadRow[];
