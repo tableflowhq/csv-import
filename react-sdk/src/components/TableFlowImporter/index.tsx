@@ -45,7 +45,7 @@ export default function TableFlowImporter({
     onComplete: onComplete ? "true" : "false",
     customStyles: JSON.stringify(customStyles),
     showImportLoadingStatus: showImportLoadingStatus ? "true" : "false",
-    skipHeaderRowSelection: skipHeaderRowSelection ? "true" : "false",
+    skipHeaderRowSelection: typeof skipHeaderRowSelection === "undefined" ? "" : skipHeaderRowSelection ? "true" : "false",
   };
   const searchParams = new URLSearchParams(urlParams);
   const defaultImporterUrl = "https://importer.tableflow.com";
@@ -63,7 +63,7 @@ export default function TableFlowImporter({
 
 // Allows for the user to pass in JSON as either an object or a string
 const parseObjectOrStringJSON = (name: string, param?: JSONObject | string): string => {
-  if (param === undefined) {
+  if (typeof param === "undefined") {
     return "";
   }
   if (typeof param === "string") {
