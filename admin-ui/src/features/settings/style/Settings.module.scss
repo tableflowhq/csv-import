@@ -12,7 +12,7 @@
 
 .column {
   flex: 0 0 calc(50% - (var(--m-xl) / 2));
-  box-sizing: border-box; 
+  box-sizing: border-box;
 
   h3 {
     font-size: var(--font-size-l);
@@ -23,8 +23,9 @@
   }
 }
 
-.box {
-  flex: 1 0 100px;
+.box.box {
+  flex: 1 1 100px;
   margin: 0;
   padding: var(--m-l);
+  min-height: 110px;
 }
