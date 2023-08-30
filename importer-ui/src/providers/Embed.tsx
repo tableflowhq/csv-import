@@ -21,6 +21,7 @@ export default function Embed({ children }: EmbedProps) {
   // Set importerId & metadata in embed store
   const setEmbedParams = useEmbedStore((state) => state.setEmbedParams);
   const strToBoolean = (str: string) => !!str && (str.toLowerCase() === "true" || str === "1");
+  const strToOptionalBoolean = (str: string) => (str ? str.toLowerCase() === "true" || str === "1" : undefined);
   const validateJSON = (str: string) => {
     if (!str) {
       return "";
@@ -41,7 +42,7 @@ export default function Embed({ children }: EmbedProps) {
       isOpen: strToBoolean(isOpen),
       onComplete: strToBoolean(onComplete),
       showImportLoadingStatus: strToBoolean(showImportLoadingStatus),
-      skipHeaderRowSelection: strToBoolean(skipHeaderRowSelection),
+      skipHeaderRowSelection: strToOptionalBoolean(skipHeaderRowSelection),
     });
   }, [importerId, metadata]);
 

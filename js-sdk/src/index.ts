@@ -51,7 +51,7 @@ export default function createTableFlowImporter({
     onComplete: onComplete ? "true" : "false",
     customStyles: JSON.stringify(customStyles),
     showImportLoadingStatus: showImportLoadingStatus ? "true" : "false",
-    skipHeaderRowSelection: skipHeaderRowSelection ? "true" : "false",
+    skipHeaderRowSelection: typeof skipHeaderRowSelection === "undefined" ? "" : skipHeaderRowSelection ? "true" : "false",
   };
 
   const uploaderUrl = getUploaderUrl(urlParams, hostUrl);
@@ -111,7 +111,7 @@ function getUploaderUrl(urlParams: any, hostUrl?: string) {
 
 // Allows for the user to pass in JSON as either an object or a string
 const parseObjectOrStringJSON = (name: string, param?: JSONObject | string): string => {
-  if (param === undefined) {
+  if (typeof param === "undefined") {
     return "";
   }
   if (typeof param === "string") {

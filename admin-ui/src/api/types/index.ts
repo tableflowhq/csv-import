@@ -82,6 +82,7 @@ export type Importer = Required<ImporterFormFields> & {
   webhook_url: string;
   workspace_id: string;
   webhooks_enabled: boolean;
+  skip_header_row_selection: boolean;
 };
 
 export type TemplateColumnFormFields = {
