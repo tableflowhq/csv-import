@@ -23,8 +23,8 @@
   }
 }
 
-.box {
-  flex: 1 0 100px;
+.box.box {
+  flex: 1 1 100px;
   margin: 0;
   padding: var(--m-l);
   min-height: 110px;

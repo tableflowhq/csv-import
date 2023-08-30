@@ -45,7 +45,7 @@ export default function ListManager({ formStyle, ...props }: ListManagerProps) {
         addItem();
       }}>
       <div className={formStyle}>
-        <Input {...facade} onChange={(e) => setNewValue(e.target.value.trim())} value={newValue} />
+        <Input {...facade} className={style.input} onChange={(e) => setNewValue(e.target.value.trim())} value={newValue} />
 
         <input {...inputProps} value={list} type="hidden" />
 
