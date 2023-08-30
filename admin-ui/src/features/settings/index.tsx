@@ -15,15 +15,14 @@ export default function Settings({ importer }: { importer: Importer }) {
     <div className={style.container}>
       {renderedSettings?.type() !== null && <div className={style.column}>{renderedSettings}</div>}
       <div className={style.column}>
+        <SkipHeaderRowSelection />
+      </div>
+      <div className={style.column}>
         <h3>Allowed Domains</h3>
         <p>Add domains to restrict where the importer can be hosted. If no domains are added, the importer will allow uploads from anywhere.</p>
-
         <Box className={style.box} variants={["bg-shade"]}>
           <Domains importer={importer} />
         </Box>
-      </div>
-      <div className={style.column}>
-        <SkipHeaderRowSelection />
       </div>
     </div>
   );

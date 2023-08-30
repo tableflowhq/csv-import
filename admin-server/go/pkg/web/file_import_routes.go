@@ -53,7 +53,7 @@ func tusPostFile(h *handler.UnroutedHandler) gin.HandlerFunc {
 		}
 		if len(importer.AllowedDomains) != 0 {
 			if err = validateAllowedDomains(c, importer); err != nil {
-				c.AbortWithStatusJSON(http.StatusUnauthorized, err.Error())
+				c.AbortWithStatusJSON(http.StatusUnauthorized, types.Res{Err: err.Error()})
 				return
 			}
 		}
@@ -151,7 +151,7 @@ func getImporterForImportService(c *gin.Context) {
 	}
 	if len(template.Importer.AllowedDomains) != 0 {
 		if err = validateAllowedDomains(c, template.Importer); err != nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, err.Error())
+			c.AbortWithStatusJSON(http.StatusUnauthorized, types.Res{Err: err.Error()})
 			return
 		}
 	}
