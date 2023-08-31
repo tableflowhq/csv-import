@@ -10,7 +10,7 @@ type Include = {
   use: boolean;
 };
 
-export default function useReviewTable(items: UploadColumn[] = [], templateColumns: TemplateColumn[] = []) {
+export default function useReviewTable(items: UploadColumn[] = [], templateColumns: TemplateColumn[] = [], schemaless?: boolean) {
   const [values, setValues] = useState<{ [key: string]: Include }>(
     items.reduce((acc, item) => {
       const suggestion = templateColumns?.find((field) => stringsSimilarity(field.name, item.name) > 0.9)?.id || "";
@@ -98,7 +98,9 @@ export default function useReviewTable(items: UploadColumn[] = [], templateColum
         },
         "Destination Column": {
           raw: "",
-          content: (
+          content: schemaless ? (
+            <Input value={name} variants={["small"]} onChange={() => {}} />
+          ) : (
             <Input
               options={currentOptions}
               value={suggestion.template}

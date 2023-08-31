@@ -8,7 +8,8 @@ type SearchParams = Record<
   | "onComplete"
   | "customStyles"
   | "showImportLoadingStatus"
-  | "skipHeaderRowSelection",
+  | "skipHeaderRowSelection"
+  | "schemaless",
   string
 >;
 

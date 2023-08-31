@@ -16,6 +16,7 @@ export default function Embed({ children }: EmbedProps) {
     customStyles,
     showImportLoadingStatus,
     skipHeaderRowSelection,
+    schemaless,
   } = useSearchParams();
 
   // Set importerId & metadata in embed store
@@ -43,6 +44,7 @@ export default function Embed({ children }: EmbedProps) {
       onComplete: strToBoolean(onComplete),
       showImportLoadingStatus: strToBoolean(showImportLoadingStatus),
       skipHeaderRowSelection: strToOptionalBoolean(skipHeaderRowSelection),
+      schemaless: strToOptionalBoolean(schemaless),
     });
   }, [importerId, metadata]);
 

@@ -11,6 +11,7 @@ import (
 	"gorm.io/gorm"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"sync"
 	"tableflow/go/pkg/db"
@@ -104,6 +105,36 @@ func getImporterForImportService(c *gin.Context) {
 		return
 	}
 
+	// If schemaless mode is enabled, return the importer without an attached template
+	schemaless, _ := strconv.ParseBool(c.Query("schemaless"))
+	if schemaless {
+		importer, err := db.GetImporterWithoutTemplate(id)
+		if err != nil {
+			errStr := err.Error()
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				errStr = "Importer not found. Check the importerId parameter or reach out to support for assistance."
+			}
+			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: errStr})
+			return
+		}
+		if len(importer.AllowedDomains) != 0 {
+			if err = validateAllowedDomains(c, importer); err != nil {
+				c.AbortWithStatusJSON(http.StatusUnauthorized, types.Res{Err: err.Error()})
+				return
+			}
+		}
+		importServiceImporter := types.ImportServiceImporter{
+			ID:                     importer.ID,
+			Name:                   importer.Name,
+			SkipHeaderRowSelection: importer.SkipHeaderRowSelection,
+			Template: &types.ImportServiceTemplate{
+				TemplateColumns: []*types.ImportServiceTemplateColumn{},
+			},
+		}
+		c.JSON(http.StatusOK, importServiceImporter)
+		return
+	}
+
 	// If a template is provided in the request, validate and return that instead of the template attached to the importer
 	if c.Request.ContentLength != 0 {
 		importer, err := db.GetImporterWithoutTemplate(id)
@@ -115,6 +146,13 @@ func getImporterForImportService(c *gin.Context) {
 			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: errStr})
 			return
 		}
+		if len(importer.AllowedDomains) != 0 {
+			if err = validateAllowedDomains(c, importer); err != nil {
+				c.AbortWithStatusJSON(http.StatusUnauthorized, types.Res{Err: err.Error()})
+				return
+			}
+		}
+
 		var req map[string]interface{}
 		if err = c.BindJSON(&req); err != nil {
 			tf.Log.Warnw("Could not bind JSON", "error", err)
