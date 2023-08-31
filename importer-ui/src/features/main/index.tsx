@@ -5,6 +5,7 @@ import { getAPIBaseURL } from "../../api/api";
 import useEmbedStore from "../../stores/embed";
 import postMessage from "../../utils/postMessage";
 import useApi from "./hooks/useApi";
+import useModifiedSteps from "./hooks/useModifiedSteps";
 import style from "./style/Main.module.scss";
 import Complete from "../complete";
 import Review from "../review";
@@ -49,7 +50,7 @@ export default function Main() {
   const [uploadColumnsRow, setUploadColumnsRow] = useState<any | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const modifiedSteps = skipHeader ? steps.filter((step) => step.id !== "row-selection") : steps;
+  const modifiedSteps = useModifiedSteps(steps, skipHeader);
 
   // Stepper handler
   const stepper = useStepper(modifiedSteps, 0);
@@ -147,44 +148,72 @@ export default function Main() {
     );
   }
 
-  const content =
-    step === "upload" || !!uploadError ? (
-      <Uploader
-        template={template}
-        importerId={importerId}
-        metadata={metadata}
-        skipHeaderRowSelection={skipHeader}
-        onSuccess={setTusId}
-        endpoint={TUS_ENDPOINT}
-        schemaless={schemaless}
-      />
-    ) : step === (skipHeader ? "review" : "row-selection") && !isStored ? (
-      <Spinner className={style.spinner}>Processing your file...</Spinner>
-    ) : step === "row-selection" && !!isStored ? (
-      <RowSelection
-        upload={upload}
-        onCancel={reload}
-        onSuccess={(uploadColumnsRow: any) => {
-          stepper.setCurrent(2);
-          setUploadColumnsRow(uploadColumnsRow);
-        }}
-        selectedId={selectedId}
-        setSelectedId={setSelectedId}
-      />
-    ) : step === "review" && !!isStored ? (
-      <Review
-        template={template}
-        upload={skipHeader ? upload : uploadColumnsRow}
-        onSuccess={() => {
-          skipHeader ? stepper.setCurrent(2) : stepper.setCurrent(3);
-        }}
-        skipHeaderRowSelection={skipHeader}
-        onCancel={skipHeader ? reload : rowSelection}
-        schemaless={schemaless}
-      />
-    ) : !uploadError && step === "complete" ? (
-      <Complete reload={reload} close={requestClose} onSuccess={handleComplete} upload={upload} showImportLoadingStatus={showImportLoadingStatus} />
-    ) : null;
+  let content;
+  switch (step) {
+    case "upload":
+      if (uploadError) {
+        content = (
+          <Uploader
+            template={template}
+            importerId={importerId}
+            metadata={metadata}
+            skipHeaderRowSelection={skipHeader}
+            onSuccess={setTusId}
+            endpoint={TUS_ENDPOINT}
+          />
+        );
+      }
+      break;
+    case "row-selection":
+      if (!isStored) {
+        content = <Spinner className={style.spinner}>Processing your file...</Spinner>;
+      } else {
+        content = (
+          <RowSelection
+            upload={upload}
+            onCancel={reload}
+            onSuccess={(uploadColumnsRow: any) => {
+              stepper.setCurrent(2);
+              setUploadColumnsRow(uploadColumnsRow);
+            }}
+            selectedId={selectedId}
+            setSelectedId={setSelectedId}
+          />
+        );
+      }
+      break;
+    case "review":
+      if (isStored) {
+        content = (
+          <Review
+            template={template}
+            upload={skipHeader ? upload : uploadColumnsRow}
+            onSuccess={() => {
+              skipHeader ? stepper.setCurrent(2) : stepper.setCurrent(3);
+            }}
+            skipHeaderRowSelection={skipHeader}
+            onCancel={skipHeader ? reload : rowSelection}
+          />
+        );
+      }
+      break;
+    case "complete":
+      if (!uploadError) {
+        content = (
+          <Complete
+            reload={reload}
+            close={requestClose}
+            onSuccess={handleComplete}
+            upload={upload}
+            showImportLoadingStatus={showImportLoadingStatus}
+          />
+        );
+      }
+      break;
+    default:
+      content = null;
+      break;
+  }
 
   const isEmbeddedInIframe = window?.top !== window?.self;
 
