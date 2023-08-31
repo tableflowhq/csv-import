@@ -147,8 +147,7 @@ export default function Main() {
       </div>
     );
   }
-  console.log(step);
-  console.log(uploadError);
+
   let content;
   switch (step) {
     case "upload":
