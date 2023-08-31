@@ -147,11 +147,12 @@ export default function Main() {
       </div>
     );
   }
-
+  console.log(step);
+  console.log(uploadError);
   let content;
   switch (step) {
     case "upload":
-      if (uploadError) {
+      if (!uploadError) {
         content = (
           <Uploader
             template={template}
