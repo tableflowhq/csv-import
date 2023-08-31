@@ -1,6 +1,7 @@
 package web
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -379,11 +380,33 @@ func setUploadColumnMappingAndImportData(c *gin.Context, importCompleteHandler f
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No upload ID provided"})
 		return
 	}
-	// Upload column ID -> Template column ID
+
+	// Non-schemaless: Upload column ID -> Template column ID
+	// Schemaless:     Upload column ID -> User-provided key (i.e. first_name) (only from the request, this will be updated to IDs after the template is generated)
 	columnMapping := make(map[string]string)
 	if err := c.BindJSON(&columnMapping); err != nil {
 		tf.Log.Warnw("Could not bind JSON", "error", err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+		return
+	}
+	if len(columnMapping) == 0 {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No column mapping provided"})
+		return
+	}
+	// Validate all keys and values are not empty
+	for k, v := range columnMapping {
+		if len(k) == 0 {
+			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "The column mapping cannot contain empty keys"})
+			return
+		}
+		if len(v) == 0 {
+			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "The column mapping cannot contain empty values"})
+			return
+		}
+	}
+	// Validate there are no duplicate template column IDs
+	if util.HasDuplicateValues(columnMapping) {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Destination columns must be unique and not contain duplicate values"})
 		return
 	}
 
@@ -398,8 +421,72 @@ func setUploadColumnMappingAndImportData(c *gin.Context, importCompleteHandler f
 	}
 
 	var template *model.Template
-	if upload.Template != nil {
-		// A template was set on the upload, use that instead of the importer template
+
+	// Retrieve or generate the template to be used for import processing
+	//
+	//  1. If the upload is schemaless, generate the template and save it on the upload
+	//  2. If the template is SDK-defined, the upload will have a template saved on it, so use that
+	//  3. Else, use the template in the database attached to the importer
+
+	if upload.Schemaless {
+		var columns []*types.ImportServiceTemplateColumn
+		for v, destKey := range columnMapping {
+			if !types.ValidateKey(destKey) {
+				c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{
+					Err: fmt.Sprintf("The column '%s' is invalid. Desintation columns can only contain letters, numbers, and underscores", destKey),
+				})
+				return
+			}
+			tcID := model.NewID()
+			columns = append(columns, &types.ImportServiceTemplateColumn{
+				ID:   tcID,
+				Name: destKey,
+				Key:  destKey,
+			})
+			// Update the column mapping to the newly generated template column key
+			columnMapping[v] = tcID.String()
+		}
+		importServiceTemplate := &types.ImportServiceTemplate{
+			ID:              model.NewID(),
+			TemplateColumns: columns,
+		}
+		jsonBytes, err := json.Marshal(importServiceTemplate)
+		if err != nil {
+			tf.Log.Errorw("Could not marshal import service template for schemaless import", "upload_id", upload.ID, "error", err)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, types.Res{Err: err.Error()})
+			return
+		}
+		upload.Template, err = model.JSONStringToJSONB(string(jsonBytes))
+		if err != nil {
+			tf.Log.Errorw("Could not unmarshal import service template for schemaless import", "upload_id", upload.ID, "error", err)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, types.Res{Err: err.Error()})
+			return
+		}
+		err = tf.DB.Save(upload).Error
+		if err != nil {
+			tf.Log.Errorw("Could not update upload in database", "error", err)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, types.Res{Err: err.Error()})
+			return
+		}
+
+		// Generate a template to be used for the import processing
+		template = &model.Template{
+			Name:        importServiceTemplate.Name,
+			WorkspaceID: upload.WorkspaceID,
+		}
+		for _, importColumn := range importServiceTemplate.TemplateColumns {
+			templateColumn := &model.TemplateColumn{
+				ID:          importColumn.ID,
+				Name:        importColumn.Name,
+				Key:         importColumn.Key,
+				Required:    importColumn.Required,
+				Description: null.NewString(importColumn.Description, len(importColumn.Description) != 0),
+			}
+			template.TemplateColumns = append(template.TemplateColumns, templateColumn)
+		}
+
+	} else if upload.Template != nil {
+		// A template was set on the upload (SDK-defined template), use that instead of the importer template
 		importServiceTemplate, err := types.ConvertUploadTemplate(upload.Template, false)
 		if err != nil {
 			tf.Log.Warnw("Could not convert upload template to import service template during import", "error", err, "upload_id", upload.ID, "upload_template", upload.Template)
@@ -429,14 +516,9 @@ func setUploadColumnMappingAndImportData(c *gin.Context, importCompleteHandler f
 		}
 	}
 
+	// Validate template columns exist
 	if len(template.TemplateColumns) == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Template does not have columns"})
-		return
-	}
-
-	// Validate there are no duplicate template column IDs
-	if util.HasDuplicateValues(columnMapping) {
-		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Mapping cannot contain duplicate template columns"})
 		return
 	}
 	// Validate that all required template column IDs are provided

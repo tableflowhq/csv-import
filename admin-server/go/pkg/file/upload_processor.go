@@ -68,6 +68,13 @@ func UploadCompleteHandler(event handler.HookEvent, uploadAdditionalStorageHandl
 		skipHeaderRowSelection, _ = strconv.ParseBool(skipHeaderRowSelectionHeader)
 	}
 
+	// Determine if the upload is schemaless, where no template will be used and the user will define the keys to map their file to
+	schemaless := false
+	schemalessHeader := event.HTTPRequest.Header.Get("X-Import-Schemaless")
+	if len(schemalessHeader) != 0 {
+		schemaless, _ = strconv.ParseBool(schemalessHeader)
+	}
+
 	upload := &model.Upload{
 		ID:            model.NewID(),
 		TusID:         event.Upload.ID,
@@ -78,6 +85,7 @@ func UploadCompleteHandler(event handler.HookEvent, uploadAdditionalStorageHandl
 		FileExtension: null.NewString(uploadFileExtension, len(uploadFileExtension) > 0),
 		Metadata:      importMetadata,
 		Template:      uploadTemplate,
+		Schemaless:    schemaless,
 	}
 	fileName := fmt.Sprintf("%s/%s", TempUploadsDirectory, upload.TusID)
 	err = tf.DB.Create(upload).Error
