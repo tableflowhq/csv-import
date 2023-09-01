@@ -43,13 +43,8 @@ export default function useReviewTable(items: UploadColumn[] = [], templateColum
     setValues((prev) => ({ ...prev, [id]: { ...prev[id], use: !!prev[id].template && value } }));
   };
 
-  const transformValue = (id: string, value: string) => {
-    const transformedValue = value
-      .replace(/\s/g, "_")
-      .replace(/[^a-zA-Z0-9_]/g, "")
-      .toLowerCase();
+  const handleValueChange = (id: string, value: string) => {
     setValues((prev) => ({ ...prev, [id]: { ...prev[id], value, use: !!value } }));
-    return transformedValue;
   };
 
   const rows = useMemo(() => {
@@ -57,7 +52,10 @@ export default function useReviewTable(items: UploadColumn[] = [], templateColum
       const { id, name, sample_data } = item;
       const suggestion = values?.[id] || {};
       const samples = sample_data.filter((d) => d);
-      const transformedName = transformValue(id, name);
+      const transformedName = name
+        .replace(/\s/g, "_")
+        .replace(/[^a-zA-Z0-9_]/g, "")
+        .toLowerCase();
 
       const filteredUsedValues = Object.entries(values).reduce((acc, [key, value]) => {
         if (value.use && key !== id) {
@@ -109,7 +107,13 @@ export default function useReviewTable(items: UploadColumn[] = [], templateColum
         "Destination Column": {
           raw: "",
           content: schemaless ? (
-            <Input value={transformedName} variants={["small"]} />
+            <Input
+              value={transformedName}
+              variants={["small"]}
+              onChange={(e) => {
+                handleValueChange(id, e.target.value);
+              }}
+            />
           ) : (
             <Input
               options={currentOptions}
