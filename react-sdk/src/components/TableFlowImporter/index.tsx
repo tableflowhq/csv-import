@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import useListenMessage from "../../hooks/useListenMessage";
-import { JSONObject, TableFlowImporterProps } from "./types";
+import { TableFlowImporterProps } from "./types";
 import "./style/button.css";
 
 export default function TableFlowImporter({
@@ -19,6 +19,7 @@ export default function TableFlowImporter({
   customStyles,
   showImportLoadingStatus,
   skipHeaderRowSelection,
+  schemaless,
   ...props
 }: TableFlowImporterProps) {
   const ref = useRef(null);
@@ -46,6 +47,7 @@ export default function TableFlowImporter({
     customStyles: JSON.stringify(customStyles),
     showImportLoadingStatus: showImportLoadingStatus ? "true" : "false",
     skipHeaderRowSelection: typeof skipHeaderRowSelection === "undefined" ? "" : skipHeaderRowSelection ? "true" : "false",
+    schemaless: typeof schemaless === "undefined" ? "" : schemaless ? "true" : "false",
   };
   const searchParams = new URLSearchParams(urlParams);
   const defaultImporterUrl = "https://importer.tableflow.com";
@@ -62,7 +64,7 @@ export default function TableFlowImporter({
 }
 
 // Allows for the user to pass in JSON as either an object or a string
-const parseObjectOrStringJSON = (name: string, param?: JSONObject | string): string => {
+const parseObjectOrStringJSON = (name: string, param?: Record<string, unknown> | string): string => {
   if (typeof param === "undefined") {
     return "";
   }
