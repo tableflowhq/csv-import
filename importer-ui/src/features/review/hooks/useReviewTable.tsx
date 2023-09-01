@@ -44,7 +44,8 @@ export default function useReviewTable(items: UploadColumn[] = [], templateColum
     setValues((prev) => ({ ...prev, [id]: { ...prev[id], use: !!prev[id].template && value } }));
   };
 
-  const transformValue = (value: string) => {
+  const transformValue = (id: string, value: string) => {
+    setValues((prev) => ({ ...prev, [id]: { ...prev[id], use: !!prev[id].template && !!value } }));
     return value
       .replace(/\s/g, "_")
       .replace(/[^a-zA-Z0-9_]/g, "")
@@ -56,7 +57,7 @@ export default function useReviewTable(items: UploadColumn[] = [], templateColum
       const { id, name, sample_data } = item;
       const suggestion = values?.[id] || {};
       const samples = sample_data.filter((d) => d);
-      const transformedName = transformValue(name);
+      const transformedName = transformValue(id, name);
 
       const filteredUsedValues = Object.entries(values).reduce((acc, [key, value]) => {
         if (value.use && key !== id) {
