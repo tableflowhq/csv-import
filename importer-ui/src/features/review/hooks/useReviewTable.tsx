@@ -48,12 +48,6 @@ export default function useReviewTable(items: UploadColumn[] = [], templateColum
     setValues((prev) => ({ ...prev, [id]: { ...prev[id], template: value, use: !!value } }));
   };
 
-  const transformValue = (value: string) => {
-    return value
-      .replace(/\s/g, "_")
-      .replace(/[^a-zA-Z0-9_]/g, "")
-      .toLowerCase();
-  };
   const heading = {
     "File Column": {
       raw: "",
@@ -132,15 +126,12 @@ export default function useReviewTable(items: UploadColumn[] = [], templateColum
         "Destination Column": {
           raw: "",
           content: schemaless ? (
-            // <Input
-            //   value={transformedName}
-            //   variants={["small"]}
-            //   onChange={(e) => {
-            //     transformedName = transformValue(e.target.value);
-            //     handleValueChange(id, e.target.value);
-            //   }}
-            // />
-            <SchemaLessInput value={transformedName} />
+            <SchemaLessInput
+              value={transformedName}
+              setValues={(value) => {
+                handleValueChange(id, value);
+              }}
+            />
           ) : (
             <Input
               options={currentOptions}
@@ -162,17 +153,19 @@ export default function useReviewTable(items: UploadColumn[] = [], templateColum
   return { rows, formValues: values };
 }
 
-const SchemaLessInput = ({ value }: { value: string }) => {
+const SchemaLessInput = ({ value, setValues }: { value: string; setValues: (value: string) => void }) => {
   const { transformedValue, transformValue } = useTransformValue(value);
   const [inputValue, setInputValue] = useState(transformedValue);
 
   useEffect(() => {
     setInputValue(transformedValue);
+    setValues(transformedValue);
   }, [transformedValue]);
 
   const handleOnChange = (e: any) => {
     transformValue(e.target.value);
     setInputValue(e.target.value);
+    setValues(transformedValue);
   };
 
   return <Input value={inputValue} variants={["small"]} onChange={handleOnChange} />;
