@@ -4,6 +4,7 @@ import { InputOption } from "@tableflow/ui-library/build/Input/types";
 import { TemplateColumn, UploadColumn } from "../../../api/types";
 import stringsSimilarity from "../../../utils/stringSimilarity";
 import style from "../style/Review.module.scss";
+import useTransformValue from "./useNameChange";
 
 type Include = {
   template: string;
@@ -43,11 +44,19 @@ export default function useReviewTable(items: UploadColumn[] = [], templateColum
     setValues((prev) => ({ ...prev, [id]: { ...prev[id], use: !!prev[id].template && value } }));
   };
 
+  const transformValue = (value: string) => {
+    return value
+      .replace(/\s/g, "_")
+      .replace(/[^a-zA-Z0-9_]/g, "")
+      .toLowerCase();
+  };
+
   const rows = useMemo(() => {
     return items.map((item) => {
       const { id, name, sample_data } = item;
       const suggestion = values?.[id] || {};
       const samples = sample_data.filter((d) => d);
+      const transformedName = transformValue(name);
 
       const filteredUsedValues = Object.entries(values).reduce((acc, [key, value]) => {
         if (value.use && key !== id) {
@@ -99,7 +108,7 @@ export default function useReviewTable(items: UploadColumn[] = [], templateColum
         "Destination Column": {
           raw: "",
           content: schemaless ? (
-            <Input value={name} variants={["small"]} onChange={() => {}} />
+            <Input value={transformedName} variants={["small"]} />
           ) : (
             <Input
               options={currentOptions}
