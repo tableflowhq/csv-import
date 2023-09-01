@@ -1,9 +1,10 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Checkbox, Input } from "@tableflow/ui-library";
 import { InputOption } from "@tableflow/ui-library/build/Input/types";
 import { TemplateColumn, UploadColumn } from "../../../api/types";
 import stringsSimilarity from "../../../utils/stringSimilarity";
 import style from "../style/Review.module.scss";
+import useTransformValue from "./useNameChange";
 
 type Include = {
   template: string;
@@ -44,9 +45,33 @@ export default function useReviewTable(items: UploadColumn[] = [], templateColum
   };
 
   const handleValueChange = (id: string, value: string) => {
-    setValues((prev) => ({ ...prev, [id]: { ...prev[id], value, use: !!value } }));
+    setValues((prev) => ({ ...prev, [id]: { ...prev[id], template: value, use: !!value } }));
   };
 
+  const transformValue = (value: string) => {
+    return value
+      .replace(/\s/g, "_")
+      .replace(/[^a-zA-Z0-9_]/g, "")
+      .toLowerCase();
+  };
+  const heading = {
+    "File Column": {
+      raw: "",
+      content: "File Column",
+    },
+    "Sample Data": {
+      raw: "",
+      content: "Sample Data",
+    },
+    "Destination Column": {
+      raw: "",
+      content: "Destination Column 1",
+    },
+    Include: {
+      raw: "",
+      content: "Include",
+    },
+  };
   const rows = useMemo(() => {
     return items.map((item) => {
       const { id, name, sample_data } = item;
@@ -107,13 +132,15 @@ export default function useReviewTable(items: UploadColumn[] = [], templateColum
         "Destination Column": {
           raw: "",
           content: schemaless ? (
-            <Input
-              value={transformedName}
-              variants={["small"]}
-              onChange={(e) => {
-                handleValueChange(id, e.target.value);
-              }}
-            />
+            // <Input
+            //   value={transformedName}
+            //   variants={["small"]}
+            //   onChange={(e) => {
+            //     transformedName = transformValue(e.target.value);
+            //     handleValueChange(id, e.target.value);
+            //   }}
+            // />
+            <SchemaLessInput value={transformedName} />
           ) : (
             <Input
               options={currentOptions}
@@ -132,6 +159,21 @@ export default function useReviewTable(items: UploadColumn[] = [], templateColum
       };
     });
   }, [values]);
-
   return { rows, formValues: values };
 }
+
+const SchemaLessInput = ({ value }: { value: string }) => {
+  const { transformedValue, transformValue } = useTransformValue(value);
+  const [inputValue, setInputValue] = useState(transformedValue);
+
+  useEffect(() => {
+    setInputValue(transformedValue);
+  }, [transformedValue]);
+
+  const handleOnChange = (e: any) => {
+    transformValue(e.target.value);
+    setInputValue(e.target.value);
+  };
+
+  return <Input value={inputValue} variants={["small"]} onChange={handleOnChange} />;
+};

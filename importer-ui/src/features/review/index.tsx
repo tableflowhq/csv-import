@@ -28,7 +28,7 @@ export default function Review({ upload, template, onSuccess, onCancel, skipHead
   }, [isSuccess]);
 
   if (!rows || !rows?.length) return null;
-
+  console.log(rows);
   return (
     <div className={style.content}>
       <form onSubmit={onSubmit}>
