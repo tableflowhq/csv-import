@@ -4,7 +4,6 @@ import { InputOption } from "@tableflow/ui-library/build/Input/types";
 import { TemplateColumn, UploadColumn } from "../../../api/types";
 import stringsSimilarity from "../../../utils/stringSimilarity";
 import style from "../style/Review.module.scss";
-import useTransformValue from "./useNameChange";
 
 type Include = {
   template: string;
@@ -45,11 +44,12 @@ export default function useReviewTable(items: UploadColumn[] = [], templateColum
   };
 
   const transformValue = (id: string, value: string) => {
-    setValues((prev) => ({ ...prev, [id]: { ...prev[id], use: !!prev[id].template && !!value } }));
-    return value
+    const transformedValue = value
       .replace(/\s/g, "_")
       .replace(/[^a-zA-Z0-9_]/g, "")
       .toLowerCase();
+    setValues((prev) => ({ ...prev, [id]: { ...prev[id], value, use: !!value } }));
+    return transformedValue;
   };
 
   const rows = useMemo(() => {
