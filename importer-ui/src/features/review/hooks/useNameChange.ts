@@ -4,18 +4,12 @@ const useTransformValue = (initialValue: string) => {
   const [transformedValue, setTransformedValue] = useState("");
 
   useEffect(() => {
-    const keyValue = initialValue
-      .replace(/\s/g, "_")
-      .replace(/[^a-zA-Z0-9_]/g, "")
-      .toLowerCase();
+    const keyValue = initialValue.replace(/\s/g, "_").toLowerCase();
     setTransformedValue(keyValue);
   }, [initialValue]);
 
   const transformValue = (value: string) => {
-    const keyValue = value
-      .replace(/\s/g, "_")
-      .replace(/[^a-zA-Z0-9_]/g, "")
-      .toLowerCase();
+    const keyValue = value.replace(/\s/g, "_").toLowerCase();
     setTransformedValue(keyValue);
   };
 
