@@ -332,5 +332,8 @@ func GetDatabaseSchemaInitSQL() string {
 		    add column if not exists template jsonb;
 		alter table upload_columns
 		    drop constraint if exists fk_template_column_id;
+
+		alter table uploads
+		    add column if not exists schemaless bool not null default false;
 	`
 }

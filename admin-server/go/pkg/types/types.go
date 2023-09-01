@@ -163,7 +163,7 @@ func ConvertUploadTemplate(template map[string]interface{}, generateIDs bool) (*
 
 		generatedKey := false
 		if key == "" {
-			key = sanitizeKey(name)
+			key = SanitizeKey(name)
 			generatedKey = true
 		} else if !model.IsValidTemplateColumnKey(key) {
 			return nil, fmt.Errorf("Invalid template: The column key %v can only contain lowercase letters, numbers, and underscores", key)
@@ -211,7 +211,7 @@ func ConvertUploadTemplate(template map[string]interface{}, generateIDs bool) (*
 	}, nil
 }
 
-func sanitizeKey(input string) string {
+func SanitizeKey(input string) string {
 	// Replace spaces with underscores
 	result := strings.ReplaceAll(strings.ToLower(input), " ", "_")
 	// Remove non-alphanumeric characters
@@ -222,4 +222,13 @@ func sanitizeKey(input string) string {
 		return -1
 	}, result)
 	return result
+}
+
+func ValidateKey(input string) bool {
+	for _, r := range input {
+		if !(unicode.IsLower(r) || unicode.IsDigit(r) || r == '_') {
+			return false
+		}
+	}
+	return true
 }

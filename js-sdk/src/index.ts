@@ -1,4 +1,4 @@
-import { JSONObject, TableFlowImporterProps } from "./types/index";
+import { TableFlowImporterProps } from "./types/index";
 import "./index.css";
 
 let postMessages: string[] = [];
@@ -18,6 +18,7 @@ export default function createTableFlowImporter({
   className,
   showImportLoadingStatus,
   skipHeaderRowSelection,
+  schemaless,
 }: TableFlowImporterProps) {
   // CSS classes
   const baseClass = "TableFlowImporter";
@@ -52,6 +53,7 @@ export default function createTableFlowImporter({
     customStyles: JSON.stringify(customStyles),
     showImportLoadingStatus: showImportLoadingStatus ? "true" : "false",
     skipHeaderRowSelection: typeof skipHeaderRowSelection === "undefined" ? "" : skipHeaderRowSelection ? "true" : "false",
+    schemaless: typeof schemaless === "undefined" ? "" : schemaless ? "true" : "false",
   };
 
   const uploaderUrl = getUploaderUrl(urlParams, hostUrl);
@@ -110,7 +112,7 @@ function getUploaderUrl(urlParams: any, hostUrl?: string) {
 }
 
 // Allows for the user to pass in JSON as either an object or a string
-const parseObjectOrStringJSON = (name: string, param?: JSONObject | string): string => {
+const parseObjectOrStringJSON = (name: string, param?: Record<string, unknown> | string): string => {
   if (typeof param === "undefined") {
     return "";
   }

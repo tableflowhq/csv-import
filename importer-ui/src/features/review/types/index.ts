@@ -7,4 +7,5 @@ export type ReviewProps = {
   onCancel: () => void;
   showImportLoadingStatus?: boolean;
   skipHeaderRowSelection?: boolean;
+  schemaless?: boolean;
 };

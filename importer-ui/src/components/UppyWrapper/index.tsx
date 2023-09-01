@@ -29,6 +29,7 @@ export default function UppyWrapper({
   skipHeaderRowSelection = false,
   endpoint = "",
   sdkDefinedTemplate,
+  schemaless,
 }: UppyWrapperProps) {
   useEffect(() => {
     const tusInstance = uppy?.getPlugin("Tus");
@@ -42,6 +43,9 @@ export default function UppyWrapper({
         if (sdkDefinedTemplate) {
           const templateJSON = JSON.stringify(sdkDefinedTemplate);
           req.setHeader("X-Import-Template", btoa(templateJSON));
+        }
+        if (schemaless) {
+          req.setHeader("X-Import-Schemaless", String(schemaless));
         }
       },
     });

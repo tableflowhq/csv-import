@@ -4,7 +4,7 @@ import useTemplateTable from "./hooks/useTemplateTable";
 import { UploaderProps } from "./types";
 import style from "./style/Uploader.module.scss";
 
-export default function Uploader({ template, importerId, metadata, skipHeaderRowSelection, endpoint, onSuccess }: UploaderProps) {
+export default function Uploader({ template, importerId, metadata, skipHeaderRowSelection, endpoint, onSuccess, schemaless }: UploaderProps) {
   const fields = useTemplateTable(template.columns);
 
   const onFileUpload = (result: any) => {
@@ -20,16 +20,25 @@ export default function Uploader({ template, importerId, metadata, skipHeaderRow
     sdkDefinedTemplate = template;
   }
 
+  const uppyWrapper = (
+    <UppyWrapper
+      onSuccess={onFileUpload}
+      importerId={importerId}
+      metadata={metadata}
+      skipHeaderRowSelection={skipHeaderRowSelection}
+      endpoint={endpoint}
+      sdkDefinedTemplate={sdkDefinedTemplate}
+      schemaless={schemaless}
+    />
+  );
+
+  if (schemaless) {
+    return uppyWrapper;
+  }
+
   return (
     <div className={style.content}>
-      <UppyWrapper
-        onSuccess={onFileUpload}
-        importerId={importerId}
-        metadata={metadata}
-        skipHeaderRowSelection={skipHeaderRowSelection}
-        endpoint={endpoint}
-        sdkDefinedTemplate={sdkDefinedTemplate}
-      />
+      {uppyWrapper}
       <Table data={fields} background="dark" columnWidths={["65%", "35%"]} columnAlignments={["", "center"]} />
     </div>
   );

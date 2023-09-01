@@ -9,7 +9,7 @@ const meta = {
   render: (args) => {
     const onRequestClose = () => dialog.close();
     dialog = createTableFlowImporter({ ...args, onRequestClose });
-    return `<button type="button" id="uploadButton">Upload document</button>`;
+    return `<button type="button" id="uploadButton">Import</button>`;
   },
   argTypes: {
     elementId: { control: "text" },
@@ -20,6 +20,7 @@ const meta = {
     closeOnClickOutside: { control: "boolean" },
     showImportLoadingStatus: { control: "boolean" },
     skipHeaderRowSelection: { control: "boolean" },
+    schemaless: { control: "boolean" },
   },
 } satisfies Meta<TableFlowImporterProps>;
 
@@ -45,30 +46,30 @@ export const App: Story = {
     //   ],
     // },
     onComplete: (data: any) => console.log(data),
-    customStyles: {
-      "font-family": "cursive",
-      "font-size": "15px",
-      "base-spacing": "2rem",
-      "border-radius": "8px",
-      "color-primary": "salmon",
-      "color-primary-hover": "crimson",
-      "color-secondary": "indianRed",
-      "color-secondary-hover": "crimson",
-      "color-tertiary": "indianRed",
-      "color-tertiary-hover": "crimson",
-      "color-text-on-primary": "#fff",
-      "color-text-on-secondary": "#ffffff",
-      "color-background": "bisque",
-      "color-background-modal": "blanchedAlmond",
-      "color-text": "brown",
-      "color-text-soft": "rgba(165, 42, 42, .5)",
-      "importer-link": "indigo",
-      "color-border": "lightCoral",
-      "color-input-background": "blanchedAlmond",
-      "color-input-background-soft": "white",
-      "color-background-menu-hover": "bisque",
-      "color-green-ui": "darkGreen",
-    },
+    // customStyles: {
+    //   "font-family": "cursive",
+    //   "font-size": "15px",
+    //   "base-spacing": "2rem",
+    //   "border-radius": "8px",
+    //   "color-primary": "salmon",
+    //   "color-primary-hover": "crimson",
+    //   "color-secondary": "indianRed",
+    //   "color-secondary-hover": "crimson",
+    //   "color-tertiary": "indianRed",
+    //   "color-tertiary-hover": "crimson",
+    //   "color-text-on-primary": "#fff",
+    //   "color-text-on-secondary": "#ffffff",
+    //   "color-background": "bisque",
+    //   "color-background-modal": "blanchedAlmond",
+    //   "color-text": "brown",
+    //   "color-text-soft": "rgba(165, 42, 42, .5)",
+    //   "importer-link": "indigo",
+    //   "color-border": "lightCoral",
+    //   "color-input-background": "blanchedAlmond",
+    //   "color-input-background-soft": "white",
+    //   "color-background-menu-hover": "bisque",
+    //   "color-green-ui": "darkGreen",
+    // },
   },
 };
 

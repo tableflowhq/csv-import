@@ -3,6 +3,9 @@ import { Icon, Tooltip } from "@tableflow/ui-library";
 import { TemplateColumn } from "../../../api/types";
 
 export default function useTemplateTable(fields: TemplateColumn[] = []) {
+  if (!fields) {
+    return [];
+  }
   const result = useMemo(() => {
     return fields.map((item) => ({
       "Expected Column": item?.description
