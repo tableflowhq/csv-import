@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import { Button, Errors, Table, Tooltip } from "@tableflow/ui-library";
 import usePostSetHeader from "../../api/usePostSetHeader";
 import { RowSelectionProps } from "./types";
-import tableTheme from "../../style/Table.module.scss";
 import style from "./style/RowSelection.module.scss";
 
 export default function RowSelection({ upload, onSuccess, onCancel, selectedId, setSelectedId }: RowSelectionProps) {
@@ -62,7 +61,6 @@ export default function RowSelection({ upload, onSuccess, onCancel, selectedId, 
         {upload ? (
           <div className={style.tableWrapper}>
             <Table
-              theme={tableTheme}
               mergeThemes={true}
               data={dataWithRadios || []}
               heading={
@@ -74,7 +72,6 @@ export default function RowSelection({ upload, onSuccess, onCancel, selectedId, 
               background="zebra"
               columnWidths={columnWidths}
               columnAlignments={Array(numberOfColumns).fill("left")}
-              fixHeader
               onRowClick={(row) => setSelectedId(String(dataWithRadios?.indexOf(row as any)))}
             />
           </div>

@@ -14,6 +14,7 @@ const defaults: TableFlowImporterProps = {
   //     },
   //   ],
   // },
+  // schemaless: false,
   darkMode: true,
   onComplete: ({ data, error }) => console.log("onComplete", data, error),
   // customStyles: {
@@ -40,38 +41,18 @@ const defaults: TableFlowImporterProps = {
   //   "color-background-menu-hover": "bisque",
   //   "color-green-ui": "darkGreen",
   // },
-  cssOverrides: `
-    .uppy-Dashboard-AddFiles {
-      border: none !important;
-    }
-    [class^="Stepper-module_stepper__"] {
-      gap: var(--m-l);
-    }
-    [class^="Stepper-module_step__"] {
-      flex-direction: column;
-    }
-    [class^="Stepper-module_step__"]:before {
-      display: none;
-    }
-    [class^="Stepper-module_step__"]:before {
-      display: none;
-    }
-    [class^="Default-module_table__"] {
-      display: none;
-    }`,
-
-  // cssOverrides: {
-  //   ".uppy-Dashboard-AddFiles": "border: none",
-  //   "Stepper-module_stepper": "gap: var(--m-l)",
-  //   "Stepper-module_step": "flex-direction: column",
-  //   "Stepper-module_step:before, Default-module_table": "display: none",
-  //   "Some-example > *:first-child": "color: red; padding: 20px; font-size: 1rem",
-  //   "Some-other_example[disabled]": `
-  //       color: red;
-  //       padding: 20px;
-  //       font-size: 1rem;
-  //     `,
-  // },
+  cssOverrides: {
+    ".uppy-Dashboard-AddFiles": "border: none",
+    "Stepper-module_stepper": "gap: var(--m-l)",
+    "Stepper-module_step": "flex-direction: column",
+    "Stepper-module_step:before, Default-module_table": "display: none",
+    "Some-example > *:first-child": "color: red; padding: 20px; font-size: 1rem",
+    "Some-other_example[disabled]": `
+        color: red;
+        padding: 20px;
+        font-size: 1rem;
+      `,
+  },
 };
 
 export default defaults;

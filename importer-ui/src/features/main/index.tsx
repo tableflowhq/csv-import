@@ -31,13 +31,15 @@ export default function Main() {
     skipHeaderRowSelection,
     template: sdkDefinedTemplate,
     isModal,
+    schemaless,
   } = useEmbedStore((state) => state.embedParams);
   let skipHeader = skipHeaderRowSelection;
 
   // Async data & state
   const { tusId, tusWasStored, importerIsLoading, importerError, template, upload, uploadError, isStored, setTusId, importer } = useApi(
     importerId,
-    sdkDefinedTemplate
+    schemaless ? "" : sdkDefinedTemplate, // Don't pass in a template if schemaless is enabled
+    schemaless
   );
 
   // If the skipHeaderRowSelection is not set as a URL param, check the option on the importer
@@ -157,6 +159,7 @@ export default function Main() {
         skipHeaderRowSelection={skipHeader}
         onSuccess={setTusId}
         endpoint={TUS_ENDPOINT}
+        schemaless={schemaless}
       />
     ) : step === (skipHeader ? "review" : "row-selection") && !isStored ? (
       <Spinner className={style.spinner}>Processing your file...</Spinner>
@@ -180,6 +183,7 @@ export default function Main() {
         }}
         skipHeaderRowSelection={skipHeader}
         onCancel={skipHeader ? reload : rowSelection}
+        schemaless={schemaless}
       />
     ) : !uploadError && step === "complete" ? (
       <Complete reload={reload} close={requestClose} onSuccess={handleComplete} upload={upload} showImportLoadingStatus={showImportLoadingStatus} />

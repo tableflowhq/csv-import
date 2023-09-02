@@ -9,6 +9,7 @@ type EmbedParams = {
   showImportLoadingStatus: boolean;
   skipHeaderRowSelection?: boolean;
   isModal?: boolean;
+  schemaless?: boolean;
 };
 
 type ParamsStore = {

@@ -10,7 +10,8 @@ type SearchParams = Record<
   | "showImportLoadingStatus"
   | "skipHeaderRowSelection"
   | "cssOverrides"
-  | "isModal",
+  | "isModal"
+  | "schemaless",
   string
 >;
 

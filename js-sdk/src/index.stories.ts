@@ -9,7 +9,7 @@ const meta = {
   render: (args) => {
     const onRequestClose = () => dialog.close();
     dialog = createTableFlowImporter({ ...args, ...(args.isModal ? { onRequestClose } : {}) } as TableFlowImporterProps);
-    return args?.isModal ? `<button type="button" id="uploadButton">Upload document</button>` : "";
+    return args?.isModal ? `<button type="button" id="uploadButton">Import</button>` : "";
   },
   argTypes: {
     elementId: { control: "text" },
@@ -20,6 +20,7 @@ const meta = {
     closeOnClickOutside: { control: "boolean" },
     showImportLoadingStatus: { control: "boolean" },
     skipHeaderRowSelection: { control: "boolean" },
+    schemaless: { control: "boolean" },
   },
 } satisfies Meta<TableFlowImporterProps>;
 

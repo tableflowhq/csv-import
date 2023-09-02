@@ -19,6 +19,7 @@ export default function Embed({ children }: EmbedProps) {
     skipHeaderRowSelection,
     cssOverrides,
     isModal,
+    schemaless,
   } = useSearchParams();
 
   // Set importerId & metadata in embed store
@@ -47,6 +48,7 @@ export default function Embed({ children }: EmbedProps) {
       showImportLoadingStatus: strToBoolean(showImportLoadingStatus),
       skipHeaderRowSelection: strToOptionalBoolean(skipHeaderRowSelection),
       isModal: strToOptionalBoolean(isModal),
+      schemaless: strToOptionalBoolean(schemaless),
     });
   }, [importerId, metadata]);
 

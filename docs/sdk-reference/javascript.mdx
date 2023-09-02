@@ -108,6 +108,16 @@ Or directly in HTML
   ```
 </ResponseField>
 
+<ResponseField name="schemaless" type="boolean">
+  Allows users to import a file without mapping their columns to a template. With this option enabled, the Review screen
+  lets users input custom destination column keys, or use pre-generated keys based on the column names. Note this option
+  will override both the template in the [TableFlow admin app](https://app.tableflow.com/importers) and the `template`
+  prop, if provided.
+  <Frame>
+    ![Schemaless Review](/assets/schemaless-review.jpg)
+  </Frame>
+</ResponseField>
+
 <ResponseField name="darkMode" type="boolean">
   Toggle between dark mode (`true`) and light mode (`false`).
 </ResponseField>

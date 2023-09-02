@@ -5,8 +5,8 @@ import useReviewTable from "./hooks/useReviewTable";
 import { ReviewProps } from "./types";
 import style from "./style/Review.module.scss";
 
-export default function Review({ upload, template, onSuccess, onCancel, skipHeaderRowSelection }: ReviewProps) {
-  const { rows, formValues } = useReviewTable(upload?.upload_columns, template?.columns);
+export default function Review({ upload, template, onSuccess, onCancel, skipHeaderRowSelection, schemaless }: ReviewProps) {
+  const { rows, formValues } = useReviewTable(upload?.upload_columns, template?.columns, schemaless);
 
   const { mutate, error, isSuccess, isLoading } = usePostUpload(upload?.id || "");
 
@@ -34,7 +34,7 @@ export default function Review({ upload, template, onSuccess, onCancel, skipHead
       <form onSubmit={onSubmit}>
         {upload ? (
           <div className={style.tableWrapper}>
-            <Table data={rows} background="dark" columnWidths={["20%", "30%", "30%", "20%"]} columnAlignments={["", "", "", "center"]} fixHeader />
+            <Table data={rows} background="dark" columnWidths={["20%", "30%", "30%", "20%"]} columnAlignments={["", "", "", "center"]} />
           </div>
         ) : (
           <>Loading...</>

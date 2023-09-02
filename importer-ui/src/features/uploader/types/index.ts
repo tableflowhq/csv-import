@@ -7,4 +7,5 @@ export type UploaderProps = {
   skipHeaderRowSelection: boolean;
   endpoint: string;
   onSuccess: (tusId: string) => void;
+  schemaless?: boolean;
 };

@@ -20,14 +20,15 @@ type ModalParams =
 export type TableFlowImporterProps = HTMLDialogElement & {
   elementId?: string;
   importerId: string;
-  template?: JSONObject | string;
+  template?: Record<string, unknown> | string;
   hostUrl?: string;
   darkMode?: boolean;
   primaryColor?: string;
-  metadata?: JSONObject | string;
+  metadata?: Record<string, unknown> | string;
   onComplete?: (data: { data: any; error: any }) => void;
   customStyles?: Record<string, string> | CSSProperties;
   showImportLoadingStatus?: boolean;
   skipHeaderRowSelection?: boolean;
   cssOverrides?: Record<string, string>;
+  schemaless?: boolean;
 } & ModalParams;
