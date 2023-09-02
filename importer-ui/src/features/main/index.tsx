@@ -30,6 +30,7 @@ export default function Main() {
     showImportLoadingStatus,
     skipHeaderRowSelection,
     template: sdkDefinedTemplate,
+    isModal,
   } = useEmbedStore((state) => state.embedParams);
   let skipHeader = skipHeaderRowSelection;
 
@@ -52,6 +53,8 @@ export default function Main() {
   // Stepper handler
   const stepper = useStepper(modifiedSteps, 0);
   const step = stepper?.step?.id;
+
+  const isEmbeddedInIframe = window?.top !== window?.self;
 
   useEffect(() => {
     if (uploadError && tusWasStored) reload();
@@ -81,8 +84,6 @@ export default function Main() {
     }
   }, []);
 
-  // Success
-
   // Actions
 
   const reload = () => {
@@ -98,6 +99,7 @@ export default function Main() {
   // Send messages to parent (SDK iframe)
 
   useEffect(() => {
+    if (!isEmbeddedInIframe) return;
     const message = {
       type: "start",
       importerId,
@@ -106,6 +108,7 @@ export default function Main() {
   }, []);
 
   const requestClose = () => {
+    if (!isEmbeddedInIframe || !isModal) return;
     const message = {
       type: "close",
       importerId,
@@ -114,7 +117,7 @@ export default function Main() {
   };
 
   const handleComplete = (data: any, error: string | null) => {
-    if (onComplete) {
+    if (isEmbeddedInIframe && onComplete) {
       const message = {
         data,
         error,
@@ -182,8 +185,6 @@ export default function Main() {
       <Complete reload={reload} close={requestClose} onSuccess={handleComplete} upload={upload} showImportLoadingStatus={showImportLoadingStatus} />
     ) : null;
 
-  const isEmbeddedInIframe = window?.top !== window?.self;
-
   return (
     <div className={style.wrapper}>
       <div className={style.header}>
@@ -201,7 +202,7 @@ export default function Main() {
         </div>
       )}
 
-      {isEmbeddedInIframe && (
+      {isEmbeddedInIframe && isModal && (
         <Button className={style.close} variants={["square", "secondary", "small"]} onClick={() => requestClose()} icon="cross" />
       )}
     </div>

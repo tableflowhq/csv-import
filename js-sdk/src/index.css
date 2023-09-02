@@ -48,3 +48,10 @@
   min-height: 650px;
   border: none;
 }
+
+.TableFlowImporter-div iframe {
+  border: none;
+  display: block;
+  width: 100%;
+  min-height: 700px;
+}

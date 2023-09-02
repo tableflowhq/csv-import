@@ -19,6 +19,7 @@ export default function TableFlowImporter({
   customStyles,
   showImportLoadingStatus,
   skipHeaderRowSelection,
+  cssOverrides,
   ...props
 }: TableFlowImporterProps) {
   const ref = useRef(null);
@@ -46,6 +47,7 @@ export default function TableFlowImporter({
     customStyles: JSON.stringify(customStyles),
     showImportLoadingStatus: showImportLoadingStatus ? "true" : "false",
     skipHeaderRowSelection: typeof skipHeaderRowSelection === "undefined" ? "" : skipHeaderRowSelection ? "true" : "false",
+    ...(cssOverrides ? { cssOverrides: encodeURIComponent(cssOverrides) } : {}),
   };
   const searchParams = new URLSearchParams(urlParams);
   const defaultImporterUrl = "https://importer.tableflow.com";

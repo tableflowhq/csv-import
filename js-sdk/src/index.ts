@@ -18,27 +18,29 @@ export default function createTableFlowImporter({
   className,
   showImportLoadingStatus,
   skipHeaderRowSelection,
+  cssOverrides,
+  isModal = true,
 }: TableFlowImporterProps) {
   // CSS classes
   const baseClass = "TableFlowImporter";
   const themeClass = darkMode && `${baseClass}-dark`;
-  const dialogClass = [`${baseClass}-dialog`, themeClass, className].filter((i) => i).join(" ");
+  const domElementClass = [`${baseClass}-${isModal ? "dialog" : "div"}`, themeClass, className].filter((i) => i).join(" ");
 
-  // dialog element
-  let dialog = document.getElementById(elementId) as HTMLDialogElement;
+  // domElement element
+  let domElement = document.getElementById(elementId) as HTMLDialogElement | HTMLDivElement;
 
   const backdropClick = () => {
     if (closeOnClickOutside) onRequestClose();
   };
 
-  if (dialog === null) {
-    dialog = document.createElement("dialog") as HTMLDialogElement;
-    document.body.appendChild(dialog);
-    dialog.setAttribute("id", elementId);
-    dialog.addEventListener("click", backdropClick);
+  if (domElement === null) {
+    domElement = isModal ? (document.createElement("dialog") as HTMLDialogElement) : (document.createElement("div") as HTMLDivElement);
+    document.body.appendChild(domElement);
+    domElement.setAttribute("id", elementId);
+    if (isModal) domElement.addEventListener("click", backdropClick);
   }
 
-  dialog.setAttribute("class", dialogClass);
+  domElement.setAttribute("class", domElementClass);
 
   // iframe element
   let urlParams = {
@@ -52,6 +54,8 @@ export default function createTableFlowImporter({
     customStyles: JSON.stringify(customStyles),
     showImportLoadingStatus: showImportLoadingStatus ? "true" : "false",
     skipHeaderRowSelection: typeof skipHeaderRowSelection === "undefined" ? "" : skipHeaderRowSelection ? "true" : "false",
+    ...(cssOverrides ? { cssOverrides: JSON.stringify(cssOverrides) } : {}),
+    isModal: isModal ? "true" : "false",
   };
 
   const uploaderUrl = getUploaderUrl(urlParams, hostUrl);
@@ -73,7 +77,7 @@ export default function createTableFlowImporter({
     if (messageData?.type === "start" && urlParams.isOpen !== "true") {
       urlParams = { ...urlParams, isOpen: "true" };
       const uploaderUrl = getUploaderUrl(urlParams, hostUrl);
-      dialog.innerHTML = `<iframe src="${uploaderUrl}" />`;
+      domElement.innerHTML = `<iframe src="${uploaderUrl}" />`;
     }
 
     if (messageData?.type === "complete" && onComplete) {
@@ -91,16 +95,16 @@ export default function createTableFlowImporter({
       if (urlParams.isOpen !== "false") {
         urlParams = { ...urlParams, isOpen: "false" };
         const uploaderUrl = getUploaderUrl(urlParams, hostUrl);
-        dialog.innerHTML = `<iframe src="${uploaderUrl}" />`;
+        domElement.innerHTML = `<iframe src="${uploaderUrl}" />`;
       }
     }
   }
 
   window.addEventListener("message", messageListener);
 
-  dialog.innerHTML = `<iframe src="${uploaderUrl}" />`;
+  domElement.innerHTML = `<iframe src="${uploaderUrl}" />`;
 
-  return dialog;
+  return domElement;
 }
 
 function getUploaderUrl(urlParams: any, hostUrl?: string) {

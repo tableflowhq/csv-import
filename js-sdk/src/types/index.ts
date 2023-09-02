@@ -5,18 +5,29 @@ export interface JSONMap extends Record<string, JSONPrimitive | JSONArray | JSON
 export interface JSONArray extends Array<JSONPrimitive | JSONArray | JSONMap> {}
 export type JSONObject = JSONMap | JSONArray;
 
+type ModalParams =
+  | {
+      isModal: true;
+      onRequestClose?: () => void;
+      closeOnClickOutside?: boolean;
+    }
+  | {
+      isModal: false;
+      onRequestClose: never;
+      closeOnClickOutside: never;
+    };
+
 export type TableFlowImporterProps = HTMLDialogElement & {
   elementId?: string;
-  onRequestClose?: () => void;
   importerId: string;
   template?: JSONObject | string;
   hostUrl?: string;
   darkMode?: boolean;
   primaryColor?: string;
-  closeOnClickOutside?: boolean;
   metadata?: JSONObject | string;
   onComplete?: (data: { data: any; error: any }) => void;
   customStyles?: Record<string, string> | CSSProperties;
   showImportLoadingStatus?: boolean;
   skipHeaderRowSelection?: boolean;
-};
+  cssOverrides?: Record<string, string>;
+} & ModalParams;

@@ -19,4 +19,5 @@ export type TableFlowImporterProps = HTMLAttributes<HTMLDialogElement> & {
   customStyles?: Record<string, string> | CSSProperties;
   showImportLoadingStatus?: boolean;
   skipHeaderRowSelection?: boolean;
+  cssOverrides?: string;
 };

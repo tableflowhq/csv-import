@@ -8,7 +8,9 @@ type SearchParams = Record<
   | "onComplete"
   | "customStyles"
   | "showImportLoadingStatus"
-  | "skipHeaderRowSelection",
+  | "skipHeaderRowSelection"
+  | "cssOverrides"
+  | "isModal",
   string
 >;
 

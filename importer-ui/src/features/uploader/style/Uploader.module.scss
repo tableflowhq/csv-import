@@ -3,10 +3,15 @@
   gap: var(--m);
   align-items: flex-start;
   align-self: center;
+  flex-grow: 1;
 
   & > * {
-    &:first-of-type {
-      width: 62%;
+    &:first-child {
+      flex: 1 1 500px;
+      overflow: hidden;
+    }
+    &:last-child {
+      flex-basis: 38%;
     }
   }
 }

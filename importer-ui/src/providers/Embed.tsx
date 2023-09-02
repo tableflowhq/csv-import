@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useThemeStore } from "@tableflow/ui-library";
 import useSearchParams from "../hooks/useSearchParams";
 import useEmbedStore from "../stores/embed";
+import parseCssOverrides from "../utils/cssInterpreter";
 import { EmbedProps } from "./types";
 
 export default function Embed({ children }: EmbedProps) {
@@ -16,6 +17,8 @@ export default function Embed({ children }: EmbedProps) {
     customStyles,
     showImportLoadingStatus,
     skipHeaderRowSelection,
+    cssOverrides,
+    isModal,
   } = useSearchParams();
 
   // Set importerId & metadata in embed store
@@ -43,6 +46,7 @@ export default function Embed({ children }: EmbedProps) {
       onComplete: strToBoolean(onComplete),
       showImportLoadingStatus: strToBoolean(showImportLoadingStatus),
       skipHeaderRowSelection: strToOptionalBoolean(skipHeaderRowSelection),
+      isModal: strToOptionalBoolean(isModal),
     });
   }, [importerId, metadata]);
 
@@ -54,7 +58,7 @@ export default function Embed({ children }: EmbedProps) {
     setTheme(darkMode ? "dark" : "light");
   }, [darkMode]);
 
-  // Set primary color
+  // Apply primary color
   useEffect(() => {
     if (primaryColor) {
       const root = document.documentElement;
@@ -62,6 +66,7 @@ export default function Embed({ children }: EmbedProps) {
     }
   }, [primaryColor]);
 
+  // Apply custom CSS properties
   useEffect(() => {
     try {
       if (customStyles && customStyles !== "undefined") {
@@ -79,6 +84,17 @@ export default function Embed({ children }: EmbedProps) {
       console.error('The "customStyles" prop is not a valid JSON string. Please check the documentation for more details.');
     }
   }, [customStyles]);
+
+  // Apply CSS overrides
+  useEffect(() => {
+    const parsedCss = parseCssOverrides(cssOverrides);
+
+    if (parsedCss) {
+      const style = document.createElement("style");
+      style.textContent = decodeURIComponent(parsedCss);
+      document.head.append(style);
+    }
+  }, [cssOverrides]);
 
   return <>{children}</>;
 }
