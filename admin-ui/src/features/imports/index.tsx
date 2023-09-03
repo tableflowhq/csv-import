@@ -15,7 +15,12 @@ export default function Imports() {
 
   const { isLoading, data: imports } = useGetImports(workspaceId);
 
-  const { dataFiltered, setFilter } = useFilter<Import[]>(["name"], imports || []);
+  const dataWithCombinedProperty = (imports || []).map((item) => ({
+    ...item,
+    importerNameAndId: `${item.importer?.name}_${item.id}`,
+  }));
+
+  const { dataFiltered, setFilter } = useFilter<Import[]>(["importerNameAndId"], dataWithCombinedProperty || []);
 
   const itemsPerPage = 25;
   const { dataPage, page, paginate, totalItems } = useSyncPagination(dataFiltered as any, itemsPerPage);
