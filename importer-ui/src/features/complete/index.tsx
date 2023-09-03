@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Box, Button, Icon } from "@tableflow/ui-library";
 import Spinner from "../../components/Spinner";
 import useGetImport from "../../api/useGetImport";
+import useEmbedStore from "../../stores/embed";
 import { CompleteProps } from "./types";
 import style from "./style/Complete.module.scss";
 
@@ -11,6 +12,8 @@ export default function Complete({ reload, close, onSuccess, upload, showImportL
   const { data, error } = useGetImport(uploadMemo?.id || "");
   const [showLoading, setShowLoading] = useState(true);
   const { is_stored: isStored } = data || {};
+
+  const { isModal } = useEmbedStore((state) => state.embedParams);
 
   const isEmbeddedInIframe = window?.top !== window?.self;
 
@@ -32,7 +35,7 @@ export default function Complete({ reload, close, onSuccess, upload, showImportL
           </span>
           <div>Import Successful</div>
           <div className={style.actions}>
-            {isEmbeddedInIframe && (
+            {isEmbeddedInIframe && isModal && (
               <Button type="button" variants={["tertiary"]} icon="cross" onClick={close}>
                 Close
               </Button>

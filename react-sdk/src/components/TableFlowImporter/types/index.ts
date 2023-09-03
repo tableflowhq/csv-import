@@ -1,19 +1,30 @@
-import { CSSProperties, HTMLAttributes } from "react";
+import { HTMLAttributes } from "react";
 
-export type TableFlowImporterProps = HTMLAttributes<HTMLDialogElement> & {
-  isOpen?: boolean;
-  onRequestClose?: () => void;
+type ModalParams =
+  | {
+      isModal: true;
+      onRequestClose?: () => void;
+      closeOnClickOutside?: boolean;
+      isOpen?: boolean;
+    }
+  | {
+      isModal: false;
+      onRequestClose: never;
+      closeOnClickOutside: never;
+      isOpen: never;
+    };
+
+export type TableFlowImporterProps = (HTMLAttributes<HTMLDialogElement> & HTMLAttributes<HTMLDivElement>) & {
   importerId: string;
   hostUrl?: string;
   template?: Record<string, unknown> | string;
   darkMode?: boolean;
   primaryColor?: string;
-  closeOnClickOutside?: boolean;
   metadata?: Record<string, unknown> | string;
   onComplete?: (data: { data: any; error: any }) => void;
-  customStyles?: Record<string, string> | CSSProperties;
+  customStyles?: Record<string, string>;
   showImportLoadingStatus?: boolean;
   skipHeaderRowSelection?: boolean;
   cssOverrides?: Record<string, string>;
   schemaless?: boolean;
-};
+} & ModalParams;

@@ -1,10 +1,9 @@
 import { useEffect, useRef } from "react";
 import useListenMessage from "../../hooks/useListenMessage";
 import { TableFlowImporterProps } from "./types";
-import "./style/button.css";
+import "./style/tableflow-importer.css";
 
 export default function TableFlowImporter({
-  // TODO: Include "as" parameter to launch as a div
   isOpen = true,
   onRequestClose = () => null,
   importerId,
@@ -20,6 +19,7 @@ export default function TableFlowImporter({
   showImportLoadingStatus,
   skipHeaderRowSelection,
   cssOverrides,
+  isModal = true,
   schemaless,
   ...props
 }: TableFlowImporterProps) {
@@ -27,15 +27,15 @@ export default function TableFlowImporter({
   const current = ref.current as any;
 
   useEffect(() => {
-    if (current) {
-      if (isOpen) current.showModal();
-      else current.close();
+    if (isModal && current) {
+      if (isOpen) current?.showModal?.();
+      else current?.close?.();
     }
-  }, [isOpen, current]);
+  }, [isModal, isOpen, current]);
 
   const baseClass = "TableFlowImporter";
   const themeClass = darkMode && `${baseClass}-dark`;
-  const dialogClass = [`${baseClass}-dialog`, themeClass, className].filter((i) => i).join(" ");
+  const domElementClass = [`${baseClass}-${isModal ? "dialog" : "div"}`, themeClass, className].filter((i) => i).join(" ");
 
   const urlParams = {
     importerId,
@@ -49,6 +49,7 @@ export default function TableFlowImporter({
     showImportLoadingStatus: showImportLoadingStatus ? "true" : "false",
     skipHeaderRowSelection: typeof skipHeaderRowSelection === "undefined" ? "" : skipHeaderRowSelection ? "true" : "false",
     ...(cssOverrides ? { cssOverrides: JSON.stringify(cssOverrides) } : {}),
+    isModal: isModal ? "true" : "false",
     schemaless: typeof schemaless === "undefined" ? "" : schemaless ? "true" : "false",
   };
   const searchParams = new URLSearchParams(urlParams);
@@ -58,10 +59,21 @@ export default function TableFlowImporter({
 
   useListenMessage(importerId, onComplete, onRequestClose);
 
-  return (
-    <dialog ref={ref} className={dialogClass} onClick={backdropClick} {...props}>
+  const elementProps = {
+    ref,
+    ...(isModal ? { onClick: backdropClick } : {}),
+    className: domElementClass,
+    ...props,
+  };
+
+  return isModal ? (
+    <dialog {...elementProps}>
       <iframe src={uploaderUrl} />
     </dialog>
+  ) : (
+    <div {...elementProps}>
+      <iframe src={uploaderUrl} />
+    </div>
   );
 }
 

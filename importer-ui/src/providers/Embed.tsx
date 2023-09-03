@@ -92,9 +92,14 @@ export default function Embed({ children }: EmbedProps) {
     const parsedCss = parseCssOverrides(cssOverrides);
 
     if (parsedCss) {
-      const style = document.createElement("style");
+      let style = document.getElementById("css-overrides");
+
+      if (!style) {
+        style = document.createElement("style");
+        style.setAttribute("id", "css-overrides");
+        document.head.append(style);
+      }
       style.textContent = decodeURIComponent(parsedCss);
-      document.head.append(style);
     }
   }, [cssOverrides]);
 
