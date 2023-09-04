@@ -19,9 +19,9 @@ const (
 type Validation struct {
 	ID               uint               `json:"id" swaggertype:"integer" example:"1"`
 	TemplateColumnID ID                 `json:"template_column_id" swaggertype:"string" example:"a1ed136d-33ce-4b7e-a7a4-8a5ccfe54cd5"`
-	Type             ValidationType     `json:"type" swaggertype:"string" example:"regex"`
-	Value            jsonb.JSONB        `json:"value" swaggertype:"string" example:"{}"`
-	Message          string             `json:"message" example:"This column can only be letters and digits"`
+	Type             ValidationType     `json:"type" swaggertype:"string" example:"filled"`
+	Value            jsonb.JSONB        `json:"value" swaggertype:"string" example:"true"`
+	Message          string             `json:"message" example:"This column must contain a value"`
 	Severity         ValidationSeverity `json:"severity" swaggertype:"string" example:"error"`
 	DeletedAt        gorm.DeletedAt     `json:"-"`
 }

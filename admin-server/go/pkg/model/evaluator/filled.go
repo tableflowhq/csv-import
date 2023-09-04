@@ -1,6 +1,9 @@
 package evaluator
 
-import "fmt"
+import (
+	"fmt"
+	"tableflow/go/pkg/util"
+)
 
 type FilledEvaluator struct{}
 
@@ -16,5 +19,6 @@ func (e FilledEvaluator) Evaluate(value interface{}, cell string) (bool, error) 
 	if err := e.TypeCheck(value); err != nil {
 		return false, err
 	}
-	return cell != "" == value.(bool), nil
+	// A value of true (the default value) means the cell must be filled
+	return !util.IsBlankUnicode(cell) == value.(bool), nil
 }

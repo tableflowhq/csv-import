@@ -47,13 +47,21 @@ type ImportServiceTemplate struct {
 	TemplateColumns []*ImportServiceTemplateColumn `json:"columns"`
 }
 
-// TODO: Update this type to support validations ************************
 type ImportServiceTemplateColumn struct {
-	ID          model.ID `json:"id" swaggertype:"string" example:"a1ed136d-33ce-4b7e-a7a4-8a5ccfe54cd5"`
-	Name        string   `json:"name" example:"First Name"`
-	Key         string   `json:"key" example:"email"`
-	Required    bool     `json:"required" example:"false"`
-	Description string   `json:"description" example:"The first name"`
+	ID          model.ID                   `json:"id" swaggertype:"string" example:"a1ed136d-33ce-4b7e-a7a4-8a5ccfe54cd5"`
+	Name        string                     `json:"name" example:"First Name"`
+	Key         string                     `json:"key" example:"email"`
+	Required    bool                       `json:"required" example:"false"`
+	Description string                     `json:"description" example:"The first name"`
+	Validations []*ImportServiceValidation `json:"validations,omitempty"`
+}
+
+type ImportServiceValidation struct {
+	ValidationID uint        `json:"id" swaggertype:"integer" example:"4581"`
+	Type         string      `json:"type" example:"filled"`
+	Value        jsonb.JSONB `json:"value" swaggertype:"string" example:"true"`
+	Message      string      `json:"message" example:"This column must contain a value"`
+	Severity     string      `json:"severity" example:"error"`
 }
 
 type ImportServiceUpload struct {

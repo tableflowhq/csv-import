@@ -114,8 +114,8 @@ func paginateImportRowsWithValidations(imp *model.Import, validations map[uint]m
 
 	importRows := getImportRows(importID, offset, limit)
 
-	// If all the import rows exist in the expected page size, don't bother querying import_row_errors as they have
-	// already been resolved
+	// If all the import rows exist in the expected page size, don't bother querying import_row_errors as no errors
+	// exist for the page, or they have been resolved
 	expectedPageSize := util.MinInt(int(imp.NumRows.Int64)-offset, limit)
 	if len(importRows) == expectedPageSize {
 		return importRows
@@ -267,7 +267,7 @@ func GetScyllaSchemaConfigurationCQL() []string {
 		    -- values: Holds the actual import_row data. As an error is resolved this is updated. Once all errors are resolved, we insert into import_rows.
 		    values    map<text, text>,             -- <Row key, Cell Value>
 		    -- errors: Holds a set of Validation IDs that failed for a given cell. As errors are resolved the IDs are removed from the set. If all errors are resolved for a cell, the key is removed from the map.
-		    errors    map<text, frozen<set<int>>>, -- <Row key, Set of Validation IDs (stored in Postgres, to reference complete validation information)>
+		    errors    map<text, frozen<set<int>>>, -- <Row key, Set of Validation IDs (stored in Postgres to reference complete validation information and keep this table smaller)>
 		    primary key ((import_id),row_index)
 		);`,
 	}

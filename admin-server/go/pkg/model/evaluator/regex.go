@@ -25,3 +25,5 @@ func (e RegexEvaluator) Evaluate(value interface{}, cell string) (bool, error) {
 	}
 	return matched, nil
 }
+
+// TODO: Look at higher-performance regex packages. re-2?

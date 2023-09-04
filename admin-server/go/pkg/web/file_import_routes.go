@@ -211,6 +211,15 @@ func getImporterForImportService(c *gin.Context) {
 			Key:         tc.Key,
 			Required:    tc.Required,
 			Description: tc.Description.String,
+			Validations: lo.Map(tc.Validations, func(v *model.Validation, _ int) *types.ImportServiceValidation {
+				return &types.ImportServiceValidation{
+					ValidationID: v.ID,
+					Type:         v.Type.Name,
+					Value:        v.Value,
+					Severity:     string(v.Severity),
+					Message:      v.Message,
+				}
+			}),
 		}
 	}
 	importerTemplate := &types.ImportServiceTemplate{
