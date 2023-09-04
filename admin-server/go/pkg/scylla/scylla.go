@@ -9,6 +9,7 @@ import (
 	"tableflow/go/pkg/model"
 	"tableflow/go/pkg/tf"
 	"tableflow/go/pkg/types"
+	"tableflow/go/pkg/util"
 )
 
 const maxPageSize = 10000
@@ -108,8 +109,16 @@ func paginateImportRowsWithValidations(imp *model.Import, validations map[uint]m
 	}
 
 	importRows := getImportRows(importID, offset, limit)
-	importRowErrors := getImportRowErrors(importID, offset, limit, validations)
 
+	// If all the import rows exist in the expected page size, don't bother querying import_row_errors as they have
+	// already been resolved
+	expectedPageSize := util.MinInt(int(imp.NumRows.Int64)-offset, limit)
+	if len(importRows) == expectedPageSize {
+		return importRows
+	}
+
+	// Retrieve the rows with errors to combine the results
+	importRowErrors := getImportRowErrors(importID, offset, limit, validations)
 	rows := append(importRows, importRowErrors...)
 
 	// Sort the combined rows by the row index

@@ -118,6 +118,13 @@ func TypeOf(i any) string {
 	return typeOf.String()
 }
 
+func MinInt(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
 // MapToKeyOrderedSlice converts a map[int]string to a []string such that the resulting
 // slice is populated in the ascending order of the map's keys
 func MapToKeyOrderedSlice(m map[int]string) []string {
