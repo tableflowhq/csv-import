@@ -87,6 +87,23 @@ func EqualContents[T comparable](list1 []T, list2 []T) bool {
 	return true
 }
 
+func DifferenceBy[T any](list1, list2 []T, equal func(T, T) bool) []T {
+	var diff []T
+	for _, a := range list1 {
+		found := false
+		for _, b := range list2 {
+			if equal(a, b) {
+				found = true
+				break
+			}
+		}
+		if !found {
+			diff = append(diff, a)
+		}
+	}
+	return diff
+}
+
 func DecodeBase64(encodedString string) (string, error) {
 	decodedBytes, err := base64.StdEncoding.DecodeString(encodedString)
 	if err != nil {
