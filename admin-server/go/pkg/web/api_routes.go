@@ -125,7 +125,7 @@ func getImportRowsForExternalAPI(c *gin.Context) {
 		return
 	}
 
-	rows := scylla.PaginateImportRows(imp.ID.String(), offset, limit)
+	rows := scylla.PaginateImportRows(imp, offset, limit)
 	c.JSON(http.StatusOK, rows)
 }
 
@@ -183,7 +183,7 @@ func downloadImportForExternalAPI(c *gin.Context) {
 		_ = downloadFile.Close()
 	}(downloadFile)
 
-	sampleImportRow, err := scylla.GetImportRow(imp.ID.String(), 0)
+	sampleImportRow, err := scylla.GetImportRow(imp, 0)
 	if err != nil {
 		tf.Log.Errorw("Could not retrieve sample import row to download import  for external API", "error", err, "import_id", id)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, types.Res{Err: "Could not download import"})
@@ -207,7 +207,7 @@ func downloadImportForExternalAPI(c *gin.Context) {
 		if offset > int(imp.NumRows.Int64) {
 			break
 		}
-		importRows := scylla.PaginateImportRows(imp.ID.String(), offset, scylla.DefaultPaginationSize)
+		importRows := scylla.PaginateImportRows(imp, offset, scylla.DefaultPaginationSize)
 		for pageRowIndex := 0; pageRowIndex < len(importRows); pageRowIndex++ {
 			row := make([]string, len(columnHeaders), len(columnHeaders))
 			for i, key := range columnHeaders {

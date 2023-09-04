@@ -15,6 +15,7 @@ import (
 	"sync"
 	"tableflow/go/pkg/db"
 	"tableflow/go/pkg/model"
+	"tableflow/go/pkg/model/jsonb"
 	"tableflow/go/pkg/scylla"
 	"tableflow/go/pkg/tf"
 	"tableflow/go/pkg/types"
@@ -179,6 +180,7 @@ func processAndStoreUpload(upload *model.Upload, file *os.File) (uploadProcessRe
 		return uploadProcessResult{}, err
 	}
 
+	uploadID := upload.ID.String()
 	numRows := 0
 	goroutines := 8
 	batchCounter := 0
@@ -254,7 +256,7 @@ func processAndStoreUpload(upload *model.Upload, file *os.File) (uploadProcessRe
 		batchCounter++
 		batchSize += approxMutationSize
 
-		b.Query("insert into upload_rows (upload_id, row_index, values) values (?, ?, ?)", upload.ID.String(), i, uploadRow)
+		b.Query("insert into upload_rows (upload_id, row_index, values) values (?, ?, ?)", uploadID, i, uploadRow)
 
 		batchSizeApproachingLimit := batchSize > int(float64(maxMutationSize)*safetyMargin)
 		if batchSizeApproachingLimit {
@@ -276,8 +278,8 @@ func processAndStoreUpload(upload *model.Upload, file *os.File) (uploadProcessRe
 	return uploadProcessResult{NumRows: numRows}, nil
 }
 
-func getImportMetadata(importMetadataEncodedStr string) (model.JSONB, error) {
-	importMetadata := model.JSONB{}
+func getImportMetadata(importMetadataEncodedStr string) (jsonb.JSONB, error) {
+	importMetadata := jsonb.JSONB{}
 	if len(importMetadataEncodedStr) == 0 {
 		return importMetadata, nil
 	}
@@ -285,43 +287,41 @@ func getImportMetadata(importMetadataEncodedStr string) (model.JSONB, error) {
 	if err != nil {
 		return importMetadata, fmt.Errorf("could not decode base64 import metadata: %v", err.Error())
 	}
-	importMetadata, err = model.JSONStringToJSONB(importMetadataStr)
+	importMetadata, err = jsonb.FromString(importMetadataStr)
 	if err != nil {
 		return importMetadata, fmt.Errorf("could not convert import metadata to json: %v", err.Error())
 	}
 	return importMetadata, nil
 }
 
-func generateUploadTemplate(uploadTemplateEncodedStr string) (model.JSONB, error) {
-	var uploadTemplate model.JSONB = nil
-
+func generateUploadTemplate(uploadTemplateEncodedStr string) (jsonb.JSONB, error) {
 	if len(uploadTemplateEncodedStr) == 0 {
-		return nil, nil
+		return jsonb.JSONB{}, nil
 	}
 
 	uploadTemplateStr, err := util.DecodeBase64(uploadTemplateEncodedStr)
 	if err != nil {
-		return nil, fmt.Errorf("could not decode base64 upload template: %v", err.Error())
+		return jsonb.JSONB{}, fmt.Errorf("could not decode base64 upload template: %v", err.Error())
 	}
 
-	uploadTemplate, err = model.JSONStringToJSONB(uploadTemplateStr)
+	uploadTemplate, err := jsonb.FromString(uploadTemplateStr)
 	if err != nil {
-		return nil, fmt.Errorf("could not convert upload template to json: %v", err.Error())
+		return jsonb.JSONB{}, fmt.Errorf("could not convert upload template to json: %v", err.Error())
 	}
 
 	// Convert the JSON to an importer template object to validate it and generate template column IDs
 	template, err := types.ConvertUploadTemplate(uploadTemplate, true)
 	if err != nil {
-		return nil, fmt.Errorf("could not convert upload template: %v", err.Error())
+		return jsonb.JSONB{}, fmt.Errorf("could not convert upload template: %v", err.Error())
 	}
 
 	// Now convert the validated and updated template object back to JSON to be stored on the upload
 	jsonBytes, err := json.Marshal(template)
 	if err != nil {
-		return nil, fmt.Errorf("could not marshal converted upload template: %v", err.Error())
+		return jsonb.JSONB{}, fmt.Errorf("could not marshal converted upload template: %v", err.Error())
 	}
 
-	return model.JSONStringToJSONB(string(jsonBytes))
+	return jsonb.FromBytes(jsonBytes)
 }
 
 func processUploadColumnsFromFile(upload *model.Upload, file *os.File) error {

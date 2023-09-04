@@ -8,6 +8,7 @@ import (
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 	"net/mail"
+	"reflect"
 	"sort"
 	"sync"
 	"unicode"
@@ -107,6 +108,14 @@ func SafeAccess[T any](slice []T, index int) (T, bool) {
 		return zeroValue, false
 	}
 	return slice[index], true
+}
+
+func TypeOf(i any) string {
+	typeOf := reflect.TypeOf(i)
+	if typeOf == nil {
+		return "nil"
+	}
+	return typeOf.String()
 }
 
 // MapToKeyOrderedSlice converts a map[int]string to a []string such that the resulting
