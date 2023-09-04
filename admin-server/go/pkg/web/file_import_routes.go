@@ -742,7 +742,7 @@ func processAndStoreImport(template *model.Template, upload *model.Upload, imp *
 
 			// TODO: Update all querying of import_rows to account for any import_row_errors (or just use has_errors) (also should you delete has_errors and just use len(errors)?
 
-			if hasErrors {
+			if !hasErrors {
 				numValidRows++
 				b.Query("insert into import_rows (import_id, row_index, values) values (?, ?, ?)", importID, importRowIndex, importRowValues)
 			} else {
