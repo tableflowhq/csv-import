@@ -352,8 +352,6 @@ func GetDatabaseSchemaInitSQL() string {
 		    add column if not exists schemaless bool not null default false;
 
 		alter table imports
-		    add column if not exists has_errors bool not null default false;
-		alter table imports
 		    add column if not exists num_error_rows integer;
 		alter table imports
 		    add column if not exists num_valid_rows integer;

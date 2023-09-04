@@ -31,7 +31,6 @@ type importProcessResult struct {
 	NumRows            int
 	NumColumns         int
 	NumProcessedValues int
-	HasErrors          bool
 	NumErrorRows       int
 	NumValidRows       int
 }
@@ -584,7 +583,7 @@ func getImportForImportService(c *gin.Context) {
 		NumProcessedValues: imp.NumProcessedValues,
 		Metadata:           imp.Metadata,
 		IsStored:           imp.IsStored,
-		HasErrors:          imp.HasErrors,
+		HasErrors:          imp.HasErrors(),
 		NumErrorRows:       imp.NumErrorRows,
 		NumValidRows:       imp.NumValidRows,
 		CreatedAt:          imp.CreatedAt,
@@ -635,7 +634,6 @@ func importData(upload *model.Upload, template *model.Template, importCompleteHa
 	imp.NumRows = null.IntFrom(int64(importResult.NumRows))
 	imp.NumColumns = null.IntFrom(int64(importResult.NumColumns))
 	imp.NumProcessedValues = null.IntFrom(int64(importResult.NumProcessedValues))
-	imp.HasErrors = importResult.HasErrors
 	imp.NumErrorRows = null.IntFrom(int64(importResult.NumErrorRows))
 	imp.NumValidRows = null.IntFrom(int64(importResult.NumValidRows))
 
@@ -738,11 +736,8 @@ func processAndStoreImport(template *model.Template, upload *model.Upload, imp *
 
 			batchCounter++
 			batchSize += approxMutationSize
-			hasErrors := len(importRowErrors) != 0
 
-			// TODO: Update all querying of import_rows to account for any import_row_errors (or just use has_errors) (also should you delete has_errors and just use len(errors)?
-
-			if !hasErrors {
+			if len(importRowErrors) == 0 {
 				numValidRows++
 				b.Query("insert into import_rows (import_id, row_index, values) values (?, ?, ?)", importID, importRowIndex, importRowValues)
 			} else {
@@ -772,7 +767,6 @@ func processAndStoreImport(template *model.Template, upload *model.Upload, imp *
 		NumRows:            importRowIndex,
 		NumColumns:         numColumns,
 		NumProcessedValues: numProcessedValues,
-		HasErrors:          numErrorRows != 0,
 		NumErrorRows:       numErrorRows,
 		NumValidRows:       numValidRows,
 	}, nil

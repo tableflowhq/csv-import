@@ -16,7 +16,6 @@ type Import struct {
 	NumProcessedValues null.Int    `json:"num_processed_values" swaggertype:"integer" example:"128"`
 	Metadata           jsonb.JSONB `json:"metadata"`
 	IsStored           bool        `json:"is_stored" example:"false"`
-	HasErrors          bool        `json:"has_errors" example:"false"`
 	NumErrorRows       null.Int    `json:"num_error_rows" swaggertype:"integer" example:"32"`
 	NumValidRows       null.Int    `json:"num_valid_rows" swaggertype:"integer" example:"224"`
 	CreatedAt          NullTime    `json:"created_at" swaggertype:"integer" example:"1682366228"`
@@ -32,4 +31,8 @@ func (i *Import) BeforeCreate(_ *gorm.DB) (err error) {
 		i.Metadata = jsonb.NewEmpty()
 	}
 	return
+}
+
+func (i *Import) HasErrors() bool {
+	return i.NumErrorRows.Int64 != 0
 }

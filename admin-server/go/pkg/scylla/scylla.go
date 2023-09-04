@@ -66,7 +66,7 @@ func RetrieveAllImportRows(imp *model.Import) []types.ImportRow {
 	var validations map[uint]model.Validation
 	var err error
 
-	if imp.HasErrors {
+	if imp.HasErrors() {
 		validations, err = db.GetValidationsMapForImporterUnscoped(imp.ImporterID.String())
 		if err != nil {
 			tf.Log.Errorw("Could not retrieve template by importer to get validations", "import_id", imp.ID, "error", err)
@@ -87,7 +87,7 @@ func PaginateImportRows(imp *model.Import, offset, limit int) []types.ImportRow 
 	var validations map[uint]model.Validation
 	var err error
 
-	if imp.HasErrors {
+	if imp.HasErrors() {
 		validations, err = db.GetValidationsMapForImporterUnscoped(imp.ImporterID.String())
 		if err != nil {
 			tf.Log.Errorw("Could not retrieve template by importer to get validations", "import_id", imp.ID, "error", err)
@@ -104,7 +104,7 @@ func paginateImportRowsWithValidations(imp *model.Import, validations map[uint]m
 		return []types.ImportRow{}
 	}
 
-	if !imp.HasErrors {
+	if !imp.HasErrors() {
 		return getImportRows(importID, offset, limit)
 	}
 
