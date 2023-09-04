@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+	"gorm.io/gorm"
 	"tableflow/go/pkg/model/jsonb"
 	"tableflow/go/pkg/tf"
 )
@@ -21,6 +22,7 @@ type Validation struct {
 	Value            jsonb.JSONB        `json:"value" swaggertype:"string" example:"{}"`
 	Message          string             `json:"message" example:"This column can only be letters and digits"`
 	Severity         ValidationSeverity `json:"severity" swaggertype:"string" example:"error"`
+	DeletedAt        gorm.DeletedAt     `json:"-"`
 }
 
 type ValidationResult struct {

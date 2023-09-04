@@ -224,6 +224,7 @@ func GetDatabaseSchemaInitSQL() string {
 		            references templates(id)
 		);
 		create unique index if not exists template_columns_template_id_key_idx on template_columns(template_id, key) where (deleted_at is null);
+		create index if not exists template_columns_template_id_idx on template_columns(template_id);
 
 		create table if not exists uploads (
 		    id             uuid primary key not null default gen_random_uuid(),
@@ -304,11 +305,11 @@ func GetDatabaseSchemaInitSQL() string {
 		    message            text,
 		    severity           text  not null default 'error',
 		    value              jsonb not null,
+		    deleted_at         timestamp with time zone,
 		    constraint fk_template_column_id
 		        foreign key (template_column_id)
 		            references template_columns(id)
 		);
-
 		create index if not exists validations_template_column_id_idx on validations(template_column_id);
 
 

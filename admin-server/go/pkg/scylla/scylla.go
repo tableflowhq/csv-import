@@ -5,6 +5,7 @@ import (
 	"sort"
 	"strings"
 	"sync"
+	"tableflow/go/pkg/db"
 	"tableflow/go/pkg/model"
 	"tableflow/go/pkg/tf"
 	"tableflow/go/pkg/types"
@@ -62,11 +63,15 @@ func RetrieveAllImportRows(imp *model.Import) []types.ImportRow {
 	}
 
 	var validations map[uint]model.Validation
+	var err error
+
 	if imp.HasErrors {
-		// Retrieve all validations to pass into the pagination, so they don't have to be fetched more than once
-		// TODO: get validations from db
-		//validations = make([]model.Validation, 0)
+		validations, err = db.GetValidationsMapForImporterUnscoped(imp.ImporterID.String())
+		if err != nil {
+			tf.Log.Errorw("Could not retrieve template by importer to get validations", "import_id", imp.ID, "error", err)
+		}
 	}
+
 	rows := make([]types.ImportRow, 0, imp.NumRows.Int64)
 	for offset := 0; ; offset += DefaultPaginationSize {
 		if offset > int(imp.NumRows.Int64) {
@@ -79,10 +84,15 @@ func RetrieveAllImportRows(imp *model.Import) []types.ImportRow {
 
 func PaginateImportRows(imp *model.Import, offset, limit int) []types.ImportRow {
 	var validations map[uint]model.Validation
+	var err error
+
 	if imp.HasErrors {
-		// TODO: get validations from db
-		//validations = make([]model.Validation, 0)
+		validations, err = db.GetValidationsMapForImporterUnscoped(imp.ImporterID.String())
+		if err != nil {
+			tf.Log.Errorw("Could not retrieve template by importer to get validations", "import_id", imp.ID, "error", err)
+		}
 	}
+
 	return paginateImportRowsWithValidations(imp, validations, offset, limit)
 }
 
