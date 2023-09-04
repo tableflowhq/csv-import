@@ -1,4 +1,4 @@
-import { Table } from "@tableflow/ui-library";
+import { Button, Table } from "@tableflow/ui-library";
 import UppyWrapper from "../../components/UppyWrapper";
 import useTemplateTable from "./hooks/useTemplateTable";
 import { UploaderProps } from "./types";
@@ -36,10 +36,26 @@ export default function Uploader({ template, importerId, metadata, skipHeaderRow
     return uppyWrapper;
   }
 
+  function download() {
+    const { columns } = template;
+    const csvData = `"${columns.map((obj) => obj.key).join('","')}"`;
+
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(new Blob([csvData], { type: "text/csv" }));
+    link.download = "example.csv";
+    link.click();
+  }
+
   return (
     <div className={style.content}>
       {uppyWrapper}
-      <Table data={fields} background="dark" columnWidths={["65%", "35%"]} columnAlignments={["", "center"]} />
+
+      <div className={style.box}>
+        <Table data={fields} background="dark" columnWidths={["65%", "35%"]} columnAlignments={["", "center"]} />
+        <Button icon="download" onClick={download} variants={["secondary"]}>
+          Download Example File
+        </Button>
+      </div>
     </div>
   );
 }
