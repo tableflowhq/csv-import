@@ -1,6 +1,7 @@
 package model
 
 import (
+	"encoding/json"
 	"fmt"
 	"gorm.io/gorm"
 	"tableflow/go/pkg/model/jsonb"
@@ -54,4 +55,32 @@ func (v Validation) ValidateWithResult(cell string) (bool, ValidationResult) {
 		Message:  v.Message,
 		Severity: v.Severity,
 	}
+}
+
+func (v Validation) MarshalJSON() ([]byte, error) {
+	type Alias Validation // Create an alias to avoid recursive call
+	tmp := struct {
+		Type string `json:"type"`
+		Alias
+	}{
+		Type:  v.Type.Name, // Extract from ValidationType
+		Alias: Alias(v),
+	}
+	return json.Marshal(tmp)
+}
+
+func (v *Validation) UnmarshalJSON(data []byte) error {
+	type Alias Validation // Create an alias to avoid recursive call
+	tmp := struct {
+		Type string `json:"type"`
+		Alias
+	}{
+		Alias: Alias(*v),
+	}
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+	v.Type.Name = tmp.Type // Set into ValidationType
+	*v = Validation(tmp.Alias)
+	return nil
 }

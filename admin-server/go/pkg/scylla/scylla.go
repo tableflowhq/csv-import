@@ -182,7 +182,7 @@ func getImportRowErrors(importID string, offset, limit int, validations map[uint
 				if v, ok := validations[id]; ok {
 					importRowErrors[j] = types.ImportRowError{
 						ValidationID: id,
-						Type:         v.Type.Type,
+						Type:         v.Type.Name,
 						Severity:     string(v.Severity),
 						Message:      v.Message,
 					}

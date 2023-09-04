@@ -13,7 +13,7 @@ type Evaluator interface {
 }
 
 type ValidationType struct {
-	Type      string    `json:"type" example:"regex"`
+	Name      string    `json:"-" example:"regex"`
 	Evaluator Evaluator `json:"-"`
 }
 
@@ -31,9 +31,9 @@ func (v *ValidationType) Scan(value interface{}) error {
 	}
 	// Set the Evaluator from the string type field
 	switch typeStr {
-	case ValidationFilled.Type:
+	case ValidationFilled.Name:
 		*v = ValidationFilled
-	case ValidationRegex.Type:
+	case ValidationRegex.Name:
 		*v = ValidationRegex
 	default:
 		return fmt.Errorf("unknown ValidationType: %s", typeStr)
@@ -42,5 +42,5 @@ func (v *ValidationType) Scan(value interface{}) error {
 }
 
 func (v ValidationType) Value() (driver.Value, error) {
-	return v.Type, nil
+	return v.Name, nil
 }

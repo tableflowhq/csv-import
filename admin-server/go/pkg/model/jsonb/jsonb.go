@@ -56,6 +56,23 @@ func (j JSONB) ToString() string {
 	return string(jsonBytes)
 }
 
+func (j JSONB) MarshalJSON() ([]byte, error) {
+	if j.Valid {
+		return json.Marshal(j.Data)
+	}
+	return json.Marshal(nil)
+}
+
+func (j *JSONB) UnmarshalJSON(data []byte) error {
+	var tmp interface{}
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+	j.Data = tmp
+	j.Valid = tmp != nil
+	return nil
+}
+
 // Value to save jsonb in Postgres
 func (j JSONB) Value() (driver.Value, error) {
 	if !j.Valid {
