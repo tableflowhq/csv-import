@@ -51,9 +51,13 @@ func PaginateUploadRows(uploadID string, offset, limit int) []map[int]string {
 func GetImportRow(imp *model.Import, index int) (types.ImportRow, error) {
 	importID := imp.ID.String()
 
-	// TODO: Update to support if the first row has an error
 	row := types.ImportRow{}
 	err := tf.Scylla.Query("select row_index, values from import_rows where import_id = ? and row_index = ?", importID, index).Scan(&row.Index, &row.Values)
+
+	// If the row does not exist it could be an error row, attempt to retrieve it from import_row_errors
+	if len(row.Values) == 0 {
+		err = tf.Scylla.Query("select row_index, values from import_row_errors where import_id = ? and row_index = ?", importID, index).Scan(&row.Index, &row.Values)
+	}
 	return row, err
 }
 
