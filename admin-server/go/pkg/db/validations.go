@@ -14,21 +14,14 @@ func GetValidationsMapForImporterUnscoped(importerID string) (map[uint]model.Val
 	if len(importerID) == 0 {
 		return nil, errors.New("no importer ID provided")
 	}
-	var validationsMap map[uint]model.Validation
+	validationsMap := make(map[uint]model.Validation)
 	var validations []model.Validation
 	err := tf.DB.Raw(`
-		select *
-		from validations
-		where template_column_id in (
-		    select tc.id
-		    from template_columns tc
-		    where tc.template_id = (
-		        select t.id
-		        from templates t
-		        where t.importer_id = ?
-		        limit 1
-		    )
-		)
+		select distinct on (v.id) v.*
+		from validations v
+		     join template_columns tc on v.template_column_id = tc.id
+		     join templates t on tc.template_id = t.id
+		where t.importer_id = ?;
 	`, importerID).Scan(&validations).Error
 
 	if err != nil {
