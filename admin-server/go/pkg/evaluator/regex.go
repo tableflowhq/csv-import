@@ -19,11 +19,10 @@ func (e RegexEvaluator) Evaluate(value interface{}, cell string) (bool, error) {
 	if err := e.TypeCheck(value); err != nil {
 		return false, err
 	}
+	// TODO: Look at higher-performance regex packages. re-2?
 	matched, err := regexp.MatchString(value.(string), cell)
 	if err != nil {
 		return false, err
 	}
 	return matched, nil
 }
-
-// TODO: Look at higher-performance regex packages. re-2?

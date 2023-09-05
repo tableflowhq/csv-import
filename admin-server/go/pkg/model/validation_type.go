@@ -4,17 +4,12 @@ import (
 	"database/sql/driver"
 	"errors"
 	"fmt"
-	"tableflow/go/pkg/model/evaluator"
+	"tableflow/go/pkg/evaluator"
 )
 
-type Evaluator interface {
-	Evaluate(value interface{}, cell string) (bool, error)
-	TypeCheck(value interface{}) error
-}
-
 type ValidationType struct {
-	Name      string    `json:"-" example:"regex"`
-	Evaluator Evaluator `json:"-"`
+	Name      string              `json:"-" example:"regex"`
+	Evaluator evaluator.Evaluator `json:"-"`
 }
 
 // Pre-defined ValidationTypes
