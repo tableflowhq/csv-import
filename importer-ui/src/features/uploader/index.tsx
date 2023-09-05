@@ -1,4 +1,4 @@
-import { Button, Table } from "@tableflow/ui-library";
+import { Button, Table, useThemeStore } from "@tableflow/ui-library";
 import UppyWrapper from "../../components/UppyWrapper";
 import useTemplateTable from "./hooks/useTemplateTable";
 import { UploaderProps } from "./types";
@@ -6,6 +6,8 @@ import style from "./style/Uploader.module.scss";
 
 export default function Uploader({ template, importerId, metadata, skipHeaderRowSelection, endpoint, onSuccess, schemaless }: UploaderProps) {
   const fields = useTemplateTable(template.columns);
+
+  const theme = useThemeStore((state) => state.theme);
 
   const onFileUpload = (result: any) => {
     // Get tusId from the uploadURL
@@ -52,7 +54,7 @@ export default function Uploader({ template, importerId, metadata, skipHeaderRow
 
       <div className={style.box}>
         <Table data={fields} background="dark" columnWidths={["65%", "35%"]} columnAlignments={["", "center"]} />
-        <Button icon="download" onClick={download} variants={["secondary"]}>
+        <Button icon="download" onClick={download} variants={theme === "light" ? [] : ["secondary"]}>
           Download Example File
         </Button>
       </div>
