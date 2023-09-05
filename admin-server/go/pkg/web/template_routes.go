@@ -278,6 +278,9 @@ func editTemplateColumn(c *gin.Context, getWorkspaceUser func(*gin.Context, stri
 		}
 
 		// Add the new validations to the template column to return
+		if validationsToCreateOrEdit == nil {
+			validationsToCreateOrEdit = make([]*model.Validation, 0)
+		}
 		templateColumn.Validations = validationsToCreateOrEdit
 	}
 
@@ -336,6 +339,15 @@ func deleteTemplateColumn(c *gin.Context, getWorkspaceUser func(*gin.Context, st
 		tf.Log.Errorw("Could not delete template column", "error", err, "template_column_id", templateColumn.ID)
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return
+	}
+	// Delete any validations attached to the template column
+	if len(templateColumn.Validations) != 0 {
+		err = tf.DB.Delete(templateColumn.Validations).Error
+		if err != nil {
+			tf.Log.Errorw("Could not delete template column validations", "error", err, "template_column_id", templateColumn.ID)
+			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+			return
+		}
 	}
 	// Remove the deleted template column from the template to return
 	_, i, ok := lo.FindIndexOf(template.TemplateColumns, func(tc *model.TemplateColumn) bool {
