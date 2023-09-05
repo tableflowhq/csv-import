@@ -8,6 +8,7 @@ import (
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 	"net/mail"
+	"reflect"
 	"sort"
 	"sync"
 	"unicode"
@@ -86,6 +87,23 @@ func EqualContents[T comparable](list1 []T, list2 []T) bool {
 	return true
 }
 
+func DifferenceBy[T any](list1, list2 []T, equal func(T, T) bool) []T {
+	var diff []T
+	for _, a := range list1 {
+		found := false
+		for _, b := range list2 {
+			if equal(a, b) {
+				found = true
+				break
+			}
+		}
+		if !found {
+			diff = append(diff, a)
+		}
+	}
+	return diff
+}
+
 func DecodeBase64(encodedString string) (string, error) {
 	decodedBytes, err := base64.StdEncoding.DecodeString(encodedString)
 	if err != nil {
@@ -107,6 +125,21 @@ func SafeAccess[T any](slice []T, index int) (T, bool) {
 		return zeroValue, false
 	}
 	return slice[index], true
+}
+
+func TypeOf(i any) string {
+	typeOf := reflect.TypeOf(i)
+	if typeOf == nil {
+		return "nil"
+	}
+	return typeOf.String()
+}
+
+func MinInt(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }
 
 // MapToKeyOrderedSlice converts a map[int]string to a []string such that the resulting

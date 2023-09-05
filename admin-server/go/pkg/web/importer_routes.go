@@ -256,6 +256,16 @@ func deleteImporter(c *gin.Context, getWorkspaceUser func(*gin.Context, string) 
 			tc := importer.Template.TemplateColumns[i]
 			tc.DeletedBy = user.ID
 			tc.DeletedAt = deletedAt
+
+			// Delete any validations attached to the template column
+			if len(tc.Validations) != 0 {
+				err = tf.DB.Delete(tc.Validations).Error
+				if err != nil {
+					tf.Log.Errorw("Could not delete template column validations", "error", err, "template_column_id", tc.ID)
+					c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+					return
+				}
+			}
 		}
 	}
 

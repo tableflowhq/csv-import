@@ -10,6 +10,7 @@ import (
 	"github.com/samber/lo"
 	"github.com/tus/tusd/pkg/handler"
 	"gorm.io/gorm"
+	"math"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -18,6 +19,7 @@ import (
 	"tableflow/go/pkg/db"
 	"tableflow/go/pkg/file"
 	"tableflow/go/pkg/model"
+	"tableflow/go/pkg/model/jsonb"
 	"tableflow/go/pkg/scylla"
 	"tableflow/go/pkg/tf"
 	"tableflow/go/pkg/types"
@@ -29,11 +31,13 @@ type importProcessResult struct {
 	NumRows            int
 	NumColumns         int
 	NumProcessedValues int
+	NumErrorRows       int
+	NumValidRows       int
 }
 
 // importServiceMaxNumRowsToPassData If the import has more rows than this value, then don't pass the data back to the
 // frontend callback. It must be retrieved from the API.
-const importServiceMaxNumRowsForFrontendPassThrough = 25000
+var importServiceMaxNumRowsForFrontendPassThrough = int(math.Min(25000, scylla.MaxAllRowRetrieval))
 
 // tusPostFile
 //
@@ -160,7 +164,7 @@ func getImporterForImportService(c *gin.Context) {
 			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("Invalid template provided: %v", err.Error())})
 			return
 		}
-		requestTemplate, err := types.ConvertUploadTemplate(req, false)
+		requestTemplate, err := types.ConvertUploadTemplate(jsonb.FromMap(req), false)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 			return
@@ -207,6 +211,15 @@ func getImporterForImportService(c *gin.Context) {
 			Key:         tc.Key,
 			Required:    tc.Required,
 			Description: tc.Description.String,
+			Validations: lo.Map(tc.Validations, func(v *model.Validation, _ int) *types.ImportServiceValidation {
+				return &types.ImportServiceValidation{
+					ValidationID: v.ID,
+					Type:         v.Type.Name,
+					Value:        v.Value,
+					Severity:     string(v.Severity),
+					Message:      v.Message,
+				}
+			}),
 		}
 	}
 	importerTemplate := &types.ImportServiceTemplate{
@@ -456,7 +469,7 @@ func setUploadColumnMappingAndImportData(c *gin.Context, importCompleteHandler f
 			c.AbortWithStatusJSON(http.StatusInternalServerError, types.Res{Err: err.Error()})
 			return
 		}
-		upload.Template, err = model.JSONStringToJSONB(string(jsonBytes))
+		upload.Template, err = jsonb.FromBytes(jsonBytes)
 		if err != nil {
 			tf.Log.Errorw("Could not unmarshal import service template for schemaless import", "upload_id", upload.ID, "error", err)
 			c.AbortWithStatusJSON(http.StatusInternalServerError, types.Res{Err: err.Error()})
@@ -485,7 +498,7 @@ func setUploadColumnMappingAndImportData(c *gin.Context, importCompleteHandler f
 			template.TemplateColumns = append(template.TemplateColumns, templateColumn)
 		}
 
-	} else if upload.Template != nil {
+	} else if upload.Template.Valid {
 		// A template was set on the upload (SDK-defined template), use that instead of the importer template
 		importServiceTemplate, err := types.ConvertUploadTemplate(upload.Template, false)
 		if err != nil {
@@ -579,10 +592,13 @@ func getImportForImportService(c *gin.Context) {
 		NumProcessedValues: imp.NumProcessedValues,
 		Metadata:           imp.Metadata,
 		IsStored:           imp.IsStored,
+		HasErrors:          imp.HasErrors(),
+		NumErrorRows:       imp.NumErrorRows,
+		NumValidRows:       imp.NumValidRows,
 		CreatedAt:          imp.CreatedAt,
 		Rows:               []types.ImportRow{},
 	}
-	if imp.NumRows.Int64 > importServiceMaxNumRowsForFrontendPassThrough {
+	if int(imp.NumRows.Int64) > importServiceMaxNumRowsForFrontendPassThrough {
 		importerImport.Error = null.StringFrom(fmt.Sprintf("This import has %v rows which exceeds the max "+
 			"allowed number of rows for frontend callback (%v). Use the API to retrieve the data.",
 			imp.NumRows.Int64, importServiceMaxNumRowsForFrontendPassThrough))
@@ -627,6 +643,8 @@ func importData(upload *model.Upload, template *model.Template, importCompleteHa
 	imp.NumRows = null.IntFrom(int64(importResult.NumRows))
 	imp.NumColumns = null.IntFrom(int64(importResult.NumColumns))
 	imp.NumProcessedValues = null.IntFrom(int64(importResult.NumProcessedValues))
+	imp.NumErrorRows = null.IntFrom(int64(importResult.NumErrorRows))
+	imp.NumValidRows = null.IntFrom(int64(importResult.NumValidRows))
 
 	err = tf.DB.Save(imp).Error
 	if err != nil {
@@ -644,9 +662,12 @@ func importData(upload *model.Upload, template *model.Template, importCompleteHa
 func processAndStoreImport(template *model.Template, upload *model.Upload, imp *model.Import) (importProcessResult, error) {
 	columnKeyMap := generateColumnKeyMap(template, upload)
 	numColumns := len(columnKeyMap)
+	importID := imp.ID.String()
 
 	importRowIndex := 0
 	numProcessedValues := 0
+	numValidRows := 0
+	numErrorRows := 0
 
 	goroutines := 8
 	batchCounter := 0
@@ -683,22 +704,41 @@ func processAndStoreImport(template *model.Template, upload *model.Upload, imp *
 			// {'first_name': 'Mary', 'last_name': 'Jenkins', 'email': 'mary@example.com'}
 			importRowValues := make(map[string]string, numColumns)
 
-			// Iterate over columnKeyMap, the columns that have mappings set
+			// importRowErrors example (the numbers are the validation ID(s) which did not pass):
+			// {'first_name': {4281}, 'email': {4281, 4295}}
+			importRowErrors := make(map[string][]uint)
+
+			// Iterate over columnKeyMap, the columns that have mappings set (also included any validations)
 			// Rows ending in blank values may not exist in the uploadRow (i.e. excel), but we still want to set empty
 			// values for those cells as they are logically empty in the source file
 			//
 			// columnKeyMap example:
 			// {0: 'first_name', 1: 'last_name', 2: 'email'}
-			for uploadColumnIndex, templateColumnKey := range columnKeyMap {
+
+			for uploadColumnIndex, key := range columnKeyMap {
 
 				// uploadColumnIndex = 0
 				// cellValue         = Mary
-				// templateColumnKey = first_name
+				// key = first_name + validations
 				// importRowValue    = {'first_name': 'Mary'}
 
 				cellValue := uploadRow[uploadColumnIndex]
-				importRowValues[templateColumnKey] = cellValue
 
+				// Perform validations on the cell, if any
+				for _, v := range key.Validations {
+					passed := v.Validate(cellValue)
+					if !passed {
+						// Add the validation ID to the slice at the key, or create a new entry if the key doesn't exist
+						if _, ok := importRowErrors[key.Key]; ok {
+							importRowErrors[key.Key] = append(importRowErrors[key.Key], v.ID)
+						} else {
+							importRowErrors[key.Key] = []uint{v.ID}
+						}
+					}
+				}
+
+				// Add the cell value and update progress
+				importRowValues[key.Key] = cellValue
 				approxMutationSize += len(cellValue)
 				numProcessedValues++
 			}
@@ -706,7 +746,13 @@ func processAndStoreImport(template *model.Template, upload *model.Upload, imp *
 			batchCounter++
 			batchSize += approxMutationSize
 
-			b.Query("insert into import_rows (import_id, row_index, values) values (?, ?, ?)", imp.ID.String(), importRowIndex, importRowValues)
+			if len(importRowErrors) == 0 {
+				numValidRows++
+				b.Query("insert into import_rows (import_id, row_index, values) values (?, ?, ?)", importID, importRowIndex, importRowValues)
+			} else {
+				numErrorRows++
+				b.Query("insert into import_row_errors (import_id, row_index, values, errors) values (?, ?, ?, ?)", importID, importRowIndex, importRowValues, importRowErrors)
+			}
 
 			batchSizeApproachingLimit := batchSize > int(float64(maxMutationSize)*safetyMargin)
 			if batchSizeApproachingLimit {
@@ -730,22 +776,32 @@ func processAndStoreImport(template *model.Template, upload *model.Upload, imp *
 		NumRows:            importRowIndex,
 		NumColumns:         numColumns,
 		NumProcessedValues: numProcessedValues,
+		NumErrorRows:       numErrorRows,
+		NumValidRows:       numValidRows,
 	}, nil
+}
+
+type TemplateColumnKeyValidation struct {
+	Key         string
+	Validations []model.Validation
 }
 
 // generateColumnKeyMap
 // For the columns that a user set a mapping for, create a map of the upload column indexes to the template column key
 // This is used to store the import data in Scylla by the template column key
-func generateColumnKeyMap(template *model.Template, upload *model.Upload) map[int]string {
+func generateColumnKeyMap(template *model.Template, upload *model.Upload) map[int]TemplateColumnKeyValidation {
 
-	// templateRowMap == template column ID -> template column key
-	templateRowMap := make(map[string]string)
+	// templateRowMap == template column ID -> template column key + validations
+	templateRowMap := make(map[string]TemplateColumnKeyValidation)
 	for _, tc := range template.TemplateColumns {
-		templateRowMap[tc.ID.String()] = tc.Key
+		templateRowMap[tc.ID.String()] = TemplateColumnKeyValidation{
+			Key:         tc.Key,
+			Validations: lo.Map(tc.Validations, func(v *model.Validation, _ int) model.Validation { return *v }),
+		}
 	}
 
-	// columnKeyMap == upload column index -> template column key
-	columnKeyMap := make(map[int]string)
+	// columnKeyMap == upload column index -> template column key + validations
+	columnKeyMap := make(map[int]TemplateColumnKeyValidation)
 	for _, uc := range upload.UploadColumns {
 		if !uc.TemplateColumnID.Valid {
 			continue

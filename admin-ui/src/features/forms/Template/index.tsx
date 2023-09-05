@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useForm } from "@mantine/form";
-import { Button, classes, Errors, Input, Switch } from "@tableflow/ui-library";
+import { Button, Checkbox, classes, Errors, Input, Switch, Tooltip } from "@tableflow/ui-library";
 import { TemplateColumn } from "../../../api/types";
 import usePostTemplateColumn from "../../../api/usePostTemplateColumn";
 import { TemplateColumnProps } from "../types";
@@ -22,6 +22,7 @@ export default function TemplateColumnForm({
       description: column?.description || "",
       key: column?.key || "",
       required: column?.required || false,
+      filled: (column?.validations && column?.validations.length !== 0) || false,
     },
   });
   const { mutate, isLoading, error, isSuccess } = usePostTemplateColumn(context?.templateId, column?.id);
@@ -31,6 +32,16 @@ export default function TemplateColumnForm({
   }, [isSuccess, error, isLoading]);
 
   const onSubmit = (values: any) => {
+    // Note the validation logic here and "filled" in the form will be removed once we support multiple validations
+    const hasExistingValidation = column?.validations && column?.validations.length !== 0;
+    values.validations = null;
+    if (values.filled && !hasExistingValidation) {
+      // If filled is selected and there is no existing validation, add the validation to the request
+      values.validations = [{ type: "filled" }];
+    } else if (hasExistingValidation) {
+      // If filled is not selected and the validation exists, add an empty validation array so the backend will remove it
+      values.validations = [];
+    }
     mutate(values);
   };
 
@@ -88,9 +99,23 @@ export default function TemplateColumnForm({
             required
           />
           <Input as="textarea" placeholder="description" label="Description" name="description" {...form.getInputProps("description")} />
-          <label>
-            <Switch name="required" {...form.getInputProps("required", { type: "checkbox" })} label="Required" inputFirst />
-          </label>
+          <div className={style.checkboxInput}>
+            <label>
+              <Checkbox {...form.getInputProps("required", { type: "checkbox" })} />
+              <span className={style.checkboxLabel}>Column required</span>
+            </label>
+            <Tooltip className={style.checkboxLabel} title={"Users must map a column from their file to this column to proceed with the import"} />
+          </div>
+          {/*<div className={style.checkboxInput}>*/}
+          {/*  <label>*/}
+          {/*    <Checkbox {...form.getInputProps("filled", { type: "checkbox" })} />*/}
+          {/*    <span className={style.checkboxLabel}>Cells must be filled</span>*/}
+          {/*  </label>*/}
+          {/*  <Tooltip*/}
+          {/*    className={style.checkboxLabel}*/}
+          {/*    title={"Every cell in this column must contain data. Empty cells will prevent users from completing the import"}*/}
+          {/*  />*/}
+          {/*</div>*/}
         </fieldset>
 
         <div className={classes([style.actions, style.compact])}>

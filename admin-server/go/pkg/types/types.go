@@ -6,6 +6,7 @@ import (
 	"github.com/lib/pq"
 	"strings"
 	"tableflow/go/pkg/model"
+	"tableflow/go/pkg/model/jsonb"
 	"tableflow/go/pkg/tf"
 	"unicode"
 )
@@ -21,8 +22,16 @@ type UploadRow struct {
 }
 
 type ImportRow struct {
-	Index  int               `json:"index" example:"0"`
-	Values map[string]string `json:"values"`
+	Index  int                         `json:"index" example:"0"`
+	Values map[string]string           `json:"values"`
+	Errors map[string][]ImportRowError `json:"errors,omitempty"`
+}
+
+type ImportRowError struct {
+	ValidationID uint   `json:"-"`
+	Type         string `json:"type"`
+	Severity     string `json:"severity"`
+	Message      string `json:"message"`
 }
 
 type ImportServiceImporter struct {
@@ -39,11 +48,20 @@ type ImportServiceTemplate struct {
 }
 
 type ImportServiceTemplateColumn struct {
-	ID          model.ID `json:"id" swaggertype:"string" example:"a1ed136d-33ce-4b7e-a7a4-8a5ccfe54cd5"`
-	Name        string   `json:"name" example:"First Name"`
-	Key         string   `json:"key" example:"email"`
-	Required    bool     `json:"required" example:"false"`
-	Description string   `json:"description" example:"The first name"`
+	ID          model.ID                   `json:"id" swaggertype:"string" example:"a1ed136d-33ce-4b7e-a7a4-8a5ccfe54cd5"`
+	Name        string                     `json:"name" example:"First Name"`
+	Key         string                     `json:"key" example:"email"`
+	Required    bool                       `json:"required" example:"false"`
+	Description string                     `json:"description" example:"The first name"`
+	Validations []*ImportServiceValidation `json:"validations,omitempty"`
+}
+
+type ImportServiceValidation struct {
+	ValidationID uint        `json:"id" swaggertype:"integer" example:"4581"`
+	Type         string      `json:"type" example:"filled"`
+	Value        jsonb.JSONB `json:"value" swaggertype:"string" example:"true"`
+	Message      string      `json:"message" example:"This column must contain a value"`
+	Severity     string      `json:"severity" example:"error"`
 }
 
 type ImportServiceUpload struct {
@@ -54,7 +72,7 @@ type ImportServiceUpload struct {
 	FileType       null.String            `json:"file_type" swaggertype:"string" example:"text/csv"`
 	FileExtension  null.String            `json:"file_extension" swaggertype:"string" example:"csv"`
 	FileSize       null.Int               `json:"file_size" swaggertype:"integer" example:"1024"`
-	Metadata       model.JSONB            `json:"metadata" swaggertype:"string" example:"{\"user_id\": 1234}"`
+	Metadata       jsonb.JSONB            `json:"metadata" swaggertype:"string" example:"{\"user_id\": 1234}"`
 	Template       *ImportServiceTemplate `json:"template"` // Set if the user passes in a template to the SDK, which overrides the template on the importer
 	IsStored       bool                   `json:"is_stored" example:"false"`
 	HeaderRowIndex null.Int               `json:"header_row_index" swaggertype:"integer" example:"0"`
@@ -82,8 +100,11 @@ type ImportServiceImport struct {
 	NumRows            null.Int       `json:"num_rows" swaggertype:"integer" example:"256"`
 	NumColumns         null.Int       `json:"num_columns" swaggertype:"integer" example:"8"`
 	NumProcessedValues null.Int       `json:"num_processed_values" swaggertype:"integer" example:"128"`
-	Metadata           model.JSONB    `json:"metadata"`
+	Metadata           jsonb.JSONB    `json:"metadata"`
 	IsStored           bool           `json:"is_stored" example:"false"`
+	HasErrors          bool           `json:"has_errors" example:"false"`
+	NumErrorRows       null.Int       `json:"num_error_rows" swaggertype:"integer" example:"32"`
+	NumValidRows       null.Int       `json:"num_valid_rows" swaggertype:"integer" example:"224"`
 	CreatedAt          model.NullTime `json:"created_at" swaggertype:"integer" example:"1682366228"`
 	Error              null.String    `json:"error,omitempty" swaggerignore:"true"`
 	Rows               []ImportRow    `json:"rows"`
@@ -126,11 +147,16 @@ func ConvertUpload(upload *model.Upload, uploadRows []UploadRow) (*ImportService
 	return importerUpload, nil
 }
 
-func ConvertUploadTemplate(template map[string]interface{}, generateIDs bool) (*ImportServiceTemplate, error) {
-	if template == nil {
+func ConvertUploadTemplate(rawTemplate jsonb.JSONB, generateIDs bool) (*ImportServiceTemplate, error) {
+	if !rawTemplate.Valid {
 		// No template provided, this means the template from the importer will be used
 		return nil, nil
 	}
+	template, ok := rawTemplate.AsMap()
+	if !ok {
+		return nil, fmt.Errorf("Invalid template: malformed object")
+	}
+
 	var columns []*ImportServiceTemplateColumn
 
 	columnData, exists := template["columns"]

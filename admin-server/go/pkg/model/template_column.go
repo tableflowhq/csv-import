@@ -22,6 +22,8 @@ type TemplateColumn struct {
 	DeletedBy     ID             `json:"-"`
 	DeletedByUser *User          `json:"-" gorm:"foreignKey:ID;references:DeletedBy"`
 	DeletedAt     gorm.DeletedAt `json:"-"`
+
+	Validations []*Validation `json:"validations"`
 }
 
 func (tc *TemplateColumn) BeforeCreate(_ *gorm.DB) (err error) {
