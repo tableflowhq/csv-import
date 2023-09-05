@@ -6,6 +6,7 @@ import useEmbedStore from "../../stores/embed";
 import postMessage from "../../utils/postMessage";
 import useApi from "./hooks/useApi";
 import useModifiedSteps from "./hooks/useModifiedSteps";
+import { Steps } from "./types";
 import style from "./style/Main.module.scss";
 import Complete from "../complete";
 import Review from "../review";
@@ -15,10 +16,10 @@ import Uploader from "../uploader";
 const TUS_ENDPOINT = getAPIBaseURL("v1") + "files";
 
 const steps = [
-  { label: "Upload", id: "upload" },
-  { label: "Select Header", id: "row-selection" },
-  { label: "Review", id: "review" },
-  { label: "Complete", id: "complete" },
+  { label: "Upload", id: Steps.Upload },
+  { label: "Select Header", id: Steps.RowSelection },
+  { label: "Review", id: Steps.Review },
+  { label: "Complete", id: Steps.Complete },
 ];
 
 export default function Main() {
@@ -129,6 +130,62 @@ export default function Main() {
     setTusId("");
   };
 
+  const renderContent = () => {
+    switch (step) {
+      case Steps.Upload:
+        if (!uploadError) {
+          return (
+            <Uploader
+              template={template}
+              importerId={importerId}
+              metadata={metadata}
+              skipHeaderRowSelection={skipHeader || false}
+              onSuccess={setTusId}
+              endpoint={TUS_ENDPOINT}
+            />
+          );
+        }
+        break;
+      case Steps.RowSelection:
+        return (
+          <RowSelection
+            upload={upload}
+            onCancel={reload}
+            onSuccess={(uploadColumnsRow: any) => {
+              stepper.setCurrent(2);
+              setUploadColumnsRow(uploadColumnsRow);
+            }}
+            selectedId={selectedId}
+            setSelectedId={setSelectedId}
+          />
+        );
+      case Steps.Review:
+        return (
+          <Review
+            template={template}
+            upload={skipHeader ? upload : uploadColumnsRow}
+            onSuccess={() => {
+              skipHeader ? stepper.setCurrent(2) : stepper.setCurrent(3);
+            }}
+            skipHeaderRowSelection={skipHeader}
+            onCancel={skipHeader ? reload : rowSelection}
+          />
+        );
+      case Steps.Complete:
+        return (
+          <Complete
+            reload={reload}
+            close={requestClose}
+            onSuccess={handleComplete}
+            upload={upload}
+            showImportLoadingStatus={showImportLoadingStatus}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
   // Render
 
   if (importerIsLoading) return null;
@@ -148,73 +205,6 @@ export default function Main() {
     );
   }
 
-  let content;
-  switch (step) {
-    case "upload":
-      if (!uploadError) {
-        content = (
-          <Uploader
-            template={template}
-            importerId={importerId}
-            metadata={metadata}
-            skipHeaderRowSelection={skipHeader}
-            onSuccess={setTusId}
-            endpoint={TUS_ENDPOINT}
-          />
-        );
-      }
-      break;
-    case "row-selection":
-      if (!isStored) {
-        content = <Spinner className={style.spinner}>Processing your file...</Spinner>;
-      } else {
-        content = (
-          <RowSelection
-            upload={upload}
-            onCancel={reload}
-            onSuccess={(uploadColumnsRow: any) => {
-              stepper.setCurrent(2);
-              setUploadColumnsRow(uploadColumnsRow);
-            }}
-            selectedId={selectedId}
-            setSelectedId={setSelectedId}
-          />
-        );
-      }
-      break;
-    case "review":
-      if (isStored) {
-        content = (
-          <Review
-            template={template}
-            upload={skipHeader ? upload : uploadColumnsRow}
-            onSuccess={() => {
-              skipHeader ? stepper.setCurrent(2) : stepper.setCurrent(3);
-            }}
-            skipHeaderRowSelection={skipHeader}
-            onCancel={skipHeader ? reload : rowSelection}
-          />
-        );
-      }
-      break;
-    case "complete":
-      if (!uploadError) {
-        content = (
-          <Complete
-            reload={reload}
-            close={requestClose}
-            onSuccess={handleComplete}
-            upload={upload}
-            showImportLoadingStatus={showImportLoadingStatus}
-          />
-        );
-      }
-      break;
-    default:
-      content = null;
-      break;
-  }
-
   const isEmbeddedInIframe = window?.top !== window?.self;
 
   return (
@@ -223,7 +213,7 @@ export default function Main() {
         <Stepper {...stepper} />
       </div>
 
-      <div className={style.content}>{content}</div>
+      <div className={style.content}>{renderContent()}</div>
 
       {!!uploadError && (
         <div className={style.status}>
