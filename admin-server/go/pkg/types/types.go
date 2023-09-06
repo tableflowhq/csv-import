@@ -8,6 +8,7 @@ import (
 	"tableflow/go/pkg/model"
 	"tableflow/go/pkg/model/jsonb"
 	"tableflow/go/pkg/tf"
+	"tableflow/go/pkg/util"
 	"unicode"
 )
 
@@ -171,6 +172,7 @@ func ConvertUploadTemplate(rawTemplate jsonb.JSONB, generateIDs bool) (*ImportSe
 	}
 
 	seenKeys := make(map[string]bool)
+	seenSuggestedMappings := make(map[string]bool)
 
 	for _, item := range columnSlice {
 		columnMap, ok := item.(map[string]interface{})
@@ -188,6 +190,15 @@ func ConvertUploadTemplate(rawTemplate jsonb.JSONB, generateIDs bool) (*ImportSe
 		if suggestedMappingsInterface, ok := columnMap["suggested_mappings"].([]interface{}); ok {
 			for _, v := range suggestedMappingsInterface {
 				if mappingVal, ok := v.(string); ok {
+					// Make sure the new mappings are all unique (case-insensitive) and don't contain blank values
+					if util.IsBlankUnicode(mappingVal) {
+						return nil, fmt.Errorf("Invalid template: suggested_mappings cannot contain blank values")
+					}
+					str := strings.ToLower(mappingVal)
+					if seenSuggestedMappings[str] {
+						return nil, fmt.Errorf("Invalid template: suggested_mappings cannot contain duplicate values (%v)", mappingVal)
+					}
+					seenSuggestedMappings[str] = true
 					suggestedMappings = append(suggestedMappings, mappingVal)
 				}
 			}
