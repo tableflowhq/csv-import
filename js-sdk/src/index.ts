@@ -17,6 +17,7 @@ export default function createTableFlowImporter({
   customStyles,
   className,
   showImportLoadingStatus,
+  showDownloadTemplateButton,
   skipHeaderRowSelection,
   schemaless,
 }: TableFlowImporterProps) {
@@ -51,9 +52,10 @@ export default function createTableFlowImporter({
     isOpen: "true",
     onComplete: onComplete ? "true" : "false",
     customStyles: JSON.stringify(customStyles),
-    showImportLoadingStatus: showImportLoadingStatus ? "true" : "false",
-    skipHeaderRowSelection: typeof skipHeaderRowSelection === "undefined" ? "" : skipHeaderRowSelection ? "true" : "false",
-    schemaless: typeof schemaless === "undefined" ? "" : schemaless ? "true" : "false",
+    showImportLoadingStatus: parseOptionalBoolean(showImportLoadingStatus),
+    showDownloadTemplateButton: parseOptionalBoolean(showDownloadTemplateButton),
+    skipHeaderRowSelection: parseOptionalBoolean(skipHeaderRowSelection),
+    schemaless: parseOptionalBoolean(schemaless),
   };
 
   const uploaderUrl = getUploaderUrl(urlParams, hostUrl);
@@ -129,4 +131,8 @@ const parseObjectOrStringJSON = (name: string, param?: Record<string, unknown> |
     return JSON.stringify(param);
   }
   return "";
+};
+
+const parseOptionalBoolean = (val?: boolean) => {
+  return typeof val === "undefined" || val === null ? "" : val ? "true" : "false";
 };
