@@ -1,5 +1,12 @@
 basePath: /
 definitions:
+  jsonb.JSONB:
+    properties:
+      data: {}
+      valid:
+        description: Valid is false if Data is NULL
+        type: boolean
+    type: object
   model.Import:
     properties:
       created_at:
@@ -15,15 +22,21 @@ definitions:
         example: false
         type: boolean
       metadata:
-        $ref: '#/definitions/model.JSONB'
+        $ref: '#/definitions/jsonb.JSONB'
       num_columns:
         example: 8
+        type: integer
+      num_error_rows:
+        example: 32
         type: integer
       num_processed_values:
         example: 128
         type: integer
       num_rows:
         example: 256
+        type: integer
+      num_valid_rows:
+        example: 224
         type: integer
       upload_id:
         example: 50ca61e1-f683-4b03-9ec4-4b3adb592bf1
@@ -67,9 +80,6 @@ definitions:
       workspace_id:
         example: b2079476-261a-41fe-8019-46eb51c537f7
         type: string
-    type: object
-  model.JSONB:
-    additionalProperties: true
     type: object
   model.Organization:
     properties:
@@ -149,6 +159,12 @@ definitions:
       required:
         example: false
         type: boolean
+      suggested_mappings:
+        example:
+        - first_name
+        items:
+          type: string
+        type: array
       template_id:
         example: f0797968-becc-422a-b135-19de1d8c5d46
         type: string
@@ -157,6 +173,10 @@ definitions:
         type: integer
       updated_by:
         $ref: '#/definitions/model.User'
+      validations:
+        items:
+          $ref: '#/definitions/model.Validation'
+        type: array
     type: object
   model.Upload:
     properties:
@@ -196,9 +216,12 @@ definitions:
       num_rows:
         example: 256
         type: integer
+      schemaless:
+        example: false
+        type: boolean
       template:
-        description: Set if the user passes in a template to the SDK, which overrides
-          the template on the importer
+        description: Set if the user passes in a template to the SDK (which overrides
+          the template on the importer) or if a schemaless import occurs
         example: '{}'
         type: string
       tus_id:
@@ -254,6 +277,27 @@ definitions:
         example: 1682366228
         type: integer
     type: object
+  model.Validation:
+    properties:
+      id:
+        example: 1
+        type: integer
+      message:
+        example: This column must contain a value
+        type: string
+      severity:
+        example: error
+        type: string
+      template_column_id:
+        example: a1ed136d-33ce-4b7e-a7a4-8a5ccfe54cd5
+        type: string
+      type:
+        example: filled
+        type: string
+      value:
+        example: "true"
+        type: string
+    type: object
   model.Workspace:
     properties:
       created_at:
@@ -279,6 +323,12 @@ definitions:
     type: object
   types.ImportRow:
     properties:
+      errors:
+        additionalProperties:
+          items:
+            $ref: '#/definitions/types.ImportRowError'
+          type: array
+        type: object
       index:
         example: 0
         type: integer
@@ -287,11 +337,23 @@ definitions:
           type: string
         type: object
     type: object
+  types.ImportRowError:
+    properties:
+      message:
+        type: string
+      severity:
+        type: string
+      type:
+        type: string
+    type: object
   types.ImportServiceImport:
     properties:
       created_at:
         example: 1682366228
         type: integer
+      has_errors:
+        example: false
+        type: boolean
       id:
         example: da5554e3-6c87-41b2-9366-5449a2f15b53
         type: string
@@ -302,15 +364,21 @@ definitions:
         example: false
         type: boolean
       metadata:
-        $ref: '#/definitions/model.JSONB'
+        $ref: '#/definitions/jsonb.JSONB'
       num_columns:
         example: 8
+        type: integer
+      num_error_rows:
+        example: 32
         type: integer
       num_processed_values:
         example: 128
         type: integer
       num_rows:
         example: 256
+        type: integer
+      num_valid_rows:
+        example: 224
         type: integer
       rows:
         items:
@@ -364,6 +432,16 @@ definitions:
       required:
         example: false
         type: boolean
+      suggested_mappings:
+        example:
+        - first_name
+        items:
+          type: string
+        type: array
+      validations:
+        items:
+          $ref: '#/definitions/types.ImportServiceValidation'
+        type: array
     type: object
   types.ImportServiceUpload:
     properties:
@@ -432,6 +510,24 @@ definitions:
           type: string
         type: array
     type: object
+  types.ImportServiceValidation:
+    properties:
+      id:
+        example: 4581
+        type: integer
+      message:
+        example: This column must contain a value
+        type: string
+      severity:
+        example: error
+        type: string
+      type:
+        example: filled
+        type: string
+      value:
+        example: "true"
+        type: string
+    type: object
   types.ImporterServiceUploadHeaderRowSelection:
     properties:
       index:
@@ -496,9 +592,17 @@ definitions:
       required:
         example: false
         type: boolean
+      suggested_mappings:
+        items:
+          type: string
+        type: array
       template_id:
         example: f0797968-becc-422a-b135-19de1d8c5d46
         type: string
+      validations:
+        items:
+          $ref: '#/definitions/web.TemplateColumnValidationRequest'
+        type: array
     type: object
   web.TemplateColumnEditRequest:
     properties:
@@ -514,6 +618,32 @@ definitions:
       required:
         example: false
         type: boolean
+      suggested_mappings:
+        items:
+          type: string
+        type: array
+      validations:
+        items:
+          $ref: '#/definitions/web.TemplateColumnValidationRequest'
+        type: array
+    type: object
+  web.TemplateColumnValidationRequest:
+    properties:
+      id:
+        example: 1
+        type: integer
+      message:
+        example: This column must contain a value
+        type: string
+      severity:
+        example: error
+        type: string
+      type:
+        example: filled
+        type: string
+      value:
+        example: "true"
+        type: string
     type: object
 host: localhost:3003
 info:
@@ -908,26 +1038,6 @@ paths:
       tags:
       - File Import
   /file-import/v1/importer/{id}:
-    get:
-      description: Get a single importer and its template
-      parameters:
-      - description: Importer ID
-        in: path
-        name: id
-        required: true
-        type: string
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/types.ImportServiceImporter'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/types.Res'
-      summary: Get importer
-      tags:
-      - File Import
     post:
       description: Get a single importer and its template
       parameters:
