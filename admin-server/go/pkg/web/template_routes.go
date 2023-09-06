@@ -7,6 +7,7 @@ import (
 	"github.com/samber/lo"
 	"gorm.io/gorm"
 	"net/http"
+	"strings"
 	"tableflow/go/pkg/db"
 	"tableflow/go/pkg/model"
 	"tableflow/go/pkg/model/jsonb"
@@ -17,20 +18,22 @@ import (
 )
 
 type TemplateColumnCreateRequest struct {
-	TemplateID  string                            `json:"template_id" example:"f0797968-becc-422a-b135-19de1d8c5d46"`
-	Name        string                            `json:"name" example:"First Name"`
-	Key         string                            `json:"key" example:"first_name"`
-	Required    bool                              `json:"required" example:"false"`
-	Description string                            `json:"description" example:"The first name"`
-	Validations []TemplateColumnValidationRequest `json:"validations"`
+	TemplateID        string                            `json:"template_id" example:"f0797968-becc-422a-b135-19de1d8c5d46"`
+	Name              string                            `json:"name" example:"First Name"`
+	Key               string                            `json:"key" example:"first_name"`
+	Required          bool                              `json:"required" example:"false"`
+	Description       string                            `json:"description" example:"The first name"`
+	Validations       []TemplateColumnValidationRequest `json:"validations"`
+	SuggestedMappings *[]string                         `json:"suggested_mappings"`
 }
 
 type TemplateColumnEditRequest struct {
-	Name        *string                            `json:"name" example:"First Name"`
-	Key         *string                            `json:"key" example:"first_name"`
-	Required    *bool                              `json:"required" example:"false"`
-	Description *string                            `json:"description" example:"The first name"`
-	Validations *[]TemplateColumnValidationRequest `json:"validations"`
+	Name              *string                            `json:"name" example:"First Name"`
+	Key               *string                            `json:"key" example:"first_name"`
+	Required          *bool                              `json:"required" example:"false"`
+	Description       *string                            `json:"description" example:"The first name"`
+	Validations       *[]TemplateColumnValidationRequest `json:"validations"`
+	SuggestedMappings *[]string                          `json:"suggested_mappings"`
 }
 
 type TemplateColumnValidationRequest struct {
@@ -114,15 +117,25 @@ func createTemplateColumn(c *gin.Context, getWorkspaceUser func(*gin.Context, st
 		return
 	}
 
+	suggestedMappings := make([]string, 0)
+	if req.SuggestedMappings != nil {
+		suggestedMappings, err = validateSuggestedMappings(*req.SuggestedMappings, template)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("Invalid suggested mappings: %v", err.Error())})
+			return
+		}
+	}
+
 	templateColumn := model.TemplateColumn{
-		ID:          model.NewID(),
-		TemplateID:  template.ID,
-		Name:        req.Name,
-		Key:         req.Key,
-		Required:    req.Required,
-		Description: null.NewString(req.Description, len(req.Description) != 0),
-		CreatedBy:   user.ID,
-		UpdatedBy:   user.ID,
+		ID:                model.NewID(),
+		TemplateID:        template.ID,
+		Name:              req.Name,
+		Key:               req.Key,
+		Required:          req.Required,
+		Description:       null.NewString(req.Description, len(req.Description) != 0),
+		SuggestedMappings: suggestedMappings,
+		CreatedBy:         user.ID,
+		UpdatedBy:         user.ID,
 	}
 
 	// Validations
@@ -224,6 +237,15 @@ func editTemplateColumn(c *gin.Context, getWorkspaceUser func(*gin.Context, stri
 	}
 	if req.Description != nil && *req.Description != templateColumn.Description.String {
 		templateColumn.Description = null.StringFromPtr(req.Description)
+		save = true
+	}
+	if req.SuggestedMappings != nil {
+		suggestedMappings, err := validateSuggestedMappings(*req.SuggestedMappings, template)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("Invalid suggested mappings: %v", err.Error())})
+			return
+		}
+		templateColumn.SuggestedMappings = suggestedMappings
 		save = true
 	}
 	if req.Validations != nil {
@@ -355,6 +377,48 @@ func deleteTemplateColumn(c *gin.Context, getWorkspaceUser func(*gin.Context, st
 	})
 	template.TemplateColumns = append(template.TemplateColumns[:i], template.TemplateColumns[i+1:]...)
 	c.JSON(http.StatusOK, template)
+}
+
+func validateSuggestedMappings(suggestedMappings []string, template *model.Template) ([]string, error) {
+	if len(suggestedMappings) == 0 {
+		return suggestedMappings, nil
+	}
+	// Make sure the new mappings are all unique (case-insensitive) and don't contain blank values
+	seen := make(map[string]bool)
+	for _, str := range suggestedMappings {
+		if util.IsBlankUnicode(str) {
+			return []string{}, fmt.Errorf("cannot contain blank values")
+		}
+		str = strings.ToLower(str)
+		if seen[str] {
+			return []string{}, fmt.Errorf("cannot contain duplicate values (%v)", str)
+		}
+		seen[str] = true
+	}
+	// Make sure the new mappings are unique across other mappings for all template columns in the template
+	type nameAndSuggestion struct {
+		name       string
+		suggestion string
+	}
+	var allSuggestedMappings []nameAndSuggestion
+	for _, tc := range template.TemplateColumns {
+		for _, str := range tc.SuggestedMappings {
+			allSuggestedMappings = append(allSuggestedMappings, nameAndSuggestion{
+				name:       tc.Name,
+				suggestion: str,
+			})
+		}
+	}
+	for _, str := range suggestedMappings {
+		orig := str
+		str = strings.ToLower(str)
+		for _, mapping := range allSuggestedMappings {
+			if str == strings.ToLower(mapping.suggestion) {
+				return []string{}, fmt.Errorf("suggestions must be unique across all columns in the template, the value '%v' is already used in the column %v", orig, mapping.name)
+			}
+		}
+	}
+	return suggestedMappings, nil
 }
 
 func parseRequestValidations(reqValidations []TemplateColumnValidationRequest, templateColumn *model.TemplateColumn) ([]*model.Validation, error) {

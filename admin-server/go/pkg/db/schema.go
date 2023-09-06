@@ -355,5 +355,8 @@ func GetDatabaseSchemaInitSQL() string {
 		    add column if not exists num_error_rows integer;
 		alter table imports
 		    add column if not exists num_valid_rows integer;
+
+		alter table template_columns
+		    add column suggested_mappings text[] not null default '{}';
 	`
 }

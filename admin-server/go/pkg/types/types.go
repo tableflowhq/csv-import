@@ -48,12 +48,13 @@ type ImportServiceTemplate struct {
 }
 
 type ImportServiceTemplateColumn struct {
-	ID          model.ID                   `json:"id" swaggertype:"string" example:"a1ed136d-33ce-4b7e-a7a4-8a5ccfe54cd5"`
-	Name        string                     `json:"name" example:"First Name"`
-	Key         string                     `json:"key" example:"email"`
-	Required    bool                       `json:"required" example:"false"`
-	Description string                     `json:"description" example:"The first name"`
-	Validations []*ImportServiceValidation `json:"validations,omitempty"`
+	ID                model.ID                   `json:"id" swaggertype:"string" example:"a1ed136d-33ce-4b7e-a7a4-8a5ccfe54cd5"`
+	Name              string                     `json:"name" example:"First Name"`
+	Key               string                     `json:"key" example:"email"`
+	Required          bool                       `json:"required" example:"false"`
+	Description       string                     `json:"description" example:"The first name"`
+	Validations       []*ImportServiceValidation `json:"validations,omitempty"`
+	SuggestedMappings []string                   `json:"suggested_mappings" swaggertype:"array,string" example:"first_name"`
 }
 
 type ImportServiceValidation struct {
@@ -182,6 +183,15 @@ func ConvertUploadTemplate(rawTemplate jsonb.JSONB, generateIDs bool) (*ImportSe
 		key, _ := columnMap["key"].(string)
 		required, _ := columnMap["required"].(bool)
 		description, _ := columnMap["description"].(string)
+		suggestedMappings := make([]string, 0)
+
+		if suggestedMappingsInterface, ok := columnMap["suggested_mappings"].([]interface{}); ok {
+			for _, v := range suggestedMappingsInterface {
+				if mappingVal, ok := v.(string); ok {
+					suggestedMappings = append(suggestedMappings, mappingVal)
+				}
+			}
+		}
 
 		if name == "" {
 			return nil, fmt.Errorf("Invalid template: The paramter 'name' is required for each column")
@@ -209,11 +219,12 @@ func ConvertUploadTemplate(rawTemplate jsonb.JSONB, generateIDs bool) (*ImportSe
 		}
 
 		columns = append(columns, &ImportServiceTemplateColumn{
-			ID:          model.ParseID(id),
-			Name:        name,
-			Key:         key,
-			Required:    required,
-			Description: description,
+			ID:                model.ParseID(id),
+			Name:              name,
+			Key:               key,
+			Required:          required,
+			Description:       description,
+			SuggestedMappings: suggestedMappings,
 		})
 	}
 

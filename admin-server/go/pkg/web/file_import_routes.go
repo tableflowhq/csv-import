@@ -220,6 +220,7 @@ func getImporterForImportService(c *gin.Context) {
 					Message:      v.Message,
 				}
 			}),
+			SuggestedMappings: tc.SuggestedMappings,
 		}
 	}
 	importerTemplate := &types.ImportServiceTemplate{
@@ -512,11 +513,12 @@ func setUploadColumnMappingAndImportData(c *gin.Context, importCompleteHandler f
 		}
 		for _, importColumn := range importServiceTemplate.TemplateColumns {
 			templateColumn := &model.TemplateColumn{
-				ID:          importColumn.ID,
-				Name:        importColumn.Name,
-				Key:         importColumn.Key,
-				Required:    importColumn.Required,
-				Description: null.NewString(importColumn.Description, len(importColumn.Description) != 0),
+				ID:                importColumn.ID,
+				Name:              importColumn.Name,
+				Key:               importColumn.Key,
+				Required:          importColumn.Required,
+				Description:       null.NewString(importColumn.Description, len(importColumn.Description) != 0),
+				SuggestedMappings: importColumn.SuggestedMappings,
 			}
 			template.TemplateColumns = append(template.TemplateColumns, templateColumn)
 		}
