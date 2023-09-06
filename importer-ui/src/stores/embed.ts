@@ -9,6 +9,7 @@ type EmbedParams = {
   showImportLoadingStatus: boolean;
   skipHeaderRowSelection?: boolean;
   schemaless?: boolean;
+  showDownloadTemplateButton: boolean;
 };
 
 type ParamsStore = {
@@ -24,6 +25,7 @@ const useEmbedStore = create<ParamsStore>()((set) => ({
     onComplete: false,
     showImportLoadingStatus: false,
     template: "",
+    showDownloadTemplateButton: true,
   },
   setEmbedParams: (embedParams) => set({ embedParams }),
 }));

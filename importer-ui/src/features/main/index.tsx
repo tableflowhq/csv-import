@@ -33,6 +33,7 @@ export default function Main() {
     skipHeaderRowSelection,
     template: sdkDefinedTemplate,
     schemaless,
+    showDownloadTemplateButton,
   } = useEmbedStore((state) => state.embedParams);
   let skipHeader = skipHeaderRowSelection;
 
@@ -142,6 +143,7 @@ export default function Main() {
               skipHeaderRowSelection={skipHeader || false}
               onSuccess={setTusId}
               endpoint={TUS_ENDPOINT}
+              showDownloadTemplateButton={showDownloadTemplateButton}
             />
           );
         }

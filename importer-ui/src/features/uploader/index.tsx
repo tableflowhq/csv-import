@@ -4,7 +4,16 @@ import useTemplateTable from "./hooks/useTemplateTable";
 import { UploaderProps } from "./types";
 import style from "./style/Uploader.module.scss";
 
-export default function Uploader({ template, importerId, metadata, skipHeaderRowSelection, endpoint, onSuccess, schemaless }: UploaderProps) {
+export default function Uploader({
+  template,
+  importerId,
+  metadata,
+  skipHeaderRowSelection,
+  endpoint,
+  onSuccess,
+  schemaless,
+  showDownloadTemplateButton,
+}: UploaderProps) {
   const fields = useTemplateTable(template.columns);
 
   const theme = useThemeStore((state) => state.theme);
@@ -38,9 +47,9 @@ export default function Uploader({ template, importerId, metadata, skipHeaderRow
     return uppyWrapper;
   }
 
-  function download() {
+  function downloadTemplate() {
     const { columns } = template;
-    const csvData = `"${columns.map((obj) => obj.key).join('","')}"`;
+    const csvData = `${columns.map((obj) => obj.name).join(",")}`;
 
     const link = document.createElement("a");
     link.href = URL.createObjectURL(new Blob([csvData], { type: "text/csv" }));
@@ -48,15 +57,18 @@ export default function Uploader({ template, importerId, metadata, skipHeaderRow
     link.click();
   }
 
+  const downloadTemplateButton = showDownloadTemplateButton ? (
+    <Button icon="downloadFile" onClick={downloadTemplate} variants={theme === "light" ? [] : ["secondary"]}>
+      Download Template
+    </Button>
+  ) : null;
+
   return (
     <div className={style.content}>
       {uppyWrapper}
-
       <div className={style.box}>
         <Table data={fields} background="dark" columnWidths={["65%", "35%"]} columnAlignments={["", "center"]} />
-        <Button icon="download" onClick={download} variants={theme === "light" ? [] : ["secondary"]}>
-          Download Example File
-        </Button>
+        {downloadTemplateButton}
       </div>
     </div>
   );

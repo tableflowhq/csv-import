@@ -9,7 +9,8 @@ type SearchParams = Record<
   | "customStyles"
   | "showImportLoadingStatus"
   | "skipHeaderRowSelection"
-  | "schemaless",
+  | "schemaless"
+  | "showDownloadTemplateButton",
   string
 >;
 
