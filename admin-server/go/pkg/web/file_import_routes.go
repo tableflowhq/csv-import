@@ -93,7 +93,7 @@ func tusPatchFile(h *handler.UnroutedHandler) gin.HandlerFunc {
 	}
 }
 
-// getImporterForImportService
+// importerGetImporter
 //
 //	@Summary		Get importer
 //	@Description	Get a single importer and its template
@@ -103,7 +103,7 @@ func tusPatchFile(h *handler.UnroutedHandler) gin.HandlerFunc {
 //	@Router			/file-import/v1/importer/{id} [post]
 //	@Param			id		path	string					true	"Importer ID"
 //	@Param			body	body	map[string]interface{}	false	"Request body"
-func getImporterForImportService(c *gin.Context) {
+func importerGetImporter(c *gin.Context) {
 	id := c.Param("id")
 	if len(id) == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No importer ID provided"})
@@ -236,7 +236,7 @@ func getImporterForImportService(c *gin.Context) {
 	c.JSON(http.StatusOK, importServiceImporter)
 }
 
-// getUploadForImportService
+// importerGetUpload
 //
 //	@Summary		Get upload by tus ID
 //	@Description	Get a single upload by the tus ID provided to the client from the upload
@@ -245,7 +245,7 @@ func getImporterForImportService(c *gin.Context) {
 //	@Failure		400	{object}	types.Res
 //	@Router			/file-import/v1/upload/{id} [get]
 //	@Param			id	path	string	true	"tus ID"
-func getUploadForImportService(c *gin.Context) {
+func importerGetUpload(c *gin.Context) {
 	id := c.Param("id")
 	if len(id) == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No upload tus ID provided"})
@@ -281,7 +281,7 @@ func getUploadForImportService(c *gin.Context) {
 	c.JSON(http.StatusOK, importerUpload)
 }
 
-// setUploadHeaderRowForImportService
+// importerSetHeaderRow
 //
 //	@Summary		Set upload header row
 //	@Description	Set the header row index on the upload
@@ -289,9 +289,9 @@ func getUploadForImportService(c *gin.Context) {
 //	@Success		200	{object}	types.Upload
 //	@Failure		400	{object}	types.Res
 //	@Router			/file-import/v1/upload/{id}/set-header-row [post]
-//	@Param			id		path	string											true	"Upload ID"
+//	@Param			id		path	string							true	"Upload ID"
 //	@Param			body	body	types.UploadHeaderRowSelection	true	"Request body"
-func setUploadHeaderRowForImportService(c *gin.Context) {
+func importerSetHeaderRow(c *gin.Context) {
 	id := c.Param("id")
 	if len(id) == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No upload ID provided"})
@@ -377,7 +377,7 @@ func setUploadHeaderRowForImportService(c *gin.Context) {
 	c.JSON(http.StatusOK, importerUpload)
 }
 
-// setUploadColumnMappingAndImportData
+// importerSetColumnMappingAndImport
 //
 //	@Summary		Set upload column mapping and import data
 //	@Description	Set the template column IDs for each upload column and trigger the import. Note: we will eventually have a separate import endpoint once there is a review step in the upload process.
@@ -387,7 +387,7 @@ func setUploadHeaderRowForImportService(c *gin.Context) {
 //	@Router			/file-import/v1/upload/{id}/set-column-mapping [post]
 //	@Param			id		path	string				true	"Upload ID"
 //	@Param			body	body	map[string]string	true	"Request body"
-func setUploadColumnMappingAndImportData(c *gin.Context, importCompleteHandler func(*model.Import)) {
+func importerSetColumnMappingAndImport(c *gin.Context, importCompleteHandler func(*model.Import)) {
 	id := c.Param("id")
 	if len(id) == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No upload ID provided"})
@@ -563,7 +563,7 @@ func setUploadColumnMappingAndImportData(c *gin.Context, importCompleteHandler f
 	c.JSON(http.StatusOK, types.Res{Message: "success"})
 }
 
-// reviewImportForImportService
+// importerReviewImport
 //
 //	@Summary		Get import by upload ID for the review screen
 //	@Description	Get a single import by the upload ID, including the row data for the first page of the review screen if the import is complete
@@ -572,7 +572,7 @@ func setUploadColumnMappingAndImportData(c *gin.Context, importCompleteHandler f
 //	@Failure		400	{object}	types.Res
 //	@Router			/file-import/v1/import/{id}/review [get]
 //	@Param			id	path	string	true	"Upload ID"
-func reviewImportForImportService(c *gin.Context) {
+func importerReviewImport(c *gin.Context) {
 	id := c.Param("id")
 	if len(id) == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No upload ID provided"})
@@ -620,7 +620,7 @@ func reviewImportForImportService(c *gin.Context) {
 	c.JSON(http.StatusOK, importServiceImport)
 }
 
-// getImportRowsForImportService
+// importerGetImportRows
 //
 //	@Summary		Get import rows by upload ID for the review screen
 //	@Description	Paginate import rows by the upload ID of an import
@@ -628,10 +628,10 @@ func reviewImportForImportService(c *gin.Context) {
 //	@Success		200	{object}	types.ImportData
 //	@Failure		400	{object}	types.Res
 //	@Router			/file-import/v1/import/{id}/rows [get]
-//	@Param			id	path	string	true	"Upload ID"
+//	@Param			id		path	string	true	"Upload ID"
 //	@Param			offset	query	int		true	"Pagination offset"	minimum(0)
 //	@Param			limit	query	int		true	"Pagination limit"	minimum(1)	maximum(1000)
-func getImportRowsForImportService(c *gin.Context) {
+func importerGetImportRows(c *gin.Context) {
 	id := c.Param("id")
 	if len(id) == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No upload ID provided"})
@@ -666,7 +666,7 @@ func getImportRowsForImportService(c *gin.Context) {
 	c.JSON(http.StatusOK, data)
 }
 
-// getImportForImportService
+// importerGetImport
 //
 //	@Summary		Get import by upload ID
 //	@Description	Get a single import by the upload ID, including the data if the import is complete
@@ -675,7 +675,7 @@ func getImportRowsForImportService(c *gin.Context) {
 //	@Failure		400	{object}	types.Res
 //	@Router			/file-import/v1/import/{id} [get]
 //	@Param			id	path	string	true	"Upload ID"
-func getImportForImportService(c *gin.Context) {
+func importerGetImport(c *gin.Context) {
 	id := c.Param("id")
 	if len(id) == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No upload ID provided"})
@@ -714,7 +714,13 @@ func getImportForImportService(c *gin.Context) {
 		return
 	}
 
-	importServiceImport.Rows = scylla.RetrieveAllImportRows(imp)
+	rows := scylla.RetrieveAllImportRows(imp)
+
+	// TODO: Remove after updating importer-ui
+	importServiceImport.Rows = rows
+	importServiceImport.Data = types.ImportData{
+		Rows: rows,
+	}
 
 	c.JSON(http.StatusOK, importServiceImport)
 }
