@@ -63,49 +63,11 @@ func getImportRowsForExternalAPI(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No import ID provided"})
 		return
 	}
-	offsetParam, _ := c.GetQuery("offset")
-	limitParam, _ := c.GetQuery("limit")
-	defaultOffset := 0
-	defaultLimit := 100
-	maxLimit := 1000
-	offset := 0
-	limit := 0
 
-	if len(offsetParam) == 0 && len(limitParam) != 0 {
-		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "The parameter 'offset' is required when providing a limit"})
+	pagination, err := util.ParsePaginationQuery(c)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return
-	}
-	if len(limitParam) == 0 && len(offsetParam) != 0 {
-		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "The parameter 'limit' is required when providing a offset"})
-		return
-	}
-	if len(offsetParam) == 0 && len(limitParam) == 0 {
-		offset = defaultOffset
-		limit = defaultLimit
-	} else {
-		var err error
-		offset, err = strconv.Atoi(offsetParam)
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Invalid offset parameter"})
-			return
-		}
-		if offset < 0 {
-			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Offset must be positive"})
-			return
-		}
-		limit, err = strconv.Atoi(limitParam)
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Invalid limit parameter"})
-			return
-		}
-		if limit < 1 {
-			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Limit must be greater than 1"})
-			return
-		}
-		if limit > maxLimit {
-			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("Limit cannot be greater than %v", maxLimit)})
-			return
-		}
 	}
 
 	imp, err := db.GetImport(id)
@@ -125,7 +87,7 @@ func getImportRowsForExternalAPI(c *gin.Context) {
 		return
 	}
 
-	rows := scylla.PaginateImportRows(imp, offset, limit)
+	rows := scylla.PaginateImportRows(imp, pagination.Offset, pagination.Limit)
 	c.JSON(http.StatusOK, rows)
 }
 

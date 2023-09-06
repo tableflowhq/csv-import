@@ -37,7 +37,7 @@ type importProcessResult struct {
 
 // importServiceMaxNumRowsToPassData If the import has more rows than this value, then don't pass the data back to the
 // frontend callback. It must be retrieved from the API.
-var importServiceMaxNumRowsForFrontendPassThrough = int(math.Min(25000, scylla.MaxAllRowRetrieval))
+var maxNumRowsForFrontendPassThrough = int(math.Min(25000, scylla.MaxAllRowRetrieval))
 
 // tusPostFile
 //
@@ -597,14 +597,25 @@ func reviewImportForImportService(c *gin.Context) {
 		NumValidRows:       imp.NumValidRows,
 		CreatedAt:          imp.CreatedAt,
 		Rows:               []types.ImportRow{},
+		Data: types.ImportData{
+			Pagination: &types.Pagination{},
+			Rows:       []types.ImportRow{},
+		},
 	}
 	if !imp.IsStored {
 		// Don't attempt to retrieve the data in Scylla if it's not stored
 		c.JSON(http.StatusOK, importServiceImport)
 		return
 	}
+
 	// Retrieve the first 100 rows for the validations screen
-	//importServiceImport.Rows = scylla.
+	pagination := &types.Pagination{
+		Total:  int(imp.NumRows.Int64),
+		Offset: util.PaginationDefaultOffset,
+		Limit:  util.PaginationDefaultLimit,
+	}
+	importServiceImport.Data.Pagination = pagination
+	importServiceImport.Data.Rows = scylla.PaginateImportRows(imp, pagination.Offset, pagination.Limit)
 
 	c.JSON(http.StatusOK, importServiceImport)
 }
@@ -618,17 +629,26 @@ func reviewImportForImportService(c *gin.Context) {
 //	@Failure		400	{object}	types.Res
 //	@Router			/file-import/v1/import/{id}/rows [get]
 //	@Param			id	path	string	true	"Upload ID"
+//	@Param			offset	query	int		true	"Pagination offset"	minimum(0)
+//	@Param			limit	query	int		true	"Pagination limit"	minimum(1)	maximum(1000)
 func getImportRowsForImportService(c *gin.Context) {
-	//id := c.Param("id")
-	//if len(id) == 0 {
-	//	c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No upload ID provided"})
-	//	return
-	//}
-	//imp, err := db.GetImportByUploadID(id)
-	//if err != nil {
-	//	c.AbortWithStatusJSON(http.StatusOK, gin.H{})
-	//	return
-	//}
+	id := c.Param("id")
+	if len(id) == 0 {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No upload ID provided"})
+		return
+	}
+
+	pagination, err := util.ParsePaginationQuery(c)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+		return
+	}
+
+	imp, err := db.GetImportByUploadID(id)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusOK, gin.H{})
+		return
+	}
 	//importServiceImport := &types.Import{
 	//	ID:                 imp.ID,
 	//	UploadID:           imp.UploadID,
@@ -690,10 +710,10 @@ func getImportForImportService(c *gin.Context) {
 		CreatedAt:          imp.CreatedAt,
 		Rows:               []types.ImportRow{},
 	}
-	if int(imp.NumRows.Int64) > importServiceMaxNumRowsForFrontendPassThrough {
+	if int(imp.NumRows.Int64) > maxNumRowsForFrontendPassThrough {
 		importServiceImport.Error = null.StringFrom(fmt.Sprintf("This import has %v rows which exceeds the max "+
 			"allowed number of rows for frontend callback (%v). Use the API to retrieve the data.",
-			imp.NumRows.Int64, importServiceMaxNumRowsForFrontendPassThrough))
+			imp.NumRows.Int64, maxNumRowsForFrontendPassThrough))
 		c.JSON(http.StatusOK, importServiceImport)
 		return
 	}
