@@ -130,6 +130,8 @@ func StartWebServer(config ServerConfig) *http.Server {
 	importer.GET("/upload/:id", getUploadForImportService)
 	importer.POST("/upload/:id/set-header-row", setUploadHeaderRowForImportService)
 	importer.POST("/upload/:id/set-column-mapping", func(c *gin.Context) { setUploadColumnMappingAndImportData(c, config.ImportCompleteHandler) })
+	importer.GET("/import/:id/review", reviewImportForImportService)
+	importer.GET("/import/:id/rows", getImportRowsForImportService)
 	importer.GET("/import/:id", getImportForImportService)
 
 	/* ---------------------------  Admin routes  ---------------------------- */

@@ -10,6 +10,7 @@ import (
 	"net/mail"
 	"reflect"
 	"sort"
+	"strings"
 	"sync"
 	"unicode"
 )
@@ -172,4 +173,26 @@ func ShutdownHandler(ctx context.Context, wg *sync.WaitGroup, close func()) {
 			return
 		}
 	}
+}
+
+func SanitizeKey(input string) string {
+	// Replace spaces with underscores
+	result := strings.ReplaceAll(strings.ToLower(input), " ", "_")
+	// Remove non-alphanumeric characters
+	result = strings.Map(func(r rune) rune {
+		if unicode.IsLetter(r) || unicode.IsDigit(r) || r == '_' {
+			return r
+		}
+		return -1
+	}, result)
+	return result
+}
+
+func ValidateKey(input string) bool {
+	for _, r := range input {
+		if !(unicode.IsLower(r) || unicode.IsDigit(r) || r == '_') {
+			return false
+		}
+	}
+	return true
 }
