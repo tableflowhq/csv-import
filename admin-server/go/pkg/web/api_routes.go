@@ -64,7 +64,7 @@ func getImportRowsForExternalAPI(c *gin.Context) {
 		return
 	}
 
-	pagination, err := util.ParsePaginationQuery(c)
+	pagination, err := types.ParsePaginationQuery(c)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return

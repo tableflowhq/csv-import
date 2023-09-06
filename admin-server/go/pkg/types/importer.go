@@ -109,12 +109,6 @@ type ImportData struct {
 	Rows       []ImportRow `json:"rows"`
 }
 
-type Pagination struct {
-	Total  int `json:"total"`
-	Offset int `json:"offset"`
-	Limit  int `json:"limit"`
-}
-
 type ImportRow struct {
 	Index  int                         `json:"index" example:"0"`
 	Values map[string]string           `json:"values"`

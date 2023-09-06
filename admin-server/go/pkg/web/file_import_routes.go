@@ -611,8 +611,8 @@ func reviewImportForImportService(c *gin.Context) {
 	// Retrieve the first 100 rows for the validations screen
 	pagination := &types.Pagination{
 		Total:  int(imp.NumRows.Int64),
-		Offset: util.PaginationDefaultOffset,
-		Limit:  util.PaginationDefaultLimit,
+		Offset: types.PaginationDefaultOffset,
+		Limit:  types.PaginationDefaultLimit,
 	}
 	importServiceImport.Data.Pagination = pagination
 	importServiceImport.Data.Rows = scylla.PaginateImportRows(imp, pagination.Offset, pagination.Limit)
@@ -623,9 +623,9 @@ func reviewImportForImportService(c *gin.Context) {
 // getImportRowsForImportService
 //
 //	@Summary		Get import rows by upload ID for the review screen
-//	@Description	Get import rows by the upload ID to paginate
+//	@Description	Paginate import rows by the upload ID of an import
 //	@Tags			File Import
-//	@Success		200	{object}	types.Import
+//	@Success		200	{object}	types.ImportData
 //	@Failure		400	{object}	types.Res
 //	@Router			/file-import/v1/import/{id}/rows [get]
 //	@Param			id	path	string	true	"Upload ID"
@@ -638,7 +638,7 @@ func getImportRowsForImportService(c *gin.Context) {
 		return
 	}
 
-	pagination, err := util.ParsePaginationQuery(c)
+	pagination, err := types.ParsePaginationQuery(c)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return
@@ -649,30 +649,21 @@ func getImportRowsForImportService(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusOK, gin.H{})
 		return
 	}
-	//importServiceImport := &types.Import{
-	//	ID:                 imp.ID,
-	//	UploadID:           imp.UploadID,
-	//	ImporterID:         imp.ImporterID,
-	//	NumRows:            imp.NumRows,
-	//	NumColumns:         imp.NumColumns,
-	//	NumProcessedValues: imp.NumProcessedValues,
-	//	Metadata:           imp.Metadata,
-	//	IsStored:           imp.IsStored,
-	//	HasErrors:          imp.HasErrors(),
-	//	NumErrorRows:       imp.NumErrorRows,
-	//	NumValidRows:       imp.NumValidRows,
-	//	CreatedAt:          imp.CreatedAt,
-	//	Rows:               []types.ImportRow{},
-	//}
-	//if !imp.IsStored {
-	//	// Don't attempt to retrieve the data in Scylla if it's not stored
-	//	c.JSON(http.StatusOK, importServiceImport)
-	//	return
-	//}
-	//// Retrieve the first 100 rows for the validations screen
-	////importServiceImport.Rows = scylla.
-	//
-	//c.JSON(http.StatusOK, importServiceImport)
+	if !imp.IsStored {
+		// Don't allow the data to be retrieved in Scylla if it's not stored yet
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Import is not yet stored, please wait until the import has finished processing"})
+		return
+	}
+
+	pagination.Total = int(imp.NumRows.Int64)
+
+	rows := scylla.PaginateImportRows(imp, pagination.Offset, pagination.Limit)
+	data := types.ImportData{
+		Pagination: &pagination,
+		Rows:       rows,
+	}
+
+	c.JSON(http.StatusOK, data)
 }
 
 // getImportForImportService
