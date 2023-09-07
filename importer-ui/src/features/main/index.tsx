@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { Button, Errors, Stepper, useStepper } from "@tableflow/ui-library";
-import Spinner from "../../components/Spinner";
 import { getAPIBaseURL } from "../../api/api";
 import useEmbedStore from "../../stores/embed";
 import postMessage from "../../utils/postMessage";
 import useApi from "./hooks/useApi";
+import useModifiedSteps from "./hooks/useModifiedSteps";
+import { Steps } from "./types";
 import style from "./style/Main.module.scss";
 import Complete from "../complete";
 import Review from "../review";
@@ -14,10 +15,10 @@ import Uploader from "../uploader";
 const TUS_ENDPOINT = getAPIBaseURL("v1") + "files";
 
 const steps = [
-  { label: "Upload", id: "upload" },
-  { label: "Select Header", id: "row-selection" },
-  { label: "Review", id: "review" },
-  { label: "Complete", id: "complete" },
+  { label: "Upload", id: Steps.Upload },
+  { label: "Select Header", id: Steps.RowSelection },
+  { label: "Review", id: Steps.Review },
+  { label: "Complete", id: Steps.Complete },
 ];
 
 export default function Main() {
@@ -32,6 +33,7 @@ export default function Main() {
     template: sdkDefinedTemplate,
     isModal,
     schemaless,
+    showDownloadTemplateButton,
   } = useEmbedStore((state) => state.embedParams);
   let skipHeader = skipHeaderRowSelection;
 
@@ -50,7 +52,7 @@ export default function Main() {
   const [uploadColumnsRow, setUploadColumnsRow] = useState<any | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const modifiedSteps = skipHeader ? steps.filter((step) => step.id !== "row-selection") : steps;
+  const modifiedSteps = useModifiedSteps(steps, skipHeader);
 
   // Stepper handler
   const stepper = useStepper(modifiedSteps, 0);
@@ -131,6 +133,63 @@ export default function Main() {
     setTusId("");
   };
 
+  const renderContent = () => {
+    switch (step) {
+      case Steps.Upload:
+        if (!uploadError) {
+          return (
+            <Uploader
+              template={template}
+              importerId={importerId}
+              metadata={metadata}
+              skipHeaderRowSelection={skipHeader || false}
+              onSuccess={setTusId}
+              endpoint={TUS_ENDPOINT}
+              showDownloadTemplateButton={showDownloadTemplateButton}
+            />
+          );
+        }
+        break;
+      case Steps.RowSelection:
+        return (
+          <RowSelection
+            upload={upload}
+            onCancel={reload}
+            onSuccess={(uploadColumnsRow: any) => {
+              stepper.setCurrent(2);
+              setUploadColumnsRow(uploadColumnsRow);
+            }}
+            selectedId={selectedId}
+            setSelectedId={setSelectedId}
+          />
+        );
+      case Steps.Review:
+        return (
+          <Review
+            template={template}
+            upload={skipHeader ? upload : uploadColumnsRow}
+            onSuccess={() => {
+              skipHeader ? stepper.setCurrent(2) : stepper.setCurrent(3);
+            }}
+            skipHeaderRowSelection={skipHeader}
+            onCancel={skipHeader ? reload : rowSelection}
+          />
+        );
+      case Steps.Complete:
+        return (
+          <Complete
+            reload={reload}
+            close={requestClose}
+            onSuccess={handleComplete}
+            upload={upload}
+            showImportLoadingStatus={showImportLoadingStatus}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
   // Render
 
   if (importerIsLoading) return null;
@@ -150,52 +209,13 @@ export default function Main() {
     );
   }
 
-  const content =
-    step === "upload" || !!uploadError ? (
-      <Uploader
-        template={template}
-        importerId={importerId}
-        metadata={metadata}
-        skipHeaderRowSelection={skipHeader}
-        onSuccess={setTusId}
-        endpoint={TUS_ENDPOINT}
-        schemaless={schemaless}
-      />
-    ) : step === (skipHeader ? "review" : "row-selection") && !isStored ? (
-      <Spinner className={style.spinner}>Processing your file...</Spinner>
-    ) : step === "row-selection" && !!isStored ? (
-      <RowSelection
-        upload={upload}
-        onCancel={reload}
-        onSuccess={(uploadColumnsRow: any) => {
-          stepper.setCurrent(2);
-          setUploadColumnsRow(uploadColumnsRow);
-        }}
-        selectedId={selectedId}
-        setSelectedId={setSelectedId}
-      />
-    ) : step === "review" && !!isStored ? (
-      <Review
-        template={template}
-        upload={skipHeader ? upload : uploadColumnsRow}
-        onSuccess={() => {
-          skipHeader ? stepper.setCurrent(2) : stepper.setCurrent(3);
-        }}
-        skipHeaderRowSelection={skipHeader}
-        onCancel={skipHeader ? reload : rowSelection}
-        schemaless={schemaless}
-      />
-    ) : !uploadError && step === "complete" ? (
-      <Complete reload={reload} close={requestClose} onSuccess={handleComplete} upload={upload} showImportLoadingStatus={showImportLoadingStatus} />
-    ) : null;
-
   return (
     <div className={style.wrapper}>
       <div className={style.header}>
         <Stepper {...stepper} />
       </div>
 
-      <div className={style.content}>{content}</div>
+      <div className={style.content}>{renderContent()}</div>
 
       {!!uploadError && (
         <div className={style.status}>

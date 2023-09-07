@@ -224,6 +224,7 @@ func GetDatabaseSchemaInitSQL() string {
 		            references templates(id)
 		);
 		create unique index if not exists template_columns_template_id_key_idx on template_columns(template_id, key) where (deleted_at is null);
+		create index if not exists template_columns_template_id_idx on template_columns(template_id);
 
 		create table if not exists uploads (
 		    id             uuid primary key not null default gen_random_uuid(),
@@ -297,6 +298,20 @@ func GetDatabaseSchemaInitSQL() string {
 		create index if not exists imports_importer_id_idx on imports(importer_id);
 		create unique index if not exists imports_upload_id_idx on imports(upload_id);
 
+		create table if not exists validations (
+		    id                 serial primary key,
+		    template_column_id uuid  not null,
+		    type               text  not null,
+		    message            text,
+		    severity           text  not null default 'error',
+		    value              jsonb not null,
+		    deleted_at         timestamp with time zone,
+		    constraint fk_template_column_id
+		        foreign key (template_column_id)
+		            references template_columns(id)
+		);
+		create index if not exists validations_template_column_id_idx on validations(template_column_id);
+
 
 		/* Schema Update SQL */
 
@@ -335,5 +350,13 @@ func GetDatabaseSchemaInitSQL() string {
 
 		alter table uploads
 		    add column if not exists schemaless bool not null default false;
+
+		alter table imports
+		    add column if not exists num_error_rows integer;
+		alter table imports
+		    add column if not exists num_valid_rows integer;
+
+		alter table template_columns
+		    add column if not exists suggested_mappings text[] not null default '{}';
 	`
 }

@@ -20,12 +20,14 @@ export default function Embed({ children }: EmbedProps) {
     cssOverrides,
     isModal,
     schemaless,
+    showDownloadTemplateButton,
   } = useSearchParams();
 
   // Set importerId & metadata in embed store
   const setEmbedParams = useEmbedStore((state) => state.setEmbedParams);
   const strToBoolean = (str: string) => !!str && (str.toLowerCase() === "true" || str === "1");
   const strToOptionalBoolean = (str: string) => (str ? str.toLowerCase() === "true" || str === "1" : undefined);
+  const strToDefaultBoolean = (str: string, defaultValue: boolean) => (str ? str.toLowerCase() === "true" || str === "1" : defaultValue);
   const validateJSON = (str: string) => {
     if (!str) {
       return "";
@@ -49,6 +51,7 @@ export default function Embed({ children }: EmbedProps) {
       skipHeaderRowSelection: strToOptionalBoolean(skipHeaderRowSelection),
       isModal: strToOptionalBoolean(isModal),
       schemaless: strToOptionalBoolean(schemaless),
+      showDownloadTemplateButton: strToDefaultBoolean(showDownloadTemplateButton, true),
     });
   }, [importerId, metadata]);
 

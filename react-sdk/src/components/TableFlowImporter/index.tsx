@@ -17,6 +17,7 @@ export default function TableFlowImporter({
   onComplete,
   customStyles,
   showImportLoadingStatus,
+  showDownloadTemplateButton,
   skipHeaderRowSelection,
   cssOverrides,
   isModal = true,
@@ -46,11 +47,12 @@ export default function TableFlowImporter({
     isOpen: isOpen.toString(),
     onComplete: onComplete ? "true" : "false",
     customStyles: JSON.stringify(customStyles),
-    showImportLoadingStatus: showImportLoadingStatus ? "true" : "false",
-    skipHeaderRowSelection: typeof skipHeaderRowSelection === "undefined" ? "" : skipHeaderRowSelection ? "true" : "false",
+    showImportLoadingStatus: parseOptionalBoolean(showImportLoadingStatus),
+    showDownloadTemplateButton: parseOptionalBoolean(showDownloadTemplateButton),
+    skipHeaderRowSelection: parseOptionalBoolean(skipHeaderRowSelection),
     ...(cssOverrides ? { cssOverrides: JSON.stringify(cssOverrides) } : {}),
     isModal: isModal ? "true" : "false",
-    schemaless: typeof schemaless === "undefined" ? "" : schemaless ? "true" : "false",
+    schemaless: parseOptionalBoolean(schemaless),
   };
   const searchParams = new URLSearchParams(urlParams);
   const defaultImporterUrl = "https://importer.tableflow.com";
@@ -95,4 +97,8 @@ const parseObjectOrStringJSON = (name: string, param?: Record<string, unknown> |
     return JSON.stringify(param);
   }
   return "";
+};
+
+const parseOptionalBoolean = (val?: boolean) => {
+  return typeof val === "undefined" || val === null ? "" : val ? "true" : "false";
 };

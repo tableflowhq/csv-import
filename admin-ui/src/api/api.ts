@@ -81,6 +81,7 @@ const errorHandler = (error: any, url: string, method: string): ApiResponse<any>
     result.error = res.data.error || res.data.message || result.error;
   } else if (error.request) {
     // The request was made but no response was received
+    result.error = "Unable to connect. Check your connection and reach out to support if the problem persists.";
     console.error("No response was received from request", error.request);
   } else {
     // Something happened in setting up the request that triggered an Error

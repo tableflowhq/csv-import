@@ -3,6 +3,7 @@ package model
 import (
 	"github.com/guregu/null"
 	"gorm.io/gorm"
+	"tableflow/go/pkg/model/jsonb"
 )
 
 type Upload struct {
@@ -16,9 +17,9 @@ type Upload struct {
 	FileSize       null.Int    `json:"file_size" swaggertype:"integer" example:"1024"`
 	NumRows        null.Int    `json:"num_rows" swaggertype:"integer" example:"256"`
 	NumColumns     null.Int    `json:"num_columns" swaggertype:"integer" example:"8"`
-	Template       JSONB       `json:"template" swaggertype:"string" example:"{}"` // Set if the user passes in a template to the SDK (which overrides the template on the importer) or if a schemaless import occurs
+	Template       jsonb.JSONB `json:"template" swaggertype:"string" example:"{}"` // Set if the user passes in a template to the SDK (which overrides the template on the importer) or if a schemaless import occurs
 	Schemaless     bool        `json:"schemaless" example:"false"`
-	Metadata       JSONB       `json:"metadata" swaggertype:"string" example:"{\"user_id\": 1234}"`
+	Metadata       jsonb.JSONB `json:"metadata" swaggertype:"string" example:"{\"user_id\": 1234}"`
 	IsStored       bool        `json:"is_stored" example:"false"`
 	HeaderRowIndex null.Int    `json:"header_row_index" swaggertype:"integer" example:"0"`
 	Error          null.String `json:"-" swaggerignore:"true"`
@@ -32,8 +33,8 @@ func (u *Upload) BeforeCreate(_ *gorm.DB) (err error) {
 	if !u.ID.Valid {
 		u.ID = NewID()
 	}
-	if u.Metadata == nil {
-		u.Metadata = make(map[string]interface{})
+	if !u.Metadata.Valid {
+		u.Metadata = jsonb.NewEmpty()
 	}
 	return
 }

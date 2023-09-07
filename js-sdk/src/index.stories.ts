@@ -20,6 +20,7 @@ const meta = {
     closeOnClickOutside: { control: "boolean" },
     showImportLoadingStatus: { control: "boolean" },
     skipHeaderRowSelection: { control: "boolean" },
+    showDownloadTemplateButton: { control: "boolean" },
     schemaless: { control: "boolean" },
   },
 } satisfies Meta<TableFlowImporterProps>;

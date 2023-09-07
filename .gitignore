@@ -9,6 +9,7 @@
 *.out
 *.log
 *.env
+*.zip
 
 # debug
 npm-debug.log*

@@ -12,7 +12,7 @@ func GetImporter(id string) (*model.Importer, error) {
 		return nil, errors.New("no importer ID provided")
 	}
 	var importer model.Importer
-	err := tf.DB.Preload("Template.TemplateColumns").
+	err := tf.DB.Preload("Template.TemplateColumns.Validations").
 		First(&importer, model.ParseID(id)).Error
 	if err != nil {
 		return nil, err
@@ -30,7 +30,7 @@ func GetImporterUnscoped(id string) (*model.Importer, error) {
 	var importer model.Importer
 	err := tf.DB.Unscoped().
 		Preload("Template", "templates.deleted_at is null").
-		Preload("Template.TemplateColumns", "template_columns.deleted_at is null").
+		Preload("Template.TemplateColumns.Validations", "template_columns.deleted_at is null").
 		First(&importer, model.ParseID(id)).Error
 	if err != nil {
 		return nil, err
@@ -61,7 +61,7 @@ func GetImporterWithUsers(id string) (*model.Importer, error) {
 		return nil, errors.New("no importer ID provided")
 	}
 	var importer model.Importer
-	err := tf.DB.Preload("Template.TemplateColumns").
+	err := tf.DB.Preload("Template.TemplateColumns.Validations").
 		Preload("CreatedByUser", userPreloadArgs).
 		Preload("UpdatedByUser", userPreloadArgs).
 		Preload("DeletedByUser", userPreloadArgs).
@@ -80,7 +80,7 @@ func GetImporters(workspaceID string) ([]*model.Importer, error) {
 		return nil, errors.New("no workspace ID provided")
 	}
 	var importers []*model.Importer
-	err := tf.DB.Preload("Template.TemplateColumns").
+	err := tf.DB.Preload("Template.TemplateColumns.Validations").
 		Where("workspace_id = ?", workspaceID).
 		Find(&importers).Error
 	if err != nil {
@@ -95,7 +95,7 @@ func GetImportersWithUsers(workspaceID string) ([]*model.Importer, error) {
 	}
 	var importers []*model.Importer
 
-	err := tf.DB.Preload("Template.TemplateColumns").
+	err := tf.DB.Preload("Template.TemplateColumns.Validations").
 		Preload("CreatedByUser", userPreloadArgs).
 		Preload("UpdatedByUser", userPreloadArgs).
 		Preload("DeletedByUser", userPreloadArgs).

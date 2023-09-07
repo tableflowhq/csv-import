@@ -578,7 +578,88 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.ImportServiceImport"
+                            "$ref": "#/definitions/types.Import"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/types.Res"
+                        }
+                    }
+                }
+            }
+        },
+        "/file-import/v1/import/{id}/review": {
+            "get": {
+                "description": "Get a single import by the upload ID, including the row data for the first page of the review screen if the import is complete",
+                "tags": [
+                    "File Import"
+                ],
+                "summary": "Get import by upload ID for the review screen",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Upload ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.Import"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/types.Res"
+                        }
+                    }
+                }
+            }
+        },
+        "/file-import/v1/import/{id}/rows": {
+            "get": {
+                "description": "Paginate import rows by the upload ID of an import",
+                "tags": [
+                    "File Import"
+                ],
+                "summary": "Get import rows by upload ID for the review screen",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Upload ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "minimum": 0,
+                        "type": "integer",
+                        "description": "Pagination offset",
+                        "name": "offset",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "maximum": 1000,
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "Pagination limit",
+                        "name": "limit",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.ImportData"
                         }
                     },
                     "400": {
@@ -591,36 +672,6 @@ const docTemplate = `{
             }
         },
         "/file-import/v1/importer/{id}": {
-            "get": {
-                "description": "Get a single importer and its template",
-                "tags": [
-                    "File Import"
-                ],
-                "summary": "Get importer",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Importer ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/types.ImportServiceImporter"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/types.Res"
-                        }
-                    }
-                }
-            },
             "post": {
                 "description": "Get a single importer and its template",
                 "tags": [
@@ -649,7 +700,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.ImportServiceImporter"
+                            "$ref": "#/definitions/types.Importer"
                         }
                     },
                     "400": {
@@ -681,7 +732,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.ImportServiceUpload"
+                            "$ref": "#/definitions/types.Upload"
                         }
                     },
                     "400": {
@@ -758,7 +809,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/types.ImporterServiceUploadHeaderRowSelection"
+                            "$ref": "#/definitions/types.UploadHeaderRowSelection"
                         }
                     }
                 ],
@@ -766,7 +817,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.ImportServiceUpload"
+                            "$ref": "#/definitions/types.Upload"
                         }
                     },
                     "400": {
@@ -908,6 +959,16 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "jsonb.JSONB": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "valid": {
+                    "description": "Valid is false if Data is NULL",
+                    "type": "boolean"
+                }
+            }
+        },
         "model.Import": {
             "type": "object",
             "properties": {
@@ -928,11 +989,15 @@ const docTemplate = `{
                     "example": false
                 },
                 "metadata": {
-                    "$ref": "#/definitions/model.JSONB"
+                    "$ref": "#/definitions/jsonb.JSONB"
                 },
                 "num_columns": {
                     "type": "integer",
                     "example": 8
+                },
+                "num_error_rows": {
+                    "type": "integer",
+                    "example": 32
                 },
                 "num_processed_values": {
                     "type": "integer",
@@ -941,6 +1006,10 @@ const docTemplate = `{
                 "num_rows": {
                     "type": "integer",
                     "example": 256
+                },
+                "num_valid_rows": {
+                    "type": "integer",
+                    "example": 224
                 },
                 "upload_id": {
                     "type": "string",
@@ -1002,10 +1071,6 @@ const docTemplate = `{
                     "example": "b2079476-261a-41fe-8019-46eb51c537f7"
                 }
             }
-        },
-        "model.JSONB": {
-            "type": "object",
-            "additionalProperties": true
         },
         "model.Organization": {
             "type": "object",
@@ -1117,6 +1182,15 @@ const docTemplate = `{
                     "type": "boolean",
                     "example": false
                 },
+                "suggested_mappings": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "first_name"
+                    ]
+                },
                 "template_id": {
                     "type": "string",
                     "example": "f0797968-becc-422a-b135-19de1d8c5d46"
@@ -1127,6 +1201,12 @@ const docTemplate = `{
                 },
                 "updated_by": {
                     "$ref": "#/definitions/model.User"
+                },
+                "validations": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Validation"
+                    }
                 }
             }
         },
@@ -1181,8 +1261,12 @@ const docTemplate = `{
                     "type": "integer",
                     "example": 256
                 },
+                "schemaless": {
+                    "type": "boolean",
+                    "example": false
+                },
                 "template": {
-                    "description": "Set if the user passes in a template to the SDK, which overrides the template on the importer",
+                    "description": "Set if the user passes in a template to the SDK (which overrides the template on the importer) or if a schemaless import occurs",
                     "type": "string",
                     "example": "{}"
                 },
@@ -1261,6 +1345,35 @@ const docTemplate = `{
                 }
             }
         },
+        "model.Validation": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "message": {
+                    "type": "string",
+                    "example": "This column must contain a value"
+                },
+                "severity": {
+                    "type": "string",
+                    "example": "error"
+                },
+                "template_column_id": {
+                    "type": "string",
+                    "example": "a1ed136d-33ce-4b7e-a7a4-8a5ccfe54cd5"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "filled"
+                },
+                "value": {
+                    "type": "string",
+                    "example": "true"
+                }
+            }
+        },
         "model.Workspace": {
             "type": "object",
             "properties": {
@@ -1294,27 +1407,19 @@ const docTemplate = `{
                 }
             }
         },
-        "types.ImportRow": {
-            "type": "object",
-            "properties": {
-                "index": {
-                    "type": "integer",
-                    "example": 0
-                },
-                "values": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "string"
-                    }
-                }
-            }
-        },
-        "types.ImportServiceImport": {
+        "types.Import": {
             "type": "object",
             "properties": {
                 "created_at": {
                     "type": "integer",
                     "example": 1682366228
+                },
+                "data": {
+                    "$ref": "#/definitions/types.ImportData"
+                },
+                "has_errors": {
+                    "type": "boolean",
+                    "example": false
                 },
                 "id": {
                     "type": "string",
@@ -1329,11 +1434,15 @@ const docTemplate = `{
                     "example": false
                 },
                 "metadata": {
-                    "$ref": "#/definitions/model.JSONB"
+                    "$ref": "#/definitions/jsonb.JSONB"
                 },
                 "num_columns": {
                     "type": "integer",
                     "example": 8
+                },
+                "num_error_rows": {
+                    "type": "integer",
+                    "example": 32
                 },
                 "num_processed_values": {
                     "type": "integer",
@@ -1343,7 +1452,12 @@ const docTemplate = `{
                     "type": "integer",
                     "example": 256
                 },
+                "num_valid_rows": {
+                    "type": "integer",
+                    "example": 224
+                },
                 "rows": {
+                    "description": "Deprecated: Use Data.Rows instead",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/types.ImportRow"
@@ -1355,7 +1469,59 @@ const docTemplate = `{
                 }
             }
         },
-        "types.ImportServiceImporter": {
+        "types.ImportData": {
+            "type": "object",
+            "properties": {
+                "pagination": {
+                    "$ref": "#/definitions/types.Pagination"
+                },
+                "rows": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/types.ImportRow"
+                    }
+                }
+            }
+        },
+        "types.ImportRow": {
+            "type": "object",
+            "properties": {
+                "errors": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/definitions/types.ImportRowError"
+                        }
+                    }
+                },
+                "index": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "values": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "types.ImportRowError": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "severity": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "types.Importer": {
             "type": "object",
             "properties": {
                 "id": {
@@ -1371,17 +1537,42 @@ const docTemplate = `{
                     "example": false
                 },
                 "template": {
-                    "$ref": "#/definitions/types.ImportServiceTemplate"
+                    "$ref": "#/definitions/types.Template"
                 }
             }
         },
-        "types.ImportServiceTemplate": {
+        "types.Pagination": {
+            "type": "object",
+            "properties": {
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "types.Res": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "types.Template": {
             "type": "object",
             "properties": {
                 "columns": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/types.ImportServiceTemplateColumn"
+                        "$ref": "#/definitions/types.TemplateColumn"
                     }
                 },
                 "id": {
@@ -1394,7 +1585,7 @@ const docTemplate = `{
                 }
             }
         },
-        "types.ImportServiceTemplateColumn": {
+        "types.TemplateColumn": {
             "type": "object",
             "properties": {
                 "description": {
@@ -1416,10 +1607,25 @@ const docTemplate = `{
                 "required": {
                     "type": "boolean",
                     "example": false
+                },
+                "suggested_mappings": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "first_name"
+                    ]
+                },
+                "validations": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/types.Validation"
+                    }
                 }
             }
         },
-        "types.ImportServiceUpload": {
+        "types.Upload": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -1466,7 +1672,7 @@ const docTemplate = `{
                     "description": "Set if the user passes in a template to the SDK, which overrides the template on the importer",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/types.ImportServiceTemplate"
+                            "$ref": "#/definitions/types.Template"
                         }
                     ]
                 },
@@ -1477,7 +1683,7 @@ const docTemplate = `{
                 "upload_columns": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/types.ImportServiceUploadColumn"
+                        "$ref": "#/definitions/types.UploadColumn"
                     }
                 },
                 "upload_rows": {
@@ -1488,7 +1694,7 @@ const docTemplate = `{
                 }
             }
         },
-        "types.ImportServiceUploadColumn": {
+        "types.UploadColumn": {
             "type": "object",
             "properties": {
                 "id": {
@@ -1514,23 +1720,12 @@ const docTemplate = `{
                 }
             }
         },
-        "types.ImporterServiceUploadHeaderRowSelection": {
+        "types.UploadHeaderRowSelection": {
             "type": "object",
             "properties": {
                 "index": {
                     "type": "integer",
                     "example": 0
-                }
-            }
-        },
-        "types.Res": {
-            "type": "object",
-            "properties": {
-                "error": {
-                    "type": "string"
-                },
-                "message": {
-                    "type": "string"
                 }
             }
         },
@@ -1546,6 +1741,31 @@ const docTemplate = `{
                     "additionalProperties": {
                         "type": "string"
                     }
+                }
+            }
+        },
+        "types.Validation": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "example": 4581
+                },
+                "message": {
+                    "type": "string",
+                    "example": "This column must contain a value"
+                },
+                "severity": {
+                    "type": "string",
+                    "example": "error"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "filled"
+                },
+                "value": {
+                    "type": "string",
+                    "example": "true"
                 }
             }
         },
@@ -1607,9 +1827,21 @@ const docTemplate = `{
                     "type": "boolean",
                     "example": false
                 },
+                "suggested_mappings": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "template_id": {
                     "type": "string",
                     "example": "f0797968-becc-422a-b135-19de1d8c5d46"
+                },
+                "validations": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/web.TemplateColumnValidationRequest"
+                    }
                 }
             }
         },
@@ -1631,6 +1863,43 @@ const docTemplate = `{
                 "required": {
                     "type": "boolean",
                     "example": false
+                },
+                "suggested_mappings": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "validations": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/web.TemplateColumnValidationRequest"
+                    }
+                }
+            }
+        },
+        "web.TemplateColumnValidationRequest": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "message": {
+                    "type": "string",
+                    "example": "This column must contain a value"
+                },
+                "severity": {
+                    "type": "string",
+                    "example": "error"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "filled"
+                },
+                "value": {
+                    "type": "string",
+                    "example": "true"
                 }
             }
         }

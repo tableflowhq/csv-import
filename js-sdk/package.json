@@ -1,6 +1,6 @@
 {
   "name": "@tableflow/js",
-  "version": "1.14.0",
+  "version": "1.15.0",
   "description": "The JavaScript SDK for TableFlow. Embed an importer to collect and transform CSV files in your application.",
   "scripts": {
     "build": "rollup -c --bundleConfigAsCjs false",

@@ -8,4 +8,5 @@ export type UploaderProps = {
   endpoint: string;
   onSuccess: (tusId: string) => void;
   schemaless?: boolean;
+  showDownloadTemplateButton?: boolean;
 };

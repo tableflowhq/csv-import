@@ -219,3 +219,16 @@
 .iconRed {
   color: var(--color-text-error);
 }
+
+.checkboxInput {
+  padding-bottom: var(--m-xs);
+}
+
+.checkboxLabel {
+  padding-left: var(--m-xxs);
+  vertical-align: middle;
+}
+
+.pillInputContainer {
+  margin-bottom: 20px;
+}
