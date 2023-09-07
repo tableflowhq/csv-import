@@ -1182,6 +1182,15 @@ const docTemplate = `{
                     "type": "boolean",
                     "example": false
                 },
+                "suggested_mappings": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "first_name"
+                    ]
+                },
                 "template_id": {
                     "type": "string",
                     "example": "f0797968-becc-422a-b135-19de1d8c5d46"
@@ -1599,6 +1608,15 @@ const docTemplate = `{
                     "type": "boolean",
                     "example": false
                 },
+                "suggested_mappings": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "first_name"
+                    ]
+                },
                 "validations": {
                     "type": "array",
                     "items": {
@@ -1809,6 +1827,12 @@ const docTemplate = `{
                     "type": "boolean",
                     "example": false
                 },
+                "suggested_mappings": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "template_id": {
                     "type": "string",
                     "example": "f0797968-becc-422a-b135-19de1d8c5d46"
@@ -1839,6 +1863,12 @@ const docTemplate = `{
                 "required": {
                     "type": "boolean",
                     "example": false
+                },
+                "suggested_mappings": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "validations": {
                     "type": "array",

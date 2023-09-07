@@ -31,6 +31,7 @@ export type TemplateColumn = {
   key: string;
   description?: string;
   required?: boolean;
+  suggested_mappings?: string[];
 };
 
 export type Upload = {

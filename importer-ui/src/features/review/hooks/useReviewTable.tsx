@@ -13,9 +13,23 @@ type Include = {
 
 export default function useReviewTable(items: UploadColumn[] = [], templateColumns: TemplateColumn[] = [], schemaless?: boolean) {
   const [values, setValues] = useState<{ [key: string]: Include }>(
-    items.reduce((acc, item) => {
-      const suggestion = templateColumns?.find((field) => stringsSimilarity(field.name, item.name) > 0.9)?.id || "";
-      return { ...acc, [item.id]: { template: suggestion || "", use: !!suggestion } };
+    items.reduce((acc, uc) => {
+      const matchedSuggestedTemplateColumn = templateColumns?.find((tc) => {
+        if (!tc?.suggested_mappings) {
+          return false;
+        }
+        for (const suggestion of tc.suggested_mappings) {
+          if (suggestion.toLowerCase() === uc?.name?.toLowerCase()) {
+            return true;
+          }
+        }
+        return false;
+      });
+      if (matchedSuggestedTemplateColumn) {
+        return { ...acc, [uc.id]: { template: matchedSuggestedTemplateColumn.id || "", use: !!matchedSuggestedTemplateColumn.id } };
+      }
+      const similarTemplateColumn = templateColumns?.find((tc) => stringsSimilarity(tc.name, uc.name) > 0.9);
+      return { ...acc, [uc.id]: { template: similarTemplateColumn?.id || "", use: !!similarTemplateColumn?.id } };
     }, {})
   );
   const [selectedTemplates, setSelectedTemplates] = useState<string[]>([]);
