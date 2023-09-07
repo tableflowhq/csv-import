@@ -101,7 +101,7 @@ type Import struct {
 	Error              null.String    `json:"error,omitempty" swaggerignore:"true"`
 	Data               ImportData     `json:"data"`
 	// Deprecated: Use Data.Rows instead
-	Rows []ImportRow `json:"rows"`
+	Rows []ImportRow `json:"rows,omitempty"`
 }
 
 type ImportData struct {
