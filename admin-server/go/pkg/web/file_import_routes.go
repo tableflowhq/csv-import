@@ -37,7 +37,7 @@ type importProcessResult struct {
 
 // importServiceMaxNumRowsToPassData If the import has more rows than this value, then don't pass the data back to the
 // frontend callback. It must be retrieved from the API.
-var importServiceMaxNumRowsForFrontendPassThrough = int(math.Min(25000, scylla.MaxAllRowRetrieval))
+var maxNumRowsForFrontendPassThrough = int(math.Min(25000, scylla.MaxAllRowRetrieval))
 
 // tusPostFile
 //
@@ -93,17 +93,17 @@ func tusPatchFile(h *handler.UnroutedHandler) gin.HandlerFunc {
 	}
 }
 
-// getImporterForImportService
+// importerGetImporter
 //
 //	@Summary		Get importer
 //	@Description	Get a single importer and its template
 //	@Tags			File Import
-//	@Success		200	{object}	types.ImportServiceImporter
+//	@Success		200	{object}	types.Importer
 //	@Failure		400	{object}	types.Res
 //	@Router			/file-import/v1/importer/{id} [post]
 //	@Param			id		path	string					true	"Importer ID"
 //	@Param			body	body	map[string]interface{}	false	"Request body"
-func getImporterForImportService(c *gin.Context) {
+func importerGetImporter(c *gin.Context) {
 	id := c.Param("id")
 	if len(id) == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No importer ID provided"})
@@ -128,12 +128,12 @@ func getImporterForImportService(c *gin.Context) {
 				return
 			}
 		}
-		importServiceImporter := types.ImportServiceImporter{
+		importServiceImporter := types.Importer{
 			ID:                     importer.ID,
 			Name:                   importer.Name,
 			SkipHeaderRowSelection: importer.SkipHeaderRowSelection,
-			Template: &types.ImportServiceTemplate{
-				TemplateColumns: []*types.ImportServiceTemplateColumn{},
+			Template: &types.Template{
+				TemplateColumns: []*types.TemplateColumn{},
 			},
 		}
 		c.JSON(http.StatusOK, importServiceImporter)
@@ -169,7 +169,7 @@ func getImporterForImportService(c *gin.Context) {
 			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 			return
 		}
-		importServiceImporter := types.ImportServiceImporter{
+		importServiceImporter := types.Importer{
 			ID:                     importer.ID,
 			Name:                   importer.Name,
 			SkipHeaderRowSelection: importer.SkipHeaderRowSelection,
@@ -203,16 +203,16 @@ func getImporterForImportService(c *gin.Context) {
 		return
 	}
 
-	importerTemplateColumns := make([]*types.ImportServiceTemplateColumn, len(template.TemplateColumns))
+	importerTemplateColumns := make([]*types.TemplateColumn, len(template.TemplateColumns))
 	for n, tc := range template.TemplateColumns {
-		importerTemplateColumns[n] = &types.ImportServiceTemplateColumn{
+		importerTemplateColumns[n] = &types.TemplateColumn{
 			ID:          tc.ID,
 			Name:        tc.Name,
 			Key:         tc.Key,
 			Required:    tc.Required,
 			Description: tc.Description.String,
-			Validations: lo.Map(tc.Validations, func(v *model.Validation, _ int) *types.ImportServiceValidation {
-				return &types.ImportServiceValidation{
+			Validations: lo.Map(tc.Validations, func(v *model.Validation, _ int) *types.Validation {
+				return &types.Validation{
 					ValidationID: v.ID,
 					Type:         v.Type.Name,
 					Value:        v.Value,
@@ -222,12 +222,12 @@ func getImporterForImportService(c *gin.Context) {
 			}),
 		}
 	}
-	importerTemplate := &types.ImportServiceTemplate{
+	importerTemplate := &types.Template{
 		ID:              template.ID,
 		Name:            template.Name,
 		TemplateColumns: importerTemplateColumns,
 	}
-	importServiceImporter := types.ImportServiceImporter{
+	importServiceImporter := types.Importer{
 		ID:                     template.Importer.ID,
 		Name:                   template.Importer.Name,
 		SkipHeaderRowSelection: template.Importer.SkipHeaderRowSelection,
@@ -236,16 +236,16 @@ func getImporterForImportService(c *gin.Context) {
 	c.JSON(http.StatusOK, importServiceImporter)
 }
 
-// getUploadForImportService
+// importerGetUpload
 //
 //	@Summary		Get upload by tus ID
 //	@Description	Get a single upload by the tus ID provided to the client from the upload
 //	@Tags			File Import
-//	@Success		200	{object}	types.ImportServiceUpload
+//	@Success		200	{object}	types.Upload
 //	@Failure		400	{object}	types.Res
 //	@Router			/file-import/v1/upload/{id} [get]
 //	@Param			id	path	string	true	"tus ID"
-func getUploadForImportService(c *gin.Context) {
+func importerGetUpload(c *gin.Context) {
 	id := c.Param("id")
 	if len(id) == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No upload tus ID provided"})
@@ -281,17 +281,17 @@ func getUploadForImportService(c *gin.Context) {
 	c.JSON(http.StatusOK, importerUpload)
 }
 
-// setUploadHeaderRowForImportService
+// importerSetHeaderRow
 //
 //	@Summary		Set upload header row
 //	@Description	Set the header row index on the upload
 //	@Tags			File Import
-//	@Success		200	{object}	types.ImportServiceUpload
+//	@Success		200	{object}	types.Upload
 //	@Failure		400	{object}	types.Res
 //	@Router			/file-import/v1/upload/{id}/set-header-row [post]
-//	@Param			id		path	string											true	"Upload ID"
-//	@Param			body	body	types.ImporterServiceUploadHeaderRowSelection	true	"Request body"
-func setUploadHeaderRowForImportService(c *gin.Context) {
+//	@Param			id		path	string							true	"Upload ID"
+//	@Param			body	body	types.UploadHeaderRowSelection	true	"Request body"
+func importerSetHeaderRow(c *gin.Context) {
 	id := c.Param("id")
 	if len(id) == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No upload ID provided"})
@@ -304,7 +304,7 @@ func setUploadHeaderRowForImportService(c *gin.Context) {
 	}
 
 	// Validate and set the header row index on the upload
-	req := types.ImporterServiceUploadHeaderRowSelection{}
+	req := types.UploadHeaderRowSelection{}
 	if err = c.BindJSON(&req); err != nil {
 		tf.Log.Warnw("Could not bind JSON", "error", err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
@@ -377,7 +377,7 @@ func setUploadHeaderRowForImportService(c *gin.Context) {
 	c.JSON(http.StatusOK, importerUpload)
 }
 
-// setUploadColumnMappingAndImportData
+// importerSetColumnMappingAndImport
 //
 //	@Summary		Set upload column mapping and import data
 //	@Description	Set the template column IDs for each upload column and trigger the import. Note: we will eventually have a separate import endpoint once there is a review step in the upload process.
@@ -387,7 +387,7 @@ func setUploadHeaderRowForImportService(c *gin.Context) {
 //	@Router			/file-import/v1/upload/{id}/set-column-mapping [post]
 //	@Param			id		path	string				true	"Upload ID"
 //	@Param			body	body	map[string]string	true	"Request body"
-func setUploadColumnMappingAndImportData(c *gin.Context, importCompleteHandler func(*model.Import)) {
+func importerSetColumnMappingAndImport(c *gin.Context, importCompleteHandler func(*model.Import)) {
 	id := c.Param("id")
 	if len(id) == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No upload ID provided"})
@@ -442,16 +442,16 @@ func setUploadColumnMappingAndImportData(c *gin.Context, importCompleteHandler f
 	//  3. Else, use the template in the database attached to the importer
 
 	if upload.Schemaless {
-		var columns []*types.ImportServiceTemplateColumn
+		var columns []*types.TemplateColumn
 		for v, destKey := range columnMapping {
-			if !types.ValidateKey(destKey) {
+			if !util.ValidateKey(destKey) {
 				c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{
 					Err: fmt.Sprintf("The column '%s' is invalid. Desintation columns can only contain letters, numbers, and underscores", destKey),
 				})
 				return
 			}
 			tcID := model.NewID()
-			columns = append(columns, &types.ImportServiceTemplateColumn{
+			columns = append(columns, &types.TemplateColumn{
 				ID:   tcID,
 				Name: destKey,
 				Key:  destKey,
@@ -459,7 +459,7 @@ func setUploadColumnMappingAndImportData(c *gin.Context, importCompleteHandler f
 			// Update the column mapping to the newly generated template column key
 			columnMapping[v] = tcID.String()
 		}
-		importServiceTemplate := &types.ImportServiceTemplate{
+		importServiceTemplate := &types.Template{
 			ID:              model.NewID(),
 			TemplateColumns: columns,
 		}
@@ -563,16 +563,16 @@ func setUploadColumnMappingAndImportData(c *gin.Context, importCompleteHandler f
 	c.JSON(http.StatusOK, types.Res{Message: "success"})
 }
 
-// getImportForImportService
+// importerReviewImport
 //
-//	@Summary		Get import by upload ID
-//	@Description	Get a single import by the upload ID, including the data if the import is complete
+//	@Summary		Get import by upload ID for the review screen
+//	@Description	Get a single import by the upload ID, including the row data for the first page of the review screen if the import is complete
 //	@Tags			File Import
-//	@Success		200	{object}	types.ImportServiceImport
+//	@Success		200	{object}	types.Import
 //	@Failure		400	{object}	types.Res
-//	@Router			/file-import/v1/import/{id} [get]
+//	@Router			/file-import/v1/import/{id}/review [get]
 //	@Param			id	path	string	true	"Upload ID"
-func getImportForImportService(c *gin.Context) {
+func importerReviewImport(c *gin.Context) {
 	id := c.Param("id")
 	if len(id) == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No upload ID provided"})
@@ -583,7 +583,110 @@ func getImportForImportService(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusOK, gin.H{})
 		return
 	}
-	importerImport := &types.ImportServiceImport{
+	importServiceImport := &types.Import{
+		ID:                 imp.ID,
+		UploadID:           imp.UploadID,
+		ImporterID:         imp.ImporterID,
+		NumRows:            imp.NumRows,
+		NumColumns:         imp.NumColumns,
+		NumProcessedValues: imp.NumProcessedValues,
+		Metadata:           imp.Metadata,
+		IsStored:           imp.IsStored,
+		HasErrors:          imp.HasErrors(),
+		NumErrorRows:       imp.NumErrorRows,
+		NumValidRows:       imp.NumValidRows,
+		CreatedAt:          imp.CreatedAt,
+		Rows:               []types.ImportRow{},
+		Data: types.ImportData{
+			Pagination: &types.Pagination{},
+			Rows:       []types.ImportRow{},
+		},
+	}
+	if !imp.IsStored {
+		// Don't attempt to retrieve the data in Scylla if it's not stored
+		c.JSON(http.StatusOK, importServiceImport)
+		return
+	}
+
+	// Retrieve the first 100 rows for the validations screen
+	pagination := &types.Pagination{
+		Total:  int(imp.NumRows.Int64),
+		Offset: types.PaginationDefaultOffset,
+		Limit:  types.PaginationDefaultLimit,
+	}
+	importServiceImport.Data.Pagination = pagination
+	importServiceImport.Data.Rows = scylla.PaginateImportRows(imp, pagination.Offset, pagination.Limit)
+
+	c.JSON(http.StatusOK, importServiceImport)
+}
+
+// importerGetImportRows
+//
+//	@Summary		Get import rows by upload ID for the review screen
+//	@Description	Paginate import rows by the upload ID of an import
+//	@Tags			File Import
+//	@Success		200	{object}	types.ImportData
+//	@Failure		400	{object}	types.Res
+//	@Router			/file-import/v1/import/{id}/rows [get]
+//	@Param			id		path	string	true	"Upload ID"
+//	@Param			offset	query	int		true	"Pagination offset"	minimum(0)
+//	@Param			limit	query	int		true	"Pagination limit"	minimum(1)	maximum(1000)
+func importerGetImportRows(c *gin.Context) {
+	id := c.Param("id")
+	if len(id) == 0 {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No upload ID provided"})
+		return
+	}
+
+	pagination, err := types.ParsePaginationQuery(c)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+		return
+	}
+
+	imp, err := db.GetImportByUploadID(id)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusOK, gin.H{})
+		return
+	}
+	if !imp.IsStored {
+		// Don't allow the data to be retrieved in Scylla if it's not stored yet
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Import is not yet stored, please wait until the import has finished processing"})
+		return
+	}
+
+	pagination.Total = int(imp.NumRows.Int64)
+
+	rows := scylla.PaginateImportRows(imp, pagination.Offset, pagination.Limit)
+	data := types.ImportData{
+		Pagination: &pagination,
+		Rows:       rows,
+	}
+
+	c.JSON(http.StatusOK, data)
+}
+
+// importerGetImport
+//
+//	@Summary		Get import by upload ID
+//	@Description	Get a single import by the upload ID, including the data if the import is complete
+//	@Tags			File Import
+//	@Success		200	{object}	types.Import
+//	@Failure		400	{object}	types.Res
+//	@Router			/file-import/v1/import/{id} [get]
+//	@Param			id	path	string	true	"Upload ID"
+func importerGetImport(c *gin.Context) {
+	id := c.Param("id")
+	if len(id) == 0 {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No upload ID provided"})
+		return
+	}
+	imp, err := db.GetImportByUploadID(id)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusOK, gin.H{})
+		return
+	}
+	importServiceImport := &types.Import{
 		ID:                 imp.ID,
 		UploadID:           imp.UploadID,
 		ImporterID:         imp.ImporterID,
@@ -598,22 +701,27 @@ func getImportForImportService(c *gin.Context) {
 		CreatedAt:          imp.CreatedAt,
 		Rows:               []types.ImportRow{},
 	}
-	if int(imp.NumRows.Int64) > importServiceMaxNumRowsForFrontendPassThrough {
-		importerImport.Error = null.StringFrom(fmt.Sprintf("This import has %v rows which exceeds the max "+
+	if int(imp.NumRows.Int64) > maxNumRowsForFrontendPassThrough {
+		importServiceImport.Error = null.StringFrom(fmt.Sprintf("This import has %v rows which exceeds the max "+
 			"allowed number of rows for frontend callback (%v). Use the API to retrieve the data.",
-			imp.NumRows.Int64, importServiceMaxNumRowsForFrontendPassThrough))
-		c.JSON(http.StatusOK, importerImport)
+			imp.NumRows.Int64, maxNumRowsForFrontendPassThrough))
+		c.JSON(http.StatusOK, importServiceImport)
 		return
 	}
 	if !imp.IsStored {
 		// Don't attempt to retrieve the data in Scylla if it's not stored
-		c.JSON(http.StatusOK, importerImport)
+		c.JSON(http.StatusOK, importServiceImport)
 		return
 	}
 
-	importerImport.Rows = scylla.RetrieveAllImportRows(imp)
+	rows := scylla.RetrieveAllImportRows(imp)
 
-	c.JSON(http.StatusOK, importerImport)
+	importServiceImport.Rows = rows
+	importServiceImport.Data = types.ImportData{
+		Rows: rows,
+	}
+
+	c.JSON(http.StatusOK, importServiceImport)
 }
 
 func importData(upload *model.Upload, template *model.Template, importCompleteHandler func(*model.Import)) {
