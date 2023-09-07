@@ -202,6 +202,7 @@ func ConvertUploadTemplate(rawTemplate jsonb.JSONB, generateIDs bool) (*Template
 		if suggestedMappingsInterface, ok := columnMap["suggested_mappings"].([]interface{}); ok {
 			for _, v := range suggestedMappingsInterface {
 				if mappingVal, ok := v.(string); ok {
+					mappingVal = strings.TrimSpace(mappingVal)
 					// Make sure the new mappings are all unique (case-insensitive) and don't contain blank values
 					if util.IsBlankUnicode(mappingVal) {
 						return nil, fmt.Errorf("Invalid template: suggested_mappings cannot contain blank values")

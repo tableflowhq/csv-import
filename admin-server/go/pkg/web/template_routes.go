@@ -119,7 +119,7 @@ func createTemplateColumn(c *gin.Context, getWorkspaceUser func(*gin.Context, st
 
 	suggestedMappings := make([]string, 0)
 	if req.SuggestedMappings != nil {
-		suggestedMappings, err = validateSuggestedMappings(*req.SuggestedMappings, template, nil)
+		suggestedMappings, err = parseSuggestedMappings(*req.SuggestedMappings, template, nil)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("Invalid suggested mappings: %v", err.Error())})
 			return
@@ -240,7 +240,7 @@ func editTemplateColumn(c *gin.Context, getWorkspaceUser func(*gin.Context, stri
 		save = true
 	}
 	if req.SuggestedMappings != nil {
-		suggestedMappings, err := validateSuggestedMappings(*req.SuggestedMappings, template, templateColumn)
+		suggestedMappings, err := parseSuggestedMappings(*req.SuggestedMappings, template, templateColumn)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("Invalid suggested mappings: %v", err.Error())})
 			return
@@ -379,10 +379,14 @@ func deleteTemplateColumn(c *gin.Context, getWorkspaceUser func(*gin.Context, st
 	c.JSON(http.StatusOK, template)
 }
 
-func validateSuggestedMappings(suggestedMappings []string, template *model.Template, templateColumn *model.TemplateColumn) ([]string, error) {
+func parseSuggestedMappings(suggestedMappings []string, template *model.Template, templateColumn *model.TemplateColumn) ([]string, error) {
 	if len(suggestedMappings) == 0 {
 		return suggestedMappings, nil
 	}
+	// Remove any leading and trailing spaces
+	suggestedMappings = lo.Map(suggestedMappings, func(str string, _ int) string {
+		return strings.TrimSpace(str)
+	})
 	// Make sure the new mappings are all unique (case-insensitive) and don't contain blank values
 	seen := make(map[string]bool)
 	for _, str := range suggestedMappings {
