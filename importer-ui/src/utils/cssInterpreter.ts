@@ -1,6 +1,9 @@
-function parseCssOverrides(cssOverrides: string) {
+function parseCssOverrides(cssOverrides?: string) {
   let cssAsObject = {};
 
+  if (!cssOverrides) {
+    return "";
+  }
   try {
     cssAsObject = JSON.parse(cssOverrides);
   } catch (e) {

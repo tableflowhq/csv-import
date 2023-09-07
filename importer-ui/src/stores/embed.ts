@@ -11,6 +11,7 @@ type EmbedParams = {
   isModal?: boolean;
   schemaless?: boolean;
   showDownloadTemplateButton: boolean;
+  cssOverrides?: string;
 };
 
 type ParamsStore = {
@@ -28,6 +29,7 @@ const useEmbedStore = create<ParamsStore>()((set) => ({
     template: "",
     showDownloadTemplateButton: true,
     isModal: true,
+    cssOverrides: "",
   },
   setEmbedParams: (embedParams) => set({ embedParams }),
 }));

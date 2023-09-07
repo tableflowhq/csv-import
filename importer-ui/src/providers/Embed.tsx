@@ -52,6 +52,7 @@ export default function Embed({ children }: EmbedProps) {
       isModal: strToOptionalBoolean(isModal),
       schemaless: strToOptionalBoolean(schemaless),
       showDownloadTemplateButton: strToDefaultBoolean(showDownloadTemplateButton, true),
+      cssOverrides: validateJSON(cssOverrides),
     });
   }, [importerId, metadata]);
 
@@ -89,22 +90,6 @@ export default function Embed({ children }: EmbedProps) {
       console.error('The "customStyles" prop is not a valid JSON string. Please check the documentation for more details.');
     }
   }, [customStyles]);
-
-  // Apply CSS overrides
-  useEffect(() => {
-    const parsedCss = parseCssOverrides(cssOverrides);
-
-    if (parsedCss) {
-      let style = document.getElementById("css-overrides");
-
-      if (!style) {
-        style = document.createElement("style");
-        style.setAttribute("id", "css-overrides");
-        document.head.append(style);
-      }
-      style.textContent = decodeURIComponent(parsedCss);
-    }
-  }, [cssOverrides]);
 
   return <>{children}</>;
 }

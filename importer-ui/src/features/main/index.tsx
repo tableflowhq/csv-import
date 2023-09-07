@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Button, Errors, Stepper, useStepper } from "@tableflow/ui-library";
 import { getAPIBaseURL } from "../../api/api";
 import useEmbedStore from "../../stores/embed";
+import parseCssOverrides from "../../utils/cssInterpreter";
 import postMessage from "../../utils/postMessage";
 import useApi from "./hooks/useApi";
 import useModifiedSteps from "./hooks/useModifiedSteps";
@@ -34,6 +35,7 @@ export default function Main() {
     isModal,
     schemaless,
     showDownloadTemplateButton,
+    cssOverrides,
   } = useEmbedStore((state) => state.embedParams);
   let skipHeader = skipHeaderRowSelection;
 
@@ -43,6 +45,22 @@ export default function Main() {
     schemaless ? "" : sdkDefinedTemplate, // Don't pass in a template if schemaless is enabled
     schemaless
   );
+
+  // Apply CSS overrides
+  useEffect(() => {
+    const parsedCss = parseCssOverrides(cssOverrides);
+
+    if (parsedCss) {
+      let style = document.getElementById("css-overrides");
+
+      if (!style) {
+        style = document.createElement("style");
+        style.setAttribute("id", "css-overrides");
+        document.head.append(style);
+      }
+      style.textContent = decodeURIComponent(parsedCss);
+    }
+  }, [cssOverrides]);
 
   // If the skipHeaderRowSelection is not set as a URL param, check the option on the importer
   if (typeof skipHeader === "undefined") {
