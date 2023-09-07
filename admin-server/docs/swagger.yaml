@@ -159,6 +159,12 @@ definitions:
       required:
         example: false
         type: boolean
+      suggested_mappings:
+        example:
+        - first_name
+        items:
+          type: string
+        type: array
       template_id:
         example: f0797968-becc-422a-b135-19de1d8c5d46
         type: string
@@ -454,6 +460,12 @@ definitions:
       required:
         example: false
         type: boolean
+      suggested_mappings:
+        example:
+        - first_name
+        items:
+          type: string
+        type: array
       validations:
         items:
           $ref: '#/definitions/types.Validation'
@@ -601,6 +613,10 @@ definitions:
       required:
         example: false
         type: boolean
+      suggested_mappings:
+        items:
+          type: string
+        type: array
       template_id:
         example: f0797968-becc-422a-b135-19de1d8c5d46
         type: string
@@ -623,6 +639,10 @@ definitions:
       required:
         example: false
         type: boolean
+      suggested_mappings:
+        items:
+          type: string
+        type: array
       validations:
         items:
           $ref: '#/definitions/web.TemplateColumnValidationRequest'

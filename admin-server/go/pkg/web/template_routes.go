@@ -119,7 +119,7 @@ func createTemplateColumn(c *gin.Context, getWorkspaceUser func(*gin.Context, st
 
 	suggestedMappings := make([]string, 0)
 	if req.SuggestedMappings != nil {
-		suggestedMappings, err = validateSuggestedMappings(*req.SuggestedMappings, template)
+		suggestedMappings, err = validateSuggestedMappings(*req.SuggestedMappings, template, nil)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("Invalid suggested mappings: %v", err.Error())})
 			return
@@ -240,7 +240,7 @@ func editTemplateColumn(c *gin.Context, getWorkspaceUser func(*gin.Context, stri
 		save = true
 	}
 	if req.SuggestedMappings != nil {
-		suggestedMappings, err := validateSuggestedMappings(*req.SuggestedMappings, template)
+		suggestedMappings, err := validateSuggestedMappings(*req.SuggestedMappings, template, templateColumn)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("Invalid suggested mappings: %v", err.Error())})
 			return
@@ -379,7 +379,7 @@ func deleteTemplateColumn(c *gin.Context, getWorkspaceUser func(*gin.Context, st
 	c.JSON(http.StatusOK, template)
 }
 
-func validateSuggestedMappings(suggestedMappings []string, template *model.Template) ([]string, error) {
+func validateSuggestedMappings(suggestedMappings []string, template *model.Template, templateColumn *model.TemplateColumn) ([]string, error) {
 	if len(suggestedMappings) == 0 {
 		return suggestedMappings, nil
 	}
@@ -391,7 +391,7 @@ func validateSuggestedMappings(suggestedMappings []string, template *model.Templ
 		}
 		str = strings.ToLower(str)
 		if seen[str] {
-			return []string{}, fmt.Errorf("cannot contain duplicate values (%v)", str)
+			return []string{}, fmt.Errorf("cannot contain duplicate values '%v'", str)
 		}
 		seen[str] = true
 	}
@@ -400,10 +400,14 @@ func validateSuggestedMappings(suggestedMappings []string, template *model.Templ
 		name       string
 		suggestion string
 	}
-	var allSuggestedMappings []nameAndSuggestion
+	var allOtherSuggestedMappings []nameAndSuggestion
 	for _, tc := range template.TemplateColumns {
+		if templateColumn != nil && templateColumn.ID.Equals(tc.ID) {
+			// Don't add the mappings of the current template column, if provided (edit request)
+			continue
+		}
 		for _, str := range tc.SuggestedMappings {
-			allSuggestedMappings = append(allSuggestedMappings, nameAndSuggestion{
+			allOtherSuggestedMappings = append(allOtherSuggestedMappings, nameAndSuggestion{
 				name:       tc.Name,
 				suggestion: str,
 			})
@@ -412,9 +416,9 @@ func validateSuggestedMappings(suggestedMappings []string, template *model.Templ
 	for _, str := range suggestedMappings {
 		orig := str
 		str = strings.ToLower(str)
-		for _, mapping := range allSuggestedMappings {
+		for _, mapping := range allOtherSuggestedMappings {
 			if str == strings.ToLower(mapping.suggestion) {
-				return []string{}, fmt.Errorf("suggestions must be unique across all columns in the template, the value '%v' is already used in the column %v", orig, mapping.name)
+				return []string{}, fmt.Errorf("suggestions must be unique across all columns in the template. The value '%v' is already used in the column '%v'", orig, mapping.name)
 			}
 		}
 	}

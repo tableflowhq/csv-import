@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/guregu/null"
 	"github.com/lib/pq"
+	"strings"
 	"tableflow/go/pkg/model"
 	"tableflow/go/pkg/model/jsonb"
 	"tableflow/go/pkg/tf"
@@ -37,7 +38,7 @@ type TemplateColumn struct {
 	Required          bool          `json:"required" example:"false"`
 	Description       string        `json:"description" example:"The first name"`
 	Validations       []*Validation `json:"validations,omitempty"`
-	SuggestedMappings []string                   `json:"suggested_mappings" swaggertype:"array,string" example:"first_name"`
+	SuggestedMappings []string      `json:"suggested_mappings" swaggertype:"array,string" example:"first_name"`
 }
 
 type Validation struct {

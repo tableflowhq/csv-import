@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useForm } from "@mantine/form";
-import { Button, Checkbox, classes, Errors, Input, Switch, Tooltip } from "@tableflow/ui-library";
+import { Button, Checkbox, classes, Errors, Input, PillInput, Tooltip } from "@tableflow/ui-library";
 import { TemplateColumn } from "../../../api/types";
 import usePostTemplateColumn from "../../../api/usePostTemplateColumn";
 import { TemplateColumnProps } from "../types";
@@ -23,6 +23,7 @@ export default function TemplateColumnForm({
       key: column?.key || "",
       required: column?.required || false,
       filled: (column?.validations && column?.validations.length !== 0) || false,
+      suggested_mappings: column?.suggested_mappings || [],
     },
   });
   const { mutate, isLoading, error, isSuccess } = usePostTemplateColumn(context?.templateId, column?.id);
@@ -70,6 +71,10 @@ export default function TemplateColumnForm({
     form.setFieldValue("key", value);
   };
 
+  const onSuggestedMappingChange = (value: any) => {
+    form.setFieldValue("suggested_mappings", value);
+  };
+
   const requiredFieldEmpty = form.getInputProps("name").value.length === 0 || form.getInputProps("key").value.length === 0;
 
   return (
@@ -82,7 +87,7 @@ export default function TemplateColumnForm({
       <form onSubmit={form.onSubmit(onSubmit)} aria-disabled={isLoading}>
         <fieldset disabled={isLoading}>
           <Input
-            placeholder={!isEditForm ? "name" : `${column?.name}`}
+            placeholder={!isEditForm ? "Name" : `${column?.name}`}
             label="Column name *"
             name="name"
             {...form.getInputProps("name")}
@@ -91,14 +96,30 @@ export default function TemplateColumnForm({
             required
           />
           <Input
-            placeholder={!isEditForm ? "key" : `${column?.key}`}
+            placeholder={!isEditForm ? "Key" : `${column?.key}`}
             label="Column key *"
             name="key"
             {...form.getInputProps("key")}
             onChange={onKeyChange}
             required
           />
-          <Input as="textarea" placeholder="description" label="Description" name="description" {...form.getInputProps("description")} />
+          <Input as="textarea" placeholder="Description" label="Description" name="description" {...form.getInputProps("description")} />
+          <div className={style.pillInputContainer}>
+            <span>Suggested Column Mapping</span>
+            <Tooltip
+              className={style.checkboxLabel}
+              title={
+                "If a column header in the file matches one of these names (case-insensitive), it will be automatically selected during column mapping"
+              }
+            />
+            <label>
+              <PillInput
+                placeholder={"Column mappings"}
+                initialPills={form.getInputProps("suggested_mappings").value}
+                onChange={onSuggestedMappingChange}
+              />
+            </label>
+          </div>
           <div className={style.checkboxInput}>
             <label>
               <Checkbox {...form.getInputProps("required", { type: "checkbox" })} />
