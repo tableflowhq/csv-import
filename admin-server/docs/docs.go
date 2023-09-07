@@ -578,7 +578,88 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.ImportServiceImport"
+                            "$ref": "#/definitions/types.Import"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/types.Res"
+                        }
+                    }
+                }
+            }
+        },
+        "/file-import/v1/import/{id}/review": {
+            "get": {
+                "description": "Get a single import by the upload ID, including the row data for the first page of the review screen if the import is complete",
+                "tags": [
+                    "File Import"
+                ],
+                "summary": "Get import by upload ID for the review screen",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Upload ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.Import"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/types.Res"
+                        }
+                    }
+                }
+            }
+        },
+        "/file-import/v1/import/{id}/rows": {
+            "get": {
+                "description": "Paginate import rows by the upload ID of an import",
+                "tags": [
+                    "File Import"
+                ],
+                "summary": "Get import rows by upload ID for the review screen",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Upload ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "minimum": 0,
+                        "type": "integer",
+                        "description": "Pagination offset",
+                        "name": "offset",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "maximum": 1000,
+                        "minimum": 1,
+                        "type": "integer",
+                        "description": "Pagination limit",
+                        "name": "limit",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.ImportData"
                         }
                     },
                     "400": {
@@ -619,7 +700,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.ImportServiceImporter"
+                            "$ref": "#/definitions/types.Importer"
                         }
                     },
                     "400": {
@@ -651,7 +732,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.ImportServiceUpload"
+                            "$ref": "#/definitions/types.Upload"
                         }
                     },
                     "400": {
@@ -728,7 +809,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/types.ImporterServiceUploadHeaderRowSelection"
+                            "$ref": "#/definitions/types.UploadHeaderRowSelection"
                         }
                     }
                 ],
@@ -736,7 +817,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.ImportServiceUpload"
+                            "$ref": "#/definitions/types.Upload"
                         }
                     },
                     "400": {
@@ -1101,15 +1182,6 @@ const docTemplate = `{
                     "type": "boolean",
                     "example": false
                 },
-                "suggested_mappings": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    },
-                    "example": [
-                        "first_name"
-                    ]
-                },
                 "template_id": {
                     "type": "string",
                     "example": "f0797968-becc-422a-b135-19de1d8c5d46"
@@ -1326,50 +1398,15 @@ const docTemplate = `{
                 }
             }
         },
-        "types.ImportRow": {
-            "type": "object",
-            "properties": {
-                "errors": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/definitions/types.ImportRowError"
-                        }
-                    }
-                },
-                "index": {
-                    "type": "integer",
-                    "example": 0
-                },
-                "values": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "string"
-                    }
-                }
-            }
-        },
-        "types.ImportRowError": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string"
-                },
-                "severity": {
-                    "type": "string"
-                },
-                "type": {
-                    "type": "string"
-                }
-            }
-        },
-        "types.ImportServiceImport": {
+        "types.Import": {
             "type": "object",
             "properties": {
                 "created_at": {
                     "type": "integer",
                     "example": 1682366228
+                },
+                "data": {
+                    "$ref": "#/definitions/types.ImportData"
                 },
                 "has_errors": {
                     "type": "boolean",
@@ -1411,6 +1448,7 @@ const docTemplate = `{
                     "example": 224
                 },
                 "rows": {
+                    "description": "Deprecated: Use Data.Rows instead",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/types.ImportRow"
@@ -1422,7 +1460,59 @@ const docTemplate = `{
                 }
             }
         },
-        "types.ImportServiceImporter": {
+        "types.ImportData": {
+            "type": "object",
+            "properties": {
+                "pagination": {
+                    "$ref": "#/definitions/types.Pagination"
+                },
+                "rows": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/types.ImportRow"
+                    }
+                }
+            }
+        },
+        "types.ImportRow": {
+            "type": "object",
+            "properties": {
+                "errors": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/definitions/types.ImportRowError"
+                        }
+                    }
+                },
+                "index": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "values": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "types.ImportRowError": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "severity": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "types.Importer": {
             "type": "object",
             "properties": {
                 "id": {
@@ -1438,17 +1528,42 @@ const docTemplate = `{
                     "example": false
                 },
                 "template": {
-                    "$ref": "#/definitions/types.ImportServiceTemplate"
+                    "$ref": "#/definitions/types.Template"
                 }
             }
         },
-        "types.ImportServiceTemplate": {
+        "types.Pagination": {
+            "type": "object",
+            "properties": {
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "types.Res": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "types.Template": {
             "type": "object",
             "properties": {
                 "columns": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/types.ImportServiceTemplateColumn"
+                        "$ref": "#/definitions/types.TemplateColumn"
                     }
                 },
                 "id": {
@@ -1461,7 +1576,7 @@ const docTemplate = `{
                 }
             }
         },
-        "types.ImportServiceTemplateColumn": {
+        "types.TemplateColumn": {
             "type": "object",
             "properties": {
                 "description": {
@@ -1484,24 +1599,15 @@ const docTemplate = `{
                     "type": "boolean",
                     "example": false
                 },
-                "suggested_mappings": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    },
-                    "example": [
-                        "first_name"
-                    ]
-                },
                 "validations": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/types.ImportServiceValidation"
+                        "$ref": "#/definitions/types.Validation"
                     }
                 }
             }
         },
-        "types.ImportServiceUpload": {
+        "types.Upload": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -1548,7 +1654,7 @@ const docTemplate = `{
                     "description": "Set if the user passes in a template to the SDK, which overrides the template on the importer",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/types.ImportServiceTemplate"
+                            "$ref": "#/definitions/types.Template"
                         }
                     ]
                 },
@@ -1559,7 +1665,7 @@ const docTemplate = `{
                 "upload_columns": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/types.ImportServiceUploadColumn"
+                        "$ref": "#/definitions/types.UploadColumn"
                     }
                 },
                 "upload_rows": {
@@ -1570,7 +1676,7 @@ const docTemplate = `{
                 }
             }
         },
-        "types.ImportServiceUploadColumn": {
+        "types.UploadColumn": {
             "type": "object",
             "properties": {
                 "id": {
@@ -1596,7 +1702,31 @@ const docTemplate = `{
                 }
             }
         },
-        "types.ImportServiceValidation": {
+        "types.UploadHeaderRowSelection": {
+            "type": "object",
+            "properties": {
+                "index": {
+                    "type": "integer",
+                    "example": 0
+                }
+            }
+        },
+        "types.UploadRow": {
+            "type": "object",
+            "properties": {
+                "index": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "values": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "types.Validation": {
             "type": "object",
             "properties": {
                 "id": {
@@ -1618,41 +1748,6 @@ const docTemplate = `{
                 "value": {
                     "type": "string",
                     "example": "true"
-                }
-            }
-        },
-        "types.ImporterServiceUploadHeaderRowSelection": {
-            "type": "object",
-            "properties": {
-                "index": {
-                    "type": "integer",
-                    "example": 0
-                }
-            }
-        },
-        "types.Res": {
-            "type": "object",
-            "properties": {
-                "error": {
-                    "type": "string"
-                },
-                "message": {
-                    "type": "string"
-                }
-            }
-        },
-        "types.UploadRow": {
-            "type": "object",
-            "properties": {
-                "index": {
-                    "type": "integer",
-                    "example": 0
-                },
-                "values": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "string"
-                    }
                 }
             }
         },
@@ -1714,12 +1809,6 @@ const docTemplate = `{
                     "type": "boolean",
                     "example": false
                 },
-                "suggested_mappings": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
                 "template_id": {
                     "type": "string",
                     "example": "f0797968-becc-422a-b135-19de1d8c5d46"
@@ -1750,12 +1839,6 @@ const docTemplate = `{
                 "required": {
                     "type": "boolean",
                     "example": false
-                },
-                "suggested_mappings": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
                 },
                 "validations": {
                     "type": "array",

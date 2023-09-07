@@ -13,6 +13,7 @@ export type TableFlowImporterProps = HTMLAttributes<HTMLDialogElement> & {
   onComplete?: (data: { data: any; error: any }) => void;
   customStyles?: Record<string, string> | CSSProperties;
   showImportLoadingStatus?: boolean;
+  showDownloadTemplateButton?: boolean;
   skipHeaderRowSelection?: boolean;
   schemaless?: boolean;
 };

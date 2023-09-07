@@ -159,12 +159,6 @@ definitions:
       required:
         example: false
         type: boolean
-      suggested_mappings:
-        example:
-        - first_name
-        items:
-          type: string
-        type: array
       template_id:
         example: f0797968-becc-422a-b135-19de1d8c5d46
         type: string
@@ -321,36 +315,13 @@ definitions:
           $ref: '#/definitions/model.User'
         type: array
     type: object
-  types.ImportRow:
-    properties:
-      errors:
-        additionalProperties:
-          items:
-            $ref: '#/definitions/types.ImportRowError'
-          type: array
-        type: object
-      index:
-        example: 0
-        type: integer
-      values:
-        additionalProperties:
-          type: string
-        type: object
-    type: object
-  types.ImportRowError:
-    properties:
-      message:
-        type: string
-      severity:
-        type: string
-      type:
-        type: string
-    type: object
-  types.ImportServiceImport:
+  types.Import:
     properties:
       created_at:
         example: 1682366228
         type: integer
+      data:
+        $ref: '#/definitions/types.ImportData'
       has_errors:
         example: false
         type: boolean
@@ -381,6 +352,7 @@ definitions:
         example: 224
         type: integer
       rows:
+        description: 'Deprecated: Use Data.Rows instead'
         items:
           $ref: '#/definitions/types.ImportRow'
         type: array
@@ -388,7 +360,41 @@ definitions:
         example: 50ca61e1-f683-4b03-9ec4-4b3adb592bf1
         type: string
     type: object
-  types.ImportServiceImporter:
+  types.ImportData:
+    properties:
+      pagination:
+        $ref: '#/definitions/types.Pagination'
+      rows:
+        items:
+          $ref: '#/definitions/types.ImportRow'
+        type: array
+    type: object
+  types.ImportRow:
+    properties:
+      errors:
+        additionalProperties:
+          items:
+            $ref: '#/definitions/types.ImportRowError'
+          type: array
+        type: object
+      index:
+        example: 0
+        type: integer
+      values:
+        additionalProperties:
+          type: string
+        type: object
+    type: object
+  types.ImportRowError:
+    properties:
+      message:
+        type: string
+      severity:
+        type: string
+      type:
+        type: string
+    type: object
+  types.Importer:
     properties:
       id:
         example: 6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353
@@ -400,13 +406,29 @@ definitions:
         example: false
         type: boolean
       template:
-        $ref: '#/definitions/types.ImportServiceTemplate'
+        $ref: '#/definitions/types.Template'
     type: object
-  types.ImportServiceTemplate:
+  types.Pagination:
+    properties:
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  types.Res:
+    properties:
+      error:
+        type: string
+      message:
+        type: string
+    type: object
+  types.Template:
     properties:
       columns:
         items:
-          $ref: '#/definitions/types.ImportServiceTemplateColumn'
+          $ref: '#/definitions/types.TemplateColumn'
         type: array
       id:
         example: f0797968-becc-422a-b135-19de1d8c5d46
@@ -415,7 +437,7 @@ definitions:
         example: My Template
         type: string
     type: object
-  types.ImportServiceTemplateColumn:
+  types.TemplateColumn:
     properties:
       description:
         example: The first name
@@ -432,18 +454,12 @@ definitions:
       required:
         example: false
         type: boolean
-      suggested_mappings:
-        example:
-        - first_name
-        items:
-          type: string
-        type: array
       validations:
         items:
-          $ref: '#/definitions/types.ImportServiceValidation'
+          $ref: '#/definitions/types.Validation'
         type: array
     type: object
-  types.ImportServiceUpload:
+  types.Upload:
     properties:
       created_at:
         example: 1682366228
@@ -477,7 +493,7 @@ definitions:
         type: string
       template:
         allOf:
-        - $ref: '#/definitions/types.ImportServiceTemplate'
+        - $ref: '#/definitions/types.Template'
         description: Set if the user passes in a template to the SDK, which overrides
           the template on the importer
       tus_id:
@@ -485,14 +501,14 @@ definitions:
         type: string
       upload_columns:
         items:
-          $ref: '#/definitions/types.ImportServiceUploadColumn'
+          $ref: '#/definitions/types.UploadColumn'
         type: array
       upload_rows:
         items:
           $ref: '#/definitions/types.UploadRow'
         type: array
     type: object
-  types.ImportServiceUploadColumn:
+  types.UploadColumn:
     properties:
       id:
         example: 3c79e7fd-1018-4a27-8b86-9cee84221cd8
@@ -510,7 +526,23 @@ definitions:
           type: string
         type: array
     type: object
-  types.ImportServiceValidation:
+  types.UploadHeaderRowSelection:
+    properties:
+      index:
+        example: 0
+        type: integer
+    type: object
+  types.UploadRow:
+    properties:
+      index:
+        example: 0
+        type: integer
+      values:
+        additionalProperties:
+          type: string
+        type: object
+    type: object
+  types.Validation:
     properties:
       id:
         example: 4581
@@ -527,29 +559,6 @@ definitions:
       value:
         example: "true"
         type: string
-    type: object
-  types.ImporterServiceUploadHeaderRowSelection:
-    properties:
-      index:
-        example: 0
-        type: integer
-    type: object
-  types.Res:
-    properties:
-      error:
-        type: string
-      message:
-        type: string
-    type: object
-  types.UploadRow:
-    properties:
-      index:
-        example: 0
-        type: integer
-      values:
-        additionalProperties:
-          type: string
-        type: object
     type: object
   web.ImporterCreateRequest:
     properties:
@@ -592,10 +601,6 @@ definitions:
       required:
         example: false
         type: boolean
-      suggested_mappings:
-        items:
-          type: string
-        type: array
       template_id:
         example: f0797968-becc-422a-b135-19de1d8c5d46
         type: string
@@ -618,10 +623,6 @@ definitions:
       required:
         example: false
         type: boolean
-      suggested_mappings:
-        items:
-          type: string
-        type: array
       validations:
         items:
           $ref: '#/definitions/web.TemplateColumnValidationRequest'
@@ -1029,12 +1030,68 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.ImportServiceImport'
+            $ref: '#/definitions/types.Import'
         "400":
           description: Bad Request
           schema:
             $ref: '#/definitions/types.Res'
       summary: Get import by upload ID
+      tags:
+      - File Import
+  /file-import/v1/import/{id}/review:
+    get:
+      description: Get a single import by the upload ID, including the row data for
+        the first page of the review screen if the import is complete
+      parameters:
+      - description: Upload ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.Import'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/types.Res'
+      summary: Get import by upload ID for the review screen
+      tags:
+      - File Import
+  /file-import/v1/import/{id}/rows:
+    get:
+      description: Paginate import rows by the upload ID of an import
+      parameters:
+      - description: Upload ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Pagination offset
+        in: query
+        minimum: 0
+        name: offset
+        required: true
+        type: integer
+      - description: Pagination limit
+        in: query
+        maximum: 1000
+        minimum: 1
+        name: limit
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.ImportData'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/types.Res'
+      summary: Get import rows by upload ID for the review screen
       tags:
       - File Import
   /file-import/v1/importer/{id}:
@@ -1056,7 +1113,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.ImportServiceImporter'
+            $ref: '#/definitions/types.Importer'
         "400":
           description: Bad Request
           schema:
@@ -1078,7 +1135,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.ImportServiceUpload'
+            $ref: '#/definitions/types.Upload'
         "400":
           description: Bad Request
           schema:
@@ -1131,12 +1188,12 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/types.ImporterServiceUploadHeaderRowSelection'
+          $ref: '#/definitions/types.UploadHeaderRowSelection'
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.ImportServiceUpload'
+            $ref: '#/definitions/types.Upload'
         "400":
           description: Bad Request
           schema:

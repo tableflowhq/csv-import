@@ -47,7 +47,7 @@ function MyComponent() {
   The unique ID for the importer. Obtain from your importer on [TableFlow](https://app.tableflow.com/importers).
 </ResponseField>
 
-<ResponseField name="isOpen" type="boolean" required>
+<ResponseField name="isOpen" type="boolean" default={false} required>
   Controls the importer modal being open or closed.
 </ResponseField>
 
@@ -67,8 +67,8 @@ function MyComponent() {
   ```
 </ResponseField>
 
-<ResponseField name="closeOnClickOutside" type="boolean">
-  If `true`, clicking outside of the modal will close the importer modal.
+<ResponseField name="closeOnClickOutside" type="boolean" default={false}>
+  When set to `true`, clicking outside of the modal will close the importer modal.
 </ResponseField>
 
 <ResponseField name="template" type="object">
@@ -109,7 +109,7 @@ function MyComponent() {
   ```
 </ResponseField>
 
-<ResponseField name="schemaless" type="boolean">
+<ResponseField name="schemaless" type="boolean" default={false}>
   Allows users to import a file without mapping their columns to a template. With this option enabled, the Review screen
   lets users input custom destination column keys, or use pre-generated keys based on the column names. Note this option
   will override both the template in the [TableFlow admin app](https://app.tableflow.com/importers) and the `template`
@@ -119,7 +119,7 @@ function MyComponent() {
   </Frame>
 </ResponseField>
 
-<ResponseField name="darkMode" type="boolean">
+<ResponseField name="darkMode" type="boolean" default={false}>
   Toggle between dark mode (`true`) and light mode (`false`).
 </ResponseField>
 
@@ -191,13 +191,20 @@ function MyComponent() {
   ```
 </ResponseField>
 
-<ResponseField name="showImportLoadingStatus" type="boolean">
+<ResponseField name="showImportLoadingStatus" type="boolean" default={false}>
   When set to `true`, show a loading indicator while data is being imported at the final stage of an import. The loading
   indicator will show until the `onComplete` callback is fired. This can be useful if you want to use the imported data
   in your frontend after it has finished processing.
 </ResponseField>
 
-<ResponseField name="skipHeaderRowSelection" type="boolean">
+<ResponseField name="showDownloadTemplateButton" type="boolean" default={true}>
+  When set to `false`, hide the Download Template button on the first screen of the importer.
+  <Frame>
+    ![Download Template](/assets/download-template.jpg)
+  </Frame>
+</ResponseField>
+
+<ResponseField name="skipHeaderRowSelection" type="boolean" default={false}>
   When set to `true`, the importer will not display and skip the Header Row Selection step and always choose the first
   row in the file as the header.
 </ResponseField>
