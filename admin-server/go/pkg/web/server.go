@@ -48,6 +48,7 @@ type ServerConfig struct {
 	ImportCompleteHandler          func(*model.Import)
 	AdditionalCORSOrigins          []string
 	AdditionalCORSHeaders          []string
+	AdditionalImporterRoutes       func(group *gin.RouterGroup)
 	AdditionalAdminRoutes          func(group *gin.RouterGroup)
 	UseZapLogger                   bool
 }
@@ -133,6 +134,11 @@ func StartWebServer(config ServerConfig) *http.Server {
 	importer.GET("/import/:id/review", importerReviewImport)
 	importer.GET("/import/:id/rows", importerGetImportRows)
 	importer.GET("/import/:id", importerGetImport)
+
+	/* Additional Routes */
+	if config.AdditionalImporterRoutes != nil {
+		config.AdditionalImporterRoutes(importer)
+	}
 
 	/* ---------------------------  Admin routes  ---------------------------- */
 
