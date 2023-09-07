@@ -716,7 +716,6 @@ func importerGetImport(c *gin.Context) {
 
 	rows := scylla.RetrieveAllImportRows(imp)
 
-	// TODO: Remove after updating importer-ui
 	importServiceImport.Rows = rows
 	importServiceImport.Data = types.ImportData{
 		Rows: rows,
