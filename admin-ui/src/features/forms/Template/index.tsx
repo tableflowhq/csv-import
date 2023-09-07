@@ -88,7 +88,7 @@ export default function TemplateColumnForm({
         <fieldset disabled={isLoading}>
           <Input
             placeholder={!isEditForm ? "Name" : `${column?.name}`}
-            label="Column name *"
+            label="Name *"
             name="name"
             {...form.getInputProps("name")}
             autoFocus={!isEditForm}
@@ -97,7 +97,7 @@ export default function TemplateColumnForm({
           />
           <Input
             placeholder={!isEditForm ? "Key" : `${column?.key}`}
-            label="Column key *"
+            label="Key *"
             name="key"
             {...form.getInputProps("key")}
             onChange={onKeyChange}
@@ -105,7 +105,7 @@ export default function TemplateColumnForm({
           />
           <Input as="textarea" placeholder="Description" label="Description" name="description" {...form.getInputProps("description")} />
           <div className={style.pillInputContainer}>
-            <span>Suggested Column Mapping</span>
+            <span>Suggested Mappings</span>
             <Tooltip
               className={style.checkboxLabel}
               title={
