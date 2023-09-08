@@ -67,10 +67,15 @@ export default function Main() {
     if (tusId)
       setTimeout(() => {
         if (upload.header_row_index !== null && upload.header_row_index !== undefined && !skipHeader) {
+          console.log("hey1");
           setUploadColumnsRow(upload);
           stepper.setCurrent(2);
         } else {
-          stepper.setCurrent(1);
+          if (!uploadError && !isStored) {
+            stepper.setCurrent(0);
+          } else {
+            stepper.setCurrent(1);
+          }
         }
       }, 250);
   }, [isStored, tusId]);
@@ -134,19 +139,17 @@ export default function Main() {
   const renderContent = () => {
     switch (step) {
       case Steps.Upload:
-        if (!uploadError) {
-          return (
-            <Uploader
-              template={template}
-              importerId={importerId}
-              metadata={metadata}
-              skipHeaderRowSelection={skipHeader || false}
-              onSuccess={setTusId}
-              endpoint={TUS_ENDPOINT}
-              showDownloadTemplateButton={showDownloadTemplateButton}
-            />
-          );
-        }
+        return (
+          <Uploader
+            template={template}
+            importerId={importerId}
+            metadata={metadata}
+            skipHeaderRowSelection={skipHeader || false}
+            onSuccess={setTusId}
+            endpoint={TUS_ENDPOINT}
+            showDownloadTemplateButton={showDownloadTemplateButton}
+          />
+        );
         break;
       case Steps.RowSelection:
         return (
