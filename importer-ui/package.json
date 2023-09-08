@@ -30,6 +30,8 @@
     "react-router": "^6.9.0",
     "react-router-dom": "^6.9.0",
     "react-scripts": "5.0.1",
+    "ag-grid-community": "^30.1.0",
+    "ag-grid-react": "^30.1.0",
     "sass": "^1.59.3",
     "typescript": "^5.0.2",
     "web-vitals": "^3.3.0",

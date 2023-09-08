@@ -8,7 +8,7 @@ import useApi from "./hooks/useApi";
 import useModifiedSteps from "./hooks/useModifiedSteps";
 import { Steps } from "./types";
 import style from "./style/Main.module.scss";
-import Complete from "../complete";
+import DataValidation from "../data-validation";
 import Review from "../review";
 import RowSelection from "../row-selection";
 import Uploader from "../uploader";
@@ -17,9 +17,9 @@ const TUS_ENDPOINT = getAPIBaseURL("v1") + "files";
 
 const steps = [
   { label: "Upload", id: Steps.Upload },
-  { label: "Select Header", id: Steps.RowSelection },
-  { label: "Review", id: Steps.Review },
-  { label: "Complete", id: Steps.Complete },
+  { label: "Select Header Row", id: Steps.RowSelection },
+  { label: "Column", id: Steps.Review },
+  { label: "Review", id: Steps.Complete },
 ];
 
 export default function Main() {
@@ -174,15 +174,7 @@ export default function Main() {
           />
         );
       case Steps.Complete:
-        return (
-          <Complete
-            reload={reload}
-            close={requestClose}
-            onSuccess={handleComplete}
-            upload={upload}
-            showImportLoadingStatus={showImportLoadingStatus}
-          />
-        );
+        return <DataValidation upload={upload} onCancel={reload} />;
       default:
         return null;
     }
