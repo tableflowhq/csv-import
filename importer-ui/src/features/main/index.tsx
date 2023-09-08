@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Button, Errors, Stepper, useStepper } from "@tableflow/ui-library";
-import { getAPIBaseURL } from "../../api/api";
+import { defaultImporterHost, getAPIBaseURL } from "../../api/api";
 import useEmbedStore from "../../stores/embed";
-import parseCssOverrides from "../../utils/cssInterpreter";
+import parseCssOverrides, { providedCssOverrides } from "../../utils/cssInterpreter";
 import postMessage from "../../utils/postMessage";
 import useApi from "./hooks/useApi";
 import useModifiedSteps from "./hooks/useModifiedSteps";
@@ -40,19 +40,34 @@ export default function Main() {
   let skipHeader = skipHeaderRowSelection;
 
   // Async data & state
-  const { tusId, tusWasStored, importerIsLoading, importerError, template, upload, uploadError, isStored, setTusId, importer } = useApi(
+  const {
+    tusId,
+    tusWasStored,
+    importerIsLoading,
+    importerError,
+    template,
+    upload,
+    uploadError,
+    isStored,
+    setTusId,
+    importer,
+    organizationStatus,
+    statusIsLoading,
+  } = useApi(
     importerId,
     schemaless ? "" : sdkDefinedTemplate, // Don't pass in a template if schemaless is enabled
+    window.location.host.indexOf(defaultImporterHost) === 0 && providedCssOverrides(cssOverrides),
     schemaless
   );
 
   // Apply CSS overrides
   useEffect(() => {
+    if (!organizationStatus) {
+      return;
+    }
     const parsedCss = parseCssOverrides(cssOverrides);
-
     if (parsedCss) {
       let style = document.getElementById("css-overrides");
-
       if (!style) {
         style = document.createElement("style");
         style.setAttribute("id", "css-overrides");
@@ -60,7 +75,7 @@ export default function Main() {
       }
       style.textContent = decodeURIComponent(parsedCss);
     }
-  }, [cssOverrides]);
+  }, [cssOverrides, organizationStatus]);
 
   // If the skipHeaderRowSelection is not set as a URL param, check the option on the importer
   if (typeof skipHeader === "undefined") {
@@ -210,7 +225,7 @@ export default function Main() {
 
   // Render
 
-  if (importerIsLoading) return null;
+  if (importerIsLoading || statusIsLoading) return null;
 
   if (!importerId)
     return (

@@ -1,11 +1,11 @@
 function parseCssOverrides(cssOverrides?: string) {
   let cssAsObject = {};
 
-  if (!cssOverrides) {
+  if (!providedCssOverrides(cssOverrides)) {
     return "";
   }
   try {
-    cssAsObject = JSON.parse(cssOverrides);
+    cssAsObject = JSON.parse(cssOverrides || "");
   } catch (e) {
     console.error('The "cssOverrides" prop is not a valid JSON string. Please check the documentation for more details.');
   }
@@ -41,6 +41,10 @@ function parseCssSelector(selector: string) {
         .join(" ")
     )
     .join(":");
+}
+
+export function providedCssOverrides(cssOverrides?: string) {
+  return !!cssOverrides && cssOverrides !== "{}";
 }
 
 export default parseCssOverrides;

@@ -1,10 +1,11 @@
 import { useMemo } from "react";
-import { Importer, Template, Upload } from "../../../api/types";
+import { Importer, Organization, Template, Upload } from "../../../api/types";
 import useGetImporter from "../../../api/useGetImporter";
+import useGetOrganization from "../../../api/useGetOrganization";
 import useGetUpload from "../../../api/useGetUpload";
 import useMutableLocalStorage from "./useMutableLocalStorage";
 
-export default function useApi(importerId: string, sdkDefinedTemplate: string, schemaless?: boolean) {
+export default function useApi(importerId: string, sdkDefinedTemplate: string, checkOrganizationStatus: boolean, schemaless?: boolean) {
   const [tusId, setTusId] = useMutableLocalStorage(importerId + "-tusId", "");
 
   const tusWasStored = useMemo(() => !!tusId, []);
@@ -17,6 +18,9 @@ export default function useApi(importerId: string, sdkDefinedTemplate: string, s
   } = useGetImporter(importerId, sdkDefinedTemplate, schemaless);
   const { template = {} as Template } = importer;
 
+  const { data: organization, isLoading: statusIsLoading = {} as Organization } = useGetOrganization(importerId, checkOrganizationStatus);
+  const organizationStatus = organization?.status || false;
+
   // Load upload for the second step
   const { data: upload = {} as Upload, error: uploadError } = useGetUpload(tusId);
   const { is_stored: isStored } = upload;
@@ -28,6 +32,8 @@ export default function useApi(importerId: string, sdkDefinedTemplate: string, s
   return {
     tusId,
     tusWasStored,
+    organizationStatus,
+    statusIsLoading,
     importer,
     importerIsLoading,
     importerError,
