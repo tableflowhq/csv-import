@@ -1,12 +1,17 @@
 import { useMemo } from "react";
-import SyntaxHighlighter from "react-syntax-highlighter";
+import { Light as SyntaxHighlighter } from "react-syntax-highlighter";
 import { Button, Input, useLocalStorage, useThemeStore } from "@tableflow/ui-library";
 import notification from "../../utils/notification";
 import getCodeJavaScript from "./utils/getCodeJavaScript";
 import getCodeReact from "./utils/getCodeReact";
 import { CodeProps } from "./types";
 import style from "./style/Code.module.scss";
+import js from "react-syntax-highlighter/dist/esm/languages/hljs/javascript";
+import jsx from "react-syntax-highlighter/dist/esm/languages/prism/jsx";
 import { colorBrewer as syntaxHighlighterStyle } from "react-syntax-highlighter/dist/esm/styles/hljs";
+
+SyntaxHighlighter.registerLanguage("javascript", js);
+SyntaxHighlighter.registerLanguage("jsx", jsx);
 
 export default function Code(props: CodeProps) {
   const [framework, setFramework] = useLocalStorage("framework", "react");
