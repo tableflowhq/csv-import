@@ -67,7 +67,6 @@ export default function Main() {
     if (tusId)
       setTimeout(() => {
         if (upload.header_row_index !== null && upload.header_row_index !== undefined && !skipHeader) {
-          console.log("hey1");
           setUploadColumnsRow(upload);
           stepper.setCurrent(2);
         } else {
@@ -152,18 +151,23 @@ export default function Main() {
         );
         break;
       case Steps.RowSelection:
-        return (
-          <RowSelection
-            upload={upload}
-            onCancel={reload}
-            onSuccess={(uploadColumnsRow: any) => {
-              stepper.setCurrent(2);
-              setUploadColumnsRow(uploadColumnsRow);
-            }}
-            selectedId={selectedId}
-            setSelectedId={setSelectedId}
-          />
-        );
+        if (!isStored) {
+          return <Spinner className={style.spinner}>Processing your file...</Spinner>;
+        } else {
+          return (
+            <RowSelection
+              upload={upload}
+              onCancel={reload}
+              onSuccess={(uploadColumnsRow: any) => {
+                stepper.setCurrent(2);
+                setUploadColumnsRow(uploadColumnsRow);
+              }}
+              selectedId={selectedId}
+              setSelectedId={setSelectedId}
+            />
+          );
+        }
+
       case Steps.Review:
         return (
           <Review
