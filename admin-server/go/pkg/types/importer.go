@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/guregu/null"
 	"github.com/lib/pq"
+	"strings"
 	"tableflow/go/pkg/model"
 	"tableflow/go/pkg/model/jsonb"
 	"tableflow/go/pkg/tf"
@@ -31,12 +32,13 @@ type Template struct {
 }
 
 type TemplateColumn struct {
-	ID          model.ID      `json:"id" swaggertype:"string" example:"a1ed136d-33ce-4b7e-a7a4-8a5ccfe54cd5"`
-	Name        string        `json:"name" example:"First Name"`
-	Key         string        `json:"key" example:"email"`
-	Required    bool          `json:"required" example:"false"`
-	Description string        `json:"description" example:"The first name"`
-	Validations []*Validation `json:"validations,omitempty"`
+	ID                model.ID      `json:"id" swaggertype:"string" example:"a1ed136d-33ce-4b7e-a7a4-8a5ccfe54cd5"`
+	Name              string        `json:"name" example:"First Name"`
+	Key               string        `json:"key" example:"email"`
+	Required          bool          `json:"required" example:"false"`
+	Description       string        `json:"description" example:"The first name"`
+	Validations       []*Validation `json:"validations,omitempty"`
+	SuggestedMappings []string      `json:"suggested_mappings" swaggertype:"array,string" example:"first_name"`
 }
 
 type Validation struct {
@@ -182,6 +184,7 @@ func ConvertUploadTemplate(rawTemplate jsonb.JSONB, generateIDs bool) (*Template
 	}
 
 	seenKeys := make(map[string]bool)
+	seenSuggestedMappings := make(map[string]bool)
 
 	for _, item := range columnSlice {
 		columnMap, ok := item.(map[string]interface{})
@@ -194,6 +197,25 @@ func ConvertUploadTemplate(rawTemplate jsonb.JSONB, generateIDs bool) (*Template
 		key, _ := columnMap["key"].(string)
 		required, _ := columnMap["required"].(bool)
 		description, _ := columnMap["description"].(string)
+		suggestedMappings := make([]string, 0)
+
+		if suggestedMappingsInterface, ok := columnMap["suggested_mappings"].([]interface{}); ok {
+			for _, v := range suggestedMappingsInterface {
+				if mappingVal, ok := v.(string); ok {
+					mappingVal = strings.TrimSpace(mappingVal)
+					// Make sure the new mappings are all unique (case-insensitive) and don't contain blank values
+					if util.IsBlankUnicode(mappingVal) {
+						return nil, fmt.Errorf("Invalid template: suggested_mappings cannot contain blank values")
+					}
+					str := strings.ToLower(mappingVal)
+					if seenSuggestedMappings[str] {
+						return nil, fmt.Errorf("Invalid template: suggested_mappings cannot contain duplicate values (%v)", mappingVal)
+					}
+					seenSuggestedMappings[str] = true
+					suggestedMappings = append(suggestedMappings, mappingVal)
+				}
+			}
+		}
 
 		if name == "" {
 			return nil, fmt.Errorf("Invalid template: The paramter 'name' is required for each column")
@@ -221,11 +243,12 @@ func ConvertUploadTemplate(rawTemplate jsonb.JSONB, generateIDs bool) (*Template
 		}
 
 		columns = append(columns, &TemplateColumn{
-			ID:          model.ParseID(id),
-			Name:        name,
-			Key:         key,
-			Required:    required,
-			Description: description,
+			ID:                model.ParseID(id),
+			Name:              name,
+			Key:               key,
+			Required:          required,
+			Description:       description,
+			SuggestedMappings: suggestedMappings,
 		})
 	}
 
