@@ -64,20 +64,16 @@ export default function Main() {
 
   // Delay jump to the second step
   useEffect(() => {
+    console.log(uploadError, isStored);
     if (tusId)
-      setTimeout(() => {
-        if (upload.header_row_index !== null && upload.header_row_index !== undefined && !skipHeader) {
-          setUploadColumnsRow(upload);
-          stepper.setCurrent(2);
-        } else {
-          if (!uploadError && !isStored) {
-            stepper.setCurrent(0);
-          } else {
-            stepper.setCurrent(1);
-          }
-        }
-      }, 250);
-  }, [isStored, tusId]);
+      if (upload.header_row_index !== null && upload.header_row_index !== undefined && !skipHeader) {
+        setUploadColumnsRow(upload);
+        stepper.setCurrent(2);
+      } else {
+        uploadError && stepper.setCurrent(0);
+        !uploadError && !importerIsLoading && stepper.setCurrent(1);
+      }
+  }, [isStored, tusId, uploadError]);
 
   // Reload on close modal if completed
   useEffect(() => {
@@ -136,6 +132,9 @@ export default function Main() {
   };
 
   const renderContent = () => {
+    if (!isStored && !uploadError && step !== Steps.Upload) {
+      return <Spinner className={style.spinner}>Processing your file...</Spinner>;
+    }
     switch (step) {
       case Steps.Upload:
         return (
@@ -151,22 +150,18 @@ export default function Main() {
         );
         break;
       case Steps.RowSelection:
-        if (!isStored) {
-          return <Spinner className={style.spinner}>Processing your file...</Spinner>;
-        } else {
-          return (
-            <RowSelection
-              upload={upload}
-              onCancel={reload}
-              onSuccess={(uploadColumnsRow: any) => {
-                stepper.setCurrent(2);
-                setUploadColumnsRow(uploadColumnsRow);
-              }}
-              selectedId={selectedId}
-              setSelectedId={setSelectedId}
-            />
-          );
-        }
+        return (
+          <RowSelection
+            upload={upload}
+            onCancel={reload}
+            onSuccess={(uploadColumnsRow: any) => {
+              stepper.setCurrent(2);
+              setUploadColumnsRow(uploadColumnsRow);
+            }}
+            selectedId={selectedId}
+            setSelectedId={setSelectedId}
+          />
+        );
 
       case Steps.Review:
         return (
