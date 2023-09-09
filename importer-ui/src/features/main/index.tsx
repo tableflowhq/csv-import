@@ -149,7 +149,6 @@ export default function Main() {
             showDownloadTemplateButton={showDownloadTemplateButton}
           />
         );
-        break;
       case Steps.RowSelection:
         return (
           <RowSelection
