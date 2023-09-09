@@ -64,7 +64,6 @@ export default function Main() {
 
   // Delay jump to the second step
   useEffect(() => {
-    console.log(uploadError, isStored);
     if (tusId)
       setTimeout(() => {
         if (upload.header_row_index !== null && upload.header_row_index !== undefined && !skipHeader) {
