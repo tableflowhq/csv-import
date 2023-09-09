@@ -133,7 +133,7 @@ export default function Main() {
   };
 
   const renderContent = () => {
-    if (!isStored && !uploadError && step !== Steps.Upload) {
+    if (!isStored && !uploadError && (step === Steps.RowSelection || step === Steps.Review)) {
       return <Spinner className={style.spinner}>Processing your file...</Spinner>;
     }
     switch (step) {
@@ -149,7 +149,6 @@ export default function Main() {
             showDownloadTemplateButton={showDownloadTemplateButton}
           />
         );
-        break;
       case Steps.RowSelection:
         return (
           <RowSelection
