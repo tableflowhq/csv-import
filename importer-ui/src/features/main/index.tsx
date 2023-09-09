@@ -66,13 +66,15 @@ export default function Main() {
   useEffect(() => {
     console.log(uploadError, isStored);
     if (tusId)
-      if (upload.header_row_index !== null && upload.header_row_index !== undefined && !skipHeader) {
-        setUploadColumnsRow(upload);
-        stepper.setCurrent(2);
-      } else {
-        uploadError && stepper.setCurrent(0);
-        !uploadError && !importerIsLoading && stepper.setCurrent(1);
-      }
+      setTimeout(() => {
+        if (upload.header_row_index !== null && upload.header_row_index !== undefined && !skipHeader) {
+          setUploadColumnsRow(upload);
+          stepper.setCurrent(2);
+        } else {
+          uploadError && stepper.setCurrent(0);
+          !uploadError && !importerIsLoading && stepper.setCurrent(1);
+        }
+      }, 250);
   }, [isStored, tusId, uploadError]);
 
   // Reload on close modal if completed
