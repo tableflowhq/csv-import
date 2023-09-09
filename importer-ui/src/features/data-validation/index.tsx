@@ -10,15 +10,17 @@ export default function Complete({ reload, onSuccess, upload, showImportLoadingS
   const uploadMemo = useMemo(() => upload, [upload]);
   const uploadMemoId = uploadMemo?.id;
 
-  const { data, error }: any = useGetImport(uploadMemoId);
-  const csvData = data?.data?.rows || [];
+  const { data, error, loadMore }: any = useGetImport(uploadMemoId);
+  console.log(data);
+  const csvData = data?.rows || [];
 
   const [columnDefs, setColumnDefs] = useState<any>([]);
 
   const theme = useThemeStore((state) => state.theme);
 
   const [showLoading, setShowLoading] = useState(true);
-  const { is_stored: isStored } = data || {};
+
+  const isStored = data?.is_stored || {};
 
   const defaultColDef = useMemo(() => {
     return { sortable: true, filter: true, resizable: true };
@@ -90,6 +92,9 @@ export default function Complete({ reload, onSuccess, upload, showImportLoadingS
           <div className={style.actions}>
             <Button type="button" variants={["secondary"]} onClick={reload}>
               Back
+            </Button>
+            <Button variants={["primary"]} onClick={loadMore} disabled={!loadMore}>
+              Load More
             </Button>
             <Button variants={["primary"]}>Submit</Button>
           </div>
