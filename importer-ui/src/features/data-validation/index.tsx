@@ -1,13 +1,10 @@
-import { AgGridReact } from "ag-grid-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button, Icon, useThemeStore } from "@tableflow/ui-library";
-import Spinner from "../../components/Spinner";
-import { UploadRow } from "../../api/types";
 import useGetImport from "../../api/useGetImport";
+import DataTable from "./components/DataTable";
+import LoadingSpinner from "./components/LoadingSpinner";
 import { DataValidationProps } from "./types";
 import style from "./style/DataValidation.module.scss";
-import "ag-grid-community/styles/ag-grid.css";
-import "ag-grid-community/styles/ag-theme-alpine.css";
 
 export default function Complete({ reload, onSuccess, upload, showImportLoadingStatus }: DataValidationProps) {
   const uploadMemo = useMemo(() => upload, [upload]);
@@ -16,8 +13,6 @@ export default function Complete({ reload, onSuccess, upload, showImportLoadingS
   const { data, error }: any = useGetImport(uploadMemoId);
   const csvData = data?.data?.rows || [];
 
-  const gridRef = useRef<any>();
-  const [rowData, setRowData] = useState<UploadRow[]>();
   const [columnDefs, setColumnDefs] = useState<any>([]);
 
   const theme = useThemeStore((state) => state.theme);
@@ -34,8 +29,6 @@ export default function Complete({ reload, onSuccess, upload, showImportLoadingS
   }, []);
 
   useEffect(() => {
-    setRowData(csvData);
-
     if (csvData.length > 0) {
       const headers = Object.keys(csvData[0].values);
       const generatedColumnDefs = headers.map((header: string) => {
@@ -51,7 +44,6 @@ export default function Complete({ reload, onSuccess, upload, showImportLoadingS
           },
           cellRenderer: (params: any) => {
             if (params.data) {
-              console.log(params.data);
               return (
                 <span
                   style={{
@@ -85,29 +77,16 @@ export default function Complete({ reload, onSuccess, upload, showImportLoadingS
   return (
     <>
       {showLoading && showImportLoadingStatus ? (
-        <Spinner className={style.spinner}>Importing your data...</Spinner>
+        <LoadingSpinner style={style} />
       ) : (
         <div>
-          <div
-            className={theme === "dark" ? "ag-theme-alpine-dark" : "ag-theme-alpine"}
-            style={{
-              width: columnDefs?.length != null ? columnDefs.length * 200 : 100,
-              height: rowData?.length != null ? (rowData.length + 1) * 43 : 100,
-              border: "none",
-            }}>
-            <AgGridReact
-              ref={gridRef}
-              rowData={rowData}
-              columnDefs={columnDefs}
-              defaultColDef={defaultColDef}
-              animateRows={true}
-              tooltipShowDelay={0}
-              tooltipHideDelay={999999}
-              rowSelection="multiple"
-              onCellValueChanged={cellClickedListener}
-            />
-          </div>
-
+          <DataTable
+            rowData={csvData}
+            columnDefs={columnDefs}
+            defaultColDef={defaultColDef}
+            cellClickedListener={cellClickedListener}
+            theme={theme}
+          />
           <div className={style.actions}>
             <Button type="button" variants={["secondary"]} onClick={reload}>
               Back
