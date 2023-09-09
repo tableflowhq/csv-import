@@ -133,7 +133,7 @@ export default function Main() {
   };
 
   const renderContent = () => {
-    if (!isStored && !uploadError && step !== Steps.Upload) {
+    if (!isStored && !uploadError && step === Steps.RowSelection) {
       return <Spinner className={style.spinner}>Processing your file...</Spinner>;
     }
     switch (step) {
