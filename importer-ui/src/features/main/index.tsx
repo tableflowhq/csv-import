@@ -174,7 +174,15 @@ export default function Main() {
           />
         );
       case Steps.Complete:
-        return <DataValidation upload={upload} onCancel={reload} />;
+        return (
+          <DataValidation
+            reload={reload}
+            close={requestClose}
+            onSuccess={handleComplete}
+            upload={upload}
+            showImportLoadingStatus={showImportLoadingStatus}
+          />
+        );
       default:
         return null;
     }
