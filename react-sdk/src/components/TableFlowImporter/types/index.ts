@@ -3,15 +3,15 @@ import { HTMLAttributes } from "react";
 type ModalParams =
   | {
       isModal: true;
-      onRequestClose?: () => void;
-      closeOnClickOutside?: boolean;
-      isOpen?: boolean;
+      modalIsOpen?: boolean;
+      modalCloseTriggered?: () => void;
+      modalCloseOnOutsideClick?: boolean;
     }
   | {
       isModal: false;
-      onRequestClose: never;
-      closeOnClickOutside: never;
-      isOpen: never;
+      modalIsOpen: never;
+      modalCloseTriggered: never;
+      modalCloseOnOutsideClick: never;
     };
 
 export type TableFlowImporterProps = (HTMLAttributes<HTMLDialogElement> & HTMLAttributes<HTMLDivElement>) & {

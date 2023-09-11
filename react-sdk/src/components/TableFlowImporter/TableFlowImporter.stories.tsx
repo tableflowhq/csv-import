@@ -22,16 +22,10 @@ const Template: ComponentStory<typeof ImporterComponent> = (args: TableFlowImpor
 
   const { isModal } = args;
 
-  useEffect(() => {
-    if (!isModal) {
-      setIsOpen(false);
-    }
-  }, [isOpen, isModal]);
-
   const props = {
-    ...(isModal ? { isOpen } : {}),
-    ...(isModal ? { onRequestClose: () => setIsOpen(false) } : {}),
-    ...(isModal ? { closeOnClickOutside: args.closeOnClickOutside } : {}),
+    ...(isModal ? { modalIsOpen: isOpen } : {}),
+    ...(isModal ? { modalCloseTriggered: () => setIsOpen(false) } : {}),
+    ...(isModal ? { modalCloseOnOutsideClick: args.modalCloseOnOutsideClick } : {}),
     ...args,
   };
 

@@ -4,15 +4,16 @@ import { TableFlowImporterProps } from "./types";
 import "./style/tableflow-importer.css";
 
 export default function TableFlowImporter({
-  isOpen = true,
-  onRequestClose = () => null,
   importerId,
   hostUrl,
+  isModal = true,
+  modalIsOpen = true,
+  modalCloseTriggered = () => null,
+  modalCloseOnOutsideClick,
   template,
   darkMode = false,
   primaryColor = "#7a5ef8",
   metadata,
-  closeOnClickOutside,
   className,
   onComplete,
   customStyles,
@@ -20,7 +21,6 @@ export default function TableFlowImporter({
   showDownloadTemplateButton,
   skipHeaderRowSelection,
   cssOverrides,
-  isModal = true,
   schemaless,
   ...props
 }: TableFlowImporterProps) {
@@ -29,10 +29,10 @@ export default function TableFlowImporter({
 
   useEffect(() => {
     if (isModal && current) {
-      if (isOpen) current?.showModal?.();
+      if (modalIsOpen) current?.showModal?.();
       else current?.close?.();
     }
-  }, [isModal, isOpen, current]);
+  }, [isModal, modalIsOpen, current]);
 
   const baseClass = "TableFlowImporter";
   const themeClass = darkMode && `${baseClass}-dark`;
@@ -40,26 +40,26 @@ export default function TableFlowImporter({
 
   const urlParams = {
     importerId,
+    isModal: isModal ? "true" : "false",
+    modalIsOpen: modalIsOpen.toString(),
     template: parseObjectOrStringJSON("template", template),
     darkMode: darkMode.toString(),
     primaryColor,
     metadata: parseObjectOrStringJSON("metadata", metadata),
-    isOpen: isOpen.toString(),
     onComplete: onComplete ? "true" : "false",
     customStyles: JSON.stringify(customStyles),
     showImportLoadingStatus: parseOptionalBoolean(showImportLoadingStatus),
     showDownloadTemplateButton: parseOptionalBoolean(showDownloadTemplateButton),
     skipHeaderRowSelection: parseOptionalBoolean(skipHeaderRowSelection),
     ...(cssOverrides ? { cssOverrides: JSON.stringify(cssOverrides) } : {}),
-    isModal: isModal ? "true" : "false",
     schemaless: parseOptionalBoolean(schemaless),
   };
   const searchParams = new URLSearchParams(urlParams);
   const defaultImporterUrl = "https://importer.tableflow.com";
   const uploaderUrl = `${hostUrl ? hostUrl : defaultImporterUrl}?${searchParams}`;
-  const backdropClick = (e: any) => closeOnClickOutside && onRequestClose();
+  const backdropClick = (e: any) => modalCloseOnOutsideClick && modalCloseTriggered();
 
-  useListenMessage(importerId, onComplete, onRequestClose);
+  useListenMessage(importerId, onComplete, modalCloseTriggered);
 
   const elementProps = {
     ref,

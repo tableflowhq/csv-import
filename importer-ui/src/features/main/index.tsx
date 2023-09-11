@@ -27,13 +27,13 @@ export default function Main() {
   // Get iframe URL params
   const {
     importerId,
+    isModal,
+    modalIsOpen,
     metadata,
-    isOpen,
     onComplete,
     showImportLoadingStatus,
     skipHeaderRowSelection,
     template: sdkDefinedTemplate,
-    isModal,
     schemaless,
     showDownloadTemplateButton,
     cssOverrides,
@@ -114,8 +114,8 @@ export default function Main() {
 
   // Reload on close modal if completed
   useEffect(() => {
-    if (!isOpen && step === "complete") reload();
-  }, [isOpen]);
+    if (!modalIsOpen && step === "complete") reload();
+  }, [modalIsOpen]);
 
   useEffect(() => {
     if (!selectedId) {
