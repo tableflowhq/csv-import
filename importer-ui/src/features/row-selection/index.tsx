@@ -39,7 +39,7 @@ export default function RowSelection({ upload, onSuccess, onCancel, selectedId, 
     return Object.fromEntries(mappedRow);
   });
   const maxNumberOfColumns = 7;
-  const uploadRow = upload?.upload_rows[0] ?? { values: {} };
+  const uploadRow = upload && upload.upload_rows && upload.upload_rows.length > 0 ? upload.upload_rows[0] : { values: {} };
   const numberOfColumns = Math.min(Object.keys(uploadRow.values).length + 1, maxNumberOfColumns);
   const widthPercentage = 100 / numberOfColumns;
   const columnWidths = Array(numberOfColumns).fill(`${widthPercentage}%`);

@@ -105,10 +105,11 @@ export default function Main() {
           setUploadColumnsRow(upload);
           stepper.setCurrent(2);
         } else {
-          stepper.setCurrent(1);
+          uploadError && stepper.setCurrent(0);
+          !uploadError && !importerIsLoading && stepper.setCurrent(1);
         }
       }, 250);
-  }, [isStored, tusId]);
+  }, [isStored, tusId, uploadError]);
 
   // Reload on close modal if completed
   useEffect(() => {
@@ -167,22 +168,22 @@ export default function Main() {
   };
 
   const renderContent = () => {
+    if (!isStored && !uploadError && (step === Steps.RowSelection || step === Steps.Review)) {
+      return <Spinner className={style.spinner}>Processing your file...</Spinner>;
+    }
     switch (step) {
       case Steps.Upload:
-        if (!uploadError) {
-          return (
-            <Uploader
-              template={template}
-              importerId={importerId}
-              metadata={metadata}
-              skipHeaderRowSelection={skipHeader || false}
-              onSuccess={setTusId}
-              endpoint={TUS_ENDPOINT}
-              showDownloadTemplateButton={showDownloadTemplateButton}
-            />
-          );
-        }
-        break;
+        return (
+          <Uploader
+            template={template}
+            importerId={importerId}
+            metadata={metadata}
+            skipHeaderRowSelection={skipHeader || false}
+            onSuccess={setTusId}
+            endpoint={TUS_ENDPOINT}
+            showDownloadTemplateButton={showDownloadTemplateButton}
+          />
+        );
       case Steps.RowSelection:
         return (
           <RowSelection
@@ -196,6 +197,7 @@ export default function Main() {
             setSelectedId={setSelectedId}
           />
         );
+
       case Steps.Review:
         return (
           <Review
