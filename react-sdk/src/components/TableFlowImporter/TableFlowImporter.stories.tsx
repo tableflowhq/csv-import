@@ -24,7 +24,7 @@ const Template: ComponentStory<typeof ImporterComponent> = (args: TableFlowImpor
 
   const props = {
     ...(isModal ? { modalIsOpen: isOpen } : {}),
-    ...(isModal ? { modalCloseTriggered: () => setIsOpen(false) } : {}),
+    ...(isModal ? { modalOnCloseTriggered: () => setIsOpen(false) } : {}),
     ...(isModal ? { modalCloseOnOutsideClick: args.modalCloseOnOutsideClick } : {}),
     ...args,
   };

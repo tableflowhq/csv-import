@@ -8,7 +8,7 @@ export default function TableFlowImporter({
   hostUrl,
   isModal = true,
   modalIsOpen = true,
-  modalCloseTriggered = () => null,
+  modalOnCloseTriggered = () => null,
   modalCloseOnOutsideClick,
   template,
   darkMode = false,
@@ -57,9 +57,9 @@ export default function TableFlowImporter({
   const searchParams = new URLSearchParams(urlParams);
   const defaultImporterUrl = "https://importer.tableflow.com";
   const uploaderUrl = `${hostUrl ? hostUrl : defaultImporterUrl}?${searchParams}`;
-  const backdropClick = (e: any) => modalCloseOnOutsideClick && modalCloseTriggered();
+  const backdropClick = (e: any) => modalCloseOnOutsideClick && modalOnCloseTriggered();
 
-  useListenMessage(importerId, onComplete, modalCloseTriggered);
+  useListenMessage(importerId, onComplete, modalOnCloseTriggered);
 
   const elementProps = {
     ref,

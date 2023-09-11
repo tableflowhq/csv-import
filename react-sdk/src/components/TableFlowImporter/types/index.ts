@@ -4,13 +4,13 @@ type ModalParams =
   | {
       isModal: true;
       modalIsOpen?: boolean;
-      modalCloseTriggered?: () => void;
+      modalOnCloseTriggered?: () => void;
       modalCloseOnOutsideClick?: boolean;
     }
   | {
       isModal: false;
       modalIsOpen: never;
-      modalCloseTriggered: never;
+      modalOnCloseTriggered: never;
       modalCloseOnOutsideClick: never;
     };
 
