@@ -4,14 +4,14 @@ import useIsStored from "./hooks/useIsStored";
 import { ApiResponse, Import } from "./types";
 import { get } from "./api";
 
-export default function useGetImport(uploadId: string): UseQueryResult<Import> {
+export default function useReview(uploadId: string): UseQueryResult<Import> {
   const [configOverrides, setConfigOverrides] = useState({});
 
   const query: UseQueryResult<Import> = useQuery(
     ["upload", uploadId],
     () => {
       setRefetchCount((count) => count + 1);
-      return uploadId ? getImport(uploadId) : {};
+      return uploadId ? getReview(uploadId) : {};
     },
     { keepPreviousData: true, ...configOverrides }
   );
@@ -21,8 +21,8 @@ export default function useGetImport(uploadId: string): UseQueryResult<Import> {
   return customError ? ({ ...query, error: customError } as any) : query;
 }
 
-async function getImport(uploadId: string) {
-  const response: ApiResponse<Import> = await get(`import/${uploadId}`);
+async function getReview(uploadId: string) {
+  const response: ApiResponse<Import> = await get(`import/${uploadId}/review`);
 
   if (!response.ok) throw response.error;
 

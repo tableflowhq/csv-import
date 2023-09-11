@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button, Icon, useThemeStore } from "@tableflow/ui-library";
-import useGetImport from "../../api/useGetImport";
+import useReview from "../../api/useReview";
 import DataTable from "./components/DataTable";
 import LoadingSpinner from "./components/LoadingSpinner";
 import { DataValidationProps } from "./types";
@@ -10,9 +10,9 @@ export default function Complete({ reload, onSuccess, upload, showImportLoadingS
   const uploadMemo = useMemo(() => upload, [upload]);
   const uploadMemoId = uploadMemo?.id;
 
-  const { data, error, loadMore }: any = useGetImport(uploadMemoId);
+  const { data, error }: any = useReview(uploadMemoId);
   console.log(data);
-  const csvData = data?.rows || [];
+  const csvData = data?.data?.rows || [];
 
   const [columnDefs, setColumnDefs] = useState<any>([]);
 
@@ -69,12 +69,12 @@ export default function Complete({ reload, onSuccess, upload, showImportLoadingS
     }
   }, [csvData]);
 
-  useEffect(() => {
-    if (isStored || error) {
-      setShowLoading(false);
-      onSuccess(data, data?.error || error?.toString() || null);
-    }
-  }, [isStored, error]);
+  // useEffect(() => {
+  //   if (isStored || error) {
+  //     setShowLoading(false);
+  //     onSuccess(data, data?.error || error?.toString() || null);
+  //   }
+  // }, [isStored, error]);
 
   return (
     <>
@@ -92,9 +92,6 @@ export default function Complete({ reload, onSuccess, upload, showImportLoadingS
           <div className={style.actions}>
             <Button type="button" variants={["secondary"]} onClick={reload}>
               Back
-            </Button>
-            <Button variants={["primary"]} onClick={loadMore} disabled={!loadMore}>
-              Load More
             </Button>
             <Button variants={["primary"]}>Submit</Button>
           </div>
