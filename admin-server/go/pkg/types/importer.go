@@ -101,9 +101,8 @@ type Import struct {
 	NumValidRows       null.Int       `json:"num_valid_rows" swaggertype:"integer" example:"224"`
 	CreatedAt          model.NullTime `json:"created_at" swaggertype:"integer" example:"1682366228"`
 	Error              null.String    `json:"error,omitempty" swaggerignore:"true"`
-	Data               ImportData     `json:"data"`
-	// Deprecated: Use Data.Rows instead
-	Rows []ImportRow `json:"rows,omitempty"`
+	Data               *ImportData    `json:"data,omitempty"` // Used internally within the importer
+	Rows               []ImportRow    `json:"rows,omitempty"` // Used for the final step in the onComplete
 }
 
 type ImportData struct {
