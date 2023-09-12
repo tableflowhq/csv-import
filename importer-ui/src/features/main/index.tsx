@@ -83,7 +83,7 @@ export default function Main() {
   }
 
   const [uploadColumnsRow, setUploadColumnsRow] = useState<any | null>(null);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedRow, setSelectedRow] = useState<number>(0);
 
   const modifiedSteps = useModifiedSteps(steps, skipHeader);
 
@@ -99,27 +99,21 @@ export default function Main() {
 
   // Delay jump to the second step
   useEffect(() => {
-    if (tusId)
-      setTimeout(() => {
-        if (upload.header_row_index !== null && upload.header_row_index !== undefined && !skipHeader) {
-          setUploadColumnsRow(upload);
-          stepper.setCurrent(2);
-        } else {
-          stepper.setCurrent(1);
-        }
-      }, 250);
-  }, [isStored, tusId]);
+    if (uploadError) stepper.setCurrent(0);
+
+    if (tusId && !uploadError)
+      if (upload.header_row_index !== null && upload.header_row_index !== undefined && !skipHeader) {
+        setUploadColumnsRow(upload);
+        stepper.setCurrent(2);
+      } else {
+        stepper.setCurrent(1);
+      }
+  }, [isStored, tusId, uploadError]);
 
   // Reload on close modal if completed
   useEffect(() => {
     if (!isOpen && step === "complete") reload();
   }, [isOpen]);
-
-  useEffect(() => {
-    if (!selectedId) {
-      setSelectedId("0");
-    }
-  }, []);
 
   // Actions
 
@@ -169,20 +163,17 @@ export default function Main() {
   const renderContent = () => {
     switch (step) {
       case Steps.Upload:
-        if (!uploadError) {
-          return (
-            <Uploader
-              template={template}
-              importerId={importerId}
-              metadata={metadata}
-              skipHeaderRowSelection={skipHeader || false}
-              onSuccess={setTusId}
-              endpoint={TUS_ENDPOINT}
-              showDownloadTemplateButton={showDownloadTemplateButton}
-            />
-          );
-        }
-        break;
+        return (
+          <Uploader
+            template={template}
+            importerId={importerId}
+            metadata={metadata}
+            skipHeaderRowSelection={skipHeader || false}
+            onSuccess={setTusId}
+            endpoint={TUS_ENDPOINT}
+            showDownloadTemplateButton={showDownloadTemplateButton}
+          />
+        );
       case Steps.RowSelection:
         return (
           <RowSelection
@@ -192,8 +183,8 @@ export default function Main() {
               stepper.setCurrent(2);
               setUploadColumnsRow(uploadColumnsRow);
             }}
-            selectedId={selectedId}
-            setSelectedId={setSelectedId}
+            selectedRow={selectedRow}
+            setSelectedRow={setSelectedRow}
           />
         );
       case Steps.Review:
