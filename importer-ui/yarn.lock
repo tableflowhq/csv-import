@@ -4035,6 +4035,26 @@ __metadata:
   languageName: node
   linkType: hard
 
+"ag-grid-community@npm:^30.1.0":
+  version: 30.1.0
+  resolution: "ag-grid-community@npm:30.1.0"
+  checksum: 98dd91520d077e29378f67d4f2575a45139fb1a136492021ba659a7f6c1e539ee892db3e0eeaf553034589d471492109ea3aa251cf0d4b66dc3b7f9a4c36cf97
+  languageName: node
+  linkType: hard
+
+"ag-grid-react@npm:^30.1.0":
+  version: 30.1.0
+  resolution: "ag-grid-react@npm:30.1.0"
+  dependencies:
+    prop-types: ^15.8.1
+  peerDependencies:
+    ag-grid-community: ~30.1.0
+    react: ^16.3.0 || ^17.0.0 || ^18.0.0
+    react-dom: ^16.3.0 || ^17.0.0 || ^18.0.0
+  checksum: 285950b66a9c6c440f549379f2d239e9adf75aebb1b6d193ba0faa456d8f003d3598102364948b8b9c6bb3f59fd252553c7991442260ee275ff725e4cdd0e3d6
+  languageName: node
+  linkType: hard
+
 "agent-base@npm:6, agent-base@npm:^6.0.2":
   version: 6.0.2
   resolution: "agent-base@npm:6.0.2"
@@ -8020,6 +8040,8 @@ __metadata:
     "@uppy/progress-bar": ^3.0.2
     "@uppy/react": ^3.1.2
     "@uppy/tus": ^3.1.0
+    ag-grid-community: ^30.1.0
+    ag-grid-react: ^30.1.0
     axios: ^1.3.4
     babel-plugin-named-exports-order: ^0.0.2
     cross-env: ^7.0.3
