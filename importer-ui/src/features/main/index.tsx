@@ -17,8 +17,8 @@ const TUS_ENDPOINT = getAPIBaseURL("v1") + "files";
 
 const steps = [
   { label: "Upload", id: Steps.Upload },
-  { label: "Select Header Row", id: Steps.RowSelection },
-  { label: "Column", id: Steps.Review },
+  { label: "Select Header", id: Steps.RowSelection },
+  { label: "Map Columns", id: Steps.Review },
   { label: "Review", id: Steps.Complete },
 ];
 
