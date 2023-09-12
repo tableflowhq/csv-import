@@ -1,18 +1,19 @@
-import { TableFlowImporterProps } from "./types/index";
+import { TableFlowImporterProps } from "./types";
 import "./index.css";
 
 let postMessages: string[] = [];
 
 export default function createTableFlowImporter({
   elementId = "tableflow-importer",
-  onRequestClose = () => null,
   importerId,
-  template,
   hostUrl,
+  isModal = true,
+  modalOnCloseTriggered = () => null,
+  modalCloseOnOutsideClick,
+  template,
   darkMode = false,
   primaryColor = "#7a5ef8",
   metadata = "{}",
-  closeOnClickOutside,
   onComplete,
   customStyles,
   className,
@@ -20,7 +21,6 @@ export default function createTableFlowImporter({
   showDownloadTemplateButton,
   skipHeaderRowSelection,
   cssOverrides,
-  isModal = true,
   schemaless,
 }: TableFlowImporterProps) {
   // CSS classes
@@ -32,7 +32,7 @@ export default function createTableFlowImporter({
   let domElement = document.getElementById(elementId) as HTMLDialogElement | HTMLDivElement;
 
   const backdropClick = () => {
-    if (closeOnClickOutside) onRequestClose();
+    if (modalCloseOnOutsideClick) modalOnCloseTriggered();
   };
 
   if (domElement === null) {
@@ -47,18 +47,18 @@ export default function createTableFlowImporter({
   // iframe element
   let urlParams = {
     importerId,
+    isModal: isModal ? "true" : "false",
+    modalIsOpen: "true",
     template: parseObjectOrStringJSON("template", template),
     darkMode: darkMode.toString(),
     primaryColor,
     metadata: parseObjectOrStringJSON("metadata", metadata),
-    isOpen: "true",
     onComplete: onComplete ? "true" : "false",
     customStyles: JSON.stringify(customStyles),
     showImportLoadingStatus: parseOptionalBoolean(showImportLoadingStatus),
     showDownloadTemplateButton: parseOptionalBoolean(showDownloadTemplateButton),
     skipHeaderRowSelection: parseOptionalBoolean(skipHeaderRowSelection),
     ...(cssOverrides ? { cssOverrides: JSON.stringify(cssOverrides) } : {}),
-    isModal: isModal ? "true" : "false",
     schemaless: parseOptionalBoolean(schemaless),
   };
 
@@ -78,8 +78,8 @@ export default function createTableFlowImporter({
       return;
     }
 
-    if (messageData?.type === "start" && urlParams.isOpen !== "true") {
-      urlParams = { ...urlParams, isOpen: "true" };
+    if (messageData?.type === "start" && urlParams.modalIsOpen !== "true") {
+      urlParams = { ...urlParams, modalIsOpen: "true" };
       const uploaderUrl = getUploaderUrl(urlParams, hostUrl);
       domElement.innerHTML = `<iframe src="${uploaderUrl}" />`;
     }
@@ -92,12 +92,12 @@ export default function createTableFlowImporter({
       postMessages.push(messageData?.id);
     }
 
-    if (messageData?.type === "close" && onRequestClose) {
-      onRequestClose();
+    if (messageData?.type === "close" && modalOnCloseTriggered) {
+      modalOnCloseTriggered();
       postMessages.push(messageData?.id);
 
-      if (urlParams.isOpen !== "false") {
-        urlParams = { ...urlParams, isOpen: "false" };
+      if (urlParams.modalIsOpen !== "false") {
+        urlParams = { ...urlParams, modalIsOpen: "false" };
         const uploaderUrl = getUploaderUrl(urlParams, hostUrl);
         domElement.innerHTML = `<iframe src="${uploaderUrl}" />`;
       }

@@ -47,8 +47,9 @@ function MyComponent() {
 
       <TableFlowImporter
         importerId={"b0fadb1d-9888-4fcb-b185-21b984bcb227"} // Use your importer ID from https://app.tableflow.com/importers
-        isOpen={isOpen}
-        onRequestClose={() => setIsOpen(false)}
+        isModal={true}
+        modalIsOpen={isOpen}
+        modalOnCloseTriggered={() => setIsOpen(false)}
         darkMode={true}
         onComplete={(data, error) => console.log(data)}
       />

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Button, Errors, Stepper, useStepper } from "@tableflow/ui-library";
+import Spinner from "../../components/Spinner";
 import { defaultImporterHost, getAPIBaseURL } from "../../api/api";
 import useEmbedStore from "../../stores/embed";
 import parseCssOverrides, { providedCssOverrides } from "../../utils/cssInterpreter";
@@ -26,13 +27,13 @@ export default function Main() {
   // Get iframe URL params
   const {
     importerId,
+    isModal,
+    modalIsOpen,
     metadata,
-    isOpen,
     onComplete,
     showImportLoadingStatus,
     skipHeaderRowSelection,
     template: sdkDefinedTemplate,
-    isModal,
     schemaless,
     showDownloadTemplateButton,
     cssOverrides,
@@ -112,8 +113,8 @@ export default function Main() {
 
   // Reload on close modal if completed
   useEffect(() => {
-    if (!isOpen && step === "complete") reload();
-  }, [isOpen]);
+    if (!modalIsOpen && step === "complete") reload();
+  }, [modalIsOpen]);
 
   // Actions
 
@@ -161,6 +162,9 @@ export default function Main() {
   };
 
   const renderContent = () => {
+    if (!isStored && !uploadError && (step === Steps.RowSelection || step === Steps.Review)) {
+      return <Spinner className={style.spinner}>Processing your file...</Spinner>;
+    }
     switch (step) {
       case Steps.Upload:
         return (
@@ -187,6 +191,7 @@ export default function Main() {
             setSelectedRow={setSelectedRow}
           />
         );
+
       case Steps.Review:
         return (
           <Review

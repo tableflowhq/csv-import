@@ -1,20 +1,15 @@
 import { CSSProperties } from "react";
 
-export type JSONPrimitive = string | number | boolean | null;
-export interface JSONMap extends Record<string, JSONPrimitive | JSONArray | JSONMap> {}
-export interface JSONArray extends Array<JSONPrimitive | JSONArray | JSONMap> {}
-export type JSONObject = JSONMap | JSONArray;
-
 type ModalParams =
   | {
       isModal: true;
-      onRequestClose?: () => void;
-      closeOnClickOutside?: boolean;
+      modalOnCloseTriggered?: () => void;
+      modalCloseOnOutsideClick?: boolean;
     }
   | {
       isModal: false;
-      onRequestClose: never;
-      closeOnClickOutside: never;
+      modalOnCloseTriggered: never;
+      modalCloseOnOutsideClick: never;
     };
 
 export type TableFlowImporterProps = HTMLDialogElement & {

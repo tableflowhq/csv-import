@@ -7,8 +7,13 @@ let dialog: any;
 const meta = {
   title: "App",
   render: (args) => {
-    const onRequestClose = () => dialog.close();
-    dialog = createTableFlowImporter({ ...args, ...(args.isModal ? { onRequestClose } : {}) } as TableFlowImporterProps);
+    const modalOnCloseTriggered = () => dialog.close();
+
+    dialog = createTableFlowImporter({
+      ...(args.isModal ? { modalOnCloseTriggered } : {}),
+      ...(args.isModal ? { modalCloseOnOutsideClick: args.modalCloseOnOutsideClick } : {}),
+      ...args,
+    } as TableFlowImporterProps);
     return args?.isModal ? `<button type="button" id="uploadButton">Import</button>` : "";
   },
   argTypes: {
@@ -17,7 +22,7 @@ const meta = {
     hostUrl: { control: "text" },
     darkMode: { control: "boolean" },
     primaryColor: { control: "color" },
-    closeOnClickOutside: { control: "boolean" },
+    modalCloseOnOutsideClick: { control: "boolean" },
     showImportLoadingStatus: { control: "boolean" },
     skipHeaderRowSelection: { control: "boolean" },
     showDownloadTemplateButton: { control: "boolean" },
