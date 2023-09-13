@@ -6,6 +6,12 @@ import { TableData } from "@tableflow/ui-library/build/Table/types";
 import { Importer } from "../../../api/types";
 import style from "../style/Importers.module.scss";
 
+const LinkContainer = ({ children, importerId }: { children: React.ReactNode; importerId: string }) => (
+  <Link to={`/importers/${importerId}/template`} className={style.rowLink}>
+    <div className={style.tableName}>{children}</div>
+  </Link>
+);
+
 export function importersTable(importers: Importer[] = [], update: Update): TableData {
   const actionMenu: DialogItem[] = [
     { children: "Edit", action: (id: EntityId) => update(id, "edit") },
@@ -18,14 +24,20 @@ export function importersTable(importers: Importer[] = [], update: Update): Tabl
       Name: {
         raw: importer.name,
         content: (
-          <div className={style.tableName}>
+          <LinkContainer importerId={importer.id}>
             <Icon icon="cube" size="m" />
-            <Link to={`/importers/${importer.id}/template`}>{importer.name}</Link>
-          </div>
+            {importer.name}
+          </LinkContainer>
         ),
       },
-      "Template Columns": importer.template?.template_columns.length,
-      Created: timeToText(importer.created_at),
+      "Template Columns": {
+        raw: importer.template?.template_columns.length,
+        content: <LinkContainer importerId={importer.id}>{importer.template?.template_columns.length}</LinkContainer>,
+      },
+      Created: {
+        raw: timeToText(importer.created_at),
+        content: <LinkContainer importerId={importer.id}>{timeToText(importer.created_at)}</LinkContainer>,
+      },
       _actions: {
         raw: importer.id,
         content: <Dialog items={actionMenu.map((e) => ({ ...e, id: importer.id }))} />,
