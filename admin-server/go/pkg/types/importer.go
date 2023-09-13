@@ -107,6 +107,7 @@ type Import struct {
 
 type ImportData struct {
 	Pagination *Pagination `json:"pagination,omitempty"`
+	Filter     *Filter     `json:"filter,omitempty"`
 	Rows       []ImportRow `json:"rows"`
 }
 

@@ -599,6 +599,7 @@ func importerReviewImport(c *gin.Context) {
 		NumValidRows:       imp.NumValidRows,
 		CreatedAt:          imp.CreatedAt,
 		Data: &types.ImportData{
+			Filter:     &types.ImportRowFilterAll,
 			Pagination: &types.Pagination{},
 			Rows:       []types.ImportRow{},
 		},
@@ -645,6 +646,12 @@ func importerGetImportRows(c *gin.Context) {
 		return
 	}
 
+	filter, err := types.ParseImportRowFilterQuery(c)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+		return
+	}
+
 	imp, err := db.GetImportByUploadID(id)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusOK, gin.H{})
@@ -660,6 +667,7 @@ func importerGetImportRows(c *gin.Context) {
 
 	rows := scylla.PaginateImportRows(imp, pagination.Offset, pagination.Limit)
 	data := &types.ImportData{
+		Filter:     &filter,
 		Pagination: &pagination,
 		Rows:       rows,
 	}
