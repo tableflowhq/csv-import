@@ -598,8 +598,7 @@ func importerReviewImport(c *gin.Context) {
 		NumErrorRows:       imp.NumErrorRows,
 		NumValidRows:       imp.NumValidRows,
 		CreatedAt:          imp.CreatedAt,
-		Rows:               []types.ImportRow{},
-		Data: types.ImportData{
+		Data: &types.ImportData{
 			Pagination: &types.Pagination{},
 			Rows:       []types.ImportRow{},
 		},
@@ -660,7 +659,7 @@ func importerGetImportRows(c *gin.Context) {
 	pagination.Total = int(imp.NumRows.Int64)
 
 	rows := scylla.PaginateImportRows(imp, pagination.Offset, pagination.Limit)
-	data := types.ImportData{
+	data := &types.ImportData{
 		Pagination: &pagination,
 		Rows:       rows,
 	}
@@ -717,11 +716,7 @@ func importerGetImport(c *gin.Context) {
 	}
 
 	rows := scylla.RetrieveAllImportRows(imp)
-
 	importServiceImport.Rows = rows
-	importServiceImport.Data = types.ImportData{
-		Rows: rows,
-	}
 
 	c.JSON(http.StatusOK, importServiceImport)
 }
