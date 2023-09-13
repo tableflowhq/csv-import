@@ -62,24 +62,25 @@ export default function useReviewTable(items: UploadColumn[] = [], templateColum
     setValues((prev) => ({ ...prev, [id]: { ...prev[id], template: value, use: !!value } }));
   };
 
-  const heading = {
-    "File Column": {
-      raw: "",
-      content: "File Column",
-    },
-    "Sample Data": {
-      raw: "",
-      content: "Sample Data",
-    },
-    "Destination Column": {
-      raw: "",
-      content: "Destination Column 1",
-    },
-    Include: {
-      raw: "",
-      content: "Include",
-    },
-  };
+  // Can be removed?
+  // const heading = {
+  //   "File Column": {
+  //     raw: "",
+  //     content: "File Column",
+  //   },
+  //   "Sample Data": {
+  //     raw: "",
+  //     content: "Sample Data",
+  //   },
+  //   "Destination Column": {
+  //     raw: "",
+  //     content: "Destination Column 1",
+  //   },
+  //   Include: {
+  //     raw: "",
+  //     content: "Include",
+  //   },
+  // };
   const rows = useMemo(() => {
     return items.map((item) => {
       const { id, name, sample_data } = item;

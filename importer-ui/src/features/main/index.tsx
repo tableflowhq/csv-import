@@ -163,7 +163,11 @@ export default function Main() {
 
   const renderContent = () => {
     if (!isStored && !uploadError && (step === Steps.RowSelection || step === Steps.Review)) {
-      return <Spinner className={style.spinner}>Processing your file...</Spinner>;
+      return (
+        <Spinner className={style.spinner} delay={250}>
+          Processing your file...
+        </Spinner>
+      );
     }
     switch (step) {
       case Steps.Upload:

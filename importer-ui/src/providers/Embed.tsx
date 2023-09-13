@@ -76,9 +76,10 @@ export default function Embed({ children }: EmbedProps) {
 
   // Apply custom CSS properties
   useEffect(() => {
+    console.log("cssOverrides", cssOverrides);
     try {
       if (customStyles && customStyles !== "undefined") {
-        const parsedStyles = JSON.parse(customStyles);
+        const parsedStyles = parseCssOverrides(JSON.parse(customStyles));
 
         if (customStyles && parsedStyles) {
           Object.keys(parsedStyles).forEach((key) => {
