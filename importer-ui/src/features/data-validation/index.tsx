@@ -37,7 +37,6 @@ export default function Complete({ reload, onSuccess, upload, showImportLoadingS
         return {
           headerName: header,
           field: `values.${header}`,
-          editable: true,
           cellStyle: (params: any) => {
             if (params.data?.errors?.[header]) {
               return { backgroundColor: "#f04339" };
