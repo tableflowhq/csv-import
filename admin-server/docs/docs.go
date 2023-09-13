@@ -558,38 +558,6 @@ const docTemplate = `{
                 "responses": {}
             }
         },
-        "/file-import/v1/import/{id}": {
-            "get": {
-                "description": "Get a single import by the upload ID, including the data if the import is complete",
-                "tags": [
-                    "File Import"
-                ],
-                "summary": "Get import by upload ID",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Upload ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/types.Import"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/types.Res"
-                        }
-                    }
-                }
-            }
-        },
         "/file-import/v1/import/{id}/review": {
             "get": {
                 "description": "Get a single import by the upload ID, including the row data for the first page of the review screen if the import is complete",
@@ -660,6 +628,38 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/types.ImportData"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/types.Res"
+                        }
+                    }
+                }
+            }
+        },
+        "/file-import/v1/import/{id}/submit": {
+            "post": {
+                "description": "Submit the reviewed import by the upload ID once the data is reviewed and any errors are fixed",
+                "tags": [
+                    "File Import"
+                ],
+                "summary": "Submit an import by upload ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Upload ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.Import"
                         }
                     },
                     "400": {
@@ -746,7 +746,7 @@ const docTemplate = `{
         },
         "/file-import/v1/upload/{id}/set-column-mapping": {
             "post": {
-                "description": "Set the template column IDs for each upload column and trigger the import. Note: we will eventually have a separate import endpoint once there is a review step in the upload process.",
+                "description": "Set the template column IDs for each upload column and trigger the import",
                 "tags": [
                     "File Import"
                 ],
@@ -1415,7 +1415,12 @@ const docTemplate = `{
                     "example": 1682366228
                 },
                 "data": {
-                    "$ref": "#/definitions/types.ImportData"
+                    "description": "Used internally within the importer",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/types.ImportData"
+                        }
+                    ]
                 },
                 "has_errors": {
                     "type": "boolean",
@@ -1457,7 +1462,7 @@ const docTemplate = `{
                     "example": 224
                 },
                 "rows": {
-                    "description": "Deprecated: Use Data.Rows instead",
+                    "description": "Used for the final step in the onComplete",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/types.ImportRow"
@@ -1472,6 +1477,9 @@ const docTemplate = `{
         "types.ImportData": {
             "type": "object",
             "properties": {
+                "filter": {
+                    "type": "string"
+                },
                 "pagination": {
                     "$ref": "#/definitions/types.Pagination"
                 },
