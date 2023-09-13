@@ -29,10 +29,9 @@ func PaginateUploadRows(uploadID string, offset, limit int) []map[int]string {
 					from upload_rows
 					where upload_id = ?
 					  and row_index >= ?
-					  and row_index < ?
 					order by row_index
 					limit ?`,
-		uploadID, offset, offset+limit, limit).Iter()
+		uploadID, offset, limit).Iter()
 
 	res := make([]map[int]string, 0, limit)
 	for i := 0; ; i++ {
@@ -82,12 +81,12 @@ func RetrieveAllImportRows(imp *model.Import) []types.ImportRow {
 		if offset > int(imp.NumRows.Int64) {
 			break
 		}
-		rows = append(rows, paginateImportRowsWithValidations(imp, validations, offset, DefaultPaginationSize)...)
+		rows = append(rows, paginateImportRowsWithValidations(imp, validations, offset, DefaultPaginationSize, types.ImportRowFilterAll)...)
 	}
 	return rows
 }
 
-func PaginateImportRows(imp *model.Import, offset, limit int, filter *types.Filter) []types.ImportRow {
+func PaginateImportRows(imp *model.Import, offset, limit int, filter types.Filter) []types.ImportRow {
 	var validations map[uint]model.Validation
 	var err error
 
@@ -98,38 +97,56 @@ func PaginateImportRows(imp *model.Import, offset, limit int, filter *types.Filt
 		}
 	}
 
-	return paginateImportRowsWithValidations(imp, validations, offset, limit)
+	return paginateImportRowsWithValidations(imp, validations, offset, limit, filter)
 }
 
-func paginateImportRowsWithValidations(imp *model.Import, validations map[uint]model.Validation, offset, limit int) []types.ImportRow {
+func paginateImportRowsWithValidations(imp *model.Import, validations map[uint]model.Validation, offset, limit int, filter types.Filter) []types.ImportRow {
 	importID := imp.ID.String()
 	if limit > maxPageSize {
 		tf.Log.Errorw("Attempted to paginate import greater than max page size", "import_id", importID, "page_size", limit)
 		return []types.ImportRow{}
 	}
 
-	if !imp.HasErrors() {
+	switch filter {
+	case types.ImportRowFilterAll:
+		// Retrieve the combined rows from import_rows and import_row_errors
+
+		// No errors, just return the data from import_rows
+		if !imp.HasErrors() {
+			return getImportRows(importID, offset, limit)
+		}
+		importRows := getImportRows(importID, offset, limit)
+
+		// If all the import rows exist in the expected page size, don't bother querying import_row_errors as no errors
+		// exist for the page, or they have been resolved
+		expectedPageSize := util.MinInt(int(imp.NumRows.Int64)-offset, limit)
+		if len(importRows) == expectedPageSize {
+			return importRows
+		}
+
+		// Retrieve the rows with errors to combine the results
+		importRowErrors := getImportRowErrors(importID, offset, limit, validations)
+		rows := append(importRows, importRowErrors...)
+
+		// Sort the combined rows by the row index
+		sort.Slice(rows, func(i, j int) bool {
+			return rows[i].Index < rows[j].Index
+		})
+		return rows
+
+	case types.ImportRowFilterValid:
 		return getImportRows(importID, offset, limit)
+
+	case types.ImportRowFilterError:
+		if !imp.HasErrors() {
+			return []types.ImportRow{}
+		}
+		return getImportRowErrors(importID, offset, limit, validations)
+
+	default:
+		tf.Log.Errorw("Invalid filter provided to import row pagination", "import_id", importID, "filter", filter)
+		return []types.ImportRow{}
 	}
-
-	importRows := getImportRows(importID, offset, limit)
-
-	// If all the import rows exist in the expected page size, don't bother querying import_row_errors as no errors
-	// exist for the page, or they have been resolved
-	expectedPageSize := util.MinInt(int(imp.NumRows.Int64)-offset, limit)
-	if len(importRows) == expectedPageSize {
-		return importRows
-	}
-
-	// Retrieve the rows with errors to combine the results
-	importRowErrors := getImportRowErrors(importID, offset, limit, validations)
-	rows := append(importRows, importRowErrors...)
-
-	// Sort the combined rows by the row index
-	sort.Slice(rows, func(i, j int) bool {
-		return rows[i].Index < rows[j].Index
-	})
-	return rows
 }
 
 func getImportRows(importID string, offset, limit int) []types.ImportRow {
@@ -139,10 +156,9 @@ func getImportRows(importID string, offset, limit int) []types.ImportRow {
 					from import_rows
 					where import_id = ?
 					  and row_index >= ?
-					  and row_index < ?
 					order by row_index
 					limit ?`,
-		importID, offset, offset+limit, limit).Iter()
+		importID, offset, limit).Iter()
 
 	res := make([]types.ImportRow, 0, limit)
 	for i := 0; ; i++ {
@@ -166,10 +182,9 @@ func getImportRowErrors(importID string, offset, limit int, validations map[uint
 					from import_row_errors
 					where import_id = ?
 					  and row_index >= ?
-					  and row_index < ?
 					order by row_index
 					limit ?`,
-		importID, offset, offset+limit, limit).Iter()
+		importID, offset, limit).Iter()
 
 	res := make([]types.ImportRow, 0, limit)
 	for i := 0; ; i++ {

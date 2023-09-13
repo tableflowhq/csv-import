@@ -21,9 +21,9 @@ type Pagination struct {
 type Filter string
 
 var (
-	ImportRowFilterAll     Filter = "all"
-	ImportRowFilterValid   Filter = "valid"
-	ImportRowFilterInvalid Filter = "invalid"
+	ImportRowFilterAll   Filter = "all"
+	ImportRowFilterValid Filter = "valid"
+	ImportRowFilterError Filter = "error"
 )
 
 const PaginationDefaultOffset = 0
@@ -80,8 +80,8 @@ func ParseImportRowFilterQuery(c *gin.Context) (Filter, error) {
 		return ImportRowFilterAll, nil
 	case string(ImportRowFilterValid):
 		return ImportRowFilterValid, nil
-	case string(ImportRowFilterInvalid):
-		return ImportRowFilterInvalid, nil
+	case string(ImportRowFilterError):
+		return ImportRowFilterError, nil
 	}
 	return "", fmt.Errorf("The parameter 'filter' is invalid")
 }

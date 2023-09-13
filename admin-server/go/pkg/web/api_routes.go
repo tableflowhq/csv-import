@@ -87,7 +87,7 @@ func getImportRowsForExternalAPI(c *gin.Context) {
 		return
 	}
 
-	rows := scylla.PaginateImportRows(imp, pagination.Offset, pagination.Limit, nil)
+	rows := scylla.PaginateImportRows(imp, pagination.Offset, pagination.Limit, types.ImportRowFilterAll)
 	c.JSON(http.StatusOK, rows)
 }
 
@@ -169,7 +169,7 @@ func downloadImportForExternalAPI(c *gin.Context) {
 		if offset > int(imp.NumRows.Int64) {
 			break
 		}
-		importRows := scylla.PaginateImportRows(imp, offset, scylla.DefaultPaginationSize, nil)
+		importRows := scylla.PaginateImportRows(imp, offset, scylla.DefaultPaginationSize, types.ImportRowFilterAll)
 		for pageRowIndex := 0; pageRowIndex < len(importRows); pageRowIndex++ {
 			row := make([]string, len(columnHeaders), len(columnHeaders))
 			for i, key := range columnHeaders {

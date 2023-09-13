@@ -621,6 +621,17 @@ const docTemplate = `{
                         "name": "limit",
                         "in": "query",
                         "required": true
+                    },
+                    {
+                        "enum": [
+                            "all",
+                            "valid",
+                            "error"
+                        ],
+                        "type": "string",
+                        "description": "Pagination filter",
+                        "name": "filter",
+                        "in": "query"
                     }
                 ],
                 "responses": {

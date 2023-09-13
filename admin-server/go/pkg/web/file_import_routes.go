@@ -604,7 +604,7 @@ func importerReviewImport(c *gin.Context) {
 		Limit:  types.PaginationDefaultLimit,
 	}
 	importServiceImport.Data.Pagination = pagination
-	importServiceImport.Data.Rows = scylla.PaginateImportRows(imp, pagination.Offset, pagination.Limit, nil)
+	importServiceImport.Data.Rows = scylla.PaginateImportRows(imp, pagination.Offset, pagination.Limit, types.ImportRowFilterAll)
 
 	c.JSON(http.StatusOK, importServiceImport)
 }
@@ -620,6 +620,7 @@ func importerReviewImport(c *gin.Context) {
 //	@Param			id		path	string	true	"Upload ID"
 //	@Param			offset	query	int		true	"Pagination offset"	minimum(0)
 //	@Param			limit	query	int		true	"Pagination limit"	minimum(1)	maximum(1000)
+//	@Param			filter	query	string	false	"Pagination filter"	Enums(all, valid, error)
 func importerGetImportRows(c *gin.Context) {
 	id := c.Param("id")
 	if len(id) == 0 {
@@ -650,9 +651,15 @@ func importerGetImportRows(c *gin.Context) {
 		return
 	}
 
-	pagination.Total = int(imp.NumRows.Int64)
+	if filter == types.ImportRowFilterValid {
+		pagination.Total = int(imp.NumValidRows.Int64)
+	} else if filter == types.ImportRowFilterError {
+		pagination.Total = int(imp.NumErrorRows.Int64)
+	} else {
+		pagination.Total = int(imp.NumRows.Int64)
+	}
 
-	rows := scylla.PaginateImportRows(imp, pagination.Offset, pagination.Limit, &filter)
+	rows := scylla.PaginateImportRows(imp, pagination.Offset, pagination.Limit, filter)
 	data := &types.ImportData{
 		Filter:     &filter,
 		Pagination: &pagination,

@@ -1084,6 +1084,14 @@ paths:
         name: limit
         required: true
         type: integer
+      - description: Pagination filter
+        enum:
+        - all
+        - valid
+        - error
+        in: query
+        name: filter
+        type: string
       responses:
         "200":
           description: OK
