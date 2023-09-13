@@ -3,7 +3,7 @@ import { TableProps } from "../types";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 
-function DataTable({ rowData, columnDefs, defaultColDef, cellClickedListener, theme }: TableProps) {
+function ReviewDataTable({ rowData, columnDefs, defaultColDef, cellClickedListener, theme }: TableProps) {
   return (
     <div
       className={theme === "dark" ? "ag-theme-alpine-dark" : "ag-theme-alpine"}
@@ -26,4 +26,4 @@ function DataTable({ rowData, columnDefs, defaultColDef, cellClickedListener, th
   );
 }
 
-export default DataTable;
+export default ReviewDataTable;

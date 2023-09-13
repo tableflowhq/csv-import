@@ -8,7 +8,7 @@ import useApi from "./hooks/useApi";
 import useModifiedSteps from "./hooks/useModifiedSteps";
 import { Steps } from "./types";
 import style from "./style/Main.module.scss";
-import DataValidation from "../data-validation";
+import MapColumns from "../map-columns";
 import Review from "../review";
 import RowSelection from "../row-selection";
 import Uploader from "../uploader";
@@ -18,8 +18,8 @@ const TUS_ENDPOINT = getAPIBaseURL("v1") + "files";
 const steps = [
   { label: "Upload", id: Steps.Upload },
   { label: "Select Header", id: Steps.RowSelection },
-  { label: "Map Columns", id: Steps.Review },
-  { label: "Review", id: Steps.Complete },
+  { label: "Map Columns", id: Steps.MapColumns },
+  { label: "Review", id: Steps.Review },
 ];
 
 export default function Main() {
@@ -97,10 +97,6 @@ export default function Main() {
     location.reload();
   };
 
-  const rowSelection = () => {
-    stepper.setCurrent(1);
-  };
-
   // Send messages to parent (SDK iframe)
 
   useEffect(() => {
@@ -133,7 +129,7 @@ export default function Main() {
   };
 
   const renderContent = () => {
-    if (!isStored && !uploadError && (step === Steps.RowSelection || step === Steps.Review)) {
+    if (!isStored && !uploadError && (step === Steps.RowSelection || step === Steps.MapColumns)) {
       return <Spinner className={style.spinner}>Processing your file...</Spinner>;
     }
     switch (step) {
@@ -163,22 +159,22 @@ export default function Main() {
           />
         );
 
-      case Steps.Review:
+      case Steps.MapColumns:
         return (
-          <Review
+          <MapColumns
             template={template}
             upload={skipHeader ? upload : uploadColumnsRow}
             onSuccess={() => {
               skipHeader ? stepper.setCurrent(2) : stepper.setCurrent(3);
             }}
             skipHeaderRowSelection={skipHeader}
-            onCancel={skipHeader ? reload : rowSelection}
+            onCancel={skipHeader ? reload : () => stepper.setCurrent(1)}
           />
         );
-      case Steps.Complete:
+      case Steps.Review:
         return (
-          <DataValidation
-            reload={reload}
+          <Review
+            onCancel={skipHeader ? () => stepper.setCurrent(1) : () => stepper.setCurrent(2)}
             close={requestClose}
             onSuccess={handleComplete}
             upload={upload}

@@ -84,7 +84,7 @@ export default function RowSelection({ upload, onSuccess, onCancel, selectedId, 
             Cancel
           </Button>
           <Button variants={["primary"]} onClick={handleNextClick}>
-            Next
+            Continue
           </Button>
         </div>
         {!isLoading && !!error && (

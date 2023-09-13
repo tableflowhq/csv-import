@@ -1,11 +1,18 @@
-import { Template, Upload } from "../../../api/types";
+import { ColDef } from "ag-grid-community";
+import { Upload, UploadRow } from "../../../api/types";
 
 export type ReviewProps = {
-  upload?: Upload;
-  template: Template;
-  onSuccess: (uploadId: string) => void;
+  upload: Upload;
   onCancel: () => void;
+  close: () => void;
+  onSuccess: (data: any, error: string | null) => void;
   showImportLoadingStatus?: boolean;
-  skipHeaderRowSelection?: boolean;
-  schemaless?: boolean;
+};
+
+export type TableProps = {
+  rowData: UploadRow[];
+  columnDefs: ColDef[];
+  defaultColDef: ColDef;
+  cellClickedListener: (event: any) => void;
+  theme: "light" | "dark";
 };

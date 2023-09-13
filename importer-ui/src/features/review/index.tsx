@@ -1,62 +1,101 @@
-import { FormEvent, useEffect } from "react";
-import { Button, Errors, Table } from "@tableflow/ui-library";
-import usePostUpload from "../../api/usePostUpload";
-import useReviewTable from "./hooks/useReviewTable";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Button, Icon, useThemeStore } from "@tableflow/ui-library";
+import useReview from "../../api/useReview";
+import LoadingSpinner from "./components/LoadingSpinner";
+import ReviewDataTable from "./components/ReviewDataTable";
 import { ReviewProps } from "./types";
 import style from "./style/Review.module.scss";
 
-export default function Review({ upload, template, onSuccess, onCancel, skipHeaderRowSelection, schemaless }: ReviewProps) {
-  const { rows, formValues } = useReviewTable(upload?.upload_columns, template?.columns, schemaless);
+export default function Review({ onCancel, onSuccess, upload, showImportLoadingStatus }: ReviewProps) {
+  const uploadMemo = useMemo(() => upload, [upload]);
+  const uploadMemoId = uploadMemo?.id;
 
-  const { mutate, error, isSuccess, isLoading } = usePostUpload(upload?.id || "");
+  const { data, error }: any = useReview(uploadMemoId);
+  console.log(data);
+  const csvData = data?.data?.rows || [];
 
-  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const [columnDefs, setColumnDefs] = useState<any>([]);
 
-    const columns = Object.keys(formValues).reduce((acc, key) => {
-      const { template, use } = formValues[key];
-      return { ...acc, ...(use ? { [key]: template } : {}) };
-    }, {});
+  const theme = useThemeStore((state) => state.theme);
 
-    mutate(columns);
-  };
+  const [showLoading, setShowLoading] = useState(true);
+
+  const isStored = data?.is_stored || {};
+
+  const defaultColDef = useMemo(() => {
+    return { sortable: true, filter: true, resizable: true };
+  }, []);
+
+  const cellClickedListener = useCallback((event: any) => {
+    console.log("cellClicked", event);
+  }, []);
 
   useEffect(() => {
-    if (isSuccess && !error && !isLoading && upload) {
-      onSuccess(upload.id);
+    if (csvData.length > 0) {
+      const headers = Object.keys(csvData[0].values);
+      const generatedColumnDefs = headers.map((header: string) => {
+        return {
+          headerName: header,
+          field: `values.${header}`,
+          cellStyle: (params: any) => {
+            if (params.data?.errors?.[header]) {
+              return { backgroundColor: "#f04339" };
+            }
+            return null;
+          },
+          cellRenderer: (params: any) => {
+            if (params.data) {
+              return (
+                <span
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    width: "100%",
+                  }}>
+                  <span>{params.value}</span>
+                  {params.data?.errors?.[header] && (
+                    <button title={params.data.errors[header][0].message}>
+                      <Icon icon="help" />
+                    </button>
+                  )}
+                </span>
+              );
+            }
+          },
+        };
+      });
+      setColumnDefs(generatedColumnDefs.reverse());
     }
-  }, [isSuccess]);
+  }, [csvData]);
 
-  if (!rows || !rows?.length) return null;
+  // useEffect(() => {
+  //   if (isStored || error) {
+  //     setShowLoading(false);
+  //     onSuccess(data, data?.error || error?.toString() || null);
+  //   }
+  // }, [isStored, error]);
 
   return (
-    <div className={style.content}>
-      <form onSubmit={onSubmit}>
-        {upload ? (
-          <div className={style.tableWrapper}>
-            <Table data={rows} background="dark" columnWidths={["20%", "30%", "30%", "20%"]} columnAlignments={["", "", "", "center"]} />
+    <>
+      {showLoading && showImportLoadingStatus ? (
+        <LoadingSpinner style={style} />
+      ) : (
+        <div>
+          <ReviewDataTable
+            rowData={csvData}
+            columnDefs={columnDefs}
+            defaultColDef={defaultColDef}
+            cellClickedListener={cellClickedListener}
+            theme={theme}
+          />
+          <div className={style.actions}>
+            <Button type="button" variants={["secondary"]} onClick={onCancel}>
+              Back
+            </Button>
+            <Button variants={["primary"]}>Submit</Button>
           </div>
-        ) : (
-          <>Loading...</>
-        )}
-
-        <div className={style.actions}>
-          <Button type="button" variants={["secondary"]} onClick={onCancel}>
-            {skipHeaderRowSelection ? "Cancel" : "Back"}
-          </Button>
-          <Button variants={["primary"]} disabled={isLoading}>
-            Submit
-          </Button>
         </div>
-
-        {!isLoading && !!error && (
-          <div className={style.errorContainer}>
-            <Errors error={error} />
-          </div>
-        )}
-
-        {isSuccess && <p>Success!</p>}
-      </form>
-    </div>
+      )}
+    </>
   );
 }
