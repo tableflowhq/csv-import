@@ -46,7 +46,7 @@ const defaults: TableFlowImporterProps = {
     Main_header: "margin-bottom: var(--m-xxs)",
     "Stepper-module_stepper": "gap: var(--m-l)",
     "Stepper-module_step": "flex-direction: column",
-    "Stepper-module_step:before, Uploader_content > Default-module_table": "display: none",
+    "Stepper-module_step:before, Uploader_box": "display: none",
   },
   isModal: true,
 };

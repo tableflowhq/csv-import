@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import { useThemeStore } from "@tableflow/ui-library";
 import useSearchParams from "../hooks/useSearchParams";
 import useEmbedStore from "../stores/embed";
-import parseCssOverrides from "../utils/cssInterpreter";
 import { EmbedProps } from "./types";
 
 export default function Embed({ children }: EmbedProps) {
@@ -76,10 +75,9 @@ export default function Embed({ children }: EmbedProps) {
 
   // Apply custom CSS properties
   useEffect(() => {
-    console.log("cssOverrides", cssOverrides);
     try {
       if (customStyles && customStyles !== "undefined") {
-        const parsedStyles = parseCssOverrides(JSON.parse(customStyles));
+        const parsedStyles = JSON.parse(customStyles);
 
         if (customStyles && parsedStyles) {
           Object.keys(parsedStyles).forEach((key) => {
