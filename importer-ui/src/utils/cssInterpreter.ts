@@ -14,8 +14,6 @@ function parseCssOverrides(cssOverrides?: string) {
     .map(([k, v]) => `${parseCssSelectors(k)}{ ${v} }`)
     .join("\n");
 
-  console.log("parsedCSS", parsedCss);
-
   return parsedCss;
 }
 
