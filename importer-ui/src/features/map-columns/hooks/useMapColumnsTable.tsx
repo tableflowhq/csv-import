@@ -3,7 +3,7 @@ import { Checkbox, Input } from "@tableflow/ui-library";
 import { InputOption } from "@tableflow/ui-library/build/Input/types";
 import { TemplateColumn, UploadColumn } from "../../../api/types";
 import stringsSimilarity from "../../../utils/stringSimilarity";
-import style from "../style/Review.module.scss";
+import style from "../style/MapColumns.module.scss";
 import useTransformValue from "./useNameChange";
 
 type Include = {
@@ -11,7 +11,7 @@ type Include = {
   use: boolean;
 };
 
-export default function useReviewTable(items: UploadColumn[] = [], templateColumns: TemplateColumn[] = [], schemaless?: boolean) {
+export default function useMapColumnsTable(items: UploadColumn[] = [], templateColumns: TemplateColumn[] = [], schemaless?: boolean) {
   const [values, setValues] = useState<{ [key: string]: Include }>(
     items.reduce((acc, uc) => {
       const matchedSuggestedTemplateColumn = templateColumns?.find((tc) => {
@@ -62,24 +62,6 @@ export default function useReviewTable(items: UploadColumn[] = [], templateColum
     setValues((prev) => ({ ...prev, [id]: { ...prev[id], template: value, use: !!value } }));
   };
 
-  const heading = {
-    "File Column": {
-      raw: "",
-      content: "File Column",
-    },
-    "Sample Data": {
-      raw: "",
-      content: "Sample Data",
-    },
-    "Destination Column": {
-      raw: "",
-      content: "Destination Column 1",
-    },
-    Include: {
-      raw: "",
-      content: "Include",
-    },
-  };
   const rows = useMemo(() => {
     return items.map((item) => {
       const { id, name, sample_data } = item;
@@ -123,11 +105,11 @@ export default function useReviewTable(items: UploadColumn[] = [], templateColum
       const isCurrentOptions = currentOptions && Object.keys(currentOptions).length > 0;
 
       return {
-        "File Column": {
+        "Your File Column": {
           raw: name || false,
           content: name || <em>- empty -</em>,
         },
-        "Sample Data": {
+        "Your Sample Data": {
           raw: "",
           content: (
             <div title={samples.join(", ")} className={style.samples}>
