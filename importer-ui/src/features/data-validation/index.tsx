@@ -81,14 +81,16 @@ export default function Complete({ reload, onSuccess, upload, showImportLoadingS
       {showLoading && showImportLoadingStatus ? (
         <LoadingSpinner style={style} />
       ) : (
-        <div>
-          <DataTable
-            rowData={csvData}
-            columnDefs={columnDefs}
-            defaultColDef={defaultColDef}
-            cellClickedListener={cellClickedListener}
-            theme={theme}
-          />
+        <div className={style.reviewContainer}>
+          <div className={style.tableWrapper}>
+            <DataTable
+              rowData={csvData}
+              columnDefs={columnDefs}
+              defaultColDef={defaultColDef}
+              cellClickedListener={cellClickedListener}
+              theme={theme}
+            />
+          </div>
           <div className={style.actions}>
             <Button type="button" variants={["secondary"]} onClick={reload}>
               Back
