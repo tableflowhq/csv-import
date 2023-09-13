@@ -87,7 +87,7 @@ func getImportRowsForExternalAPI(c *gin.Context) {
 		return
 	}
 
-	rows := scylla.PaginateImportRows(imp, pagination.Offset, pagination.Limit)
+	rows := scylla.PaginateImportRows(imp, pagination.Offset, pagination.Limit, nil)
 	c.JSON(http.StatusOK, rows)
 }
 
@@ -123,7 +123,7 @@ func downloadImportForExternalAPI(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusPreconditionFailed, types.Res{Err: "Import has not finished processing"})
 		return
 	}
-	importDownloadMaxRows := 100000
+	importDownloadMaxRows := scylla.MaxAllRowRetrieval
 	if imp.NumRows.Int64 > int64(importDownloadMaxRows) {
 		tf.Log.Warnw("Attempted to download import larger than max allowed", "error", err, "import_id", id, "num_rows", imp.NumRows.Int64, "max_rows", importDownloadMaxRows)
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("Imports over %v rows are too large to download directly, please use the /rows pagination endpoint to access the data", importDownloadMaxRows)})
@@ -169,7 +169,7 @@ func downloadImportForExternalAPI(c *gin.Context) {
 		if offset > int(imp.NumRows.Int64) {
 			break
 		}
-		importRows := scylla.PaginateImportRows(imp, offset, scylla.DefaultPaginationSize)
+		importRows := scylla.PaginateImportRows(imp, offset, scylla.DefaultPaginationSize, nil)
 		for pageRowIndex := 0; pageRowIndex < len(importRows); pageRowIndex++ {
 			row := make([]string, len(columnHeaders), len(columnHeaders))
 			for i, key := range columnHeaders {

@@ -14,6 +14,7 @@ import (
 	_ "tableflow/docs"
 	"tableflow/go/pkg/model"
 	"tableflow/go/pkg/tf"
+	"tableflow/go/pkg/types"
 	"tableflow/go/pkg/util"
 	"time"
 )
@@ -45,7 +46,7 @@ type ServerConfig struct {
 	GetUserID                      func(c *gin.Context) string
 	UploadLimitCheck               func(*model.Upload, *os.File) error
 	UploadAdditionalStorageHandler func(*model.Upload, *os.File) error
-	ImportCompleteHandler          func(*model.Import)
+	ImportCompleteHandler          func(types.Import)
 	AdditionalCORSOrigins          []string
 	AdditionalCORSHeaders          []string
 	AdditionalImporterRoutes       func(group *gin.RouterGroup)
@@ -130,10 +131,10 @@ func StartWebServer(config ServerConfig) *http.Server {
 	importer.POST("/importer/:id", importerGetImporter)
 	importer.GET("/upload/:id", importerGetUpload)
 	importer.POST("/upload/:id/set-header-row", importerSetHeaderRow)
-	importer.POST("/upload/:id/set-column-mapping", func(c *gin.Context) { importerSetColumnMappingAndImport(c, config.ImportCompleteHandler) })
+	importer.POST("/upload/:id/set-column-mapping", importerSetColumnMapping)
 	importer.GET("/import/:id/review", importerReviewImport)
 	importer.GET("/import/:id/rows", importerGetImportRows)
-	importer.GET("/import/:id", importerGetImport)
+	importer.POST("/import/:id/submit", func(c *gin.Context) { importerSubmitImport(c, config.ImportCompleteHandler) })
 
 	/* Additional Routes */
 	if config.AdditionalImporterRoutes != nil {

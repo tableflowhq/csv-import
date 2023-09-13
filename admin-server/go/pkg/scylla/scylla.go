@@ -87,7 +87,7 @@ func RetrieveAllImportRows(imp *model.Import) []types.ImportRow {
 	return rows
 }
 
-func PaginateImportRows(imp *model.Import, offset, limit int) []types.ImportRow {
+func PaginateImportRows(imp *model.Import, offset, limit int, filter *types.Filter) []types.ImportRow {
 	var validations map[uint]model.Validation
 	var err error
 
