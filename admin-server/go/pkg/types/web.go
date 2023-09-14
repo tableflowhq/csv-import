@@ -75,8 +75,7 @@ func ParsePaginationQuery(c *gin.Context) (Pagination, error) {
 func ParseImportRowFilterQuery(c *gin.Context) (Filter, error) {
 	filterParam, _ := c.GetQuery("filter")
 	switch strings.ToLower(filterParam) {
-	case string(ImportRowFilterAll):
-	case "":
+	case "", string(ImportRowFilterAll):
 		return ImportRowFilterAll, nil
 	case string(ImportRowFilterValid):
 		return ImportRowFilterValid, nil
