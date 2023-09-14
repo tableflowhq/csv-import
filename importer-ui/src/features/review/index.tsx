@@ -1,3 +1,4 @@
+import { ColDef } from "ag-grid-community";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button, Icon, useThemeStore } from "@tableflow/ui-library";
 import useReview from "../../api/useReview";
@@ -62,7 +63,10 @@ export default function Review({ onCancel, onSuccess, upload, showImportLoadingS
               );
             }
           },
-        };
+          sortable: false,
+          filter: false,
+          suppressMovable: true,
+        } as ColDef;
       });
       setColumnDefs(generatedColumnDefs.reverse());
     }
