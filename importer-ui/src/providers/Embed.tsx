@@ -40,8 +40,6 @@ export default function Embed({ children }: EmbedProps) {
     }
   };
 
-  console.log(schemaless);
-
   useEffect(() => {
     setEmbedParams({
       importerId,
