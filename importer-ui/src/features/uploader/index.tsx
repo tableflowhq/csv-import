@@ -67,7 +67,16 @@ export default function Uploader({
     <div className={style.content}>
       {uppyWrapper}
       <div className={style.box}>
-        <Table data={fields} background="dark" columnWidths={["65%", "35%"]} columnAlignments={["", "center"]} />
+        <div
+          style={{
+            overflow: "hidden",
+            overflowY: "scroll",
+            maxHeight: 500,
+            outline: "1px solid var(--color-border)",
+            borderRadius: "var(--border-radius-2)",
+          }}>
+          <Table data={fields} background="dark" columnWidths={["65%", "35%"]} columnAlignments={["", "center"]} />
+        </div>
         {downloadTemplateButton}
       </div>
     </div>
