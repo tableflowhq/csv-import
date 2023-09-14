@@ -42,9 +42,6 @@ export default function Uploader({
       schemaless={schemaless}
     />
   );
-
-  console.log(schemaless);
-
   if (schemaless) return uppyWrapper;
 
   function downloadTemplate() {
