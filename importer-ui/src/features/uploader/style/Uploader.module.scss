@@ -16,3 +16,11 @@
   flex-direction: column;
   gap: 14px;
 }
+
+.tableContainer{
+  overflow: hidden;
+  overflow-y: scroll;
+  max-height: 496px;
+  outline: 1px solid var(--color-border);
+  border-radius: var(--border-radius-2);
+}
