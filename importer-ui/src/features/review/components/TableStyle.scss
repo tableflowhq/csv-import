@@ -22,4 +22,10 @@
 
 .ag-theme-alpine .ag-cell, .ag-theme-alpine-dark .ag-cell {
   border: 0.5px solid var(--color-border);
+  &:first-of-type {
+    border-left: none;
+  }
+  &:last-of-type {
+    border-right: none;
+  }
 }
