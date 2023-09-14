@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button, Errors, Stepper, useStepper } from "@tableflow/ui-library";
 import Spinner from "../../components/Spinner";
 import { defaultImporterHost, getAPIBaseURL } from "../../api/api";
+import useCssOverrides from "../../hooks/useCssOverrides";
 import useEmbedStore from "../../stores/embed";
-import parseCssOverrides, { providedCssOverrides } from "../../utils/cssInterpreter";
+import { providedCssOverrides } from "../../utils/cssInterpreter";
 import postMessage from "../../utils/postMessage";
 import useApi from "./hooks/useApi";
 import useModifiedSteps from "./hooks/useModifiedSteps";
@@ -16,7 +17,7 @@ import Uploader from "../uploader";
 
 const TUS_ENDPOINT = getAPIBaseURL("v1") + "files";
 
-const steps = [
+const stepsConfig = [
   { label: "Upload", id: Steps.Upload },
   { label: "Select Header", id: Steps.RowSelection },
   { label: "Review", id: Steps.Review },
@@ -38,7 +39,6 @@ export default function Main() {
     showDownloadTemplateButton,
     cssOverrides,
   } = useEmbedStore((state) => state.embedParams);
-  let skipHeader = skipHeaderRowSelection;
 
   // Async data & state
   const {
@@ -62,54 +62,51 @@ export default function Main() {
   );
 
   // Apply CSS overrides
-  useEffect(() => {
-    if (!organizationStatus) {
-      return;
-    }
-    const parsedCss = parseCssOverrides(cssOverrides);
-    if (parsedCss) {
-      let style = document.getElementById("css-overrides");
-      if (!style) {
-        style = document.createElement("style");
-        style.setAttribute("id", "css-overrides");
-        document.head.append(style);
-      }
-      style.textContent = decodeURIComponent(parsedCss);
-    }
-  }, [cssOverrides, organizationStatus]);
+  useCssOverrides(cssOverrides, organizationStatus);
 
   // If the skipHeaderRowSelection is not set as a URL param, check the option on the importer
-  if (typeof skipHeader === "undefined") {
-    skipHeader = importer.skip_header_row_selection;
-  }
+  const skipHeader = skipHeaderRowSelection != null ? !!skipHeaderRowSelection : importer.skip_header_row_selection;
+
+  const isEmbeddedInIframe = window?.top !== window?.self;
 
   const [uploadColumnsRow, setUploadColumnsRow] = useState<any | null>(null);
   const [selectedRow, setSelectedRow] = useState<number>(0);
 
-  const modifiedSteps = useModifiedSteps(steps, skipHeader);
-
   // Stepper handler
-  const stepper = useStepper(modifiedSteps, 0);
+  const steps = useModifiedSteps(stepsConfig, skipHeader);
+  const stepper = useStepper(steps, 0);
   const step = stepper?.step?.id;
 
-  const isEmbeddedInIframe = window?.top !== window?.self;
-
+  // There was an error the last time they tried to upload a file. Reload to clear stored tusId
   useEffect(() => {
     if (uploadError && tusWasStored) reload();
   }, [uploadError]);
 
-  // Delay jump to the second step
+  // Handle jump to the right step
   useEffect(() => {
-    if (uploadError) stepper.setCurrent(0);
-
-    if (tusId && !uploadError)
-      if (upload.header_row_index !== null && upload.header_row_index !== undefined && !skipHeader) {
-        setUploadColumnsRow(upload);
-        stepper.setCurrent(2);
-      } else {
-        stepper.setCurrent(1);
-      }
+    setTimeout(() => {
+      if (uploadError) stepper.setCurrent(0);
+      else if (isStored && tusId)
+        if (upload.header_row_index != null && !skipHeader) {
+          setUploadColumnsRow(upload);
+          stepper.setCurrent(2);
+        } else {
+          stepper.setCurrent(1);
+        }
+    }, 250);
   }, [isStored, tusId, uploadError]);
+
+  // Handle spinner display
+  const timer = useRef<any>(null);
+  const [displaySpinner, setDisplaySpinner] = useState(false);
+  useEffect(() => {
+    if (tusId && !isStored && !uploadError && (step === Steps.Upload || step === Steps.RowSelection || step === Steps.Review)) {
+      timer.current = setTimeout(() => setDisplaySpinner(true), 400);
+    } else {
+      if (timer.current) clearTimeout(timer.current);
+      setDisplaySpinner(false);
+    }
+  }, [tusId, isStored, uploadError, step]);
 
   // Reload on close modal if completed
   useEffect(() => {
@@ -161,14 +158,27 @@ export default function Main() {
     setTusId("");
   };
 
+  // Render
+
+  if (importerIsLoading || statusIsLoading) return null;
+
+  if (!importerId)
+    return (
+      <div className={style.wrapper}>
+        <Errors error={"The parameter 'importerId' is required"} />
+      </div>
+    );
+
+  if (importerError)
+    return (
+      <div className={style.wrapper}>
+        <Errors error={importerError.toString()} />
+      </div>
+    );
+
   const renderContent = () => {
-    if (!isStored && !uploadError && (step === Steps.RowSelection || step === Steps.Review)) {
-      return (
-        <Spinner className={style.spinner} delay={250}>
-          Processing your file...
-        </Spinner>
-      );
-    }
+    if (displaySpinner) return <Spinner className={style.spinner}>Processing your file...</Spinner>;
+
     switch (step) {
       case Steps.Upload:
         return (
@@ -180,6 +190,7 @@ export default function Main() {
             onSuccess={setTusId}
             endpoint={TUS_ENDPOINT}
             showDownloadTemplateButton={showDownloadTemplateButton}
+            schemaless={schemaless}
           />
         );
       case Steps.RowSelection:
@@ -222,25 +233,6 @@ export default function Main() {
         return null;
     }
   };
-
-  // Render
-
-  if (importerIsLoading || statusIsLoading) return null;
-
-  if (!importerId)
-    return (
-      <div className={style.wrapper}>
-        <Errors error={"The parameter 'importerId' is required"} />
-      </div>
-    );
-
-  if (importerError) {
-    return (
-      <div className={style.wrapper}>
-        <Errors error={importerError.toString()} />
-      </div>
-    );
-  }
 
   return (
     <div className={style.wrapper}>

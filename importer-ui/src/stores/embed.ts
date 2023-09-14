@@ -29,6 +29,7 @@ const useEmbedStore = create<ParamsStore>()((set) => ({
     template: "",
     showDownloadTemplateButton: true,
     cssOverrides: "",
+    schemaless: false,
   },
   setEmbedParams: (embedParams) => set({ embedParams }),
 }));

@@ -1,4 +1,6 @@
 .uppy-Container.uppy-Container {
+  flex-grow: 1;
+
   .uppy {
     &-Root {
       font-family: var(--font-family-1);

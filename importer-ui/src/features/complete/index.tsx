@@ -27,9 +27,7 @@ export default function Complete({ reload, close, onSuccess, upload, showImportL
   return (
     <>
       {showLoading && showImportLoadingStatus ? (
-        <Spinner className={style.spinner} delay={250}>
-          Importing your data...
-        </Spinner>
+        <Spinner className={style.spinner}>Importing your data...</Spinner>
       ) : (
         <Box className={style.content} variants={[]}>
           <span className={style.icon}>

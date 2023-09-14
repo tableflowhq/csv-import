@@ -1,1 +1,1 @@
-export type SpinnerProps = React.HTMLAttributes<HTMLDivElement> & { delay?: number };
+export type SpinnerProps = React.HTMLAttributes<HTMLDivElement>;

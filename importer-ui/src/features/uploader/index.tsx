@@ -43,9 +43,9 @@ export default function Uploader({
     />
   );
 
-  if (schemaless) {
-    return uppyWrapper;
-  }
+  console.log(schemaless);
+
+  if (schemaless) return uppyWrapper;
 
   function downloadTemplate() {
     const { columns } = template;
