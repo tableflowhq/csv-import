@@ -1,0 +1,25 @@
+.ag-theme-alpine, .ag-theme-alpine-dark {
+  --ag-borders: none;
+  --ag-header-height: 44px;
+  --ag-header-foreground-color: var(--color-text);
+  --ag-header-background-color: var(--color-input-background-soft);
+  --ag-background-color: var(--color-input-disabled);
+  --ag-odd-row-background-color: var(--color-input-disabled);
+  --ag-header-column-separator-display: block;
+  --ag-row-border-width: 0px;
+}
+.ag-theme-alpine .ag-header, .ag-theme-alpine-dark .ag-header {
+  border-top-right-radius: 10px;
+  border-top-left-radius: 10px;
+}
+
+.ag-theme-alpine .ag-root-wrapper, .ag-theme-alpine-dark .ag-root-wrapper {
+  border: none;
+  border-bottom-right-radius: 10px;
+  border-bottom-left-radius: 10px;
+  background-color: transparent;
+}
+
+.ag-theme-alpine .ag-cell, .ag-theme-alpine-dark .ag-cell {
+  border: 0.5px solid var(--color-border);
+}
