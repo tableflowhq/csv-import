@@ -1,7 +1,9 @@
+/* eslint-disable */
 import { AgGridReact } from "ag-grid-react";
 import { TableProps } from "../types";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
+import "./TableStyle.scss";
 
 function ReviewDataTable({ rowData, columnDefs, defaultColDef, cellClickedListener, theme }: TableProps) {
   return (

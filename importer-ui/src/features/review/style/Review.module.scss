@@ -1,7 +1,21 @@
-.actions {
-  margin-top: var(--m);
+.reviewContainer {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  height: 100%;
+  gap: var(--m);
+
+  .tableWrapper {
+    overflow-y: auto;
+    padding: 1px;
+    margin-right: -20px;
+    padding-right: 21px;
+  }
+
+  .actions {
+    margin-top: var(--m);
+    display: flex;
+    justify-content: space-between;
+  }
 }
 
 .pagination {

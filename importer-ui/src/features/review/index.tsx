@@ -1,3 +1,4 @@
+import { ColDef } from "ag-grid-community";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button, Icon, useThemeStore } from "@tableflow/ui-library";
 import useReview from "../../api/useReview";
@@ -62,7 +63,10 @@ export default function Review({ onCancel, onSuccess, upload, showImportLoadingS
               );
             }
           },
-        };
+          sortable: false,
+          filter: false,
+          suppressMovable: true,
+        } as ColDef;
       });
       setColumnDefs(generatedColumnDefs.reverse());
     }
@@ -80,14 +84,16 @@ export default function Review({ onCancel, onSuccess, upload, showImportLoadingS
       {showLoading && showImportLoadingStatus ? (
         <LoadingSpinner style={style} />
       ) : (
-        <div>
-          <ReviewDataTable
-            rowData={csvData}
-            columnDefs={columnDefs}
-            defaultColDef={defaultColDef}
-            cellClickedListener={cellClickedListener}
-            theme={theme}
-          />
+        <div className={style.reviewContainer}>
+          <div className={style.tableWrapper}>
+            <ReviewDataTable
+              rowData={csvData}
+              columnDefs={columnDefs}
+              defaultColDef={defaultColDef}
+              cellClickedListener={cellClickedListener}
+              theme={theme}
+            />
+          </div>
           <div className={style.actions}>
             <Button type="button" variants={["secondary"]} onClick={onCancel}>
               Back
