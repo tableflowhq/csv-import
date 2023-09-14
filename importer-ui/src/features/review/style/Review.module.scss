@@ -1,4 +1,5 @@
 .reviewContainer {
+  width: 1000px;
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -46,4 +47,8 @@
   margin: 0 8px;
   font-size: 14px;
   font-weight: bold;
+}
+
+.filters {
+  width: fit-content;
 }

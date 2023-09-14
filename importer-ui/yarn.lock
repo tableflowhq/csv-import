@@ -2030,10 +2030,10 @@
     "@svgr/plugin-svgo" "^5.5.0"
     loader-utils "^2.0.0"
 
-"@tableflow/ui-library@^1.53.0":
-  version "1.61.0"
-  resolved "https://registry.yarnpkg.com/@tableflow/ui-library/-/ui-library-1.61.0.tgz#cb8114b27ee899805fb6eaac6626b26a1f3c07ec"
-  integrity sha512-+y7CvgTy0jvgXcyeUPhixHvTTp+bLkBJNlFS03sglCEc0BuioD4PM1vzI0rJxN+LTczZRdQVyhLy+DOkArzDnQ==
+"@tableflow/ui-library@^1.62.0":
+  version "1.62.0"
+  resolved "https://registry.yarnpkg.com/@tableflow/ui-library/-/ui-library-1.62.0.tgz#f0f768653b133311ca4a2abcf4c0240ed948887c"
+  integrity sha512-yu7sb2WQG9rl0FIbULIYd8IrbmP0p6J2lzhvhEggwFV0I4yTVuTYKCp4VgSrmIcJxNlVW8wJoK0OUavzpFMBtA==
   dependencies:
     babel-plugin-inline-react-svg "^2.0.2"
     tslib "^2.5.3"

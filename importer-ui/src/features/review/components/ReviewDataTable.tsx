@@ -1,18 +1,35 @@
 /* eslint-disable */
+import { GridReadyEvent } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
+import { useEffect, useRef } from "react";
 import { TableProps } from "../types";
+import "./TableStyle.scss";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
-import "./TableStyle.scss";
 
 function ReviewDataTable({ rowData, columnDefs, defaultColDef, cellClickedListener, theme }: TableProps) {
+  const gridRef: any = useRef(null);
+
+  const onGridReady = (params: GridReadyEvent<any>) => {
+    gridRef.current = params.api as any;
+    setTimeout(() => {
+      setColumnSizes();
+    }, 10);
+  };
+
+  window.addEventListener("resize", () => {
+    setColumnSizes();
+  });
+
+  const setColumnSizes = () => {
+    gridRef.current && gridRef.current?.sizeColumnsToFit();
+  };
+
   return (
     <div
       className={theme === "dark" ? "ag-theme-alpine-dark" : "ag-theme-alpine"}
       style={{
-        width: columnDefs?.length != null ? columnDefs.length * 200 : 100,
         height: rowData?.length != null ? (rowData.length + 1) * 43 : 100,
-        border: "none",
       }}>
       <AgGridReact
         rowData={rowData}
@@ -23,6 +40,7 @@ function ReviewDataTable({ rowData, columnDefs, defaultColDef, cellClickedListen
         tooltipHideDelay={999999}
         rowSelection="multiple"
         onCellValueChanged={cellClickedListener}
+        onGridReady={onGridReady}
       />
     </div>
   );

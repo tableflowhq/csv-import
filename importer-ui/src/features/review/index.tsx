@@ -1,6 +1,6 @@
 import { ColDef } from "ag-grid-community";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Button, Icon, useThemeStore } from "@tableflow/ui-library";
+import { Button, Icon, ToggleFilter, useThemeStore } from "@tableflow/ui-library";
 import useReview from "../../api/useReview";
 import LoadingSpinner from "./components/LoadingSpinner";
 import ReviewDataTable from "./components/ReviewDataTable";
@@ -79,12 +79,20 @@ export default function Review({ onCancel, onSuccess, upload, showImportLoadingS
   //   }
   // }, [isStored, error]);
 
+  // TODO: this filter should be integrated with the backend
+  const filterOption = [
+    { label: "All (11)", selected: true },
+    { label: "Valid (11)", selected: false },
+    { label: "Error (0)", selected: false, color: "#f04339" },
+  ];
+
   return (
     <>
       {showLoading && showImportLoadingStatus ? (
         <LoadingSpinner style={style} />
       ) : (
         <div className={style.reviewContainer}>
+          <ToggleFilter options={filterOption} className={style.filters} onChange={(option: string) => console.log(option)} />
           <div className={style.tableWrapper}>
             <ReviewDataTable
               rowData={csvData}
