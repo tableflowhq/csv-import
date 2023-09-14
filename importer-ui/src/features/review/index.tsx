@@ -8,10 +8,9 @@ import { ReviewProps } from "./types";
 import style from "./style/Review.module.scss";
 
 export default function Review({ onCancel, onSuccess, upload, showImportLoadingStatus }: ReviewProps) {
-  const uploadMemo = useMemo(() => upload, [upload]);
-  const uploadMemoId = uploadMemo?.id;
+  const uploadId = upload?.id;
 
-  const { data, error }: any = useReview(uploadMemoId);
+  const { data, error }: any = useReview(uploadId);
   console.log(data);
   const csvData = data?.data?.rows || [];
 
@@ -19,7 +18,7 @@ export default function Review({ onCancel, onSuccess, upload, showImportLoadingS
 
   const theme = useThemeStore((state) => state.theme);
 
-  const [showLoading, setShowLoading] = useState(true);
+  const [showLoading, setShowLoading] = useState(showImportLoadingStatus);
 
   const isStored = data?.is_stored || {};
 
