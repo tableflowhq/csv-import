@@ -9,8 +9,9 @@ import style from "./style/Review.module.scss";
 
 export default function Review({ onCancel, onSuccess, upload, showImportLoadingStatus }: ReviewProps) {
   const uploadId = upload?.id;
+  const [filter, setFilter] = useState("error"); // default value
 
-  const { data, error }: any = useReview(uploadId);
+  const { data, error }: any = useReview(uploadId, filter as any);
   console.log(data);
   const csvData = data?.data?.rows || [];
 
@@ -18,7 +19,7 @@ export default function Review({ onCancel, onSuccess, upload, showImportLoadingS
 
   const theme = useThemeStore((state) => state.theme);
 
-  const [showLoading, setShowLoading] = useState(showImportLoadingStatus);
+  const [showLoading] = useState(showImportLoadingStatus);
 
   const isStored = data?.is_stored || {};
 
@@ -80,10 +81,13 @@ export default function Review({ onCancel, onSuccess, upload, showImportLoadingS
 
   // TODO: this filter should be integrated with the backend
   const filterOption = [
-    { label: "All (11)", selected: true },
+    { label: "All (11)", selected: false },
     { label: "Valid (11)", selected: false },
     { label: "Error (0)", selected: false, color: "#f04339" },
   ];
+  const [selectedFilter] = filterOption.filter((option) => option.label.toLowerCase().includes(filter));
+  if (selectedFilter) selectedFilter.selected = true;
+  console.log("selectedFilter", selectedFilter);
 
   return (
     <>
@@ -91,7 +95,7 @@ export default function Review({ onCancel, onSuccess, upload, showImportLoadingS
         <LoadingSpinner style={style} />
       ) : (
         <div className={style.reviewContainer}>
-          <ToggleFilter options={filterOption} className={style.filters} onChange={(option: string) => console.log(option)} />
+          <ToggleFilter options={filterOption} className={style.filters} onChange={(option: string) => setFilter(option)} />
           <div className={style.tableWrapper}>
             <ReviewDataTable
               rowData={csvData}
