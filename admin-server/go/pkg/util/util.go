@@ -177,7 +177,7 @@ func ShutdownHandler(ctx context.Context, wg *sync.WaitGroup, close func()) {
 	}
 }
 
-func SafeGo(f func(), contextInfo ...interface{}) {
+func SafeGo(f func(), contextFields ...interface{}) {
 	go func() {
 		defer func() {
 			if r := recover(); r != nil {
@@ -187,7 +187,7 @@ func SafeGo(f func(), contextInfo ...interface{}) {
 				fields = append(fields, "stack", string(debug.Stack()))
 
 				// Add dynamic context fields
-				fields = append(fields, contextInfo...)
+				fields = append(fields, contextFields...)
 
 				tf.Log.Errorw("Recovered from panic", fields...)
 			}
