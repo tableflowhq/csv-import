@@ -560,7 +560,9 @@ func importerSetColumnMappingAndImport(c *gin.Context, importCompleteHandler fun
 
 	// Trigger the import
 	// This will be its own endpoint or attached to the review stage once that is implemented
-	go importData(upload, template, importCompleteHandler)
+	util.SafeGo(func() {
+		importData(upload, template, importCompleteHandler)
+	}, "upload_id", upload.ID)
 
 	c.JSON(http.StatusOK, types.Res{Message: "success"})
 }
@@ -783,7 +785,7 @@ func processAndStoreImport(template *model.Template, upload *model.Upload, imp *
 	in := make(chan *gocql.Batch, 0)
 	var wg sync.WaitGroup
 	for i := 0; i < goroutines; i++ {
-		go scylla.ProcessBatch(in, &wg)
+		util.SafeGo(func() { scylla.ProcessBatch(in, &wg) }, "import_id", imp.ID)
 	}
 	b := scylla.NewBatchInserter()
 
