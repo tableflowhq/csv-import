@@ -25,7 +25,7 @@ export default function MapColumns({ upload, template, onSuccess, onCancel, skip
     if (isSuccess && !error && !isLoading && upload) {
       onSuccess(upload.id);
     }
-  }, [isSuccess]);
+  }, [isSuccess, error, isLoading]);
 
   if (!rows || !rows?.length) return null;
 
