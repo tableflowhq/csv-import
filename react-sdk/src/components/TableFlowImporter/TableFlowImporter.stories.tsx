@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ComponentMeta, ComponentStory } from "@storybook/react";
 import defaults from "../../settings/defaults";
 import ImporterComponent from ".";
@@ -19,10 +19,20 @@ export default {
 
 const Template: ComponentStory<typeof ImporterComponent> = (args: TableFlowImporterProps) => {
   const [isOpen, setIsOpen] = useState(false);
+
+  const { isModal } = args;
+
+  const props = {
+    ...(isModal ? { modalIsOpen: isOpen } : {}),
+    ...(isModal ? { modalOnCloseTriggered: () => setIsOpen(false) } : {}),
+    ...(isModal ? { modalCloseOnOutsideClick: args.modalCloseOnOutsideClick } : {}),
+    ...args,
+  };
+
   return (
     <div>
-      <button onClick={() => setIsOpen(true)}>Import</button>
-      <ImporterComponent {...args} isOpen={isOpen} onRequestClose={() => setIsOpen(false)} />
+      {args.isModal && <button onClick={() => setIsOpen(true)}>Import</button>}
+      <ImporterComponent key={props.isModal.toString()} {...props} />
     </div>
   );
 };

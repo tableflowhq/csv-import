@@ -42,10 +42,7 @@ export default function Uploader({
       schemaless={schemaless}
     />
   );
-
-  if (schemaless) {
-    return uppyWrapper;
-  }
+  if (schemaless) return uppyWrapper;
 
   function downloadTemplate() {
     const { columns } = template;

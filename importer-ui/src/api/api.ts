@@ -7,7 +7,7 @@ import { ApiResponse } from "./types";
 const env = {
   API_BASE_URL: "",
 };
-const defaultImporterHost = "importer.tableflow.com";
+export const defaultImporterHost = "importer.tableflow.com";
 const defaultAPIHost = "api.tableflow.com";
 // Authenticated routes will use the path /api/v1
 const baseURL = getAPIBaseURL("v1");

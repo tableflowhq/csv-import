@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"gorm.io/gorm"
+	"sort"
 	"strings"
 	"tableflow/go/pkg/model"
 	"tableflow/go/pkg/tf"
@@ -52,6 +53,9 @@ func GetUploadByTusID(tusID string) (*model.Upload, error) {
 		// If the upload has been stored, retrieve the upload columns as well
 		var uploadColumns []*model.UploadColumn
 		tf.DB.Where("upload_id = ?", upload.ID).Find(&uploadColumns)
+		sort.Slice(uploadColumns, func(i, j int) bool {
+			return uploadColumns[i].Index < uploadColumns[j].Index
+		})
 		upload.UploadColumns = uploadColumns
 	}
 	return &upload, nil

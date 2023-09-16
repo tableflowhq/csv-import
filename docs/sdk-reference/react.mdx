@@ -31,8 +31,9 @@ function MyComponent() {
 
       <TableFlowImporter
         importerId={"b0fadb1d-9888-4fcb-b185-21b984bcb227"} // Use your importer ID from https://app.tableflow.com/importers
-        isOpen={isOpen}
-        onRequestClose={() => setIsOpen(false)}
+        isModal={true}
+        modalIsOpen={isOpen}
+        modalOnCloseTriggered={() => setIsOpen(false)}
         darkMode={true}
         onComplete={(data, error) => console.log(data)}
       />
@@ -47,28 +48,35 @@ function MyComponent() {
   The unique ID for the importer. Obtain from your importer on [TableFlow](https://app.tableflow.com/importers).
 </ResponseField>
 
-<ResponseField name="isOpen" type="boolean" default={false} required>
-  Controls the importer modal being open or closed.
+<ResponseField name="isModal" type="boolean" required>
+  When set to `true`, the importer will behave as a modal with its open state controlled by `modalIsOpen`. When set to
+  `false`, the importer will be embedded directly in your page.
 </ResponseField>
 
-<ResponseField name="onRequestClose" type="function" required>
-  A function called when the user clicks the close button or clicks outside of (when used with `closeOnClickOutside`)
-  the importer. `useState` can be used to control the importer modal opening and closing.
+<ResponseField name="modalIsOpen" type="boolean" default={false}>
+  Only used when `isModal` is set to `true`: Controls the importer modal being open or closed.
+</ResponseField>
+
+<ResponseField name="modalOnCloseTriggered" type="function">
+  Only used when `isModal` is set to `true`: A function called when the user clicks the close button or clicks outside of
+  (when used with `modalCloseOnOutsideClick`) the importer. `useState` can be used to control the importer modal opening
+  and closing.
   ```javascript
   const [isOpen, setIsOpen] = useState(false);
   ```
   ```jsx
   <button onClick={() => setIsOpen(true)}>Open TableFlow Importer</button>
   <TableFlowImporter
-    isOpen={isOpen}
-    onRequestClose={() => setIsOpen(false)}
+    modalIsOpen={isOpen}
+    modalOnCloseTriggered={() => setIsOpen(false)}
     ...
   />
   ```
 </ResponseField>
 
-<ResponseField name="closeOnClickOutside" type="boolean" default={false}>
-  When set to `true`, clicking outside of the modal will close the importer modal.
+<ResponseField name="modalCloseOnOutsideClick" type="boolean" default={false}>
+  Only used when `isModal` is set to `true`: Clicking outside of the modal will call the `modalOnCloseTriggered`
+  function.
 </ResponseField>
 
 <ResponseField name="template" type="object">
@@ -163,6 +171,20 @@ function MyComponent() {
     "color-background-menu-hover": "bisque",
     "color-importer-link": "indigo",
     "color-progress-bar": "darkGreen"
+}}
+  ```
+</ResponseField>
+
+<ResponseField name="cssOverrides" type="object">
+  Completely customize every aspect of the importer by passing in CSS overrides. Currently only available to [TableFlow
+  Cloud Pro users](https://tableflow.com/pricing).
+  ```jsx
+  cssOverrides={{
+    ".uppy-Dashboard-AddFiles": "border: none",
+    "Main_header": "margin-bottom: var(--m-xxs)",
+    "Stepper-module_stepper": "gap: var(--m-l)",
+    "Stepper-module_step": "flex-direction: column",
+    "Stepper-module_step:before, Uploader_content > Default-module_table": "display: none",
 }}
   ```
 </ResponseField>
