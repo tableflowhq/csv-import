@@ -7,7 +7,7 @@ import useMutableLocalStorage from "./useMutableLocalStorage";
 
 export default function useApi(importerId: string, sdkDefinedTemplate: string, checkOrganizationStatus: boolean, schemaless?: boolean) {
   const [tusId, setTusId] = useMutableLocalStorage(importerId + "-tusId", "");
-  const tusWasStored = useMemo(() => !!tusId, [tusId]);
+  const tusWasStored = useMemo(() => !!tusId, []);
 
   // Load importer & template for the first step
   const {
