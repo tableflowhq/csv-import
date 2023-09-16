@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Uppy from "@uppy/core";
 import "@uppy/core/dist/style.min.css";
 import "@uppy/dashboard/dist/style.min.css";
@@ -14,16 +14,15 @@ const restrictions = {
   maxFileSize: 1073741824, // 1GB
 };
 
-const initializeUppy = () => {
-  return new Uppy({
-    id: "uppy",
-    restrictions,
-    autoProceed: true,
-    allowMultipleUploadBatches: false,
-    debug: false,
-  }).use(Tus, { limit: 1 });
+const options = {
+  id: "uppy",
+  restrictions,
+  autoProceed: true,
+  allowMultipleUploadBatches: false,
+  debug: false,
 };
-let uppy = initializeUppy();
+
+const uppyPlaceholder = new Uppy(options);
 
 export default function UppyWrapper({
   onSuccess,
@@ -34,37 +33,43 @@ export default function UppyWrapper({
   sdkDefinedTemplate,
   schemaless,
 }: UppyWrapperProps) {
+  const [uppy, setUppy] = useState<Uppy | null>(null);
+
   useEffect(() => {
-    const tusInstance = uppy?.getPlugin("Tus");
-    tusInstance?.setOptions({
-      endpoint,
-      onBeforeRequest: (req: any) => {
-        req.setHeader("X-Importer-ID", importerId);
-        const importMetadataEncoded = metadata ? btoa(metadata) : "";
-        req.setHeader("X-Import-Metadata", importMetadataEncoded);
-        req.setHeader("X-Import-SkipHeaderRowSelection", String(skipHeaderRowSelection));
-        if (sdkDefinedTemplate) {
-          const templateJSON = JSON.stringify(sdkDefinedTemplate);
-          req.setHeader("X-Import-Template", btoa(templateJSON));
-        }
-        if (schemaless) {
-          req.setHeader("X-Import-Schemaless", String(schemaless));
-        }
-      },
-    });
+    const initializeUppy = () => {
+      const instance = new Uppy(options).use(Tus, { limit: 1 });
 
-    uppy?.on("complete", (result) => {
-      setTimeout(() => {
-        onSuccess(result as any);
+      const tusInstance = instance?.getPlugin("Tus");
+      tusInstance?.setOptions({
+        endpoint,
+        onBeforeRequest: (req: any) => {
+          req.setHeader("X-Importer-ID", importerId);
+          const importMetadataEncoded = metadata ? btoa(metadata) : "";
+          req.setHeader("X-Import-Metadata", importMetadataEncoded);
+          req.setHeader("X-Import-SkipHeaderRowSelection", String(skipHeaderRowSelection));
+          if (sdkDefinedTemplate) {
+            const templateJSON = JSON.stringify(sdkDefinedTemplate);
+            req.setHeader("X-Import-Template", btoa(templateJSON));
+          }
+          if (schemaless) {
+            req.setHeader("X-Import-Schemaless", String(schemaless));
+          }
+        },
+      });
+      instance?.on("complete", (result) => {
+        setTimeout(() => {
+          onSuccess(result as any);
+          // Close Uppy instance to reset its state
+          instance.close({ reason: "unmount" });
+          // Re-initialize a fresh Uppy instance so if the user navigates back, the state is reset
+          initializeUppy();
+        }, 350);
+      });
+      setUppy(instance);
+    };
 
-        // Close Uppy instance to reset its state
-        uppy.close({ reason: "unmount" });
-
-        // Re-initialize a fresh Uppy instance so if the user navigates back, the state is reset
-        uppy = initializeUppy();
-      }, 350);
-    });
+    initializeUppy();
   }, [importerId, metadata, endpoint, sdkDefinedTemplate]);
 
-  return <Dashboard uppy={uppy} proudlyDisplayPoweredByUppy={false} locale={locale} />;
+  return <Dashboard uppy={uppy ? uppy : uppyPlaceholder} proudlyDisplayPoweredByUppy={false} locale={locale} />;
 }
