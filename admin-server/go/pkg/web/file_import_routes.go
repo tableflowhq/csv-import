@@ -548,7 +548,7 @@ func importerSetColumnMapping(c *gin.Context) {
 
 	// Trigger the import where all rows are loaded and validated to be displayed next on the review step
 	util.SafeGo(func() {
-		file.importData(upload, template)
+		file.ImportData(upload, template)
 	}, "upload_id", upload.ID)
 
 	c.JSON(http.StatusOK, types.Res{Message: "success"})

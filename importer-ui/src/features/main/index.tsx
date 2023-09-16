@@ -128,9 +128,10 @@ export default function Main() {
 
   // Reload on close modal if completed
   useEffect(() => {
-    if (!modalIsOpen && step === Steps.Complete) {
-      reload();
-    }
+    // TODO: ****************************** Update this to actually check if completed ********************************
+    // if (!modalIsOpen && step === Steps.Review) {
+    //   reload();
+    // }
   }, [modalIsOpen]);
 
   // Actions
