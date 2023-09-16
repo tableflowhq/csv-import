@@ -547,7 +547,9 @@ func importerSetColumnMapping(c *gin.Context) {
 	}
 
 	// Trigger the import where all rows are loaded and validated to be displayed next on the review step
-	go file.ImportData(upload, template)
+	util.SafeGo(func() {
+		file.importData(upload, template)
+	}, "upload_id", upload.ID)
 
 	c.JSON(http.StatusOK, types.Res{Message: "success"})
 }
@@ -722,7 +724,9 @@ func importerSubmitImport(c *gin.Context, importCompleteHandler func(types.Impor
 	}
 
 	if importCompleteHandler != nil {
-		go importCompleteHandler(*importServiceImport)
+		util.SafeGo(func() {
+			importCompleteHandler(*importServiceImport)
+		}, "import_id", imp.ID)
 	}
 
 	c.JSON(http.StatusOK, importServiceImport)

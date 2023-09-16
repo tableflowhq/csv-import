@@ -11,11 +11,14 @@ export default function Embed({ children }: EmbedProps) {
     primaryColor,
     metadata,
     template,
-    isOpen,
+    isModal,
+    isOpen, // Deprecated: use modalIsOpen
+    modalIsOpen,
     onComplete,
     customStyles,
     showImportLoadingStatus,
     skipHeaderRowSelection,
+    cssOverrides,
     schemaless,
     showDownloadTemplateButton,
   } = useSearchParams();
@@ -42,12 +45,15 @@ export default function Embed({ children }: EmbedProps) {
       importerId,
       metadata: validateJSON(metadata),
       template: validateJSON(template),
-      isOpen: strToBoolean(isOpen),
+      // If only the deprecated isOpen is provided, use that. Else, use modalIsOpen
+      modalIsOpen: strToBoolean(modalIsOpen === "" && isOpen !== "" ? isOpen : modalIsOpen),
       onComplete: strToBoolean(onComplete),
       showImportLoadingStatus: strToBoolean(showImportLoadingStatus),
       skipHeaderRowSelection: strToOptionalBoolean(skipHeaderRowSelection),
+      isModal: strToOptionalBoolean(isModal),
       schemaless: strToOptionalBoolean(schemaless),
       showDownloadTemplateButton: strToDefaultBoolean(showDownloadTemplateButton, true),
+      cssOverrides: validateJSON(cssOverrides),
     });
   }, [importerId, metadata]);
 
@@ -59,7 +65,7 @@ export default function Embed({ children }: EmbedProps) {
     setTheme(darkMode ? "dark" : "light");
   }, [darkMode]);
 
-  // Set primary color
+  // Apply primary color
   useEffect(() => {
     if (primaryColor) {
       const root = document.documentElement;
@@ -67,6 +73,7 @@ export default function Embed({ children }: EmbedProps) {
     }
   }, [primaryColor]);
 
+  // Apply custom CSS properties
   useEffect(() => {
     try {
       if (customStyles && customStyles !== "undefined") {

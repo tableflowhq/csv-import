@@ -4,11 +4,11 @@ import usePostSetHeader from "../../api/usePostSetHeader";
 import { RowSelectionProps } from "./types";
 import style from "./style/RowSelection.module.scss";
 
-export default function RowSelection({ upload, onSuccess, onCancel, selectedId, setSelectedId }: RowSelectionProps) {
+export default function RowSelection({ upload, onSuccess, onCancel, selectedHeaderRow, setSelectedHeaderRow }: RowSelectionProps) {
   const { mutate, error, isSuccess, isLoading, data } = usePostSetHeader(upload?.id || "");
 
   const handleRadioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSelectedId(String(e.target.value));
+    setSelectedHeaderRow(Number(e.target.value));
   };
 
   const dataWithRadios = upload?.upload_rows?.map((row) => {
@@ -20,10 +20,10 @@ export default function RowSelection({ upload, onSuccess, onCancel, selectedId, 
           className={style.inputRadio}
           name="rowSelection"
           value={row.index}
-          checked={selectedId === String(row.index)}
+          checked={selectedHeaderRow === row.index}
           onChange={handleRadioChange}
         />
-        {row.values[0]}
+        {row.values?.[0]}
       </span>
     );
     const mappedRow = Object.entries(row.values).map(([key, value]) => {
@@ -39,14 +39,14 @@ export default function RowSelection({ upload, onSuccess, onCancel, selectedId, 
     return Object.fromEntries(mappedRow);
   });
   const maxNumberOfColumns = 7;
-  const uploadRow = upload && upload.upload_rows && upload.upload_rows.length > 0 ? upload.upload_rows[0] : { values: {} };
+  const uploadRow = upload?.upload_rows?.[0] ?? { values: {} };
   const numberOfColumns = Math.min(Object.keys(uploadRow.values).length + 1, maxNumberOfColumns);
   const widthPercentage = 100 / numberOfColumns;
   const columnWidths = Array(numberOfColumns).fill(`${widthPercentage}%`);
 
   const handleNextClick = (e: any) => {
     e.preventDefault();
-    mutate({ selectedRow: selectedId });
+    mutate({ selectedHeaderRow: selectedHeaderRow });
   };
 
   useEffect(() => {
@@ -72,7 +72,7 @@ export default function RowSelection({ upload, onSuccess, onCancel, selectedId, 
               background="zebra"
               columnWidths={columnWidths}
               columnAlignments={Array(numberOfColumns).fill("left")}
-              onRowClick={(row) => setSelectedId(String(dataWithRadios?.indexOf(row as any)))}
+              onRowClick={(row) => setSelectedHeaderRow(dataWithRadios?.indexOf(row) || 0)}
             />
           </div>
         ) : (

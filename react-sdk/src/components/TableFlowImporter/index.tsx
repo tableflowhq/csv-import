@@ -1,25 +1,26 @@
 import { useEffect, useRef } from "react";
 import useListenMessage from "../../hooks/useListenMessage";
 import { TableFlowImporterProps } from "./types";
-import "./style/button.css";
+import "./style/tableflow-importer.css";
 
 export default function TableFlowImporter({
-  // TODO: Include "as" parameter to launch as a div
-  isOpen = true,
-  onRequestClose = () => null,
   importerId,
   hostUrl,
+  isModal = true,
+  modalIsOpen = true,
+  modalOnCloseTriggered = () => null,
+  modalCloseOnOutsideClick,
   template,
   darkMode = false,
   primaryColor = "#7a5ef8",
   metadata,
-  closeOnClickOutside,
   className,
   onComplete,
   customStyles,
   showImportLoadingStatus,
   showDownloadTemplateButton,
   skipHeaderRowSelection,
+  cssOverrides,
   schemaless,
   ...props
 }: TableFlowImporterProps) {
@@ -27,41 +28,54 @@ export default function TableFlowImporter({
   const current = ref.current as any;
 
   useEffect(() => {
-    if (current) {
-      if (isOpen) current.showModal();
-      else current.close();
+    if (isModal && current) {
+      if (modalIsOpen) current?.showModal?.();
+      else current?.close?.();
     }
-  }, [isOpen, current]);
+  }, [isModal, modalIsOpen, current]);
 
   const baseClass = "TableFlowImporter";
   const themeClass = darkMode && `${baseClass}-dark`;
-  const dialogClass = [`${baseClass}-dialog`, themeClass, className].filter((i) => i).join(" ");
+  const domElementClass = [`${baseClass}-${isModal ? "dialog" : "div"}`, themeClass, className].filter((i) => i).join(" ");
 
   const urlParams = {
     importerId,
+    isModal: isModal ? "true" : "false",
+    modalIsOpen: modalIsOpen.toString(),
     template: parseObjectOrStringJSON("template", template),
     darkMode: darkMode.toString(),
     primaryColor,
     metadata: parseObjectOrStringJSON("metadata", metadata),
-    isOpen: isOpen.toString(),
     onComplete: onComplete ? "true" : "false",
     customStyles: JSON.stringify(customStyles),
     showImportLoadingStatus: parseOptionalBoolean(showImportLoadingStatus),
     showDownloadTemplateButton: parseOptionalBoolean(showDownloadTemplateButton),
     skipHeaderRowSelection: parseOptionalBoolean(skipHeaderRowSelection),
+    ...(cssOverrides ? { cssOverrides: JSON.stringify(cssOverrides) } : {}),
     schemaless: parseOptionalBoolean(schemaless),
   };
   const searchParams = new URLSearchParams(urlParams);
   const defaultImporterUrl = "https://importer.tableflow.com";
   const uploaderUrl = `${hostUrl ? hostUrl : defaultImporterUrl}?${searchParams}`;
-  const backdropClick = (e: any) => closeOnClickOutside && onRequestClose();
+  const backdropClick = (e: any) => modalCloseOnOutsideClick && modalOnCloseTriggered();
 
-  useListenMessage(importerId, onComplete, onRequestClose);
+  useListenMessage(importerId, onComplete, modalOnCloseTriggered);
 
-  return (
-    <dialog ref={ref} className={dialogClass} onClick={backdropClick} {...props}>
+  const elementProps = {
+    ref,
+    ...(isModal ? { onClick: backdropClick } : {}),
+    className: domElementClass,
+    ...props,
+  };
+
+  return isModal ? (
+    <dialog {...elementProps}>
       <iframe src={uploaderUrl} />
     </dialog>
+  ) : (
+    <div {...elementProps}>
+      <iframe src={uploaderUrl} />
+    </div>
   );
 }
 
