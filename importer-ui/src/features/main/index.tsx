@@ -44,8 +44,8 @@ export default function Main() {
   // Async data & state
   const {
     tusId,
-    tusWasStored,
     setTusId,
+    tusWasStored,
     importer,
     importerIsLoading,
     importerError,
@@ -81,9 +81,10 @@ export default function Main() {
   const step = stepper?.step?.id;
 
   // There was an error the last time they tried to upload a file. Reload to clear stored tusId
-  useEffect(() => {
-    if (uploadError && tusWasStored) reload();
-  }, [uploadError]);
+  // TODO: This doesn't work, fix it
+  // useEffect(() => {
+  //   if (uploadError && tusWasStored) reload();
+  // }, [uploadError]);
 
   // Handle initial page loads using a small delay so the screen doesn't flash when loading different states
   const [initialPageLoaded, setInitialPageLoaded] = useState<boolean>(false);
