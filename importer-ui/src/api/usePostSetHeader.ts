@@ -3,7 +3,7 @@ import { ApiResponse } from "./types";
 import { post } from "./api";
 
 export default function usePostSetHeader(uploadId: string): UseMutationResult<ApiResponse<any>> {
-  return useMutation(({ selectedRow }: any) => mutateHeader(uploadId, selectedRow));
+  return useMutation(({ selectedHeaderRow }: any) => mutateHeader(uploadId, selectedHeaderRow));
 }
 
 async function mutateHeader(uploadId: string, rowIndex: string): Promise<ApiResponse<any>> {

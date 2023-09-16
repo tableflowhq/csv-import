@@ -14,13 +14,16 @@ const restrictions = {
   maxFileSize: 1073741824, // 1GB
 };
 
-const uppy = new Uppy({
-  id: "uppy",
-  restrictions,
-  autoProceed: true,
-  allowMultipleUploadBatches: false,
-  debug: false,
-}).use(Tus, { limit: 1 });
+const initializeUppy = () => {
+  return new Uppy({
+    id: "uppy",
+    restrictions,
+    autoProceed: true,
+    allowMultipleUploadBatches: false,
+    debug: false,
+  }).use(Tus, { limit: 1 });
+};
+let uppy = initializeUppy();
 
 export default function UppyWrapper({
   onSuccess,
@@ -49,11 +52,19 @@ export default function UppyWrapper({
         }
       },
     });
-  }, [importerId, metadata, endpoint, sdkDefinedTemplate]);
 
-  useEffect(() => {
-    uppy.on("complete", (result) => onSuccess(result as any));
-  }, [importerId, metadata]);
+    uppy?.on("complete", (result) => {
+      setTimeout(() => {
+        onSuccess(result as any);
+
+        // Close Uppy instance to reset its state
+        uppy.close({ reason: "unmount" });
+
+        // Re-initialize a fresh Uppy instance so if the user navigates back, the state is reset
+        uppy = initializeUppy();
+      }, 350);
+    });
+  }, [importerId, metadata, endpoint, sdkDefinedTemplate]);
 
   return <Dashboard uppy={uppy} proudlyDisplayPoweredByUppy={false} locale={locale} />;
 }

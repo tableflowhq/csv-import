@@ -4,11 +4,11 @@ import usePostSetHeader from "../../api/usePostSetHeader";
 import { RowSelectionProps } from "./types";
 import style from "./style/RowSelection.module.scss";
 
-export default function RowSelection({ upload, onSuccess, onCancel, selectedRow, setSelectedRow }: RowSelectionProps) {
+export default function RowSelection({ upload, onSuccess, onCancel, selectedHeaderRow, setSelectedHeaderRow }: RowSelectionProps) {
   const { mutate, error, isSuccess, isLoading, data } = usePostSetHeader(upload?.id || "");
 
   const handleRadioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSelectedRow(Number(e.target.value));
+    setSelectedHeaderRow(Number(e.target.value));
   };
 
   const dataWithRadios = upload?.upload_rows?.map((row) => {
@@ -20,7 +20,7 @@ export default function RowSelection({ upload, onSuccess, onCancel, selectedRow,
           className={style.inputRadio}
           name="rowSelection"
           value={row.index}
-          checked={selectedRow === row.index}
+          checked={selectedHeaderRow === row.index}
           onChange={handleRadioChange}
         />
         {row.values?.[0]}
@@ -46,7 +46,7 @@ export default function RowSelection({ upload, onSuccess, onCancel, selectedRow,
 
   const handleNextClick = (e: any) => {
     e.preventDefault();
-    mutate({ selectedRow });
+    mutate({ selectedHeaderRow: selectedHeaderRow });
   };
 
   useEffect(() => {
@@ -72,7 +72,7 @@ export default function RowSelection({ upload, onSuccess, onCancel, selectedRow,
               background="zebra"
               columnWidths={columnWidths}
               columnAlignments={Array(numberOfColumns).fill("left")}
-              onRowClick={(row) => setSelectedRow(dataWithRadios?.indexOf(row) || 0)}
+              onRowClick={(row) => setSelectedHeaderRow(dataWithRadios?.indexOf(row) || 0)}
             />
           </div>
         ) : (

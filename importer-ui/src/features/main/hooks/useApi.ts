@@ -22,8 +22,8 @@ export default function useApi(importerId: string, sdkDefinedTemplate: string, c
   const organizationStatus = organization?.status || false;
 
   // Load upload for the second step
-  const { data: upload = {} as Upload, error: uploadError } = useGetUpload(tusId);
-  const { is_stored: isStored } = upload;
+  const { data: upload = {} as Upload, isLoading: uploadIsLoading, error: uploadError } = useGetUpload(tusId);
+  const { is_stored: uploadIsStored } = upload;
 
   if (importer?.template?.is_sdk_defined && upload?.is_stored && upload?.template) {
     importer.template = upload.template;
@@ -32,15 +32,16 @@ export default function useApi(importerId: string, sdkDefinedTemplate: string, c
   return {
     tusId,
     tusWasStored,
-    organizationStatus,
-    statusIsLoading,
+    setTusId,
     importer,
     importerIsLoading,
     importerError,
+    organizationStatus,
+    statusIsLoading,
     template,
     upload,
+    uploadIsLoading,
     uploadError,
-    isStored,
-    setTusId,
+    uploadIsStored,
   };
 }

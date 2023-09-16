@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Button, Errors, Stepper, useStepper } from "@tableflow/ui-library";
 import Spinner from "../../components/Spinner";
 import { defaultImporterHost, getAPIBaseURL } from "../../api/api";
 import useCssOverrides from "../../hooks/useCssOverrides";
+import useDelayedLoader from "../../hooks/useDelayLoader";
 import useEmbedStore from "../../stores/embed";
 import { providedCssOverrides } from "../../utils/cssInterpreter";
 import postMessage from "../../utils/postMessage";
@@ -44,16 +45,17 @@ export default function Main() {
   const {
     tusId,
     tusWasStored,
-    importerIsLoading,
-    importerError,
-    template,
-    upload,
-    uploadError,
-    isStored,
     setTusId,
     importer,
+    importerIsLoading,
+    importerError,
     organizationStatus,
     statusIsLoading,
+    template,
+    upload,
+    uploadIsLoading,
+    uploadError,
+    uploadIsStored,
   } = useApi(
     importerId,
     schemaless ? "" : sdkDefinedTemplate, // Don't pass in a template if schemaless is enabled
@@ -61,16 +63,17 @@ export default function Main() {
     schemaless
   );
 
+  const isEmbeddedInIframe = window?.top !== window?.self;
+
   // Apply CSS overrides
   useCssOverrides(cssOverrides, organizationStatus);
 
   // If the skipHeaderRowSelection is not set as a URL param, check the option on the importer
   const skipHeader = skipHeaderRowSelection != null ? !!skipHeaderRowSelection : importer.skip_header_row_selection;
 
-  const isEmbeddedInIframe = window?.top !== window?.self;
-
-  const [uploadColumnsRow, setUploadColumnsRow] = useState<any | null>(null);
-  const [selectedRow, setSelectedRow] = useState<number>(0);
+  // Header row selection state
+  const [selectedHeaderRow, setSelectedHeaderRow] = useState<number>(0);
+  const [uploadFromHeaderRowSelection, setUploadFromHeaderRowSelection] = useState<any | null>(null);
 
   // Stepper handler
   const steps = useModifiedSteps(stepsConfig, skipHeader);
@@ -82,35 +85,51 @@ export default function Main() {
     if (uploadError && tusWasStored) reload();
   }, [uploadError]);
 
-  // Handle jump to the right step
+  // Handle initial page loads using a small delay so the screen doesn't flash when loading different states
+  const [initialPageLoaded, setInitialPageLoaded] = useState<boolean>(false);
   useEffect(() => {
     setTimeout(() => {
-      if (uploadError) stepper.setCurrent(0);
-      else if (isStored && tusId)
-        if (upload.header_row_index != null && !skipHeader) {
-          setUploadColumnsRow(upload);
-          stepper.setCurrent(2);
-        } else {
-          stepper.setCurrent(1);
-        }
-    }, 250);
-  }, [isStored, tusId, uploadError]);
+      setInitialPageLoaded(!importerIsLoading && !statusIsLoading && !uploadIsLoading);
+    }, 50);
+  }, [importerIsLoading, statusIsLoading, uploadIsLoading]);
 
-  // Handle spinner display
-  const timer = useRef<any>(null);
-  const [displaySpinner, setDisplaySpinner] = useState(false);
+  // Handle the upload loading indicator
+  const [showUploadSpinner, setShowUploadSpinner] = useState<boolean>(false);
+  const displayUploadSpinner = useDelayedLoader(showUploadSpinner, 250);
+
   useEffect(() => {
-    if (tusId && !isStored && !uploadError && (step === Steps.Upload || step === Steps.RowSelection || step === Steps.Review)) {
-      timer.current = setTimeout(() => setDisplaySpinner(true), 400);
-    } else {
-      if (timer.current) clearTimeout(timer.current);
-      setDisplaySpinner(false);
+    const isUploadLoading = tusId && !uploadError && !uploadIsStored;
+    setShowUploadSpinner(isUploadLoading);
+  }, [tusId, uploadIsStored, uploadError, step]);
+
+  // Handle jumping to the right step from page reloads or upload errors
+  useEffect(() => {
+    // If we're not on the first step, the page wasn't reloaded or an error would have been already handled
+    if (step !== Steps.Upload) {
+      return;
     }
-  }, [tusId, isStored, uploadError, step]);
+    const isUploadSuccess = tusId && !uploadError && uploadIsStored;
+    const isUploadHeaderRowSet = upload?.header_row_index != null && !skipHeader;
+
+    if (uploadError) {
+      stepper.setCurrent(0);
+      return;
+    }
+    if (isUploadSuccess) {
+      if (isUploadHeaderRowSet) {
+        setUploadFromHeaderRowSelection(upload);
+        stepper.setCurrent(2);
+      } else {
+        stepper.setCurrent(1);
+      }
+    }
+  }, [tusId, uploadIsStored, uploadError, step]);
 
   // Reload on close modal if completed
   useEffect(() => {
-    if (!modalIsOpen && step === "complete") reload();
+    if (!modalIsOpen && step === Steps.Complete) {
+      reload();
+    }
   }, [modalIsOpen]);
 
   // Actions
@@ -160,7 +179,9 @@ export default function Main() {
 
   // Render
 
-  if (importerIsLoading || statusIsLoading) return null;
+  if (!initialPageLoaded) {
+    return null;
+  }
 
   if (!importerId)
     return (
@@ -177,7 +198,9 @@ export default function Main() {
     );
 
   const renderContent = () => {
-    if (displaySpinner) return <Spinner className={style.spinner}>Processing your file...</Spinner>;
+    if (displayUploadSpinner) {
+      return <Spinner className={style.spinner}>Processing your file...</Spinner>;
+    }
 
     switch (step) {
       case Steps.Upload:
@@ -198,20 +221,19 @@ export default function Main() {
           <RowSelection
             upload={upload}
             onCancel={reload}
-            onSuccess={(uploadColumnsRow: any) => {
+            onSuccess={(upload: any) => {
               stepper.setCurrent(2);
-              setUploadColumnsRow(uploadColumnsRow);
+              setUploadFromHeaderRowSelection(upload);
             }}
-            selectedRow={selectedRow}
-            setSelectedRow={setSelectedRow}
+            selectedHeaderRow={selectedHeaderRow}
+            setSelectedHeaderRow={setSelectedHeaderRow}
           />
         );
-
       case Steps.Review:
         return (
           <Review
             template={template}
-            upload={skipHeader ? upload : uploadColumnsRow}
+            upload={skipHeader ? upload : uploadFromHeaderRowSelection}
             onSuccess={() => {
               skipHeader ? stepper.setCurrent(2) : stepper.setCurrent(3);
             }}
