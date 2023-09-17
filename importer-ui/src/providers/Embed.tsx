@@ -50,7 +50,7 @@ export default function Embed({ children }: EmbedProps) {
       onComplete: strToBoolean(onComplete),
       showImportLoadingStatus: strToBoolean(showImportLoadingStatus),
       skipHeaderRowSelection: strToOptionalBoolean(skipHeaderRowSelection),
-      isModal: strToOptionalBoolean(isModal),
+      isModal: strToDefaultBoolean(isModal, true),
       schemaless: strToOptionalBoolean(schemaless),
       showDownloadTemplateButton: strToDefaultBoolean(showDownloadTemplateButton, true),
       cssOverrides: validateJSON(cssOverrides),

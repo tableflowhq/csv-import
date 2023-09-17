@@ -2,7 +2,7 @@ import { CSSProperties } from "react";
 
 type ModalParams =
   | {
-      isModal: true;
+      isModal?: true;
       modalOnCloseTriggered?: () => void;
       modalCloseOnOutsideClick?: boolean;
     }
