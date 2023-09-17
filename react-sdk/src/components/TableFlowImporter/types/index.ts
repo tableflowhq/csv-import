@@ -2,7 +2,7 @@ import { HTMLAttributes } from "react";
 
 type ModalParams =
   | {
-      isModal: true;
+      isModal?: true;
       modalIsOpen?: boolean;
       modalOnCloseTriggered?: () => void;
       modalCloseOnOutsideClick?: boolean;

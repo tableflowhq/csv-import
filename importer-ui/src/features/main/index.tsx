@@ -240,6 +240,7 @@ export default function Main() {
             }}
             skipHeaderRowSelection={skipHeader}
             onCancel={skipHeader ? reload : rowSelection}
+            schemaless={schemaless}
           />
         );
       case Steps.Complete:

@@ -17,7 +17,6 @@ function MyComponent() {
 
       <TableFlowImporter
         importerId={"${props.importerId || "YOUR_IMPORTER_ID"}"}${hostUrlLine}
-        isModal={true}
         modalIsOpen={isOpen}
         modalOnCloseTriggered={() => setIsOpen(false)}
         darkMode={${props.theme !== "light"}}
