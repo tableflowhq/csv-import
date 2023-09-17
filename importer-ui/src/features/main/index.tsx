@@ -237,6 +237,7 @@ export default function Main() {
             }}
             skipHeaderRowSelection={skipHeader}
             onCancel={skipHeader ? reload : () => stepper.setCurrent(1)}
+            schemaless={schemaless}
           />
         );
       case Steps.Review:

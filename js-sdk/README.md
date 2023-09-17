@@ -39,7 +39,6 @@ import createTableFlowImporter from "@tableflow/js";
 
 const importer = createTableFlowImporter({
   importerId: "6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353", // Use your importer ID from https://app.tableflow.com/importers
-  isModal: true,
   modalOnCloseTriggered: () => importer.close(),
   onComplete: (data, error) => console.log(data),
   darkMode: true,
@@ -62,7 +61,6 @@ Or directly in HTML
   <script>
     const importer = createTableFlowImporter({
       importerId: "6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353", // Use your importer ID from https://app.tableflow.com/importers
-      isModal: true,
       modalOnCloseTriggered: () => importer.close(),
       onComplete: (data, error) => console.log(data),
       darkMode: true,

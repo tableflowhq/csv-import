@@ -41,14 +41,15 @@ const defaults: TableFlowImporterProps = {
   //   "color-background-menu-hover": "bisque",
   //   "color-green-ui": "darkGreen",
   // },
-  cssOverrides: {
-    ".uppy-Dashboard-AddFiles": "border: none",
-    Main_header: "margin-bottom: var(--m-xxs)",
-    "Stepper-module_stepper": "gap: var(--m-l)",
-    "Stepper-module_step": "flex-direction: column",
-    "Stepper-module_step:before, Uploader_box": "display: none",
-  },
+  // cssOverrides: {
+  //   ".uppy-Dashboard-AddFiles": "border: none",
+  //   Main_header: "margin-bottom: var(--m-xxs)",
+  //   "Stepper-module_stepper": "gap: var(--m-l)",
+  //   "Stepper-module_step": "flex-direction: column",
+  //   "Stepper-module_step:before, Uploader_box": "display: none",
+  // },
   isModal: true,
+  modalCloseOnOutsideClick: true,
 };
 
 export default defaults;

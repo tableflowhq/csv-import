@@ -76,20 +76,15 @@ export const App: Story = {
     //   "color-background-menu-hover": "bisque",
     //   "color-green-ui": "darkGreen",
     // },
-    cssOverrides: {
-      ".uppy-Dashboard-AddFiles": "border: none",
-      Main_header: "margin-bottom: var(--m-xxs)",
-      "Stepper-module_stepper": "gap: var(--m-l)",
-      "Stepper-module_step": "flex-direction: column",
-      "Stepper-module_step:before, Uploader_content > Default-module_table": "display: none",
-      "Some-example > *:first-child": "color: red; padding: 20px; font-size: 1rem",
-      "Some-other_example[disabled]": `
-            color: red;
-            padding: 20px;
-            font-size: 1rem;
-          `,
-    },
+    // cssOverrides: {
+    //   ".uppy-Dashboard-AddFiles": "border: none",
+    //   Main_header: "margin-bottom: var(--m-xxs)",
+    //   "Stepper-module_stepper": "gap: var(--m-l)",
+    //   "Stepper-module_step": "flex-direction: column",
+    //   "Stepper-module_step:before, Uploader_box": "display: none",
+    // },
     isModal: true,
+    modalCloseOnOutsideClick: true,
   },
 };
 

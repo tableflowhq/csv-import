@@ -31,7 +31,6 @@ function MyComponent() {
 
       <TableFlowImporter
         importerId={"b0fadb1d-9888-4fcb-b185-21b984bcb227"} // Use your importer ID from https://app.tableflow.com/importers
-        isModal={true}
         modalIsOpen={isOpen}
         modalOnCloseTriggered={() => setIsOpen(false)}
         darkMode={true}
@@ -48,19 +47,19 @@ function MyComponent() {
   The unique ID for the importer. Obtain from your importer on [TableFlow](https://app.tableflow.com/importers).
 </ResponseField>
 
-<ResponseField name="isModal" type="boolean" required>
-  When set to `true`, the importer will behave as a modal with its open state controlled by `modalIsOpen`. When set to
-  `false`, the importer will be embedded directly in your page.
+<ResponseField name="isModal" type="boolean" default={true}>
+  When set to `true` (default value), the importer will behave as a modal with its open state controlled by
+  `modalIsOpen`. When set to `false`, the importer will be embedded directly in your page.
 </ResponseField>
 
 <ResponseField name="modalIsOpen" type="boolean" default={false}>
-  Only used when `isModal` is set to `true`: Controls the importer modal being open or closed.
+  Only used when `isModal` is `true`: Controls the importer modal being open or closed.
 </ResponseField>
 
 <ResponseField name="modalOnCloseTriggered" type="function">
-  Only used when `isModal` is set to `true`: A function called when the user clicks the close button or clicks outside of
-  (when used with `modalCloseOnOutsideClick`) the importer. `useState` can be used to control the importer modal opening
-  and closing.
+  Only used when `isModal` is `true`: A function called when the user clicks the close button or clicks outside of (when
+  used with `modalCloseOnOutsideClick`) the importer. `useState` can be used to control the importer modal opening and
+  closing.
   ```javascript
   const [isOpen, setIsOpen] = useState(false);
   ```
@@ -75,8 +74,7 @@ function MyComponent() {
 </ResponseField>
 
 <ResponseField name="modalCloseOnOutsideClick" type="boolean" default={false}>
-  Only used when `isModal` is set to `true`: Clicking outside of the modal will call the `modalOnCloseTriggered`
-  function.
+  Only used when `isModal` is `true`: Clicking outside of the modal will call the `modalOnCloseTriggered` function.
 </ResponseField>
 
 <ResponseField name="template" type="object">
@@ -184,7 +182,7 @@ function MyComponent() {
     "Main_header": "margin-bottom: var(--m-xxs)",
     "Stepper-module_stepper": "gap: var(--m-l)",
     "Stepper-module_step": "flex-direction: column",
-    "Stepper-module_step:before, Uploader_content > Default-module_table": "display: none",
+    "Stepper-module_step:before, Uploader_box": "display: none",
 }}
   ```
 </ResponseField>

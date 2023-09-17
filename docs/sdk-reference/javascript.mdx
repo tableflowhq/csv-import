@@ -22,7 +22,6 @@ import createTableFlowImporter from "@tableflow/js";
 
 const importer = createTableFlowImporter({
   importerId: "6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353", // Use your importer ID from https://app.tableflow.com/importers
-  isModal: true,
   modalOnCloseTriggered: () => importer.close(),
   onComplete: (data, error) => console.log(data),
   darkMode: true,
@@ -44,7 +43,6 @@ Or directly in HTML
   <script>
     const importer = createTableFlowImporter({
       importerId: "6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353", // Use your importer ID from https://app.tableflow.com/importers
-      isModal: true,
       modalOnCloseTriggered: () => importer.close(),
       onComplete: (data, error) => console.log(data),
       darkMode: true,
@@ -64,22 +62,21 @@ Or directly in HTML
   The unique ID for the importer. Obtain from your importer on [TableFlow](https://app.tableflow.com/importers).
 </ResponseField>
 
-<ResponseField name="isModal" type="boolean" required>
-  When set to `true`, the importer will behave as a modal with its open state controlled by `.showModal()` and
-  `.close()`. When set to `false`, the importer will be embedded directly in your page.
+<ResponseField name="isModal" type="boolean" default={true}>
+  When set to `true` (default value), the importer will behave as a modal with its open state controlled by
+  `.showModal()` and `.close()`. When set to `false`, the importer will be embedded directly in your page.
 </ResponseField>
 
-<ResponseField name="modalOnCloseTriggered" type="function" required>
-  Only used when `isModal` is set to `true`: A function called when the user clicks the close button or clicks outside
-  of (when used with `modalCloseOnOutsideClick`) the importer, used to control closing the importer modal.
+<ResponseField name="modalOnCloseTriggered" type="function">
+  Only used when `isModal` is `true`: A function called when the user clicks the close button or clicks outside of (when
+  used with `modalCloseOnOutsideClick`) the importer, used to control closing the importer modal.
   ```javascript
   modalOnCloseTriggered: () => importer.close(),
   ```
 </ResponseField>
 
 <ResponseField name="modalCloseOnOutsideClick" type="boolean" default={false}>
-  Only used when `isModal` is set to `true`: Clicking outside of the modal will call the `modalOnCloseTriggered`
-  function.
+  Only used when `isModal` is `true`: Clicking outside of the modal will call the `modalOnCloseTriggered` function.
 </ResponseField>
 
 <ResponseField name="template" type="object">
@@ -182,11 +179,11 @@ Or directly in HTML
   Cloud Pro users](https://tableflow.com/pricing).
   ```jsx
   cssOverrides: {
-  ".uppy-Dashboard-AddFiles": "border: none",
-  "Main_header": "margin-bottom: var(--m-xxs)",
-  "Stepper-module_stepper": "gap: var(--m-l)",
-  "Stepper-module_step": "flex-direction: column",
-  "Stepper-module_step:before, Uploader_content > Default-module_table": "display: none",
+    ".uppy-Dashboard-AddFiles": "border: none",
+    "Main_header": "margin-bottom: var(--m-xxs)",
+    "Stepper-module_stepper": "gap: var(--m-l)",
+    "Stepper-module_step": "flex-direction: column",
+    "Stepper-module_step:before, Uploader_box": "display: none",
 }
   ```
 </ResponseField>

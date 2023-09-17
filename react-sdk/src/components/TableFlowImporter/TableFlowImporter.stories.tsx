@@ -32,7 +32,7 @@ const Template: ComponentStory<typeof ImporterComponent> = (args: TableFlowImpor
   return (
     <div>
       {args.isModal && <button onClick={() => setIsOpen(true)}>Import</button>}
-      <ImporterComponent key={props.isModal.toString()} {...props} />
+      <ImporterComponent key={props.isModal?.toString()} {...props} />
     </div>
   );
 };
