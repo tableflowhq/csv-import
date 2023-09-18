@@ -19,7 +19,8 @@ export default function Review({ onCancel, onSuccess, upload, showImportLoadingS
 
   const theme = useThemeStore((state) => state.theme);
 
-  const [showLoading] = useState(showImportLoadingStatus);
+  // TODO: Carlos - I changed the initial state back here to false, it was set to showImportLoadingStatus causing the review table not to be shown
+  const [showLoading, setShowLoading] = useState(false);
 
   const isStored = data?.is_stored || {};
 

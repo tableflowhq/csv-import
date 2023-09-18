@@ -162,11 +162,11 @@ func UploadCompleteHandler(event handler.HookEvent, uploadAdditionalStorageHandl
 	}
 
 	if uploadAdditionalStorageHandler != nil {
-		go func(u *model.Upload, f *os.File, fn string) {
-			uploadAdditionalStorageHandler(u, f)
-			removeUploadFileFromDisk(f, fn, u.ID.String())
-			tf.Log.Debugw("Upload complete", "upload_id", u.ID)
-		}(upload, file, fileName)
+		util.SafeGo(func() {
+			uploadAdditionalStorageHandler(upload, file)
+			removeUploadFileFromDisk(file, fileName, upload.ID.String())
+			tf.Log.Debugw("Upload complete", "upload_id", upload.ID)
+		}, "upload_id", upload.ID)
 	} else {
 		removeUploadFileFromDisk(file, fileName, upload.ID.String())
 		tf.Log.Debugw("Upload complete", "upload_id", upload.ID)
@@ -191,7 +191,7 @@ func processAndStoreUpload(upload *model.Upload, file *os.File) (uploadProcessRe
 	in := make(chan *gocql.Batch, 0)
 	var wg sync.WaitGroup
 	for i := 0; i < goroutines; i++ {
-		go scylla.ProcessBatch(in, &wg)
+		util.SafeGo(func() { scylla.ProcessBatch(in, &wg) }, "upload_id", upload.ID)
 	}
 	b := scylla.NewBatchInserter()
 	startTime := time.Now()

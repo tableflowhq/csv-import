@@ -11,6 +11,7 @@ import (
 	"tableflow/go/pkg/model"
 	"tableflow/go/pkg/tf"
 	"tableflow/go/pkg/types"
+	"tableflow/go/pkg/util"
 )
 
 func APIKeyAuthMiddleware(isAuthorized func(c *gin.Context, apiKey string) bool) gin.HandlerFunc {
@@ -58,7 +59,11 @@ func tusFileHandler(uploadAdditionalStorageHandler, uploadLimitCheck func(*model
 		for {
 			event := <-fileHandler.CompleteUploads
 			tf.Log.Infow("File upload to disk completed", "tus_id", event.Upload.ID)
-			go file.UploadCompleteHandler(event, uploadAdditionalStorageHandler, uploadLimitCheck)
+
+			util.SafeGo(func() {
+				// TODO: Implement a recover function that updates the upload error
+				file.UploadCompleteHandler(event, uploadAdditionalStorageHandler, uploadLimitCheck)
+			}, "tus_id", event.Upload.ID)
 		}
 	}()
 	return fileHandler

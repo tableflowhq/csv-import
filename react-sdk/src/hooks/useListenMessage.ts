@@ -1,6 +1,10 @@
 import { useEffect } from "react";
 
-export default function useListenMessage(importerId: string, onComplete?: (data: { data: any; error: any }) => void, onRequestClose?: () => void) {
+export default function useListenMessage(
+  importerId: string,
+  onComplete?: (data: { data: any; error: any }) => void,
+  modalOnCloseTriggered?: () => void
+) {
   useEffect(() => {
     let postMessages: string[] = [];
 
@@ -25,8 +29,8 @@ export default function useListenMessage(importerId: string, onComplete?: (data:
         });
         postMessages.push(messageData?.id);
       }
-      if (messageData?.type === "close" && onRequestClose) {
-        onRequestClose();
+      if (messageData?.type === "close" && modalOnCloseTriggered) {
+        modalOnCloseTriggered();
         postMessages.push(messageData?.id);
       }
     }
