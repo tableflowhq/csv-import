@@ -83,3 +83,34 @@ export type Import = {
   workspace_id: string;
   importer?: Importer;
 };
+
+type Pagination = {
+  total: number;
+  offset: number;
+  limit: number;
+};
+
+type ErrorDetail = {
+  type: string;
+  severity: string;
+  message: string;
+};
+
+type Row = {
+  index: number;
+  values: {
+    email: string;
+    filled: string;
+  };
+  errors: {
+    filled: ErrorDetail[];
+  };
+};
+
+export type QueryFilter = "all" | "valid" | "error";
+
+export type ImportRowResponse = {
+  pagination: Pagination;
+  filter: QueryFilter;
+  rows: Row[];
+};
