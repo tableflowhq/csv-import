@@ -8,4 +8,6 @@ export type ReviewProps = {
   showImportLoadingStatus?: boolean;
   skipHeaderRowSelection?: boolean;
   schemaless?: boolean;
+  isAiColumnMappingEnabled?: boolean;
+  importerId: string
 };

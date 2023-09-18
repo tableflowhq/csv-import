@@ -5,6 +5,8 @@ import useComponentsStore from "../../stores/componentsStore";
 import Domains from "./forms/Domains";
 import SkipHeaderRowSelection from "./forms/SkipHeaderRowSelection";
 import style from "./style/Settings.module.scss";
+import AiColumnMapping from "./forms/AiColumnMapping";
+import Webhook from "./forms/Webhook";
 
 export default function Settings({ importer }: { importer: Importer }) {
   const components = useComponentsStore((state) => state.components);
@@ -16,6 +18,9 @@ export default function Settings({ importer }: { importer: Importer }) {
       {renderedSettings?.type() !== null && <div className={style.column}>{renderedSettings}</div>}
       <div className={style.column}>
         <SkipHeaderRowSelection />
+      </div>
+      <div className={style.column}>
+        <AiColumnMapping/>
       </div>
       <div className={style.column}>
         <h3>Allowed Domains</h3>

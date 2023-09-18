@@ -4,14 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/gocql/gocql"
-	"github.com/joho/godotenv"
-	"go.uber.org/zap"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
 	"log"
 	"os"
+	"strings"
 	"sync"
 	"tableflow/go/pkg/db"
 	"tableflow/go/pkg/file"
@@ -21,6 +16,16 @@ import (
 	"tableflow/go/pkg/util"
 	"tableflow/go/pkg/web"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/gocql/gocql"
+	"github.com/joho/godotenv"
+	"go.uber.org/zap"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/connectivity"
+	"google.golang.org/grpc/credentials/insecure"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 var loggerInitialized bool
@@ -28,6 +33,7 @@ var envInitialized bool
 var dbInitialized bool
 var scyllaInitialized bool
 var tempStorageInitialized bool
+var tableFlowAiServiceInitialized bool
 
 func InitServices(ctx context.Context, wg *sync.WaitGroup) {
 	var err error
@@ -75,6 +81,13 @@ func InitServices(ctx context.Context, wg *sync.WaitGroup) {
 	err = initWebServer(ctx, wg)
 	if err != nil {
 		tf.Log.Fatalw("Error initializing web server", "error", err)
+		return
+	}
+
+	/* TableFLow AI Service */
+	err = initAiService(ctx, wg)
+	if err != nil {
+		tf.Log.Fatalw("Error initializing tableflow ai service", "error", err)
 		return
 	}
 }
@@ -337,6 +350,29 @@ func initWebServer(ctx context.Context, wg *sync.WaitGroup) error {
 		}
 		tf.Log.Debugw("API server shutdown")
 	})
+	return nil
+}
+
+func initAiService(ctx context.Context, wg *sync.WaitGroup) error {
+	if tableFlowAiServiceInitialized {
+		return errors.New("tableflow ai service already initialized")
+	}
+	tableFlowAiServerAddress := os.Getenv("TABLEFLOW_AI_SERVER")
+	useTableFlowAi := strings.ToLower(os.Getenv("USE_TABLEFLOW_AI"))
+	if(useTableFlowAi == "true"){
+		tableFlowAiServiceInitialized = true
+		conn, err := grpc.Dial(tableFlowAiServerAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+		if err != nil {
+			return err
+		}
+		conn.WaitForStateChange(ctx, conn.GetState())
+		if(conn.GetState() != connectivity.Ready){
+			return errors.New("error establishing connection to tableflow ai service")
+		}
+		tf.TableFlowAI = conn
+		go util.ShutdownHandler(ctx, wg, func() { tf.TableFlowAI.Close() })
+	}
+
 	return nil
 }
 

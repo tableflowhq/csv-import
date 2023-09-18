@@ -48,6 +48,7 @@ export default function Main() {
   if (typeof skipHeader === "undefined") {
     skipHeader = importer.skip_header_row_selection;
   }
+  const isAiColumnMappingEnabled = importer.enable_ai_column_mapping;
 
   const [uploadColumnsRow, setUploadColumnsRow] = useState<any | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -172,6 +173,8 @@ export default function Main() {
               skipHeader ? stepper.setCurrent(2) : stepper.setCurrent(3);
             }}
             skipHeaderRowSelection={skipHeader}
+            isAiColumnMappingEnabled={isAiColumnMappingEnabled}
+            importerId={importerId}
             onCancel={skipHeader ? reload : rowSelection}
           />
         );

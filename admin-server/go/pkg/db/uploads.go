@@ -95,3 +95,28 @@ func SetTemplateColumnIDs(upload *model.Upload, columnMapping map[string]string)
 	}
 	return err
 }
+
+type GetUploadAndTemplateColumnsRes struct {
+	CSVColumnNames []string
+	TemplateColumnNames []string
+}
+
+func GetUploadAndTemplateColumns(tusID string) ([][]string, error) {
+	if len(tusID) == 0 {
+		return nil, errors.New("no Tus ID provided")
+	}
+	var upload model.Upload
+	err := tf.DB.First(&upload, "tus_id = ?", tusID).Error
+	if err != nil {
+		return nil, err
+	}
+	if !upload.ID.Valid {
+		return nil, gorm.ErrRecordNotFound
+	}
+	var csvColumns []string
+	var templateColumns []string
+	tf.DB.Raw("select name from upload_columns where upload_id = ?;", upload.ID).Scan(&csvColumns)
+	tf.DB.Raw("select tc.name from templates t left join template_columns tc on t.id = tc.template_id where t.importer_id = ?;", upload.ImporterID).Scan(&templateColumns)
+	result := [][]string{csvColumns, templateColumns}
+	return result, nil
+}

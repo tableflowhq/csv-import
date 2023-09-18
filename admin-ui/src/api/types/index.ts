@@ -83,6 +83,7 @@ export type Importer = Required<ImporterFormFields> & {
   workspace_id: string;
   webhooks_enabled: boolean;
   skip_header_row_selection: boolean;
+  enable_ai_column_mapping: boolean;
 };
 
 export type TemplateColumnFormFields = {

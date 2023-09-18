@@ -358,5 +358,8 @@ func GetDatabaseSchemaInitSQL() string {
 
 		alter table template_columns
 		    add column if not exists suggested_mappings text[] not null default '{}';
+
+		alter table importers
+		    add column if not exists enable_ai_column_mapping bool not null default false;
 	`
 }

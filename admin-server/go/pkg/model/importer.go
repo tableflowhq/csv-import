@@ -12,6 +12,7 @@ type Importer struct {
 	AllowedDomains         pq.StringArray `json:"allowed_domains" gorm:"type:text[]" swaggertype:"array,string" example:"example.com"`
 	WebhooksEnabled        bool           `json:"webhooks_enabled"  example:"true"`
 	SkipHeaderRowSelection bool           `json:"skip_header_row_selection" example:"false"`
+	EnableAiColumnMapping  bool           `json:"enable_ai_column_mapping" example:"false"`
 	CreatedBy              ID             `json:"-"`
 	CreatedByUser          *User          `json:"created_by,omitempty" gorm:"foreignKey:ID;references:CreatedBy"`
 	CreatedAt              NullTime       `json:"created_at" swaggertype:"integer" example:"1682366228"`

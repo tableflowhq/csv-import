@@ -15,6 +15,7 @@ export type Importer = {
   id: string;
   name: string;
   skip_header_row_selection: boolean;
+  enable_ai_column_mapping: boolean;
   template: Template;
 };
 
@@ -78,4 +79,13 @@ export type Import = {
   upload_id: string;
   workspace_id: string;
   importer?: Importer;
+};
+
+export type MappedColumns = {
+  template_column: string;
+  csv_column: string;
+}
+
+export type CsvTemplateMapping = {
+  [csv_column: string]: string;
 };

@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package column_matcher;
+
+option go_package = "./ai";
+
+service ColumnMatcher {
+  rpc MatchColumns (ColumnMatcherRequest) returns (ColumnMatcherResponse);
+}
+
+message ColumnMatcherRequest {
+    repeated string template_headers = 1;
+    repeated string csv_headers = 2;
+}
+
+message MatchedColumn {
+    string template_column = 1;
+    string csv_column = 2;
+  }
+  
+message ColumnMatcherResponse {
+repeated MatchedColumn matched_columns = 1;
+}

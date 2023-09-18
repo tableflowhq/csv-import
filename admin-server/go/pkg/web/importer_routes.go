@@ -25,6 +25,7 @@ type ImporterEditRequest struct {
 	AllowedDomains         *[]string `json:"allowed_domains" example:"example.com"`
 	WebhooksEnabled        *bool     `json:"webhooks_enabled" example:"true"`
 	SkipHeaderRowSelection *bool     `json:"skip_header_row_selection" example:"false"`
+	EnableAiColumnMapping  *bool     `json:"enable_ai_column_mapping" example:"false"`
 }
 
 // createImporter
@@ -185,6 +186,10 @@ func editImporter(c *gin.Context, getWorkspaceUser func(*gin.Context, string) (s
 	}
 	if req.SkipHeaderRowSelection != nil && *req.SkipHeaderRowSelection != importer.SkipHeaderRowSelection {
 		importer.SkipHeaderRowSelection = *req.SkipHeaderRowSelection
+		save = true
+	}
+	if req.EnableAiColumnMapping != nil && *req.EnableAiColumnMapping != importer.EnableAiColumnMapping {
+		importer.EnableAiColumnMapping = *req.EnableAiColumnMapping
 		save = true
 	}
 	if req.AllowedDomains != nil && !util.EqualContents(*req.AllowedDomains, importer.AllowedDomains) {

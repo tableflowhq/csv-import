@@ -131,6 +131,7 @@ func StartWebServer(config ServerConfig) *http.Server {
 	importer.GET("/upload/:id", importerGetUpload)
 	importer.POST("/upload/:id/set-header-row", importerSetHeaderRow)
 	importer.POST("/upload/:id/set-column-mapping", func(c *gin.Context) { importerSetColumnMappingAndImport(c, config.ImportCompleteHandler) })
+	importer.GET("/upload/:id/match-columns", matchAiColumns)
 	importer.GET("/import/:id/review", importerReviewImport)
 	importer.GET("/import/:id/rows", importerGetImportRows)
 	importer.GET("/import/:id", importerGetImport)

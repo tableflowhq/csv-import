@@ -1,0 +1,18 @@
+.box.box {
+    flex: 1 1 100px;
+    margin: 0;
+    padding: var(--m-l);
+    min-height: 110px;
+  }
+  
+  .switchWrapper {
+    display: flex;
+    justify-content: space-between;
+    min-height: 38.25px; // make it about the same height as sibling with empty list
+    align-items: center;
+  
+    & > label:last-of-type > span {
+      background-color: var(--color-background-modal-hover);
+    }
+  }
+  

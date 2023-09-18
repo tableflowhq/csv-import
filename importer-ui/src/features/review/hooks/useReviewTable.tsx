@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { Checkbox, Input } from "@tableflow/ui-library";
 import { InputOption } from "@tableflow/ui-library/build/Input/types";
-import { TemplateColumn, UploadColumn } from "../../../api/types";
+import { CsvTemplateMapping, TemplateColumn, UploadColumn } from "../../../api/types";
+import useAiColumnMapping from "../../../api/useAiColumnMapping";
 import stringsSimilarity from "../../../utils/stringSimilarity";
+import useMutableLocalStorage from "../../main/hooks/useMutableLocalStorage";
 import style from "../style/Review.module.scss";
 import useTransformValue from "./useNameChange";
 
@@ -11,9 +13,18 @@ type Include = {
   use: boolean;
 };
 
-export default function useReviewTable(items: UploadColumn[] = [], templateColumns: TemplateColumn[] = [], schemaless?: boolean) {
-  const [values, setValues] = useState<{ [key: string]: Include }>(
-    items.reduce((acc, uc) => {
+export default function useReviewTable(
+  items: UploadColumn[] = [],
+  templateColumns: TemplateColumn[] = [],
+  importerId: string,
+  schemaless?: boolean,
+  isAiColumnMappingEnabled?: boolean
+) {
+  const [tusId, setTusId] = useMutableLocalStorage(importerId + "-tusId", "");
+  const { data: aiMappedColumns = {} as CsvTemplateMapping, isLoading, isError } = useAiColumnMapping(tusId, isAiColumnMappingEnabled);
+
+  const getFormValues = () => {
+    return items.reduce((acc, uc) => {
       const matchedSuggestedTemplateColumn = templateColumns?.find((tc) => {
         if (!tc?.suggested_mappings) {
           return false;
@@ -28,11 +39,25 @@ export default function useReviewTable(items: UploadColumn[] = [], templateColum
       if (matchedSuggestedTemplateColumn) {
         return { ...acc, [uc.id]: { template: matchedSuggestedTemplateColumn.id || "", use: !!matchedSuggestedTemplateColumn.id } };
       }
-      const similarTemplateColumn = templateColumns?.find((tc) => stringsSimilarity(tc.name, uc.name) > 0.9);
-      return { ...acc, [uc.id]: { template: similarTemplateColumn?.id || "", use: !!similarTemplateColumn?.id } };
-    }, {})
-  );
+      if (aiMappedColumns) {
+        // match columns from mappedColumnsResult
+        const similarTemplateColumn = templateColumns?.find((tc) => tc.name == aiMappedColumns[uc.name]);
+        return { ...acc, [uc.id]: { template: similarTemplateColumn?.id || "", use: !!similarTemplateColumn?.id } };
+      } else {
+        // use string similarity
+        const similarTemplateColumn = templateColumns?.find((tc) => stringsSimilarity(tc.name, uc.name) > 0.9);
+        return { ...acc, [uc.id]: { template: similarTemplateColumn?.id || "", use: !!similarTemplateColumn?.id } };
+      }
+    }, {});
+  };
+
+  const [values, setValues] = useState<{ [key: string]: Include }>(getFormValues());
   const [selectedTemplates, setSelectedTemplates] = useState<string[]>([]);
+
+  useEffect(() => {
+    setValues(getFormValues());
+  }, [isLoading]);
+
   const templateFields: { [key: string]: InputOption } = useMemo(
     () => templateColumns.reduce((acc, field) => ({ ...acc, [field.name]: { value: field.id, required: field.required } }), {}),
     [JSON.stringify(templateColumns)]
@@ -164,7 +189,7 @@ export default function useReviewTable(items: UploadColumn[] = [], templateColum
       };
     });
   }, [values]);
-  return { rows, formValues: values };
+  return { rows, formValues: values, isLoading };
 }
 
 const SchemaLessInput = ({ value, setValues }: { value: string; setValues: (value: string) => void }) => {

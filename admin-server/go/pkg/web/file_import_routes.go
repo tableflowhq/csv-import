@@ -4,11 +4,16 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"context"
+	"os"
 	"github.com/gin-gonic/gin"
 	"github.com/gocql/gocql"
 	"github.com/guregu/null"
 	"github.com/samber/lo"
 	"github.com/tus/tusd/pkg/handler"
+	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"gorm.io/gorm"
 	"math"
 	"net/http"
@@ -16,6 +21,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 	"tableflow/go/pkg/db"
 	"tableflow/go/pkg/file"
 	"tableflow/go/pkg/model"
@@ -24,7 +30,8 @@ import (
 	"tableflow/go/pkg/tf"
 	"tableflow/go/pkg/types"
 	"tableflow/go/pkg/util"
-	"time"
+	pb "tableflow/go/pkg/ai/column-matcher"
+
 )
 
 type importProcessResult struct {
@@ -132,6 +139,7 @@ func importerGetImporter(c *gin.Context) {
 			ID:                     importer.ID,
 			Name:                   importer.Name,
 			SkipHeaderRowSelection: importer.SkipHeaderRowSelection,
+			EnableAiColumnMapping:  importer.EnableAiColumnMapping,
 			Template: &types.Template{
 				TemplateColumns: []*types.TemplateColumn{},
 			},
@@ -202,7 +210,6 @@ func importerGetImporter(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No template columns found. Please create at least one template column to use this importer."})
 		return
 	}
-
 	importerTemplateColumns := make([]*types.TemplateColumn, len(template.TemplateColumns))
 	for n, tc := range template.TemplateColumns {
 		importerTemplateColumns[n] = &types.TemplateColumn{
@@ -232,6 +239,7 @@ func importerGetImporter(c *gin.Context) {
 		ID:                     template.Importer.ID,
 		Name:                   template.Importer.Name,
 		SkipHeaderRowSelection: template.Importer.SkipHeaderRowSelection,
+		EnableAiColumnMapping:  template.Importer.EnableAiColumnMapping,
 		Template:               importerTemplate,
 	}
 	c.JSON(http.StatusOK, importServiceImporter)
@@ -376,6 +384,60 @@ func importerSetHeaderRow(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, importerUpload)
+}
+
+// matchAiColumns
+//
+//	@Summary		Match columns from template and uploaded file
+//	@Description	Matches columns from the template description and uploaded files headers using tableflow ai services
+//	@Tags			File Import
+//	@Success		200	{object}	types.AiColumnMappingResult
+//	@Failure		400	{object}	types.Res
+//	@Router			/file-import/v1/upload/{id}/match-columns [get]
+//	@Param			id	path	string	true	"tus ID"
+func matchAiColumns(c *gin.Context) {
+	id := c.Param("id")
+	if len(id) == 0 {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No upload ID provided"})
+		return
+	}
+	matchedColumns, err := db.GetUploadAndTemplateColumns(id)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+		return
+	}
+
+	// Create a gRPC client
+	client := pb.NewColumnMatcherClient(tf.TableFlowAI)
+	md := metadata.Pairs(
+		"authorization", os.Getenv("TABLEFLOWAI_SECRET"),
+		"openai_api_key", os.Getenv("OPENAI_API_KEY"),
+	)
+	ctx := context.Background()
+	ctx = metadata.NewOutgoingContext(ctx, md)
+
+	// Define your request
+	request := &pb.ColumnMatcherRequest{
+		CsvHeaders: matchedColumns[0],
+		TemplateHeaders: matchedColumns[1],
+	}
+
+	// Call the remote gRPC service
+	response, err := client.MatchColumns(ctx, request)
+	if err != nil {
+		if statusError, ok := status.FromError(err); ok {
+			// Check if the gRPC error code is Unauthorized (401)
+			if statusError.Code() == codes.Unauthenticated {
+				c.AbortWithStatusJSON(http.StatusUnauthorized, types.Res{Err: err.Error() + "You need to set correct TABLEFLOWAI_SECRET or OPENAI_API_KEY as environment variable to use TableFlowAI services"})
+				return
+			}
+		}
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+		return
+	}
+	
+	// Validate 
+	c.JSON(http.StatusOK, response.MatchedColumns)
 }
 
 // importerSetColumnMappingAndImport

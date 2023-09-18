@@ -1,13 +1,26 @@
 import { FormEvent, useEffect } from "react";
 import { Button, Errors, Table } from "@tableflow/ui-library";
+import Spinner from "../../components/Spinner";
 import usePostUpload from "../../api/usePostUpload";
 import useReviewTable from "./hooks/useReviewTable";
 import { ReviewProps } from "./types";
 import style from "./style/Review.module.scss";
 
-export default function Review({ upload, template, onSuccess, onCancel, skipHeaderRowSelection, schemaless }: ReviewProps) {
-  const { rows, formValues } = useReviewTable(upload?.upload_columns, template?.columns, schemaless);
-
+export default function Review({
+  upload,
+  template,
+  onSuccess,
+  onCancel,
+  skipHeaderRowSelection,
+  importerId,
+  schemaless,
+  isAiColumnMappingEnabled,
+}: ReviewProps) {
+  const {
+    rows,
+    formValues,
+    isLoading: isColumnMappingInProgress,
+  } = useReviewTable(upload?.upload_columns, template?.columns, importerId, schemaless, isAiColumnMappingEnabled);
   const { mutate, error, isSuccess, isLoading } = usePostUpload(upload?.id || "");
 
   const onSubmit = (e: FormEvent<HTMLFormElement>) => {
@@ -32,12 +45,14 @@ export default function Review({ upload, template, onSuccess, onCancel, skipHead
   return (
     <div className={style.content}>
       <form onSubmit={onSubmit}>
-        {upload ? (
+        {upload && !isColumnMappingInProgress ? (
           <div className={style.tableWrapper}>
             <Table data={rows} background="dark" columnWidths={["20%", "30%", "30%", "20%"]} columnAlignments={["", "", "", "center"]} />
           </div>
         ) : (
-          <>Loading...</>
+          <>
+            <Spinner />
+          </>
         )}
 
         <div className={style.actions}>
