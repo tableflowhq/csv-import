@@ -1,6 +1,6 @@
 {
   "name": "@tableflow/react",
-  "version": "1.21.0",
+  "version": "1.22.0",
   "description": "The React SDK for TableFlow. Embed an importer to collect and transform CSV files in your application.",
   "main": "build/index.js",
   "module": "build/index.esm.js",

@@ -24,6 +24,7 @@ export default function useReviewTable(
   const { data: aiMappedColumns = {} as CsvTemplateMapping, isLoading, isError } = useAiColumnMapping(tusId, isAiColumnMappingEnabled);
 
   const getFormValues = () => {
+    const usedTemplateColumns = new Set<string>();
     return items.reduce((acc, uc) => {
       const matchedSuggestedTemplateColumn = templateColumns?.find((tc) => {
         if (!tc?.suggested_mappings) {
@@ -37,15 +38,25 @@ export default function useReviewTable(
         return false;
       });
       if (matchedSuggestedTemplateColumn) {
+        usedTemplateColumns.add(matchedSuggestedTemplateColumn.id);
         return { ...acc, [uc.id]: { template: matchedSuggestedTemplateColumn.id || "", use: !!matchedSuggestedTemplateColumn.id } };
       }
-      if (aiMappedColumns) {
+      if (Object.values(aiMappedColumns).length > 0) {
         // match columns from mappedColumnsResult
         const similarTemplateColumn = templateColumns?.find((tc) => tc.name == aiMappedColumns[uc.name]);
         return { ...acc, [uc.id]: { template: similarTemplateColumn?.id || "", use: !!similarTemplateColumn?.id } };
       } else {
         // use string similarity
-        const similarTemplateColumn = templateColumns?.find((tc) => stringsSimilarity(tc.name, uc.name) > 0.9);
+        const similarTemplateColumn = templateColumns?.find((tc) => {
+          if (usedTemplateColumns.has(tc.id)) {
+            return false;
+          }
+          if (stringsSimilarity(tc.name, uc.name) > 0.9) {
+            usedTemplateColumns.add(tc.id);
+            return true;
+          }
+          return false;
+        });
         return { ...acc, [uc.id]: { template: similarTemplateColumn?.id || "", use: !!similarTemplateColumn?.id } };
       }
     }, {});
@@ -87,24 +98,6 @@ export default function useReviewTable(
     setValues((prev) => ({ ...prev, [id]: { ...prev[id], template: value, use: !!value } }));
   };
 
-  const heading = {
-    "File Column": {
-      raw: "",
-      content: "File Column",
-    },
-    "Sample Data": {
-      raw: "",
-      content: "Sample Data",
-    },
-    "Destination Column": {
-      raw: "",
-      content: "Destination Column 1",
-    },
-    Include: {
-      raw: "",
-      content: "Include",
-    },
-  };
   const rows = useMemo(() => {
     return items.map((item) => {
       const { id, name, sample_data } = item;

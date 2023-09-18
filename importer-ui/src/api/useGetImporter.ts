@@ -1,6 +1,6 @@
 import { useQuery, UseQueryResult } from "react-query";
 import { ApiResponse, Importer } from "./types";
-import { get, post } from "./api";
+import { post } from "./api";
 
 export default function useGetImporter(importerId: string, sdkDefinedTemplate: string, schemaless?: boolean): UseQueryResult<Importer> {
   return useQuery(["importer", importerId], () => (importerId ? getImporter(importerId, sdkDefinedTemplate, schemaless) : {}));

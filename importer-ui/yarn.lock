@@ -2870,7 +2870,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tableflow/ui-library@npm:^1.53.0":
+"@tableflow/ui-library@npm:^1.60.0":
   version: 1.60.0
   resolution: "@tableflow/ui-library@npm:1.60.0"
   dependencies:
@@ -8002,7 +8002,7 @@ __metadata:
   dependencies:
     "@mantine/core": ^6.0.10
     "@mantine/form": ^6.0.4
-    "@tableflow/ui-library": ^1.53.0
+    "@tableflow/ui-library": ^1.60.0
     "@testing-library/jest-dom": ^5.14.1
     "@testing-library/react": ^13.0.0
     "@testing-library/user-event": ^13.2.1

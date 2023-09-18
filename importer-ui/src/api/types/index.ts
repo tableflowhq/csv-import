@@ -11,6 +11,10 @@ export type ApiResponse<T> = {
 
 // Entities
 
+export type Organization = {
+  status?: boolean;
+};
+
 export type Importer = {
   id: string;
   name: string;
