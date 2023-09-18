@@ -41,6 +41,7 @@ function ReviewDataTable({ rowData, columnDefs, defaultColDef, cellClickedListen
         rowSelection="multiple"
         onCellValueChanged={cellClickedListener}
         onGridReady={onGridReady}
+        infiniteInitialRowCount={100}
       />
     </div>
   );
