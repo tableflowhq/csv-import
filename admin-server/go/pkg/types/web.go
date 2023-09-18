@@ -13,9 +13,10 @@ type Res struct {
 }
 
 type Pagination struct {
-	Total  int `json:"total"`
-	Offset int `json:"offset"`
-	Limit  int `json:"limit"`
+	Total      int `json:"total"`
+	Limit      int `json:"limit"`
+	Offset     int `json:"offset"`
+	NextOffset int `json:"next_offset"`
 }
 
 type Filter string

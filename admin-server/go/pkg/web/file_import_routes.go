@@ -587,26 +587,12 @@ func importerReviewImport(c *gin.Context) {
 		NumErrorRows:       imp.NumErrorRows,
 		NumValidRows:       imp.NumValidRows,
 		CreatedAt:          imp.CreatedAt,
-		Data: &types.ImportData{
-			Filter:     &types.ImportRowFilterAll,
-			Pagination: &types.Pagination{},
-			Rows:       []types.ImportRow{},
-		},
 	}
 	if !imp.IsStored {
 		// Don't attempt to retrieve the data in Scylla if it's not stored
 		c.JSON(http.StatusOK, importServiceImport)
 		return
 	}
-
-	// Retrieve the first 100 rows for the validations screen
-	pagination := &types.Pagination{
-		Total:  int(imp.NumRows.Int64),
-		Offset: types.PaginationDefaultOffset,
-		Limit:  types.PaginationDefaultLimit,
-	}
-	importServiceImport.Data.Pagination = pagination
-	importServiceImport.Data.Rows = scylla.PaginateImportRows(imp, pagination.Offset, pagination.Limit, types.ImportRowFilterAll)
 
 	c.JSON(http.StatusOK, importServiceImport)
 }
@@ -662,6 +648,9 @@ func importerGetImportRows(c *gin.Context) {
 	}
 
 	rows := scylla.PaginateImportRows(imp, pagination.Offset, pagination.Limit, filter)
+	if len(rows) != 0 {
+		pagination.NextOffset = rows[len(rows)-1].Index + 1
+	}
 	data := &types.ImportData{
 		Filter:     &filter,
 		Pagination: &pagination,
