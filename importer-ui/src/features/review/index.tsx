@@ -1,4 +1,4 @@
-import { ColDef } from "ag-grid-community";
+import { ColDef, ICellRendererParams } from "ag-grid-community";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button, Icon, ToggleFilter, useThemeStore } from "@tableflow/ui-library";
 import { QueryFilter } from "../../api/types";
@@ -22,7 +22,6 @@ export default function Review({ onCancel, onSuccess, upload, showImportLoadingS
 
   const { data, error, isLoading }: any = useReview(uploadId);
   const csvData = data?.data?.rows || [];
-  const { data: rowData } = useGetRows(uploadId, filter, 100, 0);
   const [columnDefs, setColumnDefs] = useState<any>([]);
 
   const theme = useThemeStore((state) => state.theme);
@@ -53,7 +52,7 @@ export default function Review({ onCancel, onSuccess, upload, showImportLoadingS
             }
             return null;
           },
-          cellRenderer: (params: any) => {
+          cellRenderer: (params: ICellRendererParams) => {
             if (params.data) {
               return (
                 <span
@@ -114,11 +113,11 @@ export default function Review({ onCancel, onSuccess, upload, showImportLoadingS
           <ToggleFilter options={filterOptions} className={style.filters} onChange={(option: string) => onFilterChange(option)} />
           <div className={style.tableWrapper}>
             <ReviewDataTable
-              rowData={rowData?.pages?.flatMap((page: any) => page.rows) as any}
               columnDefs={columnDefs}
               defaultColDef={defaultColDef}
               cellClickedListener={cellClickedListener}
               theme={theme}
+              uploadId={uploadId}
             />
           </div>
           <div className={style.actions}>

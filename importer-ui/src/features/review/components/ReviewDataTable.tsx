@@ -1,20 +1,35 @@
 /* eslint-disable */
-import { GridReadyEvent } from "ag-grid-community";
+import { GridReadyEvent, IDatasource } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
 import { useEffect, useRef } from "react";
+import useGetRows from "../../../api/useGetRows";
 import { TableProps } from "../types";
 import "./TableStyle.scss";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 
-function ReviewDataTable({ rowData, columnDefs, defaultColDef, cellClickedListener, theme }: TableProps) {
+function ReviewDataTable({ columnDefs, defaultColDef, cellClickedListener, theme, uploadId }: TableProps) {
   const gridRef: any = useRef(null);
+  const { data: initialRowData, fetchNextPage } = useGetRows(uploadId, "all", 100, 0);
 
   const onGridReady = (params: GridReadyEvent<any>) => {
     gridRef.current = params.api as any;
     setTimeout(() => {
       setColumnSizes();
     }, 10);
+
+    const dataSource: IDatasource = {
+      rowCount: undefined,
+      getRows: async (params: any) => {
+        console.log("asking for " + params.startRow + " to " + params.endRow);
+
+        const data = await fetchNextPage();
+        const rowThisPage = data?.data?.pages?.flatMap((page: any) => page?.rows) || [];
+        const lastRow = data.hasNextPage ? -1 : rowThisPage.length;
+        params.successCallback(rowThisPage, lastRow);
+      },
+    };
+    params.api.setDatasource(dataSource);
   };
 
   window.addEventListener("resize", () => {
@@ -29,10 +44,11 @@ function ReviewDataTable({ rowData, columnDefs, defaultColDef, cellClickedListen
     <div
       className={theme === "dark" ? "ag-theme-alpine-dark" : "ag-theme-alpine"}
       style={{
-        height: rowData?.length != null ? (rowData.length + 1) * 43 : 100,
+        // height: initialRowData?.pages?.flat()?.length != null ? (initialRowData?.pages?.flat()?.length + 1) * 43 : 100,
+        height: 500
       }}>
       <AgGridReact
-        rowData={rowData}
+        // rowData={rowData}
         columnDefs={columnDefs}
         defaultColDef={defaultColDef}
         animateRows={true}
@@ -42,6 +58,12 @@ function ReviewDataTable({ rowData, columnDefs, defaultColDef, cellClickedListen
         onCellValueChanged={cellClickedListener}
         onGridReady={onGridReady}
         infiniteInitialRowCount={100}
+        rowBuffer={0}
+        rowModelType={"infinite"}
+        cacheBlockSize={100}
+        cacheOverflowSize={2}
+        maxConcurrentDatasourceRequests={1}
+        maxBlocksInCache={10}
       />
     </div>
   );

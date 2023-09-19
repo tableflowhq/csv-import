@@ -10,9 +10,9 @@ export type ReviewProps = {
 };
 
 export type TableProps = {
-  rowData: UploadRow[];
   columnDefs: ColDef[];
   defaultColDef: ColDef;
   cellClickedListener: (event: any) => void;
   theme: "light" | "dark";
+  uploadId: string;
 };
