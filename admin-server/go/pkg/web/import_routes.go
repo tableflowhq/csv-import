@@ -22,7 +22,7 @@ func getImport(c *gin.Context, getWorkspaceUser func(*gin.Context, string) (stri
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No import ID provided"})
 		return
 	}
-	imp, err := db.GetImportForAdminAPI(id)
+	imp, err := db.GetCompletedImportForAdminAPI(id)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return
@@ -55,7 +55,7 @@ func getImports(c *gin.Context, getWorkspaceUser func(*gin.Context, string) (str
 		c.AbortWithStatusJSON(http.StatusUnauthorized, types.Res{Err: err.Error()})
 		return
 	}
-	imports, err := db.GetImportsForAdminAPI(workspaceID)
+	imports, err := db.GetCompletedImportsForAdminAPI(workspaceID)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return

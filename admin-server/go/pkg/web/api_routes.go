@@ -31,7 +31,7 @@ func getImportForExternalAPI(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No import ID provided"})
 		return
 	}
-	imp, err := db.GetImport(id)
+	imp, err := db.GetCompletedImport(id)
 	if err != nil {
 		tf.Log.Warnw("Could not get import", "error", err, "import_id", id)
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Could not find import"})
@@ -70,7 +70,7 @@ func getImportRowsForExternalAPI(c *gin.Context) {
 		return
 	}
 
-	imp, err := db.GetImport(id)
+	imp, err := db.GetCompletedImport(id)
 	if err != nil {
 		tf.Log.Warnw("Could not get import to download", "error", err, "import_id", id)
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Could not find import"})
@@ -107,7 +107,7 @@ func downloadImportForExternalAPI(c *gin.Context) {
 		return
 	}
 
-	imp, err := db.GetImport(id)
+	imp, err := db.GetCompletedImport(id)
 	if err != nil {
 		tf.Log.Warnw("Could not get import to download", "error", err, "import_id", id)
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Could not find import"})
