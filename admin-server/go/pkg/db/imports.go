@@ -7,12 +7,13 @@ import (
 	"tableflow/go/pkg/tf"
 )
 
-func GetImport(id string) (*model.Import, error) {
+func GetCompletedImport(id string) (*model.Import, error) {
 	if len(id) == 0 {
 		return nil, errors.New("no import ID provided")
 	}
 	var imp model.Import
-	err := tf.DB.First(&imp, model.ParseID(id)).Error
+	err := tf.DB.First(&imp, model.ParseID(id)).
+		Where("is_complete = ?", true).Error
 	if err != nil {
 		return nil, err
 	}
@@ -22,12 +23,13 @@ func GetImport(id string) (*model.Import, error) {
 	return &imp, nil
 }
 
-func GetImportForAdminAPI(id string) (*model.Import, error) {
+func GetCompletedImportForAdminAPI(id string) (*model.Import, error) {
 	if len(id) == 0 {
 		return nil, errors.New("no import ID provided")
 	}
 	var imp model.Import
-	err := tf.DB.First(&imp, model.ParseID(id)).Error
+	err := tf.DB.First(&imp, model.ParseID(id)).
+		Where("is_complete = ?", true).Error
 	if err != nil {
 		return nil, err
 	}
@@ -37,7 +39,7 @@ func GetImportForAdminAPI(id string) (*model.Import, error) {
 	return &imp, nil
 }
 
-func GetImportsForAdminAPI(workspaceID string) ([]*model.Import, error) {
+func GetCompletedImportsForAdminAPI(workspaceID string) ([]*model.Import, error) {
 	if len(workspaceID) == 0 {
 		return nil, errors.New("no workspace ID provided")
 	}
@@ -46,6 +48,8 @@ func GetImportsForAdminAPI(workspaceID string) ([]*model.Import, error) {
 	err := tf.DB.Unscoped().
 		Preload("Importer").
 		Where("workspace_id = ?", model.ParseID(workspaceID)).
+		Where("is_complete = ?", true).
+		Where("deleted_at is null").
 		Order("created_at desc").
 		Find(&imports).Error
 	if err != nil {
@@ -77,6 +81,14 @@ func DoesImportExistByUploadID(uploadID string) (bool, error) {
 		Exists bool
 	}
 	var res Res
-	err := tf.DB.Raw("select exists(select 1 from imports where upload_id = ?);", model.ParseID(uploadID)).Scan(&res).Error
+	err := tf.DB.Raw("select exists(select 1 from imports where upload_id = ? and deleted_at is null);", model.ParseID(uploadID)).Scan(&res).Error
 	return res.Exists, err
+}
+
+func DeleteImport(importID string) error {
+	if len(importID) == 0 {
+		return errors.New("no import ID provided")
+	}
+	err := tf.DB.Where("id = ?", model.ParseID(importID)).Delete(&model.Import{}).Error
+	return err
 }

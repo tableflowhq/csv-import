@@ -358,5 +358,13 @@ func GetDatabaseSchemaInitSQL() string {
 
 		alter table template_columns
 		    add column if not exists suggested_mappings text[] not null default '{}';
+
+		alter table imports
+		    add column if not exists is_complete boolean default false not null;
+		alter table imports
+		    add column if not exists deleted_at timestamp with time zone;
+		drop index if exists imports_upload_id_idx;
+		create index if not exists imports_upload_id_non_unique_idx on imports(upload_id);
+		create unique index if not exists imports_upload_id_deleted_at_idx on imports(upload_id) where (deleted_at is null);
 	`
 }

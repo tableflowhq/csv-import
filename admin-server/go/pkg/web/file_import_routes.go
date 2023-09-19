@@ -291,6 +291,10 @@ func importerSetHeaderRow(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return
 	}
+	if !upload.IsStored {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Upload is not yet stored, please wait until the upload has finished processing"})
+		return
+	}
 
 	// Validate and set the header row index on the upload
 	req := types.UploadHeaderRowSelection{}
@@ -317,21 +321,45 @@ func importerSetHeaderRow(c *gin.Context) {
 		return
 	}
 
-	// Allow the header row to be set again if the corresponding import does not exist by deleting the upload columns
-	if len(upload.UploadColumns) != 0 {
-		importExists, err := db.DoesImportExistByUploadID(upload.ID.String())
+	imp, err := db.GetImportByUploadID(id)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		c.AbortWithStatusJSON(http.StatusOK, types.Res{Err: err.Error()})
+		return
+	}
+	importExists := imp != nil
+	if importExists && imp.IsComplete {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Import is already submitted"})
+		return
+	}
+
+	// If the header row is already set and is being set again to its current value, just return the upload
+	if upload.HeaderRowIndex.Valid && index == upload.HeaderRowIndex.Int64 {
+		importerUpload, err := types.ConvertUpload(upload, nil)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 			return
 		}
-		if importExists {
-			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "The header row cannot be set again since the import is already complete"})
-			return
-		}
+		c.JSON(http.StatusOK, importerUpload)
+		return
+	}
+
+	// Allow the header row to be set again by deleting the upload columns and corresponding import (if exists)
+	if len(upload.UploadColumns) != 0 {
 		err = db.DeleteUploadColumns(upload.ID.String())
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("Could not delete upload columns to reselect header row: %v", err.Error())})
+			errStr := "Could not delete upload columns to reselect header row"
+			tf.Log.Errorw(errStr, "upload_id", upload.ID, "error", err)
+			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("%s: %s", errStr, err)})
 			return
+		}
+		if importExists {
+			err = db.DeleteImport(imp.ID.String())
+			if err != nil {
+				errStr := "Could not delete existing import to reselect header row"
+				tf.Log.Errorw(errStr, "import_id", imp.ID, "error", err)
+				c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("%s: %s", errStr, err)})
+				return
+			}
 		}
 		upload.UploadColumns = make([]*model.UploadColumn, 0)
 	}
@@ -417,8 +445,22 @@ func importerSetColumnMapping(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return
 	}
+	if !upload.IsStored {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Upload is not yet stored, please wait until the upload has finished processing"})
+		return
+	}
 	if !upload.HeaderRowIndex.Valid {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "The header row has not been set"})
+		return
+	}
+	imp, err := db.GetImportByUploadID(id)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		c.AbortWithStatusJSON(http.StatusOK, types.Res{Err: err.Error()})
+		return
+	}
+	importExists := imp != nil
+	if importExists && imp.IsComplete {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Import is already submitted"})
 		return
 	}
 
@@ -539,6 +581,53 @@ func importerSetColumnMapping(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "All required columns must be set"})
 		return
 	}
+
+	// Note: If the import exists but has not been stored yet, this means the column mapping has been set and the import
+	// has not finished processing. This should be allowed if the user is changing the column mapping.
+
+	// The next cases handle the column mapping having already been submitted with either the same or different mapping
+	columnsAlreadyMapped := lo.ContainsBy(upload.UploadColumns, func(uc *model.UploadColumn) bool {
+		return uc.TemplateColumnID.Valid
+	})
+	if columnsAlreadyMapped {
+		// If the column mapping already been set and the new column mapping is the same, no action is required
+		sameColumnMapping := true
+		for _, uc := range upload.UploadColumns {
+			if !uc.TemplateColumnID.Valid {
+				continue
+			}
+			tcID, ok := columnMapping[uc.ID.String()]
+			if !ok || tcID != uc.TemplateColumnID.String() {
+				sameColumnMapping = false
+				break
+			}
+		}
+		if sameColumnMapping {
+			c.JSON(http.StatusOK, types.Res{Message: "Column mapping unchanged"})
+			return
+		}
+
+		// At this point we know the new column mapping is different, so the current column mapping needs to be cleared
+		// and the import needs to be deleted and re-imported
+		err = db.ClearUploadColumnTemplateColumnIDs(upload.ID.String())
+		if err != nil {
+			errStr := "Could not clear existing column mapping"
+			tf.Log.Errorw(errStr, "upload_id", upload.ID, "error", err)
+			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("%s: %s", errStr, err)})
+			return
+		}
+		if importExists {
+			tf.Log.Infow("Deleting import for changed column mapping", "import_id", imp.ID)
+			err = db.DeleteImport(imp.ID.String())
+			if err != nil {
+				errStr := "Could not delete existing import to update column mapping"
+				tf.Log.Errorw(errStr, "import_id", imp.ID, "error", err)
+				c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("%s: %s", errStr, err)})
+				return
+			}
+		}
+	}
+
 	err = db.SetTemplateColumnIDs(upload, columnMapping)
 	if err != nil {
 		tf.Log.Errorw("Could not set template column mapping", "error", err)
@@ -551,7 +640,7 @@ func importerSetColumnMapping(c *gin.Context) {
 		file.ImportData(upload, template)
 	}, "upload_id", upload.ID)
 
-	c.JSON(http.StatusOK, types.Res{Message: "success"})
+	c.JSON(http.StatusOK, types.Res{Message: "Import submitted"})
 }
 
 // importerReviewImport
@@ -591,6 +680,10 @@ func importerReviewImport(c *gin.Context) {
 	if !imp.IsStored {
 		// Don't attempt to retrieve the data in Scylla if it's not stored
 		c.JSON(http.StatusOK, importServiceImport)
+		return
+	}
+	if imp.IsComplete {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Import is already submitted"})
 		return
 	}
 
@@ -636,6 +729,10 @@ func importerGetImportRows(c *gin.Context) {
 	if !imp.IsStored {
 		// Don't allow the data to be retrieved in Scylla if it's not stored yet
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Import is not yet stored, please wait until the import has finished processing"})
+		return
+	}
+	if imp.IsComplete {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Import is already submitted"})
 		return
 	}
 
@@ -686,6 +783,18 @@ func importerSubmitImport(c *gin.Context, importCompleteHandler func(types.Impor
 	}
 	if imp.HasErrors() {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "All errors must be resolved before submitting"})
+		return
+	}
+	if imp.IsComplete {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Import is already submitted"})
+		return
+	}
+
+	imp.IsComplete = true
+	err = tf.DB.Save(imp).Error
+	if err != nil {
+		tf.Log.Errorw("Could not update import in database", "error", err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, types.Res{Err: err.Error()})
 		return
 	}
 
