@@ -2,12 +2,84 @@
 import { ColDef, GridReadyEvent, ICellRendererParams, IDatasource } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
 import { useEffect, useRef, useState } from "react";
-import { Icon } from "@tableflow/ui-library";
+import { Icon, Tooltip } from "@tableflow/ui-library";
+import { IconType } from "@tableflow/ui-library/build/Icon/types";
 import useGetRows from "../../../api/useGetRows";
 import { TableProps } from "../types";
+import style from "../style/Review.module.scss";
 import "./TableStyle.scss";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
+
+type IconKeyType = "error" | "warning" | "info";
+const iconTypeMap: Record<IconKeyType, IconType> = {
+  error: "error",
+  warning: "help",
+  info: "info",
+};
+
+const getIconType = (type: string): IconType => {
+  return iconTypeMap[type as IconKeyType] || "info";
+};
+
+const getCellBackgroundColor = (severity: IconKeyType): string | null => {
+  const colorMap = {
+    error: "#f04339",
+    warning: "#ffcc00",
+    info: "#4caf50",
+  };
+
+  return colorMap[severity] || null;
+};
+
+const cellRenderer = (params: any, header: string) => {
+  if (params.data) {
+    const errors = params.data?.errors?.[header];
+
+    const cellContent = (
+      <span
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          width: "100%",
+        }}>
+        <span>{params.value}</span>
+        {errors && (
+          <button className={style.iconButton}>
+            <Icon icon={getIconType(errors[0].type)} />
+          </button>
+        )}
+      </span>
+    );
+
+    return cellContent;
+  }
+};
+
+const tooltipValueGetterImproved = (params: any, header: string) => {
+  if (params.data?.errors?.[header]) {
+    return params.data.errors[header].map((err: any) => `• ${err.type.toUpperCase()}: ${err.message}`).join("");
+  }
+  return "Click for details"; // Fallback tooltip
+};
+
+function CustomTooltip(props: any) {
+  const { data } = props;
+  const { errors } = data;
+  const { headerName } = props.colDef;
+  const error = errors[headerName];
+  return (
+    <Tooltip className={style.tableflowTooltip}>
+      {
+        <div className={style.tooltipContent}>
+          {error?.map((err: any, index: number) => (
+            <span key={index}>{err?.message}</span>
+          ))}
+        </div>
+      }
+    </Tooltip>
+  );
+}
 
 function ReviewDataTable({ cellClickedListener, theme, uploadId, filter }: TableProps) {
   const gridRef: any = useRef(null);
@@ -75,33 +147,17 @@ function ReviewDataTable({ cellClickedListener, theme, uploadId, filter }: Table
           headerName: header,
           field: `values.${header}`,
           cellStyle: (params: any) => {
+            console.log(params);
             if (params.data?.errors?.[header]) {
-              return { backgroundColor: "#f04339" };
+              return { backgroundColor: getCellBackgroundColor(params.data.errors[header][0].severity) };
             }
             return null;
           },
-          cellRenderer: (params: ICellRendererParams) => {
-            if (params.data) {
-              return (
-                <span
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    width: "100%",
-                  }}>
-                  <span>{params.value}</span>
-                  {params.data?.errors?.[header] && (
-                    <button title={params.data.errors[header][0].message}>
-                      <Icon icon="help" />
-                    </button>
-                  )}
-                </span>
-              );
-            }
-          },
+          cellRenderer: (params: ICellRendererParams) => cellRenderer(params, header),
           sortable: false,
           filter: false,
           suppressMovable: true,
+          tooltipComponent: CustomTooltip,
         } as ColDef;
       });
       setColumnDefs(generatedColumnDefs.reverse());

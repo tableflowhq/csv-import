@@ -17,18 +17,26 @@
     display: flex;
     justify-content: space-between;
   }
+
+  .iconButton {
+    &>svg path {
+      stroke: var(--color-text-on-primary);
+    }
+  }
 }
 
 .pagination {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: 16px; /* Adjust the margin as needed */
+  margin-top: 16px;
+  /* Adjust the margin as needed */
 }
 
 .pagination button {
   padding: 8px 16px;
-  margin: 0 4px; /* Adjust the margin as needed */
+  margin: 0 4px;
+  /* Adjust the margin as needed */
   font-size: 14px;
   cursor: pointer;
   border: 1px solid #ccc;
@@ -51,4 +59,30 @@
 
 .filters {
   width: fit-content;
+}
+
+.tableflowTooltip {
+  background-color: #333;
+  color: #fff;
+  padding: 10px;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  position: relative;
+
+  .tooltipContent {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+}
+
+.tableflowTooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #333 transparent transparent transparent;
 }
