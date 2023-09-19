@@ -11,76 +11,6 @@ import "./TableStyle.scss";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 
-type IconKeyType = "error" | "warning" | "info";
-const iconTypeMap: Record<IconKeyType, IconType> = {
-  error: "error",
-  warning: "help",
-  info: "info",
-};
-
-const getIconType = (type: string): IconType => {
-  return iconTypeMap[type as IconKeyType] || "info";
-};
-
-const getCellBackgroundColor = (severity: IconKeyType): string | null => {
-  const colorMap = {
-    error: "#f04339",
-    warning: "#ffcc00",
-    info: "#4caf50",
-  };
-
-  return colorMap[severity] || null;
-};
-
-const cellRenderer = (params: any, header: string) => {
-  if (params.data) {
-    const errors = params.data?.errors?.[header];
-
-    const cellContent = (
-      <span
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          width: "100%",
-        }}>
-        <span>{params.value}</span>
-        {errors && (
-          <button className={style.iconButton}>
-            <Icon icon={getIconType(errors[0].type)} />
-          </button>
-        )}
-      </span>
-    );
-
-    return cellContent;
-  }
-};
-
-const tooltipValueGetterImproved = (params: any, header: string) => {
-  if (params.data?.errors?.[header]) {
-    return params.data.errors[header].map((err: any) => `• ${err.type.toUpperCase()}: ${err.message}`).join("");
-  }
-  return "Click for details"; // Fallback tooltip
-};
-
-function CustomTooltip(props: any) {
-  const { data } = props;
-  const { errors } = data;
-  const { headerName } = props.colDef;
-  const error = errors[headerName];
-  return (
-    <Tooltip className={style.tableflowTooltip}>
-      {
-        <div className={style.tooltipContent}>
-          {error?.map((err: any, index: number) => (
-            <span key={index}>{err?.message}</span>
-          ))}
-        </div>
-      }
-    </Tooltip>
-  );
-}
-
 function ReviewDataTable({ cellClickedListener, theme, uploadId, filter }: TableProps) {
   const gridRef: any = useRef(null);
   const [columnDefs, setColumnDefs] = useState<any>([]);
@@ -147,13 +77,13 @@ function ReviewDataTable({ cellClickedListener, theme, uploadId, filter }: Table
           headerName: header,
           field: `values.${header}`,
           cellStyle: (params: any) => {
-            console.log(params);
             if (params.data?.errors?.[header]) {
               return { backgroundColor: getCellBackgroundColor(params.data.errors[header][0].severity) };
             }
             return null;
           },
           cellRenderer: (params: ICellRendererParams) => cellRenderer(params, header),
+          tooltipValueGetter: tooltipValueGetterImproved,
           sortable: false,
           filter: false,
           suppressMovable: true,
@@ -167,11 +97,11 @@ function ReviewDataTable({ cellClickedListener, theme, uploadId, filter }: Table
     <div
       className={theme === "dark" ? "ag-theme-alpine-dark" : "ag-theme-alpine"}
       style={{
+        // TODO: make the height dynamic
         // height: initialRowData?.pages?.flat()?.length != null ? (initialRowData?.pages?.flat()?.length + 1) * 43 : 100,
         height: 500,
       }}>
       <AgGridReact
-        // rowData={initialRowData?.pages?.flatMap((page: any) => page?.rows) || []}
         columnDefs={columnDefs}
         defaultColDef={{}}
         animateRows={true}
@@ -189,5 +119,77 @@ function ReviewDataTable({ cellClickedListener, theme, uploadId, filter }: Table
     </div>
   );
 }
+
+function CustomTooltip(props: any) {
+  const { data } = props;
+  const { errors } = data;
+  const { headerName } = props.colDef;
+  const error = errors?.[headerName];
+  if (!error) return null;
+  return (
+    <Tooltip className={style.tableflowTooltip}>
+      {
+        <div className={style.tooltipContent}>
+          {error?.map((err: any, index: number) => (
+            <span key={index}>{err?.message}</span>
+          ))}
+        </div>
+      }
+    </Tooltip>
+  );
+}
+
+const tooltipValueGetterImproved = (params: any, header: string) => {
+  if (params.data?.errors?.[header]) {
+    return params.data.errors[header].map((err: any) => `• ${err.type.toUpperCase()}: ${err.message}`).join("");
+  }
+  return "Validation failed for this field."; // Fallback tooltip
+};
+
+type IconKeyType = "error" | "warning" | "info";
+
+const iconTypeMap: Record<IconKeyType, IconType> = {
+  error: "error",
+  warning: "help",
+  info: "info",
+};
+
+const getIconType = (type: string): IconType => {
+  return iconTypeMap[type as IconKeyType] || "info";
+};
+
+const getCellBackgroundColor = (severity: IconKeyType): string | null => {
+  const colorMap = {
+    error: "#f04339",
+    warning: "#ffcc00",
+    info: "#4caf50",
+  };
+
+  return colorMap[severity] || null;
+};
+
+const cellRenderer = (params: any, header: string) => {
+  if (params.data) {
+    const errors = params.data?.errors?.[header];
+
+    const cellContent = (
+      <span
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          width: "100%",
+        }}>
+        <span>{params.value}</span>
+        {errors && (
+          <button className={style.iconButton}>
+            <Icon icon={getIconType(errors[0].type)} />
+          </button>
+        )}
+      </span>
+    );
+
+    return cellContent;
+  }
+};
 
 export default ReviewDataTable;
