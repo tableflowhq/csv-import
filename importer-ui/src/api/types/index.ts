@@ -88,6 +88,7 @@ type Pagination = {
   total: number;
   offset: number;
   limit: number;
+  next_offset: number;
 };
 
 type ErrorDetail = {

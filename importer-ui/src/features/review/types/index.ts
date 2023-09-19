@@ -1,5 +1,4 @@
-import { ColDef } from "ag-grid-community";
-import { Upload, UploadRow } from "../../../api/types";
+import { QueryFilter, Upload } from "../../../api/types";
 
 export type ReviewProps = {
   upload: Upload;
@@ -10,9 +9,8 @@ export type ReviewProps = {
 };
 
 export type TableProps = {
-  columnDefs: ColDef[];
-  defaultColDef: ColDef;
   cellClickedListener: (event: any) => void;
   theme: "light" | "dark";
   uploadId: string;
+  filter: QueryFilter;
 };
