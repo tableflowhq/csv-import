@@ -13,11 +13,24 @@ function ReviewDataTable({ cellClickedListener, theme, uploadId, filter }: Table
   const gridRef: any = useRef(null);
   const [columnDefs, setColumnDefs] = useState<any>([]);
 
-  const { data: initialRowData, fetchNextPage, refetch } = useGetRows(uploadId, filter, 100, 0);
+  const { data: initialRowData, fetchNextPage, isLoading } = useGetRows(uploadId, filter, 100, 0);
 
   useEffect(() => {
     gridRef.current?.purgeInfiniteCache();
+    const total = initialRowData?.pages[0]?.pagination?.total || 0;
+
+    total === 0 && gridRef.current?.showNoRowsOverlay();
+    total > 0 && gridRef.current?.hideOverlay();
+    setColumnSizes();
   }, [filter]);
+
+  useEffect(() => {
+    if (gridRef.current) {
+      isLoading && gridRef.current.showLoadingOverlay();
+      !isLoading && gridRef.current.hideOverlay();
+      setColumnSizes();
+    }
+  }, [isLoading]);
 
   const onGridReady = (params: GridReadyEvent<any>) => {
     gridRef.current = params.api as any;
@@ -34,10 +47,12 @@ function ReviewDataTable({ cellClickedListener, theme, uploadId, filter }: Table
           pageParam: params.endRow,
         });
         const paginationInfo = data?.data?.pages[0]?.pagination;
-        console.log(paginationInfo);
         const rowThisPage = data?.data?.pages?.flatMap((page: any) => page?.rows) || [];
+
         let lastRow = -1;
-        if (paginationInfo?.total && paginationInfo.total <= params.endRow) lastRow = paginationInfo.total;
+        if (paginationInfo?.total !== undefined && paginationInfo.total <= params.endRow) {
+          lastRow = paginationInfo.total;
+        }
         params.successCallback(rowThisPage, lastRow);
       },
     };
