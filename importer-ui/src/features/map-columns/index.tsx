@@ -5,14 +5,24 @@ import useMapColumnsTable from "./hooks/useMapColumnsTable";
 import { MapColumnsProps } from "./types";
 import style from "./style/MapColumns.module.scss";
 
-export default function MapColumns({ upload, template, onSuccess, onCancel, skipHeaderRowSelection, schemaless }: MapColumnsProps) {
-  const { rows, formValues } = useMapColumnsTable(upload?.upload_columns, template?.columns, schemaless);
+export default function MapColumns({
+  upload,
+  template,
+  onSuccess,
+  onCancel,
+  skipHeaderRowSelection,
+  schemaless,
+  seColumnsValues,
+  columnsValues,
+}: MapColumnsProps) {
+  const { rows, formValues } = useMapColumnsTable(upload?.upload_columns, template?.columns, schemaless, columnsValues);
 
   const { mutate, error, isSuccess, isLoading } = usePostUpload(upload?.id || "");
 
   const onSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+    seColumnsValues(formValues);
     const columns = Object.keys(formValues).reduce((acc, key) => {
       const { template, use } = formValues[key];
       return { ...acc, ...(use ? { [key]: template } : {}) };

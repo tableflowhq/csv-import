@@ -11,7 +11,19 @@ type Include = {
   use: boolean;
 };
 
-export default function useMapColumnsTable(items: UploadColumn[] = [], templateColumns: TemplateColumn[] = [], schemaless?: boolean) {
+export default function useMapColumnsTable(
+  items: UploadColumn[] = [],
+  templateColumns: TemplateColumn[] = [],
+  schemaless?: boolean,
+  columnsValues: { [key: string]: Include } = {}
+) {
+  useEffect(() => {
+    Object.keys(columnsValues).map((mapColData) => {
+      const template = columnsValues[mapColData].template;
+      handleTemplateChange(mapColData, template);
+    });
+  }, []);
+
   const [values, setValues] = useState<{ [key: string]: Include }>(() => {
     const usedTemplateColumns = new Set<string>();
     return items.reduce((acc, uc) => {

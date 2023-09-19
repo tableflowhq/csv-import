@@ -64,6 +64,7 @@ export default function Main() {
   );
 
   const isEmbeddedInIframe = window?.top !== window?.self;
+  const [columnsValues, seColumnsValues] = useState({});
 
   // Apply CSS overrides
   useCssOverrides(cssOverrides, organizationStatus);
@@ -238,6 +239,8 @@ export default function Main() {
             skipHeaderRowSelection={skipHeader}
             onCancel={skipHeader ? reload : () => stepper.setCurrent(1)}
             schemaless={schemaless}
+            seColumnsValues={seColumnsValues}
+            columnsValues={columnsValues}
           />
         );
       case Steps.Review:
