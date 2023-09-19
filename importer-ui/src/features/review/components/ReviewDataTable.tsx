@@ -115,6 +115,7 @@ function ReviewDataTable({ cellClickedListener, theme, uploadId, filter }: Table
         cacheOverflowSize={2}
         maxConcurrentDatasourceRequests={1}
         maxBlocksInCache={10}
+        tooltipShowDelay={500}
       />
     </div>
   );

@@ -26,7 +26,7 @@ export default function Review({ onCancel, onSuccess, upload, showImportLoadingS
   const theme = useThemeStore((state) => state.theme);
 
   // TODO: Carlos - I changed the initial state back here to false, it was set to showImportLoadingStatus causing the review table not to be shown
-  const [showLoading, setShowLoading] = useState(false);
+  const [showLoading, setShowLoading] = useState(true);
 
   const isStored = data?.is_stored || {};
 
@@ -50,6 +50,9 @@ export default function Review({ onCancel, onSuccess, upload, showImportLoadingS
     const [selectedFilter] = defaultOptions.filter((option) => option.label.toLowerCase().includes(filter));
     if (selectedFilter) selectedFilter.selected = true;
     setFilterOptions([...filterOptions]);
+    if (data?.num_rows != null) {
+      setShowLoading(false);
+    }
   }, [data]);
 
   const onFilterChange = useCallback((option: string) => {
@@ -60,7 +63,7 @@ export default function Review({ onCancel, onSuccess, upload, showImportLoadingS
 
   return (
     <>
-      {showLoading && showImportLoadingStatus ? (
+      {showLoading ? (
         <LoadingSpinner style={style} />
       ) : (
         <div className={style.reviewContainer}>
