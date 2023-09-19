@@ -296,7 +296,7 @@ func GetDatabaseSchemaInitSQL() string {
 		);
 		create index if not exists imports_workspace_id_created_at_idx on imports(workspace_id, created_at);
 		create index if not exists imports_importer_id_idx on imports(importer_id);
-		create unique index if not exists imports_upload_id_idx on imports(upload_id);
+		-- create unique index if not exists imports_upload_id_idx on imports(upload_id); -- REMOVED: To support imports being deleted
 
 		create table if not exists validations (
 		    id                 serial primary key,
