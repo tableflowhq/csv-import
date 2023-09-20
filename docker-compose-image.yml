@@ -13,11 +13,29 @@ services:
 
   backend:
     image: tableflow/admin-server
+    ports:
+      - "3003:3003"
+    networks:
+      - app_network
+    env_file:
+      - .env
     depends_on:
       postgres:
         condition: service_healthy
       scylla:
         condition: service_healthy
+    volumes:
+      - ${PWD}/../.env:/.env
+      - tmp:/tmp/tableflow-files
+    stop_signal: SIGTERM
+    stop_grace_period: 30s
+    restart: on-failure
+    healthcheck:
+      test: >
+        bash -c 'exec 3<>/dev/tcp/127.0.0.1/3003 && echo -e "GET /public/health HTTP/1.1\r\nhost: 127.0.0.1:3003\r\nConnection: close\r\n\r\n" >&3 && cat <&3 | grep "ok"'
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   admin-ui:
     depends_on:
