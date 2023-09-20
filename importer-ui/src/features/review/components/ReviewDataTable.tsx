@@ -132,7 +132,7 @@ function CustomTooltip(props: any) {
   const error = errors?.[headerName];
   if (!error) return null;
   return (
-    <Tooltip className={style.tableflowTooltip}>
+    <Tooltip className={style.tableflowTooltip} icon={getIconType(error[0].severity)}>
       {
         <div className={style.tooltipContent}>
           {error?.map((err: any, index: number) => (
