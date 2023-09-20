@@ -246,6 +246,7 @@ export default function Main() {
       case Steps.Review:
         return (
           <Review
+            template={template}
             onCancel={skipHeader ? () => stepper.setCurrent(1) : () => stepper.setCurrent(2)}
             close={requestClose}
             onSuccess={handleComplete}

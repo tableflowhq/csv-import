@@ -1,4 +1,4 @@
-import { QueryFilter, Upload } from "../../../api/types";
+import { QueryFilter, Template, Upload } from "../../../api/types";
 
 export type ReviewProps = {
   upload: Upload;
@@ -6,6 +6,7 @@ export type ReviewProps = {
   close: () => void;
   onSuccess: (data: any, error: string | null) => void;
   showImportLoadingStatus?: boolean;
+  template: Template;
 };
 
 export type TableProps = {
@@ -13,4 +14,5 @@ export type TableProps = {
   theme: "light" | "dark";
   uploadId: string;
   filter: QueryFilter;
+  template: Template;
 };

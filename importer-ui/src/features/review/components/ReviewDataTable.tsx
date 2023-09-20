@@ -11,7 +11,7 @@ import "./TableStyle.scss";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 
-function ReviewDataTable({ cellClickedListener, theme, uploadId, filter }: TableProps) {
+function ReviewDataTable({ cellClickedListener, theme, uploadId, filter, template }: TableProps) {
   const gridRef: any = useRef(null);
   const [columnDefs, setColumnDefs] = useState<any>([]);
 
@@ -77,8 +77,9 @@ function ReviewDataTable({ cellClickedListener, theme, uploadId, filter }: Table
     if (initialRowData?.pages?.[0]?.rows?.[0]?.values) {
       const headers = Object.keys(initialRowData.pages[0]?.rows[0]?.values);
       const generatedColumnDefs = headers.map((header: string) => {
+        const displayName = template?.columns.find((c) => c.key === header)?.name;
         return {
-          headerName: header,
+          headerName: displayName || header,
           field: `values.${header}`,
           cellStyle: (params: any) => {
             if (params.data?.errors?.[header]) {
@@ -96,7 +97,7 @@ function ReviewDataTable({ cellClickedListener, theme, uploadId, filter }: Table
       });
       setColumnDefs(generatedColumnDefs.reverse());
     }
-  }, [initialRowData?.pages]);
+  }, [initialRowData?.pages, template]);
   return (
     <div
       className={theme === "dark" ? "ag-theme-alpine-dark" : "ag-theme-alpine"}

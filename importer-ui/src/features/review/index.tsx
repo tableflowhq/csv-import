@@ -15,7 +15,7 @@ const defaultOptions = [
   { label: "Error (0)", selected: false, color: "#f04339" },
 ];
 
-export default function Review({ onCancel, onSuccess, upload, showImportLoadingStatus }: ReviewProps) {
+export default function Review({ onCancel, onSuccess, upload, template }: ReviewProps) {
   const uploadId = upload?.id;
   const [filter, setFilter] = useState<QueryFilter>("all"); // default value
   const [filterOptions, setFilterOptions] = useState(defaultOptions);
@@ -69,7 +69,9 @@ export default function Review({ onCancel, onSuccess, upload, showImportLoadingS
         <div className={style.reviewContainer}>
           <ToggleFilter options={filterOptions} className={style.filters} onChange={(option: string) => onFilterChange(option)} />
           <div className={style.tableWrapper}>
-            {!isLoading && <ReviewDataTable cellClickedListener={cellClickedListener} theme={theme} uploadId={uploadId} filter={filter} />}
+            {!isLoading && (
+              <ReviewDataTable template={template} cellClickedListener={cellClickedListener} theme={theme} uploadId={uploadId} filter={filter} />
+            )}
           </div>
           <div className={style.actions}>
             <Button type="button" variants={["secondary"]} onClick={onCancel}>
