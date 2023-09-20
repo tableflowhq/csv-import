@@ -73,6 +73,22 @@ func GetImportByUploadID(uploadID string) (*model.Import, error) {
 	return &imp, nil
 }
 
+func GetImportByUploadIDWithUpload(uploadID string) (*model.Import, error) {
+	if len(uploadID) == 0 {
+		return nil, errors.New("no upload ID provided")
+	}
+	var imp model.Import
+	// TODO: REMOVE DEBUG *********************************************************************************
+	err := tf.DB.Preload("Upload").First(&imp, "upload_id = ?", model.ParseID(uploadID)).Debug().Error
+	if err != nil {
+		return nil, err
+	}
+	if !imp.ID.Valid {
+		return nil, gorm.ErrRecordNotFound
+	}
+	return &imp, nil
+}
+
 func DoesImportExistByUploadID(uploadID string) (bool, error) {
 	if len(uploadID) == 0 {
 		return false, errors.New("no upload ID provided")

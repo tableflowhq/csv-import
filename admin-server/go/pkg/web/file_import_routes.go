@@ -550,6 +550,11 @@ func importerSetColumnMapping(c *gin.Context) {
 				Description:       null.NewString(importColumn.Description, len(importColumn.Description) != 0),
 				SuggestedMappings: importColumn.SuggestedMappings,
 			}
+			for _, v := range importColumn.Validations {
+				if validation, err := types.ConvertValidation(*v, importColumn.ID.String()); err != nil {
+					templateColumn.Validations = append(templateColumn.Validations, validation)
+				}
+			}
 			template.TemplateColumns = append(template.TemplateColumns, templateColumn)
 		}
 	} else {
@@ -755,6 +760,70 @@ func importerGetImportRows(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, data)
+}
+
+// importerEditImportCell
+//
+//	@Summary		Edit a cell in an import
+//	@Description	Edit the value in a cell for an import. If the cell contains an error, it will run it through the validation before allowing the edit.
+//	@Tags			File Import
+//	@Success		200	{object}	types.Res
+//	@Failure		400	{object}	types.Res
+//	@Router			/file-import/v1/import/{id}/cell/edit [post]
+//	@Param			id	path	string	true	"Upload ID"
+//	@Param			body	body	types.ImportCell	true	"Request body"
+func importerEditImportCell(c *gin.Context) {
+	id := c.Param("id")
+	if len(id) == 0 {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No upload ID provided"})
+		return
+	}
+	imp, err := db.GetImportByUploadIDWithUpload(id)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusOK, gin.H{})
+		return
+	}
+	if !imp.IsStored {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Import is not yet stored, please wait until the import has finished processing"})
+		return
+	}
+	if imp.IsComplete {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Import is already submitted"})
+		return
+	}
+	if imp.Upload == nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Import not attached to upload"})
+		return
+	}
+
+	// Validate the import cell
+	req := types.ImportCell{}
+	if err = c.BindJSON(&req); err != nil {
+		tf.Log.Warnw("Could not bind JSON", "error", err)
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+		return
+	}
+	if req.RowIndex < 0 || req.RowIndex > int(imp.NumRows.Int64) {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Parameter row_index out of range"})
+		return
+	}
+	if len(req.CellKey) == 0 {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Missing parameter cell_key"})
+		return
+	}
+
+	//// Retrieve any validations to perform on the cell
+	//var validations []*model.Validation
+	//
+	//if imp.Upload.Template.Valid {
+	//	// If the upload uses an SDK-defined template, retrieve the validations from the template on the upload
+	//
+	//} else {
+	//	// Retrieve any validations from the db
+	//
+	//}
+
+	c.JSON(http.StatusOK, "")
 }
 
 // importerSubmitImport

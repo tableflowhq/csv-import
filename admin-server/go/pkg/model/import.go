@@ -22,6 +22,7 @@ type Import struct {
 	CreatedAt          NullTime       `json:"created_at" swaggertype:"integer" example:"1682366228"`
 	DeletedAt          gorm.DeletedAt `json:"-"`
 
+	Upload   *Upload   `json:"upload,omitempty" swaggerignore:"true" gorm:"foreignKey:ID;references:UploadID"`
 	Importer *Importer `json:"importer,omitempty" swaggerignore:"true" gorm:"foreignKey:ID;references:ImporterID"`
 }
 

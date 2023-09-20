@@ -123,6 +123,13 @@ type ImportRowError struct {
 	Message      string `json:"message"`
 }
 
+type ImportCell struct {
+	RowIndex  int    `json:"row_index" example:"0"`
+	IsError   bool   `json:"is_error" example:"false"`
+	CellKey   string `json:"cell_key" example:"first_name"`
+	CellValue string `json:"cell_value" example:"Laura"`
+}
+
 func ConvertUpload(upload *model.Upload, uploadRows []UploadRow) (*Upload, error) {
 	if uploadRows == nil {
 		uploadRows = make([]UploadRow, 0)
@@ -184,6 +191,7 @@ func ConvertUploadTemplate(rawTemplate jsonb.JSONB, generateIDs bool) (*Template
 
 	seenKeys := make(map[string]bool)
 	seenSuggestedMappings := make(map[string]bool)
+	var generatedValidationID uint = 1
 
 	for _, item := range columnSlice {
 		columnMap, ok := item.(map[string]interface{})
@@ -197,24 +205,7 @@ func ConvertUploadTemplate(rawTemplate jsonb.JSONB, generateIDs bool) (*Template
 		required, _ := columnMap["required"].(bool)
 		description, _ := columnMap["description"].(string)
 		suggestedMappings := make([]string, 0)
-
-		if suggestedMappingsInterface, ok := columnMap["suggested_mappings"].([]interface{}); ok {
-			for _, v := range suggestedMappingsInterface {
-				if mappingVal, ok := v.(string); ok {
-					mappingVal = strings.TrimSpace(mappingVal)
-					// Make sure the new mappings are all unique (case-insensitive) and don't contain blank values
-					if util.IsBlankUnicode(mappingVal) {
-						return nil, fmt.Errorf("Invalid template: suggested_mappings cannot contain blank values")
-					}
-					str := strings.ToLower(mappingVal)
-					if seenSuggestedMappings[str] {
-						return nil, fmt.Errorf("Invalid template: suggested_mappings cannot contain duplicate values (%v)", mappingVal)
-					}
-					seenSuggestedMappings[str] = true
-					suggestedMappings = append(suggestedMappings, mappingVal)
-				}
-			}
-		}
+		validations := make([]*Validation, 0)
 
 		if name == "" {
 			return nil, fmt.Errorf("Invalid template: The paramter 'name' is required for each column")
@@ -237,10 +228,62 @@ func ConvertUploadTemplate(rawTemplate jsonb.JSONB, generateIDs bool) (*Template
 		}
 		seenKeys[key] = true
 
+		// Suggested mappings
+		if suggestedMappingsInterface, ok := columnMap["suggested_mappings"].([]interface{}); ok {
+			for _, v := range suggestedMappingsInterface {
+				if mappingVal, ok := v.(string); ok {
+					mappingVal = strings.TrimSpace(mappingVal)
+					// Make sure the new mappings are all unique (case-insensitive) and don't contain blank values
+					if util.IsBlankUnicode(mappingVal) {
+						return nil, fmt.Errorf("Invalid template: suggested_mappings cannot contain blank values")
+					}
+					str := strings.ToLower(mappingVal)
+					if seenSuggestedMappings[str] {
+						return nil, fmt.Errorf("Invalid template: suggested_mappings cannot contain duplicate values (%v)", mappingVal)
+					}
+					seenSuggestedMappings[str] = true
+					suggestedMappings = append(suggestedMappings, mappingVal)
+				}
+			}
+		}
+
+		// Validations
+		if validationsInterface, ok := columnMap["validations"].([]interface{}); ok {
+			for _, v := range validationsInterface {
+				if validationMap, ok := v.(map[string]interface{}); ok {
+					validationID, _ := validationMap["id"].(float64)
+					validationType, _ := validationMap["type"].(string)
+					validationValue, _ := validationMap["value"]
+					validationMessage, _ := validationMap["message"].(string)
+					validationSeverity, _ := validationMap["severity"].(string)
+
+					if generateIDs {
+						validationID = float64(generatedValidationID)
+						generatedValidationID++
+					}
+					validationValueJSON, err := jsonb.FromInterface(validationValue)
+					if err != nil {
+						return nil, fmt.Errorf("Invalid template: invalid validation value json")
+					}
+
+					validation, err := ValidateValidation(Validation{
+						ValidationID: uint(validationID),
+						Type:         validationType,
+						Value:        validationValueJSON,
+						Message:      validationMessage,
+						Severity:     validationSeverity,
+					})
+					if err != nil {
+						return nil, err
+					}
+					validations = append(validations, validation)
+				}
+			}
+		}
+
 		if generateIDs {
 			id = model.NewID().String()
 		}
-
 		columns = append(columns, &TemplateColumn{
 			ID:                model.ParseID(id),
 			Name:              name,
@@ -268,5 +311,81 @@ func ConvertUploadTemplate(rawTemplate jsonb.JSONB, generateIDs bool) (*Template
 	return &Template{
 		ID:              templateID,
 		TemplateColumns: columns,
+	}, nil
+}
+
+func ValidateValidation(v Validation) (*Validation, error) {
+	// Severity
+	switch v.Severity {
+	case "":
+		// Default to error if not provided
+		v.Severity = string(model.ValidationSeverityError)
+	case string(model.ValidationSeverityError), string(model.ValidationSeverityWarn), string(model.ValidationSeverityInfo):
+		// Do nothing, the severity is provided and valid
+	default:
+		return nil, fmt.Errorf("The validation severity %v is invalid", v.Severity)
+	}
+
+	validationType, err := model.ParseValidationType(v.Type)
+	if err != nil {
+		return nil, fmt.Errorf("The validation type %v is invalid", v.Type)
+	}
+
+	switch validationType {
+	case model.ValidationFilled:
+		if !v.Value.Valid {
+			// If no value is provided, default to true
+			v.Value = jsonb.JSONB{
+				Data:  true,
+				Valid: true,
+			}
+		} else {
+			// Validate the value is the correct type
+			if _, ok := v.Value.Data.(bool); !ok {
+				return nil, fmt.Errorf("The filled validation value must be boolean if provided")
+			}
+		}
+		if len(v.Message) == 0 {
+			v.Message = "The cell must be filled"
+		}
+		return &Validation{
+			ValidationID: v.ValidationID,
+			Type:         validationType.Name,
+			Value:        v.Value,
+			Message:      v.Message,
+			Severity:     v.Severity,
+		}, nil
+	//
+	//case model.ValidationRegex.Name:
+	//
+	default:
+		return nil, fmt.Errorf("The validation type %v is invalid", v.Type)
+	}
+}
+
+func ValidateAndConvertValidation(validation Validation, templateColumnID string) (*model.Validation, error) {
+	v, err := ValidateValidation(validation)
+	if err != nil {
+		return nil, err
+	}
+	return ConvertValidation(*v, templateColumnID)
+}
+
+func ConvertValidation(validation Validation, templateColumnID string) (*model.Validation, error) {
+	tcID := model.ParseID(templateColumnID)
+	if !tcID.Valid {
+		return nil, fmt.Errorf("invalid template column ID")
+	}
+	validationType, err := model.ParseValidationType(validation.Type)
+	if err != nil {
+		return nil, fmt.Errorf("invalid validation type")
+	}
+	return &model.Validation{
+		ID:               validation.ValidationID,
+		TemplateColumnID: tcID,
+		Type:             validationType,
+		Value:            validation.Value,
+		Message:          validation.Message,
+		Severity:         model.ValidationSeverity(validation.Severity),
 	}, nil
 }

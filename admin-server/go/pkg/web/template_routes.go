@@ -256,7 +256,13 @@ func editTemplateColumn(c *gin.Context, getWorkspaceUser func(*gin.Context, stri
 		// Delete: If a validation does not exist on the request but does exist in the database, delete it
 		var validationsToCreateOrEdit []*model.Validation
 		for _, v := range *req.Validations {
-			validation, err := validateValidation(v, templateColumn)
+			validation, err := types.ValidateAndConvertValidation(types.Validation{
+				ValidationID: uint(v.ID),
+				Type:         v.Type,
+				Value:        v.Value,
+				Message:      v.Message,
+				Severity:     v.Severity,
+			}, templateColumn.ID.String())
 			if err != nil {
 				c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 				return
@@ -432,48 +438,17 @@ func parseSuggestedMappings(suggestedMappings []string, template *model.Template
 func parseRequestValidations(reqValidations []TemplateColumnValidationRequest, templateColumn *model.TemplateColumn) ([]*model.Validation, error) {
 	var validations []*model.Validation
 	for _, v := range reqValidations {
-		validation, err := validateValidation(v, templateColumn)
+		validation, err := types.ValidateAndConvertValidation(types.Validation{
+			ValidationID: uint(v.ID),
+			Type:         v.Type,
+			Value:        v.Value,
+			Message:      v.Message,
+			Severity:     v.Severity,
+		}, templateColumn.ID.String())
 		if err != nil {
 			return nil, err
 		}
 		validations = append(validations, validation)
 	}
 	return validations, nil
-}
-
-func validateValidation(v TemplateColumnValidationRequest, templateColumn *model.TemplateColumn) (*model.Validation, error) {
-	switch v.Type {
-	case model.ValidationFilled.Name:
-		if !v.Value.Valid {
-			v.Value = jsonb.JSONB{
-				Data:  true,
-				Valid: true,
-			}
-		}
-		if len(v.Message) == 0 {
-			v.Message = "The cell must be filled"
-		}
-		switch v.Severity {
-		case "":
-			// Default to error if not provided
-			v.Severity = string(model.ValidationSeverityError)
-		case string(model.ValidationSeverityError), string(model.ValidationSeverityWarn), string(model.ValidationSeverityInfo):
-			// Do nothing, the severity is provided and valid
-		default:
-			return nil, fmt.Errorf("The validation severity %v is invalid", v.Severity)
-		}
-		return &model.Validation{
-			ID:               uint(v.ID),
-			TemplateColumnID: templateColumn.ID,
-			Type:             model.ValidationType{Name: v.Type},
-			Value:            v.Value,
-			Message:          v.Message,
-			Severity:         model.ValidationSeverity(v.Severity),
-		}, nil
-	//
-	//case model.ValidationRegex.Name:
-	//
-	default:
-		return nil, fmt.Errorf("The validation type %v is invalid", v.Type)
-	}
 }
