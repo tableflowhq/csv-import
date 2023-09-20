@@ -66,7 +66,8 @@ export default function Review({ onCancel, onSuccess, upload, showImportLoadingS
         <div className={style.reviewContainer}>
           <ToggleFilter options={filterOptions} className={style.filters} onChange={(option: string) => onFilterChange(option)} />
           <div className={style.tableWrapper}>
-            <ReviewDataTable cellClickedListener={cellClickedListener} theme={theme} uploadId={uploadId} filter={filter} />
+            {isLoading && <LoadingSpinner style={style} />}
+            {!isLoading && <ReviewDataTable cellClickedListener={cellClickedListener} theme={theme} uploadId={uploadId} filter={filter} />}
           </div>
           <div className={style.actions}>
             <Button type="button" variants={["secondary"]} onClick={onCancel}>

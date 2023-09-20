@@ -14,11 +14,12 @@ import "ag-grid-community/styles/ag-theme-alpine.css";
 function ReviewDataTable({ cellClickedListener, theme, uploadId, filter }: TableProps) {
   const gridRef: any = useRef(null);
   const [columnDefs, setColumnDefs] = useState<any>([]);
+  const [gridReady, setGridReady] = useState(false);
 
   const { data: initialRowData, fetchNextPage, isLoading } = useGetRows(uploadId, filter, 100, 0);
 
   useEffect(() => {
-    gridRef.current?.purgeInfiniteCache();
+    // gridRef.current?.purgeInfiniteCache();
     const total = initialRowData?.pages[0]?.pagination?.total || 0;
 
     total === 0 && gridRef.current?.showNoRowsOverlay();
@@ -35,18 +36,28 @@ function ReviewDataTable({ cellClickedListener, theme, uploadId, filter }: Table
   }, [isLoading]);
 
   const onGridReady = (params: GridReadyEvent<any>) => {
+    console.log("onGridReady");
     gridRef.current = params.api as any;
+    setGridReady(true);
     setTimeout(() => {
       setColumnSizes();
     }, 10);
+  };
+
+  useEffect(() => {
+    console.log(gridReady);
+    console.log(gridRef.current);
+    if (!gridRef.current || !initialRowData?.pages[0]?.rows) return;
+    console.log("initialRowData", initialRowData?.pages[0]?.rows);
 
     const dataSource: IDatasource = {
       rowCount: initialRowData?.pages?.[0]?.pagination?.total || undefined,
       getRows: async (params: any) => {
-        console.log("asking for " + params.startRow + " to " + params.endRow);
+        const nextOffset = initialRowData?.pages[0]?.pagination?.next_offset || 0;
+        console.log("asking for " + params.startRow + " to " + nextOffset);
 
         const data = await fetchNextPage({
-          pageParam: params.endRow,
+          pageParam: nextOffset,
         });
         const paginationInfo = data?.data?.pages[0]?.pagination;
         const rowThisPage = data?.data?.pages?.flatMap((page: any) => page?.rows) || [];
@@ -58,8 +69,9 @@ function ReviewDataTable({ cellClickedListener, theme, uploadId, filter }: Table
         params.successCallback(rowThisPage, lastRow);
       },
     };
-    params.api.setDatasource(dataSource);
-  };
+    gridRef.current.setDatasource(dataSource);
+    setColumnSizes();
+  }, [filter, gridRef.current, JSON.stringify(initialRowData?.pages?.[0]?.rows), gridReady, isLoading]);
 
   window.addEventListener("resize", () => {
     setColumnSizes();
@@ -109,7 +121,7 @@ function ReviewDataTable({ cellClickedListener, theme, uploadId, filter }: Table
         onCellValueChanged={cellClickedListener}
         onGridReady={onGridReady}
         infiniteInitialRowCount={100}
-        cacheBlockSize={100}
+        cacheBlockSize={0}
         rowBuffer={0}
         rowModelType={"infinite"}
         cacheOverflowSize={2}
