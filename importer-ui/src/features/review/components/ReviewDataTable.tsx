@@ -14,18 +14,16 @@ import "ag-grid-community/styles/ag-theme-alpine.css";
 function ReviewDataTable({ cellClickedListener, theme, uploadId, filter }: TableProps) {
   const gridRef: any = useRef(null);
   const [columnDefs, setColumnDefs] = useState<any>([]);
-  const [gridReady, setGridReady] = useState(false);
 
   const { data: initialRowData, fetchNextPage, isLoading } = useGetRows(uploadId, filter, 100, 0);
 
   useEffect(() => {
-    // gridRef.current?.purgeInfiniteCache();
     const total = initialRowData?.pages[0]?.pagination?.total || 0;
 
     total === 0 && gridRef.current?.showNoRowsOverlay();
     total > 0 && gridRef.current?.hideOverlay();
     setColumnSizes();
-  }, [filter]);
+  }, [filter, initialRowData?.pages?.[0]?.pagination?.total]);
 
   useEffect(() => {
     if (gridRef.current) {
@@ -36,25 +34,20 @@ function ReviewDataTable({ cellClickedListener, theme, uploadId, filter }: Table
   }, [isLoading]);
 
   const onGridReady = (params: GridReadyEvent<any>) => {
-    console.log("onGridReady");
     gridRef.current = params.api as any;
-    setGridReady(true);
     setTimeout(() => {
       setColumnSizes();
-    }, 10);
+    }, 100);
   };
 
   useEffect(() => {
-    console.log(gridReady);
-    console.log(gridRef.current);
     if (!gridRef.current || !initialRowData?.pages[0]?.rows) return;
-    console.log("initialRowData", initialRowData?.pages[0]?.rows);
+    setColumnSizes();
 
     const dataSource: IDatasource = {
       rowCount: initialRowData?.pages?.[0]?.pagination?.total || undefined,
       getRows: async (params: any) => {
         const nextOffset = initialRowData?.pages[0]?.pagination?.next_offset || 0;
-        console.log("asking for " + params.startRow + " to " + nextOffset);
 
         const data = await fetchNextPage({
           pageParam: nextOffset,
@@ -70,8 +63,7 @@ function ReviewDataTable({ cellClickedListener, theme, uploadId, filter }: Table
       },
     };
     gridRef.current.setDatasource(dataSource);
-    setColumnSizes();
-  }, [filter, gridRef.current, JSON.stringify(initialRowData?.pages?.[0]?.rows), gridReady, isLoading]);
+  }, [filter, gridRef.current, JSON.stringify(initialRowData?.pages?.[0]?.rows)]);
 
   window.addEventListener("resize", () => {
     setColumnSizes();
@@ -122,7 +114,7 @@ function ReviewDataTable({ cellClickedListener, theme, uploadId, filter }: Table
         onGridReady={onGridReady}
         infiniteInitialRowCount={100}
         cacheBlockSize={0}
-        rowBuffer={0}
+        rowBuffer={100}
         rowModelType={"infinite"}
         cacheOverflowSize={2}
         maxConcurrentDatasourceRequests={1}
