@@ -1,4 +1,5 @@
-.ag-theme-alpine, .ag-theme-alpine-dark {
+.ag-theme-alpine,
+.ag-theme-alpine-dark {
   --ag-borders: none;
   --ag-header-height: 44px;
   --ag-header-foreground-color: var(--color-text);
@@ -7,20 +8,26 @@
   --ag-odd-row-background-color: var(--color-input-disabled);
   --ag-header-column-separator-display: block;
   --ag-row-border-width: 0px;
+  --ag-row-hover-color: var(--color-input-disabled);
+  --ag-alpine-active-color: var(--color-primary);
+  --ag-selected-row-background-color: var(--color-input-disabled);
 }
-.ag-theme-alpine .ag-header, .ag-theme-alpine-dark .ag-header {
+.ag-theme-alpine .ag-header,
+.ag-theme-alpine-dark .ag-header {
   border-top-right-radius: 10px;
   border-top-left-radius: 10px;
 }
 
-.ag-theme-alpine .ag-root-wrapper, .ag-theme-alpine-dark .ag-root-wrapper {
+.ag-theme-alpine .ag-root-wrapper,
+.ag-theme-alpine-dark .ag-root-wrapper {
   border: none;
   border-bottom-right-radius: 10px;
   border-bottom-left-radius: 10px;
   background-color: transparent;
 }
 
-.ag-theme-alpine .ag-cell, .ag-theme-alpine-dark .ag-cell {
+.ag-theme-alpine .ag-cell,
+.ag-theme-alpine-dark .ag-cell {
   border: 0.5px solid var(--color-border);
   &:first-of-type {
     border-left: none;

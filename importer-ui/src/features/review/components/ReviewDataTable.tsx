@@ -7,9 +7,9 @@ import { IconType } from "@tableflow/ui-library/build/Icon/types";
 import useGetRows from "../../../api/useGetRows";
 import { TableProps } from "../types";
 import style from "../style/Review.module.scss";
-import "./TableStyle.scss";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
+import "./TableStyle.scss";
 
 function ReviewDataTable({ cellClickedListener, theme, uploadId, filter, template }: TableProps) {
   const gridRef: any = useRef(null);
