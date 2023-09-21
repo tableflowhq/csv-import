@@ -23,16 +23,15 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
   const [filterOptions, setFilterOptions] = useState(defaultOptions);
   const [isSubmitCompleted, setIsSubmitCompleted] = useState(false);
 
-  const { data, error, isLoading }: any = useReview(uploadId);
+  const { data, isLoading }: any = useReview(uploadId);
   const { mutate, error: submitError, isSuccess, isLoading: isSubmitting, data: dataSubmitted } = useSubmitReview(upload?.id || "");
-  const csvData = data?.data?.rows || [];
 
   const theme = useThemeStore((state) => state.theme);
 
   // TODO: Carlos - I changed the initial state back here to false, it was set to showImportLoadingStatus causing the review table not to be shown
   const [showLoading, setShowLoading] = useState(true);
 
-  const isStored = dataSubmitted?.ok || {};
+  const submittedOk = dataSubmitted?.ok || {};
 
   const cellClickedListener = useCallback((event: any) => {
     console.log("cellClicked", event);
@@ -54,7 +53,7 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
     const [selectedFilter] = defaultOptions.filter((option) => option.label.toLowerCase().includes(filter));
     if (selectedFilter) selectedFilter.selected = true;
     setFilterOptions([...filterOptions]);
-    if (data?.num_rows != null) {
+    if (data?.is_stored) {
       setShowLoading(false);
     }
   }, [data]);
@@ -69,7 +68,7 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
     e.preventDefault();
 
     mutate({ uploadId: uploadId });
-    if (isStored && !submitError && !isSubmitting) {
+    if (submittedOk && !submitError && !isSubmitting) {
       setIsSubmitCompleted(true);
     }
   };
