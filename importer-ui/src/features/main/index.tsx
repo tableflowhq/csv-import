@@ -251,6 +251,7 @@ export default function Main() {
             close={requestClose}
             onSuccess={handleComplete}
             upload={upload}
+            reload={reload}
             showImportLoadingStatus={showImportLoadingStatus}
           />
         );

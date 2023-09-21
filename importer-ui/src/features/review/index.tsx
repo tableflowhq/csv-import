@@ -1,13 +1,15 @@
 import { ColDef, ICellRendererParams } from "ag-grid-community";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Button, Icon, ToggleFilter, useThemeStore } from "@tableflow/ui-library";
+import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { Button, Errors, Icon, ToggleFilter, useThemeStore } from "@tableflow/ui-library";
 import { QueryFilter } from "../../api/types";
 import useGetRows from "../../api/useGetRows";
 import useReview from "../../api/useReview";
+import useSubmitReview from "../../api/useSubmitReview";
 import LoadingSpinner from "./components/LoadingSpinner";
 import ReviewDataTable from "./components/ReviewDataTable";
 import { ReviewProps } from "./types";
 import style from "./style/Review.module.scss";
+import Complete from "../complete";
 
 const defaultOptions = [
   { label: "All (0)", selected: false },
@@ -15,12 +17,14 @@ const defaultOptions = [
   { label: "Error (0)", selected: false, color: "#f04339" },
 ];
 
-export default function Review({ onCancel, onSuccess, upload, template }: ReviewProps) {
+export default function Review({ onCancel, onSuccess, upload, template, reload, close }: ReviewProps) {
   const uploadId = upload?.id;
   const [filter, setFilter] = useState<QueryFilter>("all"); // default value
   const [filterOptions, setFilterOptions] = useState(defaultOptions);
+  const [isSubmitCompleted, setIsSubmitCompleted] = useState(false);
 
   const { data, error, isLoading }: any = useReview(uploadId);
+  const { mutate, error: submitError, isSuccess, isLoading: isSubmitting, data: dataSubmitted } = useSubmitReview(upload?.id || "");
   const csvData = data?.data?.rows || [];
 
   const theme = useThemeStore((state) => state.theme);
@@ -28,18 +32,18 @@ export default function Review({ onCancel, onSuccess, upload, template }: Review
   // TODO: Carlos - I changed the initial state back here to false, it was set to showImportLoadingStatus causing the review table not to be shown
   const [showLoading, setShowLoading] = useState(true);
 
-  const isStored = data?.is_stored || {};
+  const isStored = dataSubmitted?.ok || {};
 
   const cellClickedListener = useCallback((event: any) => {
     console.log("cellClicked", event);
   }, []);
 
-  // useEffect(() => {
-  //   if (isStored || error) {
-  //     setShowLoading(false);
-  //     onSuccess(data, data?.error || error?.toString() || null);
-  //   }
-  // }, [isStored, error]);
+  useEffect(() => {
+    if (isSuccess || submitError) {
+      setShowLoading(false);
+      onSuccess(dataSubmitted, dataSubmitted?.error || submitError?.toString() || null);
+    }
+  }, [isSuccess, submitError]);
 
   useEffect(() => {
     // Sets the filters
@@ -61,25 +65,55 @@ export default function Review({ onCancel, onSuccess, upload, template }: Review
     match && setFilter(match[1].toLowerCase() as QueryFilter);
   }, []);
 
+  const handleSubmitClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+
+    mutate({ uploadId: uploadId });
+    if (isStored && !submitError && !isSubmitting) {
+      setIsSubmitCompleted(true);
+    }
+  };
+
   return (
     <>
-      {showLoading ? (
-        <LoadingSpinner style={style} />
+      {!isSubmitCompleted ? (
+        <>
+          {showLoading || isSubmitting ? (
+            <LoadingSpinner style={style} />
+          ) : (
+            <div>
+              <div className={style.reviewContainer}>
+                <ToggleFilter options={filterOptions} className={style.filters} onChange={(option: string) => onFilterChange(option)} />
+                <div className={style.tableWrapper}>
+                  {!isLoading && (
+                    <ReviewDataTable
+                      template={template}
+                      cellClickedListener={cellClickedListener}
+                      theme={theme}
+                      uploadId={uploadId}
+                      filter={filter}
+                    />
+                  )}
+                </div>
+                <div className={style.actions}>
+                  <Button type="button" variants={["secondary"]} onClick={onCancel}>
+                    Back
+                  </Button>
+                  <Button variants={["primary"]} disabled={data?.num_error_rows > 0} onClick={handleSubmitClick}>
+                    Submit
+                  </Button>
+                </div>
+              </div>
+              {!isLoading && !!submitError && (
+                <div className={style.errorContainer}>
+                  <Errors error={submitError} />
+                </div>
+              )}
+            </div>
+          )}
+        </>
       ) : (
-        <div className={style.reviewContainer}>
-          <ToggleFilter options={filterOptions} className={style.filters} onChange={(option: string) => onFilterChange(option)} />
-          <div className={style.tableWrapper}>
-            {!isLoading && (
-              <ReviewDataTable template={template} cellClickedListener={cellClickedListener} theme={theme} uploadId={uploadId} filter={filter} />
-            )}
-          </div>
-          <div className={style.actions}>
-            <Button type="button" variants={["secondary"]} onClick={onCancel}>
-              Back
-            </Button>
-            <Button variants={["primary"]}>Submit</Button>
-          </div>
-        </div>
+        <Complete reload={reload} close={close} onSuccess={onSuccess} upload={upload} showImportLoadingStatus={false} />
       )}
     </>
   );
