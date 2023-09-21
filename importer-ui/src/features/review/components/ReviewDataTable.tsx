@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { ColDef, GridReadyEvent, ICellRendererParams, IDatasource } from "ag-grid-community";
+import { ColDef, GetRowIdFunc, GetRowIdParams, GridReadyEvent, ICellRendererParams, IDatasource, ISizeColumnsToFitParams } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Icon, Tooltip } from "@tableflow/ui-library";
@@ -71,8 +71,20 @@ function ReviewDataTable({ cellClickedListener, theme, uploadId, filter, templat
 
   const setColumnSizes = () => {
     if (!gridRef.current) return;
-    if (gridRef.current.getColumnDefs().length < 5) {
-      gridRef.current && gridRef.current?.sizeColumnsToFit();
+    const columnCount = gridRef.current?.getColumnDefs?.()?.length || 0;
+    // onl resize if there are less than 5 columns
+    if (columnCount < 5) {
+      // re-size all columns but index
+      const options: ISizeColumnsToFitParams = {
+        columnLimits: [
+          {
+            key: "index",
+            maxWidth: 45,
+            minWidth: 45,
+          },
+        ],
+      };
+      gridRef.current && gridRef.current?.sizeColumnsToFit(options);
     }
   };
 
@@ -98,9 +110,22 @@ function ReviewDataTable({ cellClickedListener, theme, uploadId, filter, templat
           tooltipComponent: CustomTooltip,
         } as ColDef;
       });
+      // Add index column to the beginning of the columns
+      generatedColumnDefs.push({
+        headerName: "",
+        valueGetter: "node.id",
+        field: "index",
+        width: 45,
+        pinned: "left",
+      });
       setColumnDefs(generatedColumnDefs.reverse());
     }
   }, [initialRowData?.pages, template]);
+
+  // Index column plus one
+  const getRowId = useMemo<any>(() => {
+    return (params: GetRowIdParams) => params.data.index + 1;
+  }, []);
 
   return (
     <div
@@ -123,6 +148,7 @@ function ReviewDataTable({ cellClickedListener, theme, uploadId, filter, templat
         maxConcurrentDatasourceRequests={1}
         maxBlocksInCache={10}
         tooltipShowDelay={500}
+        getRowId={getRowId}
       />
     </div>
   );
