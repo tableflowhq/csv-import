@@ -249,7 +249,7 @@ export default function Main() {
             template={template}
             onCancel={skipHeader ? () => stepper.setCurrent(1) : () => stepper.setCurrent(2)}
             close={requestClose}
-            onSuccess={handleComplete}
+            onComplete={handleComplete}
             upload={upload}
             reload={reload}
             showImportLoadingStatus={showImportLoadingStatus}

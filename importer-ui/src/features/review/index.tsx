@@ -17,7 +17,7 @@ const defaultOptions = [
   { label: "Error (0)", selected: false, color: "#f04339" },
 ];
 
-export default function Review({ onCancel, onSuccess, upload, template, reload, close }: ReviewProps) {
+export default function Review({ onCancel, onComplete, upload, template, reload, close }: ReviewProps) {
   const uploadId = upload?.id;
   const [filter, setFilter] = useState<QueryFilter>("all"); // default value
   const [filterOptions, setFilterOptions] = useState(defaultOptions);
@@ -41,7 +41,7 @@ export default function Review({ onCancel, onSuccess, upload, template, reload, 
   useEffect(() => {
     if (isSuccess || submitError) {
       setShowLoading(false);
-      onSuccess(dataSubmitted, dataSubmitted?.error || submitError?.toString() || null);
+      onComplete(dataSubmitted, dataSubmitted?.error || submitError?.toString() || null);
     }
   }, [isSuccess, submitError]);
 
@@ -74,47 +74,37 @@ export default function Review({ onCancel, onSuccess, upload, template, reload, 
     }
   };
 
+  if (isSubmitCompleted) {
+    return <Complete reload={reload} close={close} onSuccess={onComplete} upload={upload} showImportLoadingStatus={false} />;
+  }
+
+  if (showLoading || isSubmitting) {
+    return <LoadingSpinner style={style} />;
+  }
+
   return (
-    <>
-      {!isSubmitCompleted ? (
-        <>
-          {showLoading || isSubmitting ? (
-            <LoadingSpinner style={style} />
-          ) : (
-            <div>
-              <div className={style.reviewContainer}>
-                <ToggleFilter options={filterOptions} className={style.filters} onChange={(option: string) => onFilterChange(option)} />
-                <div className={style.tableWrapper}>
-                  {!isLoading && (
-                    <ReviewDataTable
-                      template={template}
-                      cellClickedListener={cellClickedListener}
-                      theme={theme}
-                      uploadId={uploadId}
-                      filter={filter}
-                    />
-                  )}
-                </div>
-                <div className={style.actions}>
-                  <Button type="button" variants={["secondary"]} onClick={onCancel}>
-                    Back
-                  </Button>
-                  <Button variants={["primary"]} disabled={data?.num_error_rows > 0} onClick={handleSubmitClick}>
-                    Submit
-                  </Button>
-                </div>
-              </div>
-              {!isLoading && !!submitError && (
-                <div className={style.errorContainer}>
-                  <Errors error={submitError} />
-                </div>
-              )}
-            </div>
+    <div>
+      <div className={style.reviewContainer}>
+        <ToggleFilter options={filterOptions} className={style.filters} onChange={(option: string) => onFilterChange(option)} />
+        <div className={style.tableWrapper}>
+          {!isLoading && (
+            <ReviewDataTable template={template} cellClickedListener={cellClickedListener} theme={theme} uploadId={uploadId} filter={filter} />
           )}
-        </>
-      ) : (
-        <Complete reload={reload} close={close} onSuccess={onSuccess} upload={upload} showImportLoadingStatus={false} />
+        </div>
+        <div className={style.actions}>
+          <Button type="button" variants={["secondary"]} onClick={onCancel}>
+            Back
+          </Button>
+          <Button variants={["primary"]} disabled={data?.num_error_rows > 0} onClick={handleSubmitClick}>
+            Submit
+          </Button>
+        </div>
+      </div>
+      {!isLoading && !!submitError && (
+        <div className={style.errorContainer}>
+          <Errors error={submitError} />
+        </div>
       )}
-    </>
+    </div>
   );
 }

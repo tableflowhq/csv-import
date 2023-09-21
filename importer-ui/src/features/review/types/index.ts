@@ -4,8 +4,7 @@ export type ReviewProps = {
   upload: Upload;
   onCancel: () => void;
   close: () => void;
-  onSuccess: (data: any, error: string | null) => void;
-  onComplete?: (data: any, error: string | null) => void;
+  onComplete: (data: any, error: string | null) => void;
   showImportLoadingStatus?: boolean;
   template: Template;
   reload: () => void;
