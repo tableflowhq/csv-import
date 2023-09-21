@@ -265,18 +265,24 @@ func ConvertUploadTemplate(rawTemplate jsonb.JSONB, generateIDs bool) (*Template
 					if err != nil {
 						return nil, fmt.Errorf("Invalid template: invalid validation value json")
 					}
-
-					validation, err := ValidateValidation(Validation{
-						ValidationID: uint(validationID),
-						Type:         validationType,
-						Value:        validationValueJSON,
-						Message:      validationMessage,
-						Severity:     validationSeverity,
-					})
+					validation, err := model.ParseValidation(
+						uint(validationID),
+						validationValueJSON,
+						validationType,
+						validationMessage,
+						validationSeverity,
+						"",
+					)
 					if err != nil {
 						return nil, err
 					}
-					validations = append(validations, validation)
+					validations = append(validations, &Validation{
+						ValidationID: validation.ID,
+						Type:         validation.Type.Name,
+						Value:        validation.Value,
+						Message:      validation.Message,
+						Severity:     string(validation.Severity),
+					})
 				}
 			}
 		}
@@ -311,81 +317,5 @@ func ConvertUploadTemplate(rawTemplate jsonb.JSONB, generateIDs bool) (*Template
 	return &Template{
 		ID:              templateID,
 		TemplateColumns: columns,
-	}, nil
-}
-
-func ValidateValidation(v Validation) (*Validation, error) {
-	// Severity
-	switch v.Severity {
-	case "":
-		// Default to error if not provided
-		v.Severity = string(model.ValidationSeverityError)
-	case string(model.ValidationSeverityError), string(model.ValidationSeverityWarn), string(model.ValidationSeverityInfo):
-		// Do nothing, the severity is provided and valid
-	default:
-		return nil, fmt.Errorf("The validation severity %v is invalid", v.Severity)
-	}
-
-	validationType, err := model.ParseValidationType(v.Type)
-	if err != nil {
-		return nil, fmt.Errorf("The validation type %v is invalid", v.Type)
-	}
-
-	switch validationType {
-	case model.ValidationFilled:
-		if !v.Value.Valid {
-			// If no value is provided, default to true
-			v.Value = jsonb.JSONB{
-				Data:  true,
-				Valid: true,
-			}
-		} else {
-			// Validate the value is the correct type
-			if _, ok := v.Value.Data.(bool); !ok {
-				return nil, fmt.Errorf("The filled validation value must be boolean if provided")
-			}
-		}
-		if len(v.Message) == 0 {
-			v.Message = "The cell must be filled"
-		}
-		return &Validation{
-			ValidationID: v.ValidationID,
-			Type:         validationType.Name,
-			Value:        v.Value,
-			Message:      v.Message,
-			Severity:     v.Severity,
-		}, nil
-	//
-	//case model.ValidationRegex.Name:
-	//
-	default:
-		return nil, fmt.Errorf("The validation type %v is invalid", v.Type)
-	}
-}
-
-func ValidateAndConvertValidation(validation Validation, templateColumnID string) (*model.Validation, error) {
-	v, err := ValidateValidation(validation)
-	if err != nil {
-		return nil, err
-	}
-	return ConvertValidation(*v, templateColumnID)
-}
-
-func ConvertValidation(validation Validation, templateColumnID string) (*model.Validation, error) {
-	tcID := model.ParseID(templateColumnID)
-	if !tcID.Valid {
-		return nil, fmt.Errorf("invalid template column ID")
-	}
-	validationType, err := model.ParseValidationType(validation.Type)
-	if err != nil {
-		return nil, fmt.Errorf("invalid validation type")
-	}
-	return &model.Validation{
-		ID:               validation.ValidationID,
-		TemplateColumnID: tcID,
-		Type:             validationType,
-		Value:            validation.Value,
-		Message:          validation.Message,
-		Severity:         model.ValidationSeverity(validation.Severity),
 	}, nil
 }

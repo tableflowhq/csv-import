@@ -139,10 +139,21 @@ func createTemplateColumn(c *gin.Context, getWorkspaceUser func(*gin.Context, st
 	}
 
 	// Validations
-	validations, err := parseRequestValidations(req.Validations, &templateColumn)
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
-		return
+	var validations []*model.Validation
+	for _, v := range req.Validations {
+		validation, err := model.ParseValidation(
+			uint(v.ID),
+			v.Value,
+			v.Type,
+			v.Message,
+			v.Severity,
+			templateColumn.ID.String(),
+		)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+			return
+		}
+		validations = append(validations, validation)
 	}
 
 	err = tf.DB.Create(&templateColumn).Error
@@ -256,13 +267,14 @@ func editTemplateColumn(c *gin.Context, getWorkspaceUser func(*gin.Context, stri
 		// Delete: If a validation does not exist on the request but does exist in the database, delete it
 		var validationsToCreateOrEdit []*model.Validation
 		for _, v := range *req.Validations {
-			validation, err := types.ValidateAndConvertValidation(types.Validation{
-				ValidationID: uint(v.ID),
-				Type:         v.Type,
-				Value:        v.Value,
-				Message:      v.Message,
-				Severity:     v.Severity,
-			}, templateColumn.ID.String())
+			validation, err := model.ParseValidation(
+				uint(v.ID),
+				v.Value,
+				v.Type,
+				v.Message,
+				v.Severity,
+				templateColumn.ID.String(),
+			)
 			if err != nil {
 				c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 				return
@@ -433,22 +445,4 @@ func parseSuggestedMappings(suggestedMappings []string, template *model.Template
 		}
 	}
 	return suggestedMappings, nil
-}
-
-func parseRequestValidations(reqValidations []TemplateColumnValidationRequest, templateColumn *model.TemplateColumn) ([]*model.Validation, error) {
-	var validations []*model.Validation
-	for _, v := range reqValidations {
-		validation, err := types.ValidateAndConvertValidation(types.Validation{
-			ValidationID: uint(v.ID),
-			Type:         v.Type,
-			Value:        v.Value,
-			Message:      v.Message,
-			Severity:     v.Severity,
-		}, templateColumn.ID.String())
-		if err != nil {
-			return nil, err
-		}
-		validations = append(validations, validation)
-	}
-	return validations, nil
 }

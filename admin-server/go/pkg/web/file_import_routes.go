@@ -551,7 +551,15 @@ func importerSetColumnMapping(c *gin.Context) {
 				SuggestedMappings: importColumn.SuggestedMappings,
 			}
 			for _, v := range importColumn.Validations {
-				if validation, err := types.ConvertValidation(*v, importColumn.ID.String()); err != nil {
+				validation, err := model.ParseValidation(
+					v.ValidationID,
+					v.Value,
+					v.Type,
+					v.Message,
+					v.Severity,
+					importColumn.ID.String(),
+				)
+				if err != nil {
 					templateColumn.Validations = append(templateColumn.Validations, validation)
 				}
 			}

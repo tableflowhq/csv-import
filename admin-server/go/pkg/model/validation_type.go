@@ -24,26 +24,18 @@ func (v *ValidationType) Scan(value interface{}) error {
 	if !ok {
 		return errors.New("failed to scan ValidationType")
 	}
-	// Set the Evaluator from the string type field
-	validationType, err := ParseValidationType(typeStr)
-	if err != nil {
-		return err
+	// Set the Evaluator from the string type
+	switch typeStr {
+	case ValidationFilled.Name:
+		*v = ValidationFilled
+	case ValidationRegex.Name:
+		*v = ValidationFilled
+	default:
+		return fmt.Errorf("The validation type %v is invalid", typeStr)
 	}
-	*v = validationType
 	return nil
 }
 
 func (v ValidationType) Value() (driver.Value, error) {
 	return v.Name, nil
-}
-
-func ParseValidationType(typeStr string) (ValidationType, error) {
-	switch typeStr {
-	case ValidationFilled.Name:
-		return ValidationFilled, nil
-	case ValidationRegex.Name:
-		return ValidationRegex, nil
-	default:
-		return ValidationType{}, fmt.Errorf("unknown ValidationType: %s", typeStr)
-	}
 }
