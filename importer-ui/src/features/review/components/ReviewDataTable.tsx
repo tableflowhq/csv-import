@@ -2,7 +2,7 @@
 import { ColDef, GetRowIdFunc, GetRowIdParams, GridReadyEvent, ICellRendererParams, IDatasource, ISizeColumnsToFitParams } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Icon, Tooltip } from "@tableflow/ui-library";
+import { classes, Icon, Tooltip } from "@tableflow/ui-library";
 import { IconType } from "@tableflow/ui-library/build/Icon/types";
 import useGetRows from "../../../api/useGetRows";
 import { TableProps } from "../types";
@@ -12,8 +12,10 @@ import "ag-grid-community/styles/ag-theme-alpine.css";
 import "./TableStyle.scss";
 
 function ReviewDataTable({ cellClickedListener, theme, uploadId, filter, template }: TableProps) {
+  const customSelectClass = "ag-theme-alpine-dark-custom-select";
   const gridRef: any = useRef(null);
   const [columnDefs, setColumnDefs] = useState<any>([]);
+  const [selectedClass, setSelectedClass] = useState(customSelectClass);
 
   const { data: initialRowData, fetchNextPage, isLoading } = useGetRows(uploadId, filter, 100, 0);
 
@@ -79,8 +81,8 @@ function ReviewDataTable({ cellClickedListener, theme, uploadId, filter, templat
         columnLimits: [
           {
             key: "index",
-            maxWidth: 45,
-            minWidth: 45,
+            maxWidth: 55,
+            minWidth: 55,
           },
         ],
       };
@@ -115,8 +117,8 @@ function ReviewDataTable({ cellClickedListener, theme, uploadId, filter, templat
         headerName: "",
         valueGetter: "node.id",
         field: "index",
-        width: 45,
-        pinned: "left",
+        width: 55,
+        pinned: headers.length >=5 ? "left" : undefined,
       });
       setColumnDefs(generatedColumnDefs.reverse());
     }
@@ -127,9 +129,21 @@ function ReviewDataTable({ cellClickedListener, theme, uploadId, filter, templat
     return (params: GetRowIdParams) => params.data.index + 1;
   }, []);
 
+  const onCellMouseDown = (params: any) => {
+    if(params.colDef.field !== "index" ) {
+      setSelectedClass(customSelectClass)
+    }
+  };
+
+  const onCellClicked = (params: any) => {
+    if(params.colDef.field === "index" ) {
+      setSelectedClass("")
+    }
+  };
+
   return (
     <div
-      className={theme === "dark" ? "ag-theme-alpine-dark" : "ag-theme-alpine"}
+      className={classes([theme === "dark" ? "ag-theme-alpine-dark" : "ag-theme-alpine", selectedClass])}
       style={{
         height: 450,
       }}>
@@ -139,6 +153,8 @@ function ReviewDataTable({ cellClickedListener, theme, uploadId, filter, templat
         animateRows={true}
         rowSelection="multiple"
         onCellValueChanged={cellClickedListener}
+        onCellClicked={onCellClicked}
+        onCellMouseDown={onCellMouseDown}
         onGridReady={onGridReady}
         infiniteInitialRowCount={100}
         cacheBlockSize={0}

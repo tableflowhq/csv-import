@@ -10,8 +10,12 @@
   --ag-row-border-width: 0px;
   --ag-row-hover-color: var(--color-input-disabled);
   --ag-alpine-active-color: var(--color-primary);
-  --ag-selected-row-background-color: var(--color-input-disabled);
+
+  &.ag-theme-alpine-dark-custom-select {
+    --ag-selected-row-background-color: var(--color-input-disabled);
+  }
 }
+
 .ag-theme-alpine .ag-header,
 .ag-theme-alpine-dark .ag-header {
   border-top-right-radius: 10px;
