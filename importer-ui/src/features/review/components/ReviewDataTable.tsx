@@ -1,7 +1,7 @@
 /* eslint-disable */
 import { ColDef, GridReadyEvent, ICellRendererParams, IDatasource } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Icon, Tooltip } from "@tableflow/ui-library";
 import { IconType } from "@tableflow/ui-library/build/Icon/types";
 import useGetRows from "../../../api/useGetRows";
@@ -70,7 +70,10 @@ function ReviewDataTable({ cellClickedListener, theme, uploadId, filter, templat
   });
 
   const setColumnSizes = () => {
-    gridRef.current && gridRef.current?.sizeColumnsToFit();
+    if (!gridRef.current) return;
+    if (gridRef.current.getColumnDefs().length < 5) {
+      gridRef.current && gridRef.current?.sizeColumnsToFit();
+    }
   };
 
   useEffect(() => {
@@ -98,13 +101,12 @@ function ReviewDataTable({ cellClickedListener, theme, uploadId, filter, templat
       setColumnDefs(generatedColumnDefs.reverse());
     }
   }, [initialRowData?.pages, template]);
+
   return (
     <div
       className={theme === "dark" ? "ag-theme-alpine-dark" : "ag-theme-alpine"}
       style={{
-        // TODO: make the height dynamic
-        // height: initialRowData?.pages?.flat()?.length != null ? (initialRowData?.pages?.flat()?.length + 1) * 43 : 100,
-        height: 500,
+        height: 450,
       }}>
       <AgGridReact
         columnDefs={columnDefs}

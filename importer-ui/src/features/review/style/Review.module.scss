@@ -6,10 +6,7 @@
   gap: var(--m);
 
   .tableWrapper {
-    overflow-y: auto;
-    padding: 1px;
-    margin-right: -20px;
-    padding-right: 21px;
+    overflow: hidden;
   }
 
   .actions {
