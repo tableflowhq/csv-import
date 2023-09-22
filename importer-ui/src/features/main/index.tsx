@@ -111,7 +111,7 @@ export default function Main() {
       return;
     }
     const isUploadSuccess = tusId && !uploadError && uploadIsStored;
-    const isUploadHeaderRowSet = upload?.header_row_index != null;
+    const isUploadHeaderRowSet = upload?.header_row_index != null && !skipHeader;
 
     if (uploadError) {
       stepper.setCurrent(0);
@@ -120,11 +120,7 @@ export default function Main() {
     if (isUploadSuccess) {
       if (isUploadHeaderRowSet) {
         setUploadFromHeaderRowSelection(upload);
-        if (skipHeader) {
-          stepper.setCurrent(2);
-        } else {
-          stepper.setCurrent(3);
-        }
+        stepper.setCurrent(2);
       } else {
         stepper.setCurrent(1);
       }
