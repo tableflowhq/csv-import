@@ -1,8 +1,6 @@
-import { ColDef, ICellRendererParams } from "ag-grid-community";
-import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
-import { Button, Errors, Icon, ToggleFilter, useThemeStore } from "@tableflow/ui-library";
+import { useCallback, useEffect, useState } from "react";
+import { Button, Errors, ToggleFilter, useThemeStore } from "@tableflow/ui-library";
 import { QueryFilter } from "../../api/types";
-import useGetRows from "../../api/useGetRows";
 import useReview from "../../api/useReview";
 import useSubmitReview from "../../api/useSubmitReview";
 import LoadingSpinner from "./components/LoadingSpinner";
@@ -74,7 +72,7 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
   };
 
   if (isSubmitCompleted) {
-    return <Complete reload={reload} close={close} onSuccess={onComplete} upload={upload} showImportLoadingStatus={false} />;
+    return <Complete reload={reload} close={close} upload={upload} showImportLoadingStatus={false} />;
   }
 
   if (showLoading || isSubmitting) {
