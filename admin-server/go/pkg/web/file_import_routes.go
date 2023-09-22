@@ -778,7 +778,7 @@ func importerGetImportRows(c *gin.Context) {
 //	@Success		200	{object}	types.Import
 //	@Failure		400	{object}	types.Res
 //	@Router			/file-import/v1/import/{id}/cell/edit [post]
-//	@Param			id	path	string	true	"Upload ID"
+//	@Param			id		path	string				true	"Upload ID"
 //	@Param			body	body	types.ImportCell	true	"Request body"
 func importerEditImportCell(c *gin.Context) {
 	id := c.Param("id")

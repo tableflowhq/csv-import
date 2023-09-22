@@ -18,6 +18,9 @@ definitions:
       importer_id:
         example: 6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353
         type: string
+      is_complete:
+        example: false
+        type: boolean
       is_stored:
         example: false
         type: boolean
@@ -326,10 +329,6 @@ definitions:
       created_at:
         example: 1682366228
         type: integer
-      data:
-        allOf:
-        - $ref: '#/definitions/types.ImportData'
-        description: Used internally within the importer
       has_errors:
         example: false
         type: boolean
@@ -367,6 +366,21 @@ definitions:
       upload_id:
         example: 50ca61e1-f683-4b03-9ec4-4b3adb592bf1
         type: string
+    type: object
+  types.ImportCell:
+    properties:
+      cell_key:
+        example: first_name
+        type: string
+      cell_value:
+        example: Laura
+        type: string
+      is_error:
+        example: false
+        type: boolean
+      row_index:
+        example: 0
+        type: integer
     type: object
   types.ImportData:
     properties:
@@ -421,6 +435,8 @@ definitions:
   types.Pagination:
     properties:
       limit:
+        type: integer
+      next_offset:
         type: integer
       offset:
         type: integer
@@ -1038,6 +1054,34 @@ paths:
         type: string
       responses: {}
       summary: Patch file (tus)
+      tags:
+      - File Import
+  /file-import/v1/import/{id}/cell/edit:
+    post:
+      description: Edit the value in a cell for an import. If the cell contains an
+        error, it will run it through the validation before allowing the edit.
+      parameters:
+      - description: Upload ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/types.ImportCell'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.Import'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/types.Res'
+      summary: Edit a cell in an import
       tags:
       - File Import
   /file-import/v1/import/{id}/review:

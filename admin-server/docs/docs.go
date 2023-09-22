@@ -558,6 +558,47 @@ const docTemplate = `{
                 "responses": {}
             }
         },
+        "/file-import/v1/import/{id}/cell/edit": {
+            "post": {
+                "description": "Edit the value in a cell for an import. If the cell contains an error, it will run it through the validation before allowing the edit.",
+                "tags": [
+                    "File Import"
+                ],
+                "summary": "Edit a cell in an import",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Upload ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.ImportCell"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.Import"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/types.Res"
+                        }
+                    }
+                }
+            }
+        },
         "/file-import/v1/import/{id}/review": {
             "get": {
                 "description": "Get a single import by the upload ID, including the row data for the first page of the review screen if the import is complete",
@@ -995,6 +1036,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353"
                 },
+                "is_complete": {
+                    "type": "boolean",
+                    "example": false
+                },
                 "is_stored": {
                     "type": "boolean",
                     "example": false
@@ -1425,14 +1470,6 @@ const docTemplate = `{
                     "type": "integer",
                     "example": 1682366228
                 },
-                "data": {
-                    "description": "Used internally within the importer",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/types.ImportData"
-                        }
-                    ]
-                },
                 "has_errors": {
                     "type": "boolean",
                     "example": false
@@ -1482,6 +1519,27 @@ const docTemplate = `{
                 "upload_id": {
                     "type": "string",
                     "example": "50ca61e1-f683-4b03-9ec4-4b3adb592bf1"
+                }
+            }
+        },
+        "types.ImportCell": {
+            "type": "object",
+            "properties": {
+                "cell_key": {
+                    "type": "string",
+                    "example": "first_name"
+                },
+                "cell_value": {
+                    "type": "string",
+                    "example": "Laura"
+                },
+                "is_error": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "row_index": {
+                    "type": "integer",
+                    "example": 0
                 }
             }
         },
@@ -1564,6 +1622,9 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "limit": {
+                    "type": "integer"
+                },
+                "next_offset": {
                     "type": "integer"
                 },
                 "offset": {
