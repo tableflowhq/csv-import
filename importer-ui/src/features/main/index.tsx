@@ -111,7 +111,7 @@ export default function Main() {
       return;
     }
     const isUploadSuccess = tusId && !uploadError && uploadIsStored;
-    const isUploadHeaderRowSet = upload?.header_row_index != null && !skipHeader;
+    const isUploadHeaderRowSet = upload?.header_row_index != null;
 
     if (uploadError) {
       stepper.setCurrent(0);
@@ -120,7 +120,11 @@ export default function Main() {
     if (isUploadSuccess) {
       if (isUploadHeaderRowSet) {
         setUploadFromHeaderRowSelection(upload);
-        stepper.setCurrent(2);
+        if (skipHeader) {
+          stepper.setCurrent(2);
+        } else {
+          stepper.setCurrent(3);
+        }
       } else {
         stepper.setCurrent(1);
       }
@@ -176,7 +180,13 @@ export default function Main() {
     setTusId("");
   };
 
-  // Render
+  const handleCancelReview = () => {
+    if (skipHeader) {
+      stepper.setCurrent(1);
+    } else {
+      stepper.setCurrent(2);
+    }
+  };
 
   if (!initialPageLoaded) {
     return null;
@@ -247,7 +257,7 @@ export default function Main() {
         return (
           <Review
             template={template}
-            onCancel={skipHeader ? () => stepper.setCurrent(1) : () => stepper.setCurrent(2)}
+            onCancel={handleCancelReview}
             close={requestClose}
             onComplete={handleComplete}
             upload={upload}

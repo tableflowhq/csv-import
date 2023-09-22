@@ -8,6 +8,7 @@ import ReviewDataTable from "./components/ReviewDataTable";
 import { ReviewProps } from "./types";
 import style from "./style/Review.module.scss";
 import Complete from "../complete";
+import { json } from "stream/consumers";
 
 const defaultOptions = [
   { label: "All (0)", selected: false },
@@ -20,7 +21,6 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
   const [filter, setFilter] = useState<QueryFilter>("all"); // default value
   const [filterOptions, setFilterOptions] = useState(defaultOptions);
   const [isSubmitCompleted, setIsSubmitCompleted] = useState(false);
-
   const { data, isLoading }: any = useReview(uploadId);
   const { mutate, error: submitError, isSuccess, isLoading: isSubmitting, data: dataSubmitted } = useSubmitReview(upload?.id || "");
 
@@ -54,7 +54,7 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
     if (data?.is_stored) {
       setShowLoading(false);
     }
-  }, [data]);
+  }, [JSON.stringify(data)]);
 
   const onFilterChange = useCallback((option: string) => {
     // TODO: this regex might not be necessary if we use a separate property for values in the filter component
