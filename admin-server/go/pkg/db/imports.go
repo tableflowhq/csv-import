@@ -78,8 +78,7 @@ func GetImportByUploadIDWithUpload(uploadID string) (*model.Import, error) {
 		return nil, errors.New("no upload ID provided")
 	}
 	var imp model.Import
-	// TODO: REMOVE DEBUG *********************************************************************************
-	err := tf.DB.Preload("Upload").First(&imp, "upload_id = ?", model.ParseID(uploadID)).Debug().Error
+	err := tf.DB.Preload("Upload").First(&imp, "upload_id = ?", model.ParseID(uploadID)).Error
 	if err != nil {
 		return nil, err
 	}

@@ -134,6 +134,7 @@ func StartWebServer(config ServerConfig) *http.Server {
 	importer.POST("/upload/:id/set-column-mapping", importerSetColumnMapping)
 	importer.GET("/import/:id/review", importerReviewImport)
 	importer.GET("/import/:id/rows", importerGetImportRows)
+	importer.POST("/import/:id/cell/edit", importerEditImportCell)
 	importer.POST("/import/:id/submit", func(c *gin.Context) { importerSubmitImport(c, config.ImportCompleteHandler) })
 
 	/* Additional Routes */

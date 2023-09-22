@@ -145,9 +145,9 @@ func downloadImportForExternalAPI(c *gin.Context) {
 		_ = downloadFile.Close()
 	}(downloadFile)
 
-	sampleImportRow, err := scylla.GetImportRow(imp, 0)
+	sampleImportRow, err := scylla.GetAnyImportRow(imp.ID.String(), 0)
 	if err != nil {
-		tf.Log.Errorw("Could not retrieve sample import row to download import  for external API", "error", err, "import_id", id)
+		tf.Log.Errorw("Could not retrieve sample import row to download import for external API", "error", err, "import_id", id)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, types.Res{Err: "Could not download import"})
 		return
 	}

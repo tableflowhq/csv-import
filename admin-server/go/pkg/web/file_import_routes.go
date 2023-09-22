@@ -775,7 +775,7 @@ func importerGetImportRows(c *gin.Context) {
 //	@Summary		Edit a cell in an import
 //	@Description	Edit the value in a cell for an import. If the cell contains an error, it will run it through the validation before allowing the edit.
 //	@Tags			File Import
-//	@Success		200	{object}	types.Res
+//	@Success		200	{object}	types.Import
 //	@Failure		400	{object}	types.Res
 //	@Router			/file-import/v1/import/{id}/cell/edit [post]
 //	@Param			id	path	string	true	"Upload ID"
@@ -811,27 +811,180 @@ func importerEditImportCell(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return
 	}
-	if req.RowIndex < 0 || req.RowIndex > int(imp.NumRows.Int64) {
+	if req.RowIndex == nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Missing required parameter row_index"})
+		return
+	}
+	if req.IsError == nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Missing required parameter is_error"})
+		return
+	}
+	if req.CellKey == nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Missing required parameter cell_key"})
+		return
+	}
+	if req.CellValue == nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Missing required parameter cell_value"})
+		return
+	}
+	if *req.RowIndex < 0 || *req.RowIndex > int(imp.NumRows.Int64) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Parameter row_index out of range"})
 		return
 	}
-	if len(req.CellKey) == 0 {
+	if len(*req.CellKey) == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Missing parameter cell_key"})
 		return
 	}
 
-	//// Retrieve any validations to perform on the cell
-	//var validations []*model.Validation
-	//
-	//if imp.Upload.Template.Valid {
-	//	// If the upload uses an SDK-defined template, retrieve the validations from the template on the upload
-	//
-	//} else {
-	//	// Retrieve any validations from the db
-	//
-	//}
+	rowIndex := *req.RowIndex
+	cellKey := *req.CellKey
+	cellValue := *req.CellValue
 
-	c.JSON(http.StatusOK, "")
+	// Retrieve any validations to perform on the cell
+	var validations []*model.Validation
+
+	if imp.Upload.Template.Valid {
+		// If the upload uses an SDK-defined template, retrieve any validations from the template on the upload
+		template, err := types.ConvertUploadTemplate(imp.Upload.Template, true)
+		if err != nil {
+			tf.Log.Errorw("Upload template invalid retrieving validations for cell edit", "upload_id", imp.Upload.ID, "error", err)
+			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "The SDK-defined template is invalid"})
+			return
+		}
+		for _, templateColumn := range template.TemplateColumns {
+			for _, v := range templateColumn.Validations {
+				validation, err := model.ParseValidation(
+					v.ValidationID,
+					v.Value,
+					v.Type,
+					v.Message,
+					v.Severity,
+					templateColumn.ID.String(),
+				)
+				if err != nil {
+					validations = append(validations, validation)
+				}
+			}
+		}
+	} else {
+		// Retrieve any validations from the db
+		validations, err = db.GetValidationsByImporterAndTemplateColumnKey(imp.ImporterID.String(), cellKey)
+		if err != nil {
+			tf.Log.Errorw("Could not retrieve validations from db for cell edit", "upload_id", imp.Upload.ID, "error", err)
+			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "An error occurred retrieving the validations for this cell"})
+			return
+		}
+	}
+
+	for _, validation := range validations {
+		res, passed := validation.ValidateWithResult(cellValue)
+		if !passed {
+			switch res.Severity {
+			case model.ValidationSeverityError:
+				c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: res.Message})
+				return
+			default:
+				// TODO: Update this condition once we support warning and info validation severities
+				// We'll most likely need to persist the warning or info into where they are stored when this occurs
+				// instead of returning an error here.
+				c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Unsupported validation severity"})
+				return
+			}
+		}
+	}
+
+	// At this point the cell edit is valid either because it passed any validations or there were no validations to
+	// perform, so we can now persist the edit
+	if *req.IsError {
+		// Retrieve the error row, needed to determine if all errors are resolved and the record should be inserted into import_rows
+		row, err := scylla.GetImportRowError(imp.ID.String(), rowIndex)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("Could not update cell: %s", err)})
+			return
+		}
+		_, cellErrorExists := row.Errors[cellKey]
+		numErrors := len(row.Errors)
+
+		if !cellErrorExists {
+			// Cell error does not exist on the row
+			tf.Log.Warnw("Cell key does not exist on import_row_errors during edit", "import_id", imp.ID, "cell_key", cellKey, "row_index", rowIndex)
+			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No error exists on the current cell"})
+			return
+		}
+		if numErrors == 0 {
+			// No errors were returned from import_row_errors
+			tf.Log.Warnw("No errors returned from import_row_errors during edit", "import_id", imp.ID, "cell_key", cellKey, "row_index", rowIndex)
+			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No error exists for the current row"})
+			return
+		}
+
+		// Update the row values with the new value
+		row.Values[cellKey] = cellValue
+
+		if numErrors == 1 {
+			// All errors are resolved on the row
+
+			// Add the record to import_rows
+			err = tf.Scylla.Query("insert into import_rows (import_id, row_index, values) values (?, ?, ?)", imp.ID.String(), rowIndex, row.Values).Exec()
+			if err != nil {
+				tf.Log.Errorw("Could not insert into import_rows during cell edit", "import_id", imp.ID, "cell_key", cellKey, "row_index", rowIndex, "error", err)
+				c.AbortWithStatusJSON(http.StatusInternalServerError, types.Res{Err: fmt.Sprintf("Could not update cell: %s", err)})
+				return
+			}
+
+			// Delete the record from import_row_errors
+			err = tf.Scylla.Query("delete from import_row_errors where import_id = ? and row_index = ?", imp.ID.String(), rowIndex).Exec()
+			if err != nil {
+				tf.Log.Errorw("Could not delete from import_row_errors during cell edit", "import_id", imp.ID, "cell_key", cellKey, "row_index", rowIndex, "error", err)
+				c.AbortWithStatusJSON(http.StatusInternalServerError, types.Res{Err: fmt.Sprintf("Could not update cell: %s", err)})
+				return
+			}
+
+			// Update the aggregate row numbers on the import
+			imp.NumValidRows.Int64++
+			imp.NumErrorRows.Int64--
+			err = tf.DB.Save(imp).Error
+			if err != nil {
+				tf.Log.Errorw("Could not update import in database", "import_id", imp.ID, "error", err)
+				c.AbortWithStatusJSON(http.StatusInternalServerError, types.Res{Err: fmt.Sprintf("Could not update cell: %s", err)})
+				return
+			}
+		} else {
+			// There are still other errors on the row, update the import_row_errors record to remove the error for the current cell
+			err = tf.Scylla.Query("update import_row_errors set errors[?] = null, values[?] = ? where import_id = ? and row_index = ?",
+				cellKey, cellKey, cellValue, imp.ID.String(), rowIndex).Exec()
+			if err != nil {
+				tf.Log.Errorw("Could update import_row_errors during cell edit", "import_id", imp.ID, "cell_key", cellKey, "row_index", rowIndex, "error", err)
+				c.AbortWithStatusJSON(http.StatusInternalServerError, types.Res{Err: fmt.Sprintf("Could not update cell: %s", err)})
+				return
+			}
+		}
+	} else {
+		// Update the import_row record with the new value
+		err = tf.Scylla.Query("update import_rows set values[?] = ? where import_id = ? and row_index = ?",
+			cellKey, cellValue, imp.ID.String(), rowIndex).Exec()
+		if err != nil {
+			tf.Log.Errorw("Could update import_rows during cell edit", "import_id", imp.ID, "cell_key", cellKey, "row_index", rowIndex, "error", err)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, types.Res{Err: fmt.Sprintf("Could not update cell: %s", err)})
+			return
+		}
+	}
+
+	importServiceImport := &types.Import{
+		ID:                 imp.ID,
+		UploadID:           imp.UploadID,
+		ImporterID:         imp.ImporterID,
+		NumRows:            imp.NumRows,
+		NumColumns:         imp.NumColumns,
+		NumProcessedValues: imp.NumProcessedValues,
+		Metadata:           imp.Metadata,
+		IsStored:           imp.IsStored,
+		HasErrors:          imp.HasErrors(),
+		NumErrorRows:       imp.NumErrorRows,
+		NumValidRows:       imp.NumValidRows,
+		CreatedAt:          imp.CreatedAt,
+	}
+	c.JSON(http.StatusOK, importServiceImport)
 }
 
 // importerSubmitImport
@@ -870,7 +1023,7 @@ func importerSubmitImport(c *gin.Context, importCompleteHandler func(types.Impor
 	imp.IsComplete = true
 	err = tf.DB.Save(imp).Error
 	if err != nil {
-		tf.Log.Errorw("Could not update import in database", "error", err)
+		tf.Log.Errorw("Could not update import in database", "import_id", imp.ID, "error", err)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, types.Res{Err: err.Error()})
 		return
 	}

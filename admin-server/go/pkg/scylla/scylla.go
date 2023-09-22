@@ -47,15 +47,38 @@ func PaginateUploadRows(uploadID string, offset, limit int) []map[int]string {
 	return res
 }
 
-func GetImportRow(imp *model.Import, index int) (types.ImportRow, error) {
-	importID := imp.ID.String()
+// GetAnyImportRow Retrieve a row from import_rows. If it does not exist in import_rows, attempt retrieve the row from import_row_errors
+func GetAnyImportRow(importID string, index int) (types.ImportRow, error) {
+	row, err := GetImportRow(importID, index)
+	if len(row.Values) == 0 {
+		row, err = GetImportRowError(importID, index)
+	}
+	return row, err
+}
 
+func GetImportRow(importID string, index int) (types.ImportRow, error) {
 	row := types.ImportRow{}
 	err := tf.Scylla.Query("select row_index, values from import_rows where import_id = ? and row_index = ?", importID, index).Scan(&row.Index, &row.Values)
+	return row, err
+}
 
-	// If the row does not exist it could be an error row, attempt to retrieve it from import_row_errors
-	if len(row.Values) == 0 {
-		err = tf.Scylla.Query("select row_index, values from import_row_errors where import_id = ? and row_index = ?", importID, index).Scan(&row.Index, &row.Values)
+// GetImportRowError Note the errors retrieved from this only have the cell keys and validation IDs, they don't contain
+// the additional validation information from Postgres
+func GetImportRowError(importID string, index int) (types.ImportRow, error) {
+	row := types.ImportRow{}
+	errors := make(map[string][]uint)
+	err := tf.Scylla.Query("select row_index, values, errors from import_row_errors where import_id = ? and row_index = ?", importID, index).Scan(&row.Index, &row.Values, &errors)
+	if err != nil {
+		return row, err
+	}
+	row.Errors = make(map[string][]types.ImportRowError)
+	for k, v := range errors {
+		if _, ok := row.Errors[k]; !ok {
+			row.Errors[k] = []types.ImportRowError{}
+		}
+		for _, validationID := range v {
+			row.Errors[k] = append(row.Errors[k], types.ImportRowError{ValidationID: validationID})
+		}
 	}
 	return row, err
 }

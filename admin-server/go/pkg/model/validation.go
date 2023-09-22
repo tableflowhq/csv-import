@@ -46,22 +46,22 @@ func (v Validation) Validate(cell string) bool {
 	return passed
 }
 
-func (v Validation) ValidateWithResult(cell string) (bool, ValidationResult) {
+func (v Validation) ValidateWithResult(cell string) (ValidationResult, bool) {
 	passed, err := v.Type.Evaluator.Evaluate(v.Value.Data, cell)
 	if err != nil {
 		tf.Log.Warnw("Cell validation error", "validation_id", v.ID, "cell", cell, "value", v.Value.ToString(), "error", err)
-		return false, ValidationResult{
+		return ValidationResult{
 			Message:  fmt.Sprintf("Unexpected error: %v", err.Error()),
 			Severity: ValidationSeverityError,
-		}
+		}, false
 	}
 	if passed {
-		return true, ValidationResult{}
+		return ValidationResult{}, true
 	}
-	return false, ValidationResult{
+	return ValidationResult{
 		Message:  v.Message,
 		Severity: v.Severity,
-	}
+	}, false
 }
 
 func (v Validation) MarshalJSON() ([]byte, error) {
