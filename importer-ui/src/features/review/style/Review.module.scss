@@ -16,7 +16,7 @@
   }
 
   .iconButton {
-    &>svg path {
+    & > svg path {
       stroke: var(--color-text-on-primary);
     }
   }
@@ -74,7 +74,7 @@
 }
 
 .tableflowTooltip::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 100%;
   left: 50%;
@@ -94,4 +94,9 @@
 .errorContainer {
   display: flex;
   justify-content: center;
+}
+
+.headerCell {
+  display: flex;
+  gap: 5px;
 }

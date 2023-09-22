@@ -90,13 +90,27 @@ function ReviewDataTable({ cellClickedListener, theme, uploadId, filter, templat
     }
   };
 
+  const customHeaderComponent = (params: any) => {
+    return (
+      <div className={style.headerCell}>
+        {params.displayName} {params.displayDescription && <Tooltip title={params.displayDescription}></Tooltip>}
+      </div>
+    );
+  };
+
   useEffect(() => {
     if (initialRowData?.pages?.[0]?.rows?.[0]?.values) {
       const headers = Object.keys(initialRowData.pages[0]?.rows[0]?.values);
       const generatedColumnDefs = headers.map((header: string) => {
         const displayName = template?.columns.find((c) => c.key === header)?.name;
+        const displayDescription = template?.columns.find((c) => c.key === header)?.description;
+
         return {
           headerName: displayName || header,
+          headerComponent: customHeaderComponent,
+          headerComponentParams: {
+            displayDescription: displayDescription,
+          },
           field: `values.${header}`,
           cellStyle: (params: any) => {
             if (params.data?.errors?.[header]) {
@@ -118,7 +132,7 @@ function ReviewDataTable({ cellClickedListener, theme, uploadId, filter, templat
         valueGetter: "node.id",
         field: "index",
         width: 55,
-        pinned: headers.length >=5 ? "left" : undefined,
+        pinned: headers.length >= 5 ? "left" : undefined,
       });
       setColumnDefs(generatedColumnDefs.reverse());
     }
@@ -130,14 +144,14 @@ function ReviewDataTable({ cellClickedListener, theme, uploadId, filter, templat
   }, []);
 
   const onCellMouseDown = (params: any) => {
-    if(params.colDef.field !== "index" ) {
-      setSelectedClass(customSelectClass)
+    if (params.colDef.field !== "index") {
+      setSelectedClass(customSelectClass);
     }
   };
 
   const onCellClicked = (params: any) => {
-    if(params.colDef.field === "index" ) {
-      setSelectedClass("")
+    if (params.colDef.field === "index") {
+      setSelectedClass("");
     }
   };
 
