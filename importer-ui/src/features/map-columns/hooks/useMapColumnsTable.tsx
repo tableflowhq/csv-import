@@ -63,7 +63,7 @@ export default function useMapColumnsTable(
 
   const handleTemplateChange = (id: string, template: string) => {
     setValues((prev) => {
-      const oldTemplate = prev[id].template;
+      const oldTemplate = prev[id]?.template;
       setSelectedTemplates((currentSelected) => {
         if (currentSelected.includes(oldTemplate)) {
           return currentSelected.filter((t) => t !== oldTemplate);
