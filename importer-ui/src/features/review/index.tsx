@@ -45,9 +45,9 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
   useEffect(() => {
     // Sets the filters
     const [all, valid, error] = defaultOptions;
-    all.label = `All (${data?.num_rows})`;
-    valid.label = `Valid (${data?.num_valid_rows})`;
-    error.label = `Error (${data?.num_error_rows})`;
+    all.label = `All ${data?.num_rows}`;
+    valid.label = `Valid ${data?.num_valid_rows}`;
+    error.label = `Error ${data?.num_error_rows}`;
     const [selectedFilter] = defaultOptions.filter((option) => option.label.toLowerCase().includes(filter));
     if (selectedFilter) selectedFilter.selected = true;
     setFilterOptions([...filterOptions]);
@@ -58,7 +58,7 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
 
   const onFilterChange = useCallback((option: string) => {
     // TODO: this regex might not be necessary if we use a separate property for values in the filter component
-    const match = option.match(/^(\w+)(?=\s\(\d+\))/);
+    const match = option.match(/^(\w+)(?=\s\d+)/);
     match && setFilter(match[1].toLowerCase() as QueryFilter);
   }, []);
 
