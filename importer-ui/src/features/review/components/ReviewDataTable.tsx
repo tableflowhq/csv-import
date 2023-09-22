@@ -90,13 +90,14 @@ function ReviewDataTable({ cellClickedListener, theme, uploadId, filter, templat
     }
   };
 
-  const customHeaderComponent = (params: any) => {
-    return (
-      <div className={style.headerCell}>
-        {params.displayName} {params.displayDescription && <Tooltip title={params.displayDescription}></Tooltip>}
-      </div>
-    );
-  };
+  // TODO: tooltip is showing cut off
+  // const customHeaderComponent = (params: any) => {
+  //   return (
+  //     <div className={style.headerCell}>
+  //       {params.displayName} {params.displayDescription && <Tooltip title={params.displayDescription}></Tooltip>}
+  //     </div>
+  //   );
+  // };
 
   useEffect(() => {
     if (initialRowData?.pages?.[0]?.rows?.[0]?.values) {
@@ -107,7 +108,7 @@ function ReviewDataTable({ cellClickedListener, theme, uploadId, filter, templat
 
         return {
           headerName: displayName || header,
-          headerComponent: customHeaderComponent,
+          // headerComponent: customHeaderComponent,
           headerComponentParams: {
             displayDescription: displayDescription,
           },

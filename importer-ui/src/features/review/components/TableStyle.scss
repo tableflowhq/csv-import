@@ -20,27 +20,27 @@
 }
 
 // Remove the overflow in the inner divs of the header to show the inner tooltip.
-.ag-header.ag-pivot-off.ag-header-allow-overflow {
-  overflow: unset;
-  .ag-pinned-left-header {
-    overflow: unset;
-  }
-  .ag-header-viewport {
-    overflow: unset;
-  }
+// .ag-header.ag-pivot-off.ag-header-allow-overflow {
+//   overflow: unset;
+//   .ag-pinned-left-header {
+//     overflow: unset;
+//   }
+//   .ag-header-viewport {
+//     overflow: unset;
+//   }
 
-  .ag-header-row {
-    overflow: unset;
-  }
+//   .ag-header-row {
+//     overflow: unset;
+//   }
 
-  .ag-header-cell {
-    overflow: unset;
-  }
+//   .ag-header-cell {
+//     overflow: unset;
+//   }
 
-  .ag-header-cell-comp-wrapper {
-    overflow: unset;
-  }
-}
+//   .ag-header-cell-comp-wrapper {
+//     overflow: unset;
+//   }
+// }
 
 .ag-theme-alpine .ag-header,
 .ag-theme-alpine-dark .ag-header {
