@@ -72,7 +72,7 @@ function ReviewDataTable({ cellClickedListener, theme, uploadId, filter, templat
   });
 
   const setColumnSizes = () => {
-    if (!gridRef.current) return;
+    if (!gridRef.current || gridRef.current?.destroyCalled) return;
     const columnCount = gridRef.current?.getColumnDefs?.()?.length || 0;
     // onl resize if there are less than 5 columns
     if (columnCount < 5) {
