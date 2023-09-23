@@ -259,25 +259,27 @@ export default function Main() {
   };
 
   return (
-    <div className={style.wrapper}>
-      <div className={style.header}>
-        <Stepper {...stepper} />
-      </div>
-
-      <div className={style.content}>{renderContent()}</div>
-
-      {!!uploadError && (
-        <div className={style.status}>
-          <Errors error={uploadError.toString()} />
-          <Button onClick={reload} variants={["primary"]} type="button" icon="update">
-            Reload
-          </Button>
+    <div className={style.mainContainer}>
+      <div className={style.wrapper}>
+        <div className={style.header}>
+          <Stepper {...stepper} />
         </div>
-      )}
 
-      {isEmbeddedInIframe && isModal && (
-        <Button className={style.close} variants={["square", "secondary", "small"]} onClick={() => requestClose()} icon="cross" />
-      )}
+        <div className={style.content}>{renderContent()}</div>
+
+        {!!uploadError && (
+          <div className={style.status}>
+            <Errors error={uploadError.toString()} />
+            <Button onClick={reload} variants={["primary"]} type="button" icon="update">
+              Reload
+            </Button>
+          </div>
+        )}
+
+        {isEmbeddedInIframe && isModal && (
+          <Button className={style.close} variants={["square", "secondary", "small"]} onClick={() => requestClose()} icon="cross" />
+        )}
+      </div>
     </div>
   );
 }

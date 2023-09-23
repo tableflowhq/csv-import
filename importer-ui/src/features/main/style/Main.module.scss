@@ -1,9 +1,16 @@
+.mainContainer{
+  background-color: #708090;
+  height: 100vh;
+  padding: 20px;
+}
+
 .wrapper {
   display: flex;
   align-items: center;
   justify-content: center;
   flex-direction: column;
   height: 100%;
+  background-color: var(--color-background);
 }
 
 .header {
