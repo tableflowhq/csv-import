@@ -15,6 +15,7 @@ import (
 	"sync"
 	"tableflow/go/pkg/tf"
 	"unicode"
+	"github.com/hbollon/go-edlib"
 )
 
 func JsonPrettyPrint(in string) string {
@@ -216,4 +217,13 @@ func ValidateKey(input string) bool {
 		}
 	}
 	return true
+}
+
+func GetStringSimilarityScore(str1 string, str2 string) float32 {
+	res, err := edlib.StringsSimilarity(strings.TrimSpace(str1), strings.TrimSpace(str2), edlib.Levenshtein)
+	if err != nil {
+	  return 0
+	} else {
+	  return res
+	}
 }

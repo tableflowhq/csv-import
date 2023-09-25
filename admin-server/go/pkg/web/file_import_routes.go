@@ -375,6 +375,14 @@ func importerSetHeaderRow(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return
 	}
+
+	// Suggest template column mapping
+	template, err := db.GetTemplateByImporter(importerUpload.ImporterID.String())
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{})
+		return
+	}
+	file.AddColumnMappingSuggestions(importerUpload, template.TemplateColumns)
 	c.JSON(http.StatusOK, importerUpload)
 }
 

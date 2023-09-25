@@ -59,6 +59,7 @@ export type UploadColumn = {
   index: number;
   name: string;
   sample_data: string[];
+  suggested_template_column_id: string;
 };
 
 export type UploadRow = {

@@ -70,10 +70,11 @@ type Upload struct {
 }
 
 type UploadColumn struct {
-	ID         model.ID       `json:"id" swaggertype:"string" example:"3c79e7fd-1018-4a27-8b86-9cee84221cd8"`
-	Name       string         `json:"name" example:"Work Email"`
-	Index      int            `json:"index" example:"0"`
-	SampleData pq.StringArray `json:"sample_data" gorm:"type:text[]" swaggertype:"array,string" example:"test@example.com"`
+	ID                        model.ID       `json:"id" swaggertype:"string" example:"3c79e7fd-1018-4a27-8b86-9cee84221cd8"`
+	Name                      string         `json:"name" example:"Work Email"`
+	Index                     int            `json:"index" example:"0"`
+	SampleData                pq.StringArray `json:"sample_data" gorm:"type:text[]" swaggertype:"array,string" example:"test@example.com"`
+	SuggestedTemplateColumnID model.ID       `json:"suggested_template_column_id" swaggertype:"string" example:"3c79e7fd-1018-4a27-8b86-9cee84221cd8"`
 }
 
 type UploadHeaderRowSelection struct {
@@ -130,10 +131,11 @@ func ConvertUpload(upload *model.Upload, uploadRows []UploadRow) (*Upload, error
 	importerUploadColumns := make([]*UploadColumn, len(upload.UploadColumns))
 	for n, uc := range upload.UploadColumns {
 		importerUploadColumns[n] = &UploadColumn{
-			ID:         uc.ID,
-			Name:       uc.Name,
-			Index:      uc.Index,
-			SampleData: uc.SampleData,
+			ID:                        uc.ID,
+			Name:                      uc.Name,
+			Index:                     uc.Index,
+			SampleData:                uc.SampleData,
+			SuggestedTemplateColumnID: uc.TemplateColumnID,
 		}
 	}
 	uploadTemplate, err := ConvertUploadTemplate(upload.Template, false)

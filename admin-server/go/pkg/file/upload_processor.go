@@ -411,3 +411,29 @@ func removeUploadFileFromDisk(file *os.File, fileName, uploadID string) {
 		return
 	}
 }
+
+// Add column mapping sugestion to the upload columns 
+func AddColumnMappingSuggestions(upload *types.Upload, templateColumns []*model.TemplateColumn){
+	
+	for _, uploadColumn := range upload.UploadColumns{
+		for _,templateColumn := range(templateColumns){
+			formattedUploadColumnName := strings.ToLower(strings.TrimSpace(uploadColumn.Name))
+			formattedTemplateColumnName := strings.ToLower(strings.TrimSpace(templateColumn.Name))
+			
+			// TYPE 1: Exact Match of strings
+			if (formattedUploadColumnName == formattedTemplateColumnName) {
+				uploadColumn.SuggestedTemplateColumnID = templateColumn.ID
+				continue
+			}
+			
+			// TYPE 2: String Similarity Comparision
+			similarityScore := util.GetStringSimilarityScore(formattedUploadColumnName, formattedTemplateColumnName)
+			if(similarityScore > 0.9){
+				uploadColumn.SuggestedTemplateColumnID = templateColumn.ID
+				continue
+			}
+
+			// TODO: Add more types : fuzzy logic
+		}
+	}
+}
