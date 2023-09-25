@@ -21,12 +21,13 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
   const [filter, setFilter] = useState<QueryFilter>("all"); // default value
   const [filterOptions, setFilterOptions] = useState(defaultOptions);
   const [isSubmitCompleted, setIsSubmitCompleted] = useState(false);
-  const { data, isLoading }: any = useReview(uploadId);
-  const { mutate, error: submitError, isSuccess, isLoading: isSubmitting, data: dataSubmitted } = useSubmitReview(upload?.id || "");
+  const { data, isLoading }: any = useReview(uploadId, {
+    staleTime: 0,
+  });
+  const { mutate, error: submitError, isSuccess, isLoading: isSubmitting, data: dataSubmitted } = useSubmitReview(uploadId || "");
 
   const theme = useThemeStore((state) => state.theme);
 
-  // TODO: Carlos - I changed the initial state back here to false, it was set to showImportLoadingStatus causing the review table not to be shown
   const [showLoading, setShowLoading] = useState(true);
 
   const submittedOk = dataSubmitted?.ok || {};
