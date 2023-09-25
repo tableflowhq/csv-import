@@ -14,13 +14,13 @@
 
 ## TableFlow is an open source data import platform
 
-* Embeddable import iframe modal
-* No-code importer configuration
-* Smart column mapping
-* Frontend callbacks to retrieve data
-* API to retrieve data
-* Webhook notifications
-* Data validation (coming soon)
+- Embeddable import iframe modal
+- No-code importer configuration
+- Smart column mapping
+- Frontend callbacks to retrieve data
+- API to retrieve data
+- Webhook notifications
+- Data validation (coming soon)
 
 ## How it works
 
@@ -57,9 +57,9 @@ Then open [http://localhost:3000](http://localhost:3000) to access TableFlow.
 1. [x] Make sure the server you use is only accessible within your VPC
 2. [x] Make sure your local machine is able to connect to the server on ports 3000 (the web server)
 3. [x] Update your network settings to allow port 3001 (the importer iframe) and 3003 (the API server) to be accessible
-   from where your users will import data, most likely public
+       from where your users will import data, most likely public
 4. [x] Update `TABLEFLOW_WEB_APP_URL` and `TABLEFLOW_WEB_IMPORTER_URL` in your .env.example file with the correct URLs
-   where you'll access the web applications from
+       where you'll access the web applications from
 
 One-line install script (for Amazon Linux):
 
@@ -71,8 +71,9 @@ sudo usermod -a -G docker $USER && \
 sudo curl -L "https://github.com/docker/compose/releases/download/v2.19.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && \
 sudo mv /usr/local/bin/docker-compose /usr/bin/docker-compose && \
 sudo chmod +x /usr/bin/docker-compose && \
-git clone https://github.com/tableflowhq/tableflow.git && cd tableflow && \
-cp .env.example .env && \
+mkdir tableflow && cd tableflow && \
+curl --ssl-no-revoke -O https://github.com/tableflowhq/tableflow/blob/main/docker-compose.base.yml -O https://github.com/tableflowhq/tableflow/blob/main/docker-compose.yml -O https://github.com/tableflowhq/tableflow/blob/main/.env.example
+mv .env.example .env && \
 sg docker -c 'docker-compose up -d'
 ```
 
