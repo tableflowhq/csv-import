@@ -758,7 +758,10 @@ func importerGetImportRows(c *gin.Context) {
 	}
 
 	rows := scylla.PaginateImportRows(imp, pagination.Offset, pagination.Limit, filter)
-	if len(rows) != 0 {
+	if len(rows) < pagination.Limit {
+		// There are no more rows, set the next offset to 0
+		pagination.NextOffset = 0
+	} else if len(rows) != 0 {
 		pagination.NextOffset = rows[len(rows)-1].Index + 1
 	}
 	data := &types.ImportData{
