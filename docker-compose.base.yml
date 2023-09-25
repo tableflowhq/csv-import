@@ -1,8 +1,8 @@
-version: "3"
+version: "4"
 
 services:
   postgres:
-    image: 'postgres:latest'
+    image: "postgres:latest"
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -14,7 +14,7 @@ services:
     restart: unless-stopped
     command: -p ${POSTGRES_PORT}
     healthcheck:
-      test: ['CMD', 'pg_isready', '-p',  '${POSTGRES_PORT}']
+      test: ["CMD", "pg_isready", "-p", "${POSTGRES_PORT}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -35,7 +35,6 @@ services:
       retries: 10
 
   backend:
-    build: "./admin-server"
     platform: linux/amd64
     ports:
       - "3003:3003"

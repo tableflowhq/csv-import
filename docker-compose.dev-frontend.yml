@@ -1,4 +1,4 @@
-version: "3"
+version: "4"
 
 services:
   postgres:
@@ -12,6 +12,7 @@ services:
       service: scylla
 
   backend:
+    build: "./admin-server"
     extends:
       file: docker-compose.base.yml
       service: backend
