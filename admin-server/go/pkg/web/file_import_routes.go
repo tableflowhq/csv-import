@@ -603,18 +603,27 @@ func importerSetColumnMapping(c *gin.Context) {
 		return uc.TemplateColumnID.Valid
 	})
 	if columnsAlreadyMapped {
-		// If the column mapping already been set and the new column mapping is the same, no action is required
 		sameColumnMapping := true
 		for _, uc := range upload.UploadColumns {
-			if !uc.TemplateColumnID.Valid {
-				continue
-			}
 			tcID, ok := columnMapping[uc.ID.String()]
-			if !ok || tcID != uc.TemplateColumnID.String() {
+
+			// Upload column does not have TemplateColumnID but columnMapping has a value
+			if !uc.TemplateColumnID.Valid && ok {
+				sameColumnMapping = false
+				break
+			}
+			// Upload column has a TemplateColumnID but columnMapping does not have a value
+			if uc.TemplateColumnID.Valid && !ok {
+				sameColumnMapping = false
+				break
+			}
+			// Both have values but they are different
+			if uc.TemplateColumnID.Valid && ok && tcID != uc.TemplateColumnID.String() {
 				sameColumnMapping = false
 				break
 			}
 		}
+		// If the column mapping already been set and the new column mapping is the same, no action is required
 		if sameColumnMapping {
 			c.JSON(http.StatusOK, types.Res{Message: "Column mapping unchanged"})
 			return
