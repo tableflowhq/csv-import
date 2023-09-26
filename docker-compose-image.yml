@@ -1,0 +1,55 @@
+version: "1"
+
+services:
+  postgres:
+    extends:
+      file: docker-compose.base.yml
+      service: postgres
+
+  scylla:
+    extends:
+      file: docker-compose.base.yml
+      service: scylla
+
+  backend:
+    image: tableflow/admin-server
+    depends_on:
+      postgres:
+        condition: service_healthy
+      scylla:
+        condition: service_healthy
+
+  admin-ui:
+    depends_on:
+      backend:
+        condition: service_healthy
+    image: tableflow/admin-ui
+    platform: linux/amd64
+    # Un-comment if using Apple silicon
+    #platform: linux/arm64
+    container_name: admin-ui
+    ports:
+      - "3000:80"
+    networks:
+      - app_network
+
+  importer-ui:
+    depends_on:
+      backend:
+        condition: service_healthy
+    image: tableflow/importer-ui
+    platform: linux/amd64
+    # Un-comment if using Apple silicon
+    #platform: linux/arm64
+    container_name: importer-ui
+    ports:
+      - "3001:80"
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    driver: bridge
+
+volumes:
+  tmp:

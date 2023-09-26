@@ -152,7 +152,7 @@ func importerGetImporter(c *gin.Context) {
 			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("Invalid template provided: %v", err.Error())})
 			return
 		}
-		requestTemplate, err := types.ConvertUploadTemplate(jsonb.FromMap(req), false)
+		requestTemplate, err := types.ConvertRawTemplate(jsonb.FromMap(req), false)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 			return
@@ -531,7 +531,7 @@ func importerSetColumnMapping(c *gin.Context) {
 
 	} else if upload.Template.Valid {
 		// A template was set on the upload (SDK-defined template), use that instead of the importer template
-		importServiceTemplate, err := types.ConvertUploadTemplate(upload.Template, false)
+		importServiceTemplate, err := types.ConvertRawTemplate(upload.Template, false)
 		if err != nil {
 			tf.Log.Warnw("Could not convert upload template to import service template during import", "error", err, "upload_id", upload.ID, "upload_template", upload.Template)
 			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})

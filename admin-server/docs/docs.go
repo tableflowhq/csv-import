@@ -558,13 +558,13 @@ const docTemplate = `{
                 "responses": {}
             }
         },
-        "/file-import/v1/import/{id}/cell/edit": {
-            "post": {
-                "description": "Edit the value in a cell for an import. If the cell contains an error, it will run it through the validation before allowing the edit.",
+        "/file-import/v1/import/{id}": {
+            "get": {
+                "description": "Get a single import by the upload ID, including the data if the import is complete",
                 "tags": [
                     "File Import"
                 ],
-                "summary": "Edit a cell in an import",
+                "summary": "Get import by upload ID",
                 "parameters": [
                     {
                         "type": "string",
@@ -572,15 +572,6 @@ const docTemplate = `{
                         "name": "id",
                         "in": "path",
                         "required": true
-                    },
-                    {
-                        "description": "Request body",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/types.ImportCell"
-                        }
                     }
                 ],
                 "responses": {
@@ -662,17 +653,6 @@ const docTemplate = `{
                         "name": "limit",
                         "in": "query",
                         "required": true
-                    },
-                    {
-                        "enum": [
-                            "all",
-                            "valid",
-                            "error"
-                        ],
-                        "type": "string",
-                        "description": "Pagination filter",
-                        "name": "filter",
-                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -680,38 +660,6 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/types.ImportData"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/types.Res"
-                        }
-                    }
-                }
-            }
-        },
-        "/file-import/v1/import/{id}/submit": {
-            "post": {
-                "description": "Submit the reviewed import by the upload ID once the data is reviewed and any errors are fixed",
-                "tags": [
-                    "File Import"
-                ],
-                "summary": "Submit an import by upload ID",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Upload ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/types.Import"
                         }
                     },
                     "400": {
@@ -798,7 +746,7 @@ const docTemplate = `{
         },
         "/file-import/v1/upload/{id}/set-column-mapping": {
             "post": {
-                "description": "Set the template column IDs for each upload column and trigger the import",
+                "description": "Set the template column IDs for each upload column and trigger the import. Note: we will eventually have a separate import endpoint once there is a review step in the upload process.",
                 "tags": [
                     "File Import"
                 ],
@@ -1008,6 +956,72 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/v1/importer": {
+            "post": {
+                "description": "Create an importer",
+                "tags": [
+                    "External API"
+                ],
+                "summary": "Create importer",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.Importer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.Importer"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/types.Res"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/importer/{id}": {
+            "delete": {
+                "description": "Delete an importer along with all associated objects (template, columns)",
+                "tags": [
+                    "External API"
+                ],
+                "summary": "Delete importer",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Importer ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.Res"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/types.Res"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -1035,10 +1049,6 @@ const docTemplate = `{
                 "importer_id": {
                     "type": "string",
                     "example": "6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353"
-                },
-                "is_complete": {
-                    "type": "boolean",
-                    "example": false
                 },
                 "is_stored": {
                     "type": "boolean",
@@ -1470,6 +1480,14 @@ const docTemplate = `{
                     "type": "integer",
                     "example": 1682366228
                 },
+                "data": {
+                    "description": "Used internally within the importer",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/types.ImportData"
+                        }
+                    ]
+                },
                 "has_errors": {
                     "type": "boolean",
                     "example": false
@@ -1522,33 +1540,9 @@ const docTemplate = `{
                 }
             }
         },
-        "types.ImportCell": {
-            "type": "object",
-            "properties": {
-                "cell_key": {
-                    "type": "string",
-                    "example": "first_name"
-                },
-                "cell_value": {
-                    "type": "string",
-                    "example": "Laura"
-                },
-                "is_error": {
-                    "type": "boolean",
-                    "example": false
-                },
-                "row_index": {
-                    "type": "integer",
-                    "example": 0
-                }
-            }
-        },
         "types.ImportData": {
             "type": "object",
             "properties": {
-                "filter": {
-                    "type": "string"
-                },
                 "pagination": {
                     "$ref": "#/definitions/types.Pagination"
                 },
@@ -1622,9 +1616,6 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "limit": {
-                    "type": "integer"
-                },
-                "next_offset": {
                     "type": "integer"
                 },
                 "offset": {

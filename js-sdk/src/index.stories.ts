@@ -27,6 +27,7 @@ const meta = {
     skipHeaderRowSelection: { control: "boolean" },
     showDownloadTemplateButton: { control: "boolean" },
     schemaless: { control: "boolean" },
+    schemalessReadOnly: { control: "boolean" },
   },
 } satisfies Meta<TableFlowImporterProps>;
 

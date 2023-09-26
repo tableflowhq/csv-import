@@ -15,6 +15,7 @@ export default function useMapColumnsTable(
   items: UploadColumn[] = [],
   templateColumns: TemplateColumn[] = [],
   schemaless?: boolean,
+  schemalessReadOnly?: boolean,
   columnsValues: { [key: string]: Include } = {}
 ) {
   const [selectedFieldsSet, setSelectedFieldsSet] = useState(() => {
@@ -175,6 +176,7 @@ export default function useMapColumnsTable(
               setValues={(value) => {
                 handleValueChange(id, value);
               }}
+              readOnly={!!schemalessReadOnly}
             />
           ) : (
             <Input
@@ -189,7 +191,13 @@ export default function useMapColumnsTable(
         },
         Include: {
           raw: false,
-          content: <Checkbox checked={suggestion.use} disabled={!suggestion.template} onChange={(e) => handleUseChange(id, e.target.checked)} />,
+          content: (
+            <Checkbox
+              checked={suggestion.use}
+              disabled={(schemaless && schemalessReadOnly) || !suggestion.template}
+              onChange={(e) => handleUseChange(id, e.target.checked)}
+            />
+          ),
         },
       };
     });
@@ -197,7 +205,7 @@ export default function useMapColumnsTable(
   return { rows, formValues: values };
 }
 
-const SchemaLessInput = ({ value, setValues }: { value: string; setValues: (value: string) => void }) => {
+const SchemaLessInput = ({ value, setValues, readOnly }: { value: string; setValues: (value: string) => void; readOnly: boolean }) => {
   const { transformedValue, transformValue } = useTransformValue(value);
   const [inputValue, setInputValue] = useState(transformedValue);
 
@@ -212,5 +220,5 @@ const SchemaLessInput = ({ value, setValues }: { value: string; setValues: (valu
     setValues(transformedValue);
   };
 
-  return <Input value={inputValue} variants={["small"]} onChange={handleOnChange} />;
+  return <Input value={inputValue} variants={["small"]} onChange={handleOnChange} disabled={readOnly} />;
 };
