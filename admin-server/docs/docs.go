@@ -956,6 +956,72 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/v1/importer": {
+            "post": {
+                "description": "Create an importer",
+                "tags": [
+                    "External API"
+                ],
+                "summary": "Create importer",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/types.Importer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.Importer"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/types.Res"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/importer/{id}": {
+            "delete": {
+                "description": "Delete an importer along with all associated objects (template, columns)",
+                "tags": [
+                    "External API"
+                ],
+                "summary": "Delete importer",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Importer ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/types.Res"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/types.Res"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -1415,7 +1481,12 @@ const docTemplate = `{
                     "example": 1682366228
                 },
                 "data": {
-                    "$ref": "#/definitions/types.ImportData"
+                    "description": "Used internally within the importer",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/types.ImportData"
+                        }
+                    ]
                 },
                 "has_errors": {
                     "type": "boolean",
@@ -1457,7 +1528,7 @@ const docTemplate = `{
                     "example": 224
                 },
                 "rows": {
-                    "description": "Deprecated: Use Data.Rows instead",
+                    "description": "Used for the final step in the onComplete",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/types.ImportRow"

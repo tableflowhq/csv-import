@@ -212,7 +212,7 @@ func downloadImportForExternalAPI(c *gin.Context) {
 //	@Success		200	{object}	types.Importer
 //	@Failure		400	{object}	types.Res
 //	@Router			/v1/importer [post]
-//	@Param			body	body	type.Importer	true	"Request body"
+//	@Param			body	body	types.Importer	true	"Request body"
 func createImporterForExternalAPI(c *gin.Context, getWorkspaceUser func(*gin.Context, string) (string, error)) {
 	workspaceID := c.GetString("workspace_id")
 	userID, err := getWorkspaceUser(c, workspaceID)
