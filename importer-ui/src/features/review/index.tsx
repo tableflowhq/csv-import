@@ -5,8 +5,8 @@ import useReviewTable from "./hooks/useReviewTable";
 import { ReviewProps } from "./types";
 import style from "./style/Review.module.scss";
 
-export default function Review({ upload, template, onSuccess, onCancel, skipHeaderRowSelection, schemaless }: ReviewProps) {
-  const { rows, formValues } = useReviewTable(upload?.upload_columns, template?.columns, schemaless);
+export default function Review({ upload, template, onSuccess, onCancel, skipHeaderRowSelection, schemaless, schemalessReadOnly }: ReviewProps) {
+  const { rows, formValues } = useReviewTable(upload?.upload_columns, template?.columns, schemaless, schemalessReadOnly);
 
   const { mutate, error, isSuccess, isLoading } = usePostUpload(upload?.id || "");
 
