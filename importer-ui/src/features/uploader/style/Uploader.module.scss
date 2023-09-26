@@ -16,13 +16,13 @@
   }
 }
 
-.box{
+.box {
   display: flex;
   flex-direction: column;
   gap: 14px;
 }
 
-.tableContainer{
+.tableContainer {
   overflow: hidden;
   overflow-y: scroll;
   max-height: 496px;
