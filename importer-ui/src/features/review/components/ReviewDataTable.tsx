@@ -4,69 +4,78 @@ import { AgGridReact } from "ag-grid-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { classes, Icon, Tooltip } from "@tableflow/ui-library";
 import { IconType } from "@tableflow/ui-library/build/Icon/types";
-import useGetRows from "../../../api/useGetRows";
+import useGetRows, { fetchRows } from "../../../api/useGetRows";
+import useDelayedLoader from "../../../hooks/useDelayLoader";
 import { TableProps } from "../types";
 import style from "../style/Review.module.scss";
+import "./TableStyle.scss";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
-import "./TableStyle.scss";
 
 function ReviewDataTable({ cellClickedListener, theme, uploadId, filter, template }: TableProps) {
   const customSelectClass = "ag-theme-alpine-dark-custom-select";
   const gridRef: any = useRef(null);
+  const gridOptions = useRef(null);
+  const paginatedDataRef: any = useRef();
+  const filterRef: any = useRef(filter);
+
   const [columnDefs, setColumnDefs] = useState<any>([]);
   const [selectedClass, setSelectedClass] = useState(customSelectClass);
 
-  const { data: initialRowData, fetchNextPage, isLoading } = useGetRows(uploadId, filter, 100, 0);
+  const [paginatedData, setPaginatedData] = useState<any>();
 
   useEffect(() => {
-    const total = initialRowData?.pages[0]?.pagination?.total || 0;
-
-    total === 0 && gridRef.current?.showNoRowsOverlay();
-    total > 0 && gridRef.current?.hideOverlay();
-    setColumnSizes();
-  }, [filter, initialRowData?.pages?.[0]?.pagination?.total]);
+    paginatedDataRef.current = paginatedData;
+  }, [paginatedData]);
 
   useEffect(() => {
-    if (gridRef.current) {
-      isLoading && gridRef.current.showLoadingOverlay();
-      !isLoading && gridRef.current.hideOverlay();
-      setColumnSizes();
-    }
-  }, [isLoading]);
+    filterRef.current = filter;
+    setPaginatedData(null);
+    paginatedDataRef.current = null;
+    gridRef.current && setDataSource();
+  }, [filter]);
 
-  const onGridReady = (params: GridReadyEvent<any>) => {
-    gridRef.current = params.api as any;
-    setTimeout(() => {
-      setColumnSizes();
-    }, 100);
-  };
+  // useEffect(() => {
+  //   if (gridRef.current) {
+  //     // isLoading && gridRef.current.showLoadingOverlay();
+  //     // !isLoading && gridRef.current.hideOverlay();
+  //     setColumnSizes();
+  //   }
+  // }, [isLoading]);
 
-  useEffect(() => {
-    if (!gridRef.current || !initialRowData?.pages[0]?.rows) return;
-    setColumnSizes();
-
+  const setDataSource = () => {
     const dataSource: IDatasource = {
-      rowCount: initialRowData?.pages?.[0]?.pagination?.total || undefined,
+      rowCount: paginatedData?.pagination?.total || undefined,
       getRows: async (params: any) => {
-        const nextOffset = initialRowData?.pages[0]?.pagination?.next_offset || 0;
+        const previousData = paginatedDataRef.current || {};
+        const nextOffset = previousData?.pagination?.next_offset || 0;
 
-        const data = await fetchNextPage({
-          pageParam: nextOffset,
-        });
-        const paginationInfo = data?.data?.pages[0]?.pagination;
-        const rowThisPage = data?.data?.pages?.flatMap((page: any) => page?.rows) || [];
+        // gets the paginated data
+        const newData = await fetchRows(uploadId, filterRef.current, 100, nextOffset);
+
+        const paginationInfo = newData?.pagination;
+        const rowThisPage = newData?.rows || [];
 
         let lastRow = -1;
         if (paginationInfo?.total !== undefined && paginationInfo.total <= params.endRow) {
           lastRow = paginationInfo.total;
         }
         params.successCallback(rowThisPage, lastRow);
+        setPaginatedData({ ...newData });
       },
     };
     gridRef.current.setDatasource(dataSource);
-  }, [filter, gridRef.current, JSON.stringify(initialRowData?.pages?.[0]?.rows)]);
+    setColumnSizes();
+  };
 
+  const onGridReady = useCallback((params: GridReadyEvent<any>) => {
+    gridRef.current = params.api as any;
+    gridOptions.current = params as any;
+    setTimeout(() => {
+      setColumnSizes();
+    }, 100);
+    setDataSource();
+  }, []);
   window.addEventListener("resize", () => {
     setColumnSizes();
   });
@@ -81,8 +90,8 @@ function ReviewDataTable({ cellClickedListener, theme, uploadId, filter, templat
         columnLimits: [
           {
             key: "index",
-            maxWidth: 55,
-            minWidth: 55,
+            maxWidth: 70,
+            minWidth: 70,
           },
         ],
       };
@@ -100,8 +109,8 @@ function ReviewDataTable({ cellClickedListener, theme, uploadId, filter, templat
   // };
 
   useEffect(() => {
-    if (initialRowData?.pages?.[0]?.rows?.[0]?.values) {
-      const headers = Object.keys(initialRowData.pages[0]?.rows[0]?.values);
+    if (paginatedData?.rows?.[0]?.values) {
+      const headers = Object.keys(paginatedData.rows[0]?.values);
       const generatedColumnDefs = headers.map((header: string) => {
         const displayName = template?.columns.find((c) => c.key === header)?.name;
         const displayDescription = template?.columns.find((c) => c.key === header)?.description;
@@ -132,12 +141,12 @@ function ReviewDataTable({ cellClickedListener, theme, uploadId, filter, templat
         headerName: "",
         valueGetter: "node.id",
         field: "index",
-        width: 55,
+        width: 70,
         pinned: headers.length >= 5 ? "left" : undefined,
       });
       setColumnDefs(generatedColumnDefs.reverse());
     }
-  }, [initialRowData?.pages, template]);
+  }, [JSON.stringify(paginatedData?.rows), JSON.stringify(template)]);
 
   // Index column plus one
   const getRowId = useMemo<any>(() => {
@@ -171,9 +180,7 @@ function ReviewDataTable({ cellClickedListener, theme, uploadId, filter, templat
         onCellClicked={onCellClicked}
         onCellMouseDown={onCellMouseDown}
         onGridReady={onGridReady}
-        infiniteInitialRowCount={100}
-        cacheBlockSize={0}
-        rowBuffer={100}
+        cacheBlockSize={100}
         rowModelType={"infinite"}
         cacheOverflowSize={2}
         maxConcurrentDatasourceRequests={1}
