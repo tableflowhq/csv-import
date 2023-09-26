@@ -8,12 +8,3 @@ Retrieve the rows of an import as JSON. This endpoint supports pagination by usi
 To use the limit/offset, start by setting the offset to 0 and the limit to 100 to get the first 100 rows of data. To get the next 100 rows, set the offset to 100 while keeping the limit the same. Continue increasing the offset by 100 until no more rows are returned.
 
 Note: the max limit is 1000.
-
-<RequestExample>
-
-```bash cURL
-curl --url https://api.tableflow.com/v1/import/{id}/rows" \
-  --header 'Accept: application/json'
-```
-
-</RequestExample>
