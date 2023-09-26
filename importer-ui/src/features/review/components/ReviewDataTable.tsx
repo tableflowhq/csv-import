@@ -182,7 +182,7 @@ function ReviewDataTable({ theme, uploadId, filter, template }: TableProps) {
           field: `values.${header}`,
           cellStyle: (params: any) => {
             if (params.data?.errors?.[header]) {
-              return { backgroundColor: getCellBackgroundColor(params.data.errors[header][0].severity) };
+              return { backgroundColor: getCellBackgroundColor(params.data.errors[header][0].severity, theme) };
             }
             return null;
           },
@@ -283,13 +283,19 @@ const getIconType = (type: string): IconType => {
   return iconTypeMap[type as IconKeyType] || "info";
 };
 
-const getCellBackgroundColor = (severity: IconKeyType): string | null => {
-  const colorMap = {
-    error: "#f04339",
-    warning: "#ffcc00",
-    info: "#4caf50",
-  };
-
+const getCellBackgroundColor = (severity: IconKeyType, theme: string): string | null => {
+  const colorMap =
+    theme === "dark"
+      ? {
+          error: "#7A271A",
+          warning: "#B54708",
+          info: "#054F31",
+        }
+      : {
+          error: "#FDA29B",
+          warning: "#FEDF89",
+          info: "#A6F4C5",
+        };
   return colorMap[severity] || null;
 };
 
