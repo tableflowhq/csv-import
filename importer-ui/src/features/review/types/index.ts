@@ -11,7 +11,6 @@ export type ReviewProps = {
 };
 
 export type TableProps = {
-  cellClickedListener: (event: any) => void;
   theme: "light" | "dark";
   uploadId: string;
   filter: QueryFilter;
