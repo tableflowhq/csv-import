@@ -42,7 +42,6 @@ export default function Uploader({
       schemaless={schemaless}
     />
   );
-
   if (schemaless) {
     return uppyWrapper;
   }

@@ -12,8 +12,9 @@ type Include = {
 };
 
 export default function useReviewTable(items: UploadColumn[] = [], templateColumns: TemplateColumn[] = [], schemaless?: boolean) {
-  const [values, setValues] = useState<{ [key: string]: Include }>(
-    items.reduce((acc, uc) => {
+  const [values, setValues] = useState<{ [key: string]: Include }>(() => {
+    const usedTemplateColumns = new Set<string>();
+    return items.reduce((acc, uc) => {
       const matchedSuggestedTemplateColumn = templateColumns?.find((tc) => {
         if (!tc?.suggested_mappings) {
           return false;
@@ -26,12 +27,22 @@ export default function useReviewTable(items: UploadColumn[] = [], templateColum
         return false;
       });
       if (matchedSuggestedTemplateColumn) {
+        usedTemplateColumns.add(matchedSuggestedTemplateColumn.id);
         return { ...acc, [uc.id]: { template: matchedSuggestedTemplateColumn.id || "", use: !!matchedSuggestedTemplateColumn.id } };
       }
-      const similarTemplateColumn = templateColumns?.find((tc) => stringsSimilarity(tc.name, uc.name) > 0.9);
+      const similarTemplateColumn = templateColumns?.find((tc) => {
+        if (usedTemplateColumns.has(tc.id)) {
+          return false;
+        }
+        if (stringsSimilarity(tc.name, uc.name) > 0.9) {
+          usedTemplateColumns.add(tc.id);
+          return true;
+        }
+        return false;
+      });
       return { ...acc, [uc.id]: { template: similarTemplateColumn?.id || "", use: !!similarTemplateColumn?.id } };
-    }, {})
-  );
+    }, {});
+  });
   const [selectedTemplates, setSelectedTemplates] = useState<string[]>([]);
   const templateFields: { [key: string]: InputOption } = useMemo(
     () => templateColumns.reduce((acc, field) => ({ ...acc, [field.name]: { value: field.id, required: field.required } }), {}),
@@ -62,24 +73,6 @@ export default function useReviewTable(items: UploadColumn[] = [], templateColum
     setValues((prev) => ({ ...prev, [id]: { ...prev[id], template: value, use: !!value } }));
   };
 
-  const heading = {
-    "File Column": {
-      raw: "",
-      content: "File Column",
-    },
-    "Sample Data": {
-      raw: "",
-      content: "Sample Data",
-    },
-    "Destination Column": {
-      raw: "",
-      content: "Destination Column 1",
-    },
-    Include: {
-      raw: "",
-      content: "Include",
-    },
-  };
   const rows = useMemo(() => {
     return items.map((item) => {
       const { id, name, sample_data } = item;
