@@ -3,6 +3,7 @@ package web
 import (
 	"bytes"
 	"encoding/csv"
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/guregu/null"
@@ -204,6 +205,22 @@ func downloadImportForExternalAPI(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
+// TODO: Update for multi-user support
+func getWorkspaceUser(workspaceID string) (string, error) {
+	type Res struct {
+		UserID string
+	}
+	var res Res
+	err := tf.DB.Raw("select user_id::text from workspace_users where workspace_id = ? limit 1;", model.ParseID(workspaceID)).Scan(&res).Error
+	if err != nil {
+		return "", err
+	}
+	if len(res.UserID) == 0 {
+		return "", errors.New("error determining user in workspace")
+	}
+	return res.UserID, nil
+}
+
 // createImporterForExternalAPI
 //
 //	@Summary		Create importer
@@ -213,9 +230,9 @@ func downloadImportForExternalAPI(c *gin.Context) {
 //	@Failure		400	{object}	types.Res
 //	@Router			/v1/importer [post]
 //	@Param			body	body	types.Importer	true	"Request body"
-func createImporterForExternalAPI(c *gin.Context, getWorkspaceUser func(*gin.Context, string) (string, error)) {
+func createImporterForExternalAPI(c *gin.Context) {
 	workspaceID := c.GetString("workspace_id")
-	userID, err := getWorkspaceUser(c, workspaceID)
+	userID, err := getWorkspaceUser(workspaceID)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, types.Res{Err: err.Error()})
 		return
@@ -337,7 +354,7 @@ func createImporterForExternalAPI(c *gin.Context, getWorkspaceUser func(*gin.Con
 //	@Failure		400	{object}	types.Res
 //	@Router			/v1/importer/{id} [delete]
 //	@Param			id	path	string	true	"Importer ID"
-func deleteImporterForExternalAPI(c *gin.Context, getWorkspaceUser func(*gin.Context, string) (string, error)) {
+func deleteImporterForExternalAPI(c *gin.Context) {
 	id := c.Param("id")
 	if len(id) == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No importer ID provided"})
@@ -354,7 +371,7 @@ func deleteImporterForExternalAPI(c *gin.Context, getWorkspaceUser func(*gin.Con
 		c.AbortWithStatusJSON(http.StatusUnauthorized, types.Res{Err: "Unauthorized"})
 		return
 	}
-	userID, err := getWorkspaceUser(c, importer.WorkspaceID.String())
+	userID, err := getWorkspaceUser(importer.WorkspaceID.String())
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, types.Res{Err: err.Error()})
 		return
