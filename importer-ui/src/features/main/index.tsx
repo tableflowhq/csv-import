@@ -37,6 +37,7 @@ export default function Main() {
     skipHeaderRowSelection,
     template: sdkDefinedTemplate,
     schemaless,
+    schemalessReadOnly,
     showDownloadTemplateButton,
     cssOverrides,
   } = useEmbedStore((state) => state.embedParams);
@@ -241,6 +242,7 @@ export default function Main() {
             skipHeaderRowSelection={skipHeader}
             onCancel={skipHeader ? reload : rowSelection}
             schemaless={schemaless}
+            schemalessReadOnly={schemalessReadOnly}
           />
         );
       case Steps.Complete:
