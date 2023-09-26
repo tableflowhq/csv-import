@@ -17,6 +17,14 @@ export default function useMapColumnsTable(
   schemaless?: boolean,
   columnsValues: { [key: string]: Include } = {}
 ) {
+  const [selectedFieldsSet, setSelectedFieldsSet] = useState(() => {
+    const selectedFields = Object.values(columnsValues).map((value) => ({
+      template: value.template,
+      use: value.use,
+    }));
+    return new Set(selectedFields);
+  });
+
   useEffect(() => {
     Object.keys(columnsValues).map((mapColData) => {
       const template = columnsValues[mapColData].template;
@@ -73,6 +81,16 @@ export default function useMapColumnsTable(
         }
         return currentSelected;
       });
+      const idTemplate = oldTemplate || template;
+      const updatedFieldsSet = new Set(
+        [...selectedFieldsSet].map((field) => {
+          if (field.template === idTemplate) {
+            return { ...field, use: !!template };
+          }
+          return field;
+        })
+      );
+      setSelectedFieldsSet(updatedFieldsSet);
       return { ...prev, [id]: { ...prev[id], template, use: !!template } };
     });
   };
@@ -120,11 +138,18 @@ export default function useMapColumnsTable(
           return !isTemplateUsed || isSuggestionTemplate;
         });
       }
+      if (selectedFieldsSet.size > 0) {
+        currentOptions = Object.keys(templateFields).filter((key) => {
+          const isSuggestionTemplate = templateFields[key].value === suggestion.template;
+          const isTemplateUsed = Array.from(selectedFieldsSet).some((val) => val.template === templateFields[key].value && val.use);
+          return !isTemplateUsed || isSuggestionTemplate;
+        });
+      }
+
       currentOptions = currentOptions?.reduce((acc, key) => {
         acc[key] = templateFields[key];
         return acc;
       }, {} as { [key: string]: InputOption });
-
       const isCurrentOptions = currentOptions && Object.keys(currentOptions).length > 0;
 
       return {

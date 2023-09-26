@@ -2031,9 +2031,9 @@
     loader-utils "^2.0.0"
 
 "@tableflow/ui-library@^1.65.0":
-  version "1.65.0"
-  resolved "https://registry.yarnpkg.com/@tableflow/ui-library/-/ui-library-1.65.0.tgz#4ecd33e85c6949afe1653e632cf86f72dd95dba7"
-  integrity sha512-1mBNX27QXDlYo/OS0WtRRAex1YWEznIvJKtlRklw1noDdn98j6ZZ8hagnNcCl2g45/mN2pIZcvQ1vnjFS6bK2A==
+  version "1.66.0"
+  resolved "https://registry.yarnpkg.com/@tableflow/ui-library/-/ui-library-1.66.0.tgz#115875225b6d2e271eaa7e23b5677b934b3b0e68"
+  integrity sha512-dz6adDEML8LcVOSXyHxGkHj0LA4qb0k6m0lGWuJS4G1+eh+dUCt/pddEdoUjRzRn7qpeow7pLdBLYsMGJmF0lA==
   dependencies:
     babel-plugin-inline-react-svg "^2.0.2"
     tslib "^2.5.3"
@@ -3177,9 +3177,9 @@ axe-core@^4.6.2:
   integrity sha512-/dlp0fxyM3R8YW7MFzaHWXrf4zzbr0vaYb23VBFCl83R7nWNPg/yaQw2Dc8jzCMmDVLhSdzH8MjrsuIUuvX+6g==
 
 axios@^1.3.4:
-  version "1.5.0"
-  resolved "https://registry.yarnpkg.com/axios/-/axios-1.5.0.tgz#f02e4af823e2e46a9768cfc74691fdd0517ea267"
-  integrity sha512-D4DdjDo5CY50Qms0qGQTTw6Q44jl7zRwY7bthds06pUGfChBCTcQs+N743eFWGEd6pRTMd6A+I87aWyFV5wiZQ==
+  version "1.5.1"
+  resolved "https://registry.yarnpkg.com/axios/-/axios-1.5.1.tgz#11fbaa11fc35f431193a9564109c88c1f27b585f"
+  integrity sha512-Q28iYCWzNHjAm+yEAot5QaAMxhMghWLFVf7rRdwhUI+c2jix2DUXjAHXVi+s1ibs3mjPO/cCgbA++3BjD0vP/A==
   dependencies:
     follow-redirects "^1.15.0"
     form-data "^4.0.0"
@@ -4404,9 +4404,9 @@ ejs@^3.1.6:
     jake "^10.8.5"
 
 electron-to-chromium@^1.4.526:
-  version "1.4.529"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.529.tgz#8c3377a05e5737f899770d14524dd8e2e4cb2351"
-  integrity sha512-6uyPyXTo8lkv8SWAmjKFbG42U073TXlzD4R8rW3EzuznhFS2olCIAfjjQtV2dV2ar/vRF55KUd3zQYnCB0dd3A==
+  version "1.4.530"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.530.tgz#c31a44346739bb34acb1a4026a07c3b9eeeb326c"
+  integrity sha512-rsJ9O8SCI4etS8TBsXuRfHa2eZReJhnGf5MHZd3Vo05PukWHKXhk3VQGbHHnDLa8nZz9woPCpLCMQpLGgkGNRA==
 
 emittery@^0.10.2:
   version "0.10.2"

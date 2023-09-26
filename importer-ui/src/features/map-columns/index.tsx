@@ -16,7 +16,6 @@ export default function MapColumns({
   columnsValues,
 }: MapColumnsProps) {
   const { rows, formValues } = useMapColumnsTable(upload?.upload_columns, template?.columns, schemaless, columnsValues);
-
   const { mutate, error, isSuccess, isLoading } = usePostUpload(upload?.id || "");
 
   const onSubmit = (e: FormEvent<HTMLFormElement>) => {
