@@ -8,4 +8,5 @@ export type ReviewProps = {
   showImportLoadingStatus?: boolean;
   skipHeaderRowSelection?: boolean;
   schemaless?: boolean;
+  schemalessReadOnly?: boolean;
 };
