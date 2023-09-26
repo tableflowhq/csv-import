@@ -1,23 +1,81 @@
 /* eslint-disable */
-import { ColDef, GetRowIdFunc, GetRowIdParams, GridReadyEvent, ICellRendererParams, IDatasource, ISizeColumnsToFitParams } from "ag-grid-community";
+import {
+  CellValueChangedEvent,
+  ColDef,
+  GridApi,
+  GridReadyEvent,
+  ICellRendererParams,
+  IDatasource,
+  ISizeColumnsToFitParams,
+  ValueGetterParams,
+} from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { classes, Icon, Tooltip } from "@tableflow/ui-library";
 import { IconType } from "@tableflow/ui-library/build/Icon/types";
+import { post } from "../../../api/api";
 import useGetRows from "../../../api/useGetRows";
 import { TableProps } from "../types";
 import style from "../style/Review.module.scss";
+import "./TableStyle.scss";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
-import "./TableStyle.scss";
 
-function ReviewDataTable({ cellClickedListener, theme, uploadId, filter, template }: TableProps) {
+function ReviewDataTable({ theme, uploadId, filter, template }: TableProps) {
   const customSelectClass = "ag-theme-alpine-dark-custom-select";
-  const gridRef: any = useRef(null);
+  const gridRef = useRef<GridApi | null>(null);
   const [columnDefs, setColumnDefs] = useState<any>([]);
   const [selectedClass, setSelectedClass] = useState(customSelectClass);
-
   const { data: initialRowData, fetchNextPage, isLoading } = useGetRows(uploadId, filter, 100, 0);
+  const cellValueChangeSet = useRef(new Set<string>());
+
+  // const {
+  //   mutate: mutateCell,
+  //   error: editCellError,
+  //   isSuccess: cellEditIsSuccess,
+  //   isLoading: cellEditIsLoading,
+  //   data: cellEditData,
+  // } = useEditCell(uploadId || "");
+
+  const onCellValueChanged = useCallback((event: CellValueChangedEvent) => {
+    const columnId = event.column.getColId();
+    const cellId = `${event.rowIndex}-${columnId}`;
+    // Check if the change was done programmatically to not cause an infinite loop when reverting changes to cell edits
+    if (cellValueChangeSet.current.has(cellId)) {
+      cellValueChangeSet.current.delete(cellId);
+      return;
+    }
+    let cellKey = "";
+    const parts = columnId.split(".");
+    if (parts.length > 1 && parts[0] === "values") {
+      cellKey = parts[1];
+    } else {
+      console.error("Unexpected column ID format", columnId);
+      return;
+    }
+    const endpoint = `import/${uploadId}/cell/edit`;
+    const body = {
+      row_index: event.rowIndex,
+      is_error: event.data?.errors ? Object.keys(event.data.errors).length > 0 : false,
+      cell_key: cellKey,
+      cell_value: event.newValue,
+    };
+    post(endpoint, body).then((res) => {
+      if (!res.ok) {
+        cellValueChangeSet.current.add(cellId);
+        const rowNode = gridRef.current?.getRowNode(String(event.rowIndex));
+        if (rowNode) {
+          rowNode.setDataValue(columnId, event.oldValue);
+        }
+        alert(res.error);
+      } else {
+        // TODO:
+        // 1. Clear the error highlighting on the cell
+        // 2. Update the "All" "Valid" "Error" selector with the updated count (returned from this response) ...we might have to move this to the review/index component to do this
+        // 3. Update the other grids with the new value
+      }
+    });
+  }, []);
 
   useEffect(() => {
     const total = initialRowData?.pages[0]?.pagination?.total || 0;
@@ -72,6 +130,7 @@ function ReviewDataTable({ cellClickedListener, theme, uploadId, filter, templat
   });
 
   const setColumnSizes = () => {
+    // @ts-ignore
     if (!gridRef.current || gridRef.current?.destroyCalled) return;
     const columnCount = gridRef.current?.getColumnDefs?.()?.length || 0;
     // onl resize if there are less than 5 columns
@@ -112,6 +171,7 @@ function ReviewDataTable({ cellClickedListener, theme, uploadId, filter, templat
           headerComponentParams: {
             displayDescription: displayDescription,
           },
+          editable: true,
           field: `values.${header}`,
           cellStyle: (params: any) => {
             if (params.data?.errors?.[header]) {
@@ -130,7 +190,8 @@ function ReviewDataTable({ cellClickedListener, theme, uploadId, filter, templat
       // Add index column to the beginning of the columns
       generatedColumnDefs.push({
         headerName: "",
-        valueGetter: "node.id",
+        // Set the index cell value to the node ID + 1
+        valueGetter: (params: ValueGetterParams) => Number(params.node?.id ?? 0) + 1,
         field: "index",
         width: 55,
         pinned: headers.length >= 5 ? "left" : undefined,
@@ -138,11 +199,6 @@ function ReviewDataTable({ cellClickedListener, theme, uploadId, filter, templat
       setColumnDefs(generatedColumnDefs.reverse());
     }
   }, [initialRowData?.pages, template]);
-
-  // Index column plus one
-  const getRowId = useMemo<any>(() => {
-    return (params: GetRowIdParams) => params.data.index + 1;
-  }, []);
 
   const onCellMouseDown = (params: any) => {
     if (params.colDef.field !== "index") {
@@ -167,7 +223,7 @@ function ReviewDataTable({ cellClickedListener, theme, uploadId, filter, templat
         defaultColDef={{}}
         animateRows={true}
         rowSelection="multiple"
-        onCellValueChanged={cellClickedListener}
+        onCellValueChanged={onCellValueChanged}
         onCellClicked={onCellClicked}
         onCellMouseDown={onCellMouseDown}
         onGridReady={onGridReady}
@@ -179,7 +235,6 @@ function ReviewDataTable({ cellClickedListener, theme, uploadId, filter, templat
         maxConcurrentDatasourceRequests={1}
         maxBlocksInCache={10}
         tooltipShowDelay={500}
-        getRowId={getRowId}
       />
     </div>
   );

@@ -8,7 +8,6 @@ import ReviewDataTable from "./components/ReviewDataTable";
 import { ReviewProps } from "./types";
 import style from "./style/Review.module.scss";
 import Complete from "../complete";
-import { json } from "stream/consumers";
 
 const defaultOptions = [
   { label: "All (0)", selected: false },
@@ -25,15 +24,8 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
   const { mutate, error: submitError, isSuccess, isLoading: isSubmitting, data: dataSubmitted } = useSubmitReview(upload?.id || "");
 
   const theme = useThemeStore((state) => state.theme);
-
-  // TODO: Carlos - I changed the initial state back here to false, it was set to showImportLoadingStatus causing the review table not to be shown
   const [showLoading, setShowLoading] = useState(true);
-
   const submittedOk = dataSubmitted?.ok || {};
-
-  const cellClickedListener = useCallback((event: any) => {
-    console.log("cellClicked", event);
-  }, []);
 
   useEffect(() => {
     if (isSuccess || submitError) {
@@ -84,9 +76,7 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
       <div className={style.reviewContainer}>
         <ToggleFilter options={filterOptions} className={style.filters} onChange={(option: string) => onFilterChange(option)} />
         <div className={style.tableWrapper}>
-          {!isLoading && (
-            <ReviewDataTable template={template} cellClickedListener={cellClickedListener} theme={theme} uploadId={uploadId} filter={filter} />
-          )}
+          {!isLoading && <ReviewDataTable template={template} theme={theme} uploadId={uploadId} filter={filter} />}
         </div>
         <div className={style.actions}>
           <Button type="button" variants={["secondary"]} onClick={onCancel}>
