@@ -17,6 +17,7 @@ export type MapColumnsProps = {
   showImportLoadingStatus?: boolean;
   skipHeaderRowSelection?: boolean;
   schemaless?: boolean;
+  schemalessReadOnly?: boolean;
   seColumnsValues: Dispatch<SetStateAction<FormValues>>;
   columnsValues: FormValues;
 };

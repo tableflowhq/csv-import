@@ -171,7 +171,7 @@ export default function useMapColumnsTable(
         "Destination Column": {
           raw: "",
           content: schemaless ? (
-            <SchemaLessInput
+            <SchemalessInput
               value={transformedName}
               setValues={(value) => {
                 handleValueChange(id, value);
@@ -205,7 +205,7 @@ export default function useMapColumnsTable(
   return { rows, formValues: values };
 }
 
-const SchemaLessInput = ({ value, setValues, readOnly }: { value: string; setValues: (value: string) => void; readOnly: boolean }) => {
+const SchemalessInput = ({ value, setValues, readOnly }: { value: string; setValues: (value: string) => void; readOnly: boolean }) => {
   const { transformedValue, transformValue } = useTransformValue(value);
   const [inputValue, setInputValue] = useState(transformedValue);
 

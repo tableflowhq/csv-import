@@ -857,7 +857,7 @@ func importerEditImportCell(c *gin.Context) {
 
 	if imp.Upload.Template.Valid {
 		// If the upload uses an SDK-defined template, retrieve any validations from the template on the upload
-		template, err := types.ConvertUploadTemplate(imp.Upload.Template, true)
+		template, err := types.ConvertRawTemplate(imp.Upload.Template, true)
 		if err != nil {
 			tf.Log.Errorw("Upload template invalid retrieving validations for cell edit", "upload_id", imp.Upload.ID, "error", err)
 			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "The SDK-defined template is invalid"})
