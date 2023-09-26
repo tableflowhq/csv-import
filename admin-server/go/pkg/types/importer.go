@@ -136,7 +136,7 @@ func ConvertUpload(upload *model.Upload, uploadRows []UploadRow) (*Upload, error
 			SampleData: uc.SampleData,
 		}
 	}
-	uploadTemplate, err := ConvertUploadTemplate(upload.Template, false)
+	uploadTemplate, err := ConvertRawTemplate(upload.Template, false)
 	if err != nil {
 		tf.Log.Warnw("Could not convert upload template to import service template", "error", err, "upload_id", upload.ID, "upload_template", upload.Template)
 		return nil, err
@@ -160,7 +160,7 @@ func ConvertUpload(upload *model.Upload, uploadRows []UploadRow) (*Upload, error
 	return importerUpload, nil
 }
 
-func ConvertUploadTemplate(rawTemplate jsonb.JSONB, generateIDs bool) (*Template, error) {
+func ConvertRawTemplate(rawTemplate jsonb.JSONB, generateIDs bool) (*Template, error) {
 	if !rawTemplate.Valid {
 		// No template provided, this means the template from the importer will be used
 		return nil, nil

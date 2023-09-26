@@ -1,15 +1,19 @@
 package web
 
 import (
+	"bytes"
 	"encoding/csv"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/guregu/null"
 	"io"
 	"net/http"
 	"os"
 	"strconv"
 	"tableflow/go/pkg/db"
 	"tableflow/go/pkg/file"
+	"tableflow/go/pkg/model"
+	"tableflow/go/pkg/model/jsonb"
 	"tableflow/go/pkg/scylla"
 	"tableflow/go/pkg/tf"
 	"tableflow/go/pkg/types"
@@ -196,4 +200,128 @@ func downloadImportForExternalAPI(c *gin.Context) {
 		return
 	}
 	c.Status(http.StatusOK)
+}
+
+// createImporterForExternalAPI
+//
+//	@Summary		Create importer
+//	@Description	Create an importer
+//	@Tags			External API
+//	@Success		200	{object}	types.Importer
+//	@Failure		400	{object}	types.Res
+//	@Router			/v1/importer [post]
+//	@Param			body	body	type.Importer	true	"Request body"
+func createImporterForExternalAPI(c *gin.Context, getWorkspaceUser func(*gin.Context, string) (string, error)) {
+	workspaceID := c.GetString("workspace_id")
+	userID, err := getWorkspaceUser(c, workspaceID)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, types.Res{Err: err.Error()})
+		return
+	}
+	user := model.User{ID: model.ParseID(userID)}
+
+	bodyBytes, err := io.ReadAll(c.Request.Body)
+	if err != nil {
+		tf.Log.Warnw("Could not read JSON body", "error", err, "workspace_id", workspaceID)
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+		return
+	}
+	// Write body back for subsequent middleware or handler
+	c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+
+	bodyJSON, err := jsonb.FromBytes(bodyBytes)
+	if err != nil {
+		tf.Log.Warnw("Invalid JSON body", "error", err, "workspace_id", workspaceID)
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+		return
+	}
+	importerRaw, ok := bodyJSON.AsMap()
+	if !ok {
+		tf.Log.Warnw("Invalid importer JSON body", "error", err, "workspace_id", workspaceID)
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Invalid JSON body"})
+		return
+	}
+	name, _ := importerRaw["name"].(string)
+	skipHeaderRowSelection, _ := importerRaw["skip_header_row_selection"].(bool)
+	if len(name) == 0 {
+		name = "My Importer"
+	}
+	importer := model.Importer{
+		ID:                     model.NewID(),
+		WorkspaceID:            model.ParseID(workspaceID),
+		Name:                   name,
+		SkipHeaderRowSelection: skipHeaderRowSelection,
+		CreatedBy:              user.ID,
+		UpdatedBy:              user.ID,
+	}
+
+	// Parse the template from the request
+	templateRaw, _ := importerRaw["template"]
+	templateJSON := jsonb.JSONB{
+		Data:  templateRaw,
+		Valid: templateRaw != nil,
+	}
+	if !templateJSON.Valid {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Invalid importer: The parameter 'template' is required"})
+		return
+	}
+	templateType, err := types.ConvertRawTemplate(templateJSON, true)
+	if err != nil {
+		tf.Log.Warnw("Invalid template JSON", "error", err, "workspace_id", workspaceID)
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+		return
+	}
+
+	err = tf.DB.Create(&importer).Error
+	if err != nil {
+		tf.Log.Errorw("Could not create importer", "error", err, "workspace_id", workspaceID)
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+		return
+	}
+	template := model.Template{
+		ID:          templateType.ID,
+		WorkspaceID: importer.WorkspaceID,
+		ImporterID:  importer.ID,
+		Name:        "Default Template",
+		CreatedBy:   user.ID,
+		UpdatedBy:   user.ID,
+	}
+	err = tf.DB.Create(&template).Error
+	if err != nil {
+		tf.Log.Errorw("Could not create template for importer", "error", err, "workspace_id", workspaceID)
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+		return
+	}
+
+	// TODO: After validations is released, migrate this to a types function that includes validations
+	for _, tc := range templateType.TemplateColumns {
+		template.TemplateColumns = append(template.TemplateColumns, &model.TemplateColumn{
+			ID:                tc.ID,
+			TemplateID:        templateType.ID,
+			Name:              tc.Name,
+			Key:               tc.Key,
+			Required:          tc.Required,
+			Description:       null.NewString(tc.Description, len(tc.Description) != 0),
+			SuggestedMappings: tc.SuggestedMappings,
+			CreatedBy:         user.ID,
+			UpdatedBy:         user.ID,
+			//Validations:       nil,
+		})
+	}
+	err = tf.DB.Create(template.TemplateColumns).Error
+	if err != nil {
+		tf.Log.Errorw("Could not create template columns", "error", err, "workspace_id", workspaceID)
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+		return
+	}
+	importer.Template = &template
+
+	importerType := types.Importer{
+		ID:                     importer.ID,
+		Name:                   importer.Name,
+		SkipHeaderRowSelection: importer.SkipHeaderRowSelection,
+		Template:               templateType,
+	}
+
+	c.JSON(http.StatusOK, &importerType)
 }
