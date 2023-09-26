@@ -248,8 +248,11 @@ function ReviewDataTable({ theme, uploadId, filter, template }: TableProps) {
 function CustomTooltip(props: any) {
   const { data } = props;
   const { errors } = data;
-  const { headerName } = props.colDef;
-  const error = errors?.[headerName];
+  const { field } = props.colDef;
+  const parts = field?.split(".");
+  const lastPart = parts[parts?.length - 1];
+  const error = errors?.[lastPart!];
+
   if (!error) return null;
   return (
     <Tooltip className={style.tableflowTooltip} icon={getIconType(error[0].severity)}>
