@@ -631,7 +631,7 @@ func importerSetColumnMapping(c *gin.Context) {
 
 		// At this point we know the new column mapping is different, so the current column mapping needs to be cleared
 		// and the import needs to be deleted and re-imported
-		err = db.ClearUploadColumnTemplateColumnIDs(upload.ID.String())
+		err = db.ClearUploadColumnTemplateColumnIDs(upload)
 		if err != nil {
 			errStr := "Could not clear existing column mapping"
 			tf.Log.Errorw(errStr, "upload_id", upload.ID, "error", err)
