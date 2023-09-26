@@ -100,6 +100,30 @@ function ReviewDataTable({ theme, uploadId, filter, template }: TableProps) {
   //   }
   // }, [isLoading]);
 
+  const addEmptyRows = (newData: any) => {
+    let dataPage = newData;
+
+    if (!!Object.keys(newData).length && newData.rows.length < 9) {
+      const missingRows = 9 - newData.rows.length;
+      const rows = [...newData.rows];
+
+      for (let i = 0; i < missingRows; i++) {
+        rows.push({});
+      }
+
+      dataPage = {
+        ...newData,
+        pagination: {
+          ...newData.pagination,
+          total: 9,
+        },
+        rows,
+      };
+    }
+
+    return dataPage;
+  };
+
   const setDataSource = () => {
     const dataSource: IDatasource = {
       rowCount: paginatedData?.pagination?.total || undefined,
@@ -110,15 +134,16 @@ function ReviewDataTable({ theme, uploadId, filter, template }: TableProps) {
         // gets the paginated data
         const newData = await fetchRows(uploadId, filterRef.current, 100, nextOffset);
 
-        const paginationInfo = newData?.pagination;
-        const rowThisPage = newData?.rows || [];
+        const tableData = addEmptyRows(newData);
+        const paginationInfo = tableData?.pagination;
+        const rowThisPage = tableData?.rows || [];
 
         let lastRow = -1;
         if (paginationInfo?.total !== undefined && paginationInfo.total <= params.endRow) {
           lastRow = paginationInfo.total;
         }
         params.successCallback(rowThisPage, lastRow);
-        setPaginatedData({ ...newData });
+        setPaginatedData({ ...tableData });
       },
     };
     gridRef.current?.setDatasource?.(dataSource);
@@ -198,7 +223,9 @@ function ReviewDataTable({ theme, uploadId, filter, template }: TableProps) {
       generatedColumnDefs.push({
         headerName: "",
         // Set the index cell value to the node ID + 1
-        valueGetter: (params: ValueGetterParams) => Number(params.node?.id ?? 0) + 1,
+        valueGetter: (params: ValueGetterParams) => {
+          return params.data && params.data.values ? Number(params.node?.id ?? 0) + 1 : "";
+        },
         field: "index",
         width: 70,
         pinned: headers.length >= 5 ? "left" : undefined,
