@@ -187,6 +187,7 @@ func StartWebServer(config ServerConfig) *http.Server {
 	api.GET("/import/:id/rows", getImportRowsForExternalAPI)
 	api.GET("/import/:id/download", downloadImportForExternalAPI)
 	api.POST("/importer", func(c *gin.Context) { createImporterForExternalAPI(c, config.GetWorkspaceUser) })
+	api.DELETE("/importer/:id", func(c *gin.Context) { deleteImporterForExternalAPI(c, config.GetWorkspaceUser) })
 
 	// Initialize the server in a goroutine so that it won't block shutdown handling
 	go func() {

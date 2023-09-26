@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/guregu/null"
+	"gorm.io/gorm"
 	"io"
 	"net/http"
 	"os"
@@ -18,6 +19,7 @@ import (
 	"tableflow/go/pkg/tf"
 	"tableflow/go/pkg/types"
 	"tableflow/go/pkg/util"
+	"time"
 )
 
 // getImportForExternalAPI
@@ -324,4 +326,71 @@ func createImporterForExternalAPI(c *gin.Context, getWorkspaceUser func(*gin.Con
 	}
 
 	c.JSON(http.StatusOK, &importerType)
+}
+
+// deleteImporterForExternalAPI
+//
+//	@Summary		Delete importer
+//	@Description	Delete an importer along with all associated objects (template, columns)
+//	@Tags			External API
+//	@Success		200	{object}	types.Res
+//	@Failure		400	{object}	types.Res
+//	@Router			/v1/importer/{id} [delete]
+//	@Param			id	path	string	true	"Importer ID"
+func deleteImporterForExternalAPI(c *gin.Context, getWorkspaceUser func(*gin.Context, string) (string, error)) {
+	id := c.Param("id")
+	if len(id) == 0 {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No importer ID provided"})
+		return
+	}
+	importer, err := db.GetImporter(id)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+		return
+	}
+	workspaceID := c.GetString("workspace_id")
+	if importer.WorkspaceID.String() != workspaceID {
+		tf.Log.Warnw("Attempted to delete importer not belonging to workspace", "workspace_id", workspaceID, "import_id", id)
+		c.AbortWithStatusJSON(http.StatusUnauthorized, types.Res{Err: "Unauthorized"})
+		return
+	}
+	userID, err := getWorkspaceUser(c, importer.WorkspaceID.String())
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, types.Res{Err: err.Error()})
+		return
+	}
+	user := model.User{ID: model.ParseID(userID)}
+	deletedAt := gorm.DeletedAt{Time: time.Now(), Valid: true}
+
+	importer.DeletedBy = user.ID
+	importer.DeletedAt = deletedAt
+
+	if importer.Template != nil {
+		importer.Template.DeletedBy = user.ID
+		importer.Template.DeletedAt = deletedAt
+		for i, _ := range importer.Template.TemplateColumns {
+			tc := importer.Template.TemplateColumns[i]
+			tc.DeletedBy = user.ID
+			tc.DeletedAt = deletedAt
+
+			// Delete any validations attached to the template column
+			if len(tc.Validations) != 0 {
+				err = tf.DB.Delete(tc.Validations).Error
+				if err != nil {
+					tf.Log.Errorw("Could not delete template column validations", "error", err, "template_column_id", tc.ID)
+					c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+					return
+				}
+			}
+		}
+	}
+
+	err = tf.DB.Session(&gorm.Session{FullSaveAssociations: true}).Save(&importer).Error
+	if err != nil {
+		tf.Log.Errorw("Could not delete importer", "error", err, "workspace_id", importer.WorkspaceID, "importer_id", importer.ID)
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, types.Res{Message: "success"})
 }
