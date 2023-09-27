@@ -1,6 +1,6 @@
 import { CellValueChangedEvent } from "ag-grid-community";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Button, Errors, ToggleFilter, Tooltip, useThemeStore } from "@tableflow/ui-library";
+import { Button, Errors, ToggleFilter, useThemeStore } from "@tableflow/ui-library";
 import { Option } from "@tableflow/ui-library/build/ToggleFilter/types";
 import { post } from "../../api/api";
 import { QueryFilter } from "../../api/types";
