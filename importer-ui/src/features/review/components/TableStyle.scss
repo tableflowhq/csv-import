@@ -1,0 +1,68 @@
+.ag-theme-alpine,
+.ag-theme-alpine-dark {
+  --ag-borders: none;
+  --ag-header-height: 44px;
+  --ag-header-foreground-color: var(--color-text);
+  --ag-header-background-color: var(--color-input-background-soft);
+  --ag-background-color: var(--color-input-disabled);
+  --ag-odd-row-background-color: var(--color-input-disabled);
+  --ag-header-column-separator-display: block;
+  --ag-row-border-width: 0px;
+  --ag-row-hover-color: var(--color-input-disabled);
+  --ag-alpine-active-color: var(--color-primary);
+
+  &.ag-theme-alpine-dark-custom-select {
+    --ag-selected-row-background-color: var(--color-input-disabled);
+  }
+}
+.ag-body .ag-body-viewport {
+  background-color: var(--ag-odd-row-background-color);
+}
+
+// Remove the overflow in the inner divs of the header to show the inner tooltip.
+// .ag-header.ag-pivot-off.ag-header-allow-overflow {
+//   overflow: unset;
+//   .ag-pinned-left-header {
+//     overflow: unset;
+//   }
+//   .ag-header-viewport {
+//     overflow: unset;
+//   }
+
+//   .ag-header-row {
+//     overflow: unset;
+//   }
+
+//   .ag-header-cell {
+//     overflow: unset;
+//   }
+
+//   .ag-header-cell-comp-wrapper {
+//     overflow: unset;
+//   }
+// }
+
+.ag-theme-alpine .ag-header,
+.ag-theme-alpine-dark .ag-header {
+  border-top-right-radius: 10px;
+  border-top-left-radius: 10px;
+}
+
+.ag-theme-alpine .ag-root-wrapper,
+.ag-theme-alpine-dark .ag-root-wrapper {
+  border: none;
+  border-bottom-right-radius: 10px;
+  border-bottom-left-radius: 10px;
+  background-color: transparent;
+}
+
+.ag-theme-alpine .ag-cell,
+.ag-theme-alpine-dark .ag-cell {
+  border: 0.5px solid var(--color-border);
+  &:first-of-type {
+    border-left: none;
+  }
+  &:last-of-type {
+    border-right: none;
+  }
+}

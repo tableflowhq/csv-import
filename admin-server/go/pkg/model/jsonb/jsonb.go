@@ -19,10 +19,7 @@ func NewEmpty() JSONB {
 }
 
 func NewNull() JSONB {
-	return JSONB{
-		Data:  nil,
-		Valid: false,
-	}
+	return JSONB{}
 }
 
 func FromBytes(jsonBytes []byte) (JSONB, error) {
@@ -32,7 +29,7 @@ func FromBytes(jsonBytes []byte) (JSONB, error) {
 func FromString(jsonStr string) (JSONB, error) {
 	var res interface{}
 	if len(jsonStr) == 0 {
-		return JSONB{Data: res, Valid: false}, nil
+		return JSONB{}, nil
 	}
 	err := json.Unmarshal([]byte(jsonStr), &res)
 	return JSONB{Data: res, Valid: err == nil}, err
@@ -43,6 +40,18 @@ func FromMap(dataMap map[string]interface{}) JSONB {
 		Data:  dataMap,
 		Valid: dataMap != nil,
 	}
+}
+
+func FromInterface(data interface{}) (JSONB, error) {
+	if data == nil {
+		return JSONB{}, nil
+	}
+	// Try to marshal the data into a JSON string to see if it's valid
+	_, err := json.Marshal(data)
+	if err != nil {
+		return JSONB{}, err
+	}
+	return JSONB{Data: data, Valid: true}, nil
 }
 
 func (j JSONB) ToString() string {

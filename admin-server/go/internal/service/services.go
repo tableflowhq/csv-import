@@ -43,14 +43,14 @@ func InitServices(ctx context.Context, wg *sync.WaitGroup) {
 	/* Environment */
 	err = initEnv()
 	if err != nil {
-		tf.Log.Errorw("Error initializing env", "error", err.Error())
+		tf.Log.Errorw("Error initializing env", "error", err)
 		return
 	}
 
 	/* Postgres */
 	err = initDatabase()
 	if err != nil {
-		tf.Log.Fatalw("Error initializing database", "error", err.Error())
+		tf.Log.Fatalw("Error initializing database", "error", err)
 		return
 	}
 
@@ -58,7 +58,7 @@ func InitServices(ctx context.Context, wg *sync.WaitGroup) {
 	wg.Add(1)
 	err = initScylla(ctx, wg)
 	if err != nil {
-		tf.Log.Fatalw("Error initializing Scylla", "error", err.Error())
+		tf.Log.Fatalw("Error initializing Scylla", "error", err)
 		return
 	}
 
@@ -66,7 +66,7 @@ func InitServices(ctx context.Context, wg *sync.WaitGroup) {
 	wg.Add(1)
 	err = initTempStorage(ctx, wg)
 	if err != nil {
-		tf.Log.Fatalw("Error initializing temp storage", "error", err.Error())
+		tf.Log.Fatalw("Error initializing temp storage", "error", err)
 		return
 	}
 
