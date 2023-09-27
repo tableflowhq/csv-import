@@ -70,6 +70,7 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
         return;
       }
       if (!res.ok) {
+        cellValueChangeSet.current.add(cellId);
         rowNode.setDataValue(columnId, event.oldValue);
         alert(res.error);
       } else {
