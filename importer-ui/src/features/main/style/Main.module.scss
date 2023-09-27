@@ -1,24 +1,12 @@
 .wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  height: 100%;
 }
 
 .header {
-  margin-bottom: var(--m);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .content {
-  width: 1000px;
-  height: 600px;
-  max-height: 80vh;
-  max-width: 80vw;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  margin: 0 var(--m);
+  padding: 20px;
 }
 
 .status {
@@ -38,13 +26,9 @@
 
 .close.close {
   position: absolute;
-  right: var(--m);
-  top: var(--m);
+  right: 12px;
+  top: 12px;
   border-radius: 50%;
-  padding: var(--m-xs);
-  width: 2em;
-  height: 2em;
-  aspect-ratio: 1;
 
   svg {
     width: var(--m-xs);

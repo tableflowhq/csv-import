@@ -1,9 +1,6 @@
 .content {
   display: flex;
   gap: var(--m);
-  align-items: flex-start;
-  align-self: center;
-  flex-grow: 1;
 
   & > * {
     &:first-child {
