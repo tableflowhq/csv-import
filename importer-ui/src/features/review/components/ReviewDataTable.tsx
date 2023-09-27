@@ -39,6 +39,7 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
   }, [filter]);
 
   const addEmptyRows = (newData: any) => {
+      console.log("rows", newData);
     if (!!Object.keys(newData).length && newData.rows.length < MAX_ROWS) {
       const missingRows = MAX_ROWS - newData.rows.length;
       const rows = [...newData.rows, ...Array(missingRows).fill({})];
@@ -52,6 +53,7 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
         rows,
       };
     }
+    return newData;
   };
 
   const setDataSource = () => {
