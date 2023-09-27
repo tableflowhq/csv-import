@@ -13,6 +13,7 @@ type SearchParams = Record<
   | "skipHeaderRowSelection"
   | "cssOverrides"
   | "schemaless"
+  | "schemalessReadOnly"
   | "showDownloadTemplateButton",
   string
 >;

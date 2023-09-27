@@ -3,7 +3,7 @@ import { Checkbox, Input } from "@tableflow/ui-library";
 import { InputOption } from "@tableflow/ui-library/build/Input/types";
 import { TemplateColumn, UploadColumn } from "../../../api/types";
 import stringsSimilarity from "../../../utils/stringSimilarity";
-import style from "../style/Review.module.scss";
+import style from "../style/MapColumns.module.scss";
 import useTransformValue from "./useNameChange";
 
 type Include = {
@@ -11,7 +11,28 @@ type Include = {
   use: boolean;
 };
 
-export default function useReviewTable(items: UploadColumn[] = [], templateColumns: TemplateColumn[] = [], schemaless?: boolean) {
+export default function useMapColumnsTable(
+  items: UploadColumn[] = [],
+  templateColumns: TemplateColumn[] = [],
+  schemaless?: boolean,
+  schemalessReadOnly?: boolean,
+  columnsValues: { [key: string]: Include } = {}
+) {
+  const [selectedFieldsSet, setSelectedFieldsSet] = useState(() => {
+    const selectedFields = Object.values(columnsValues).map((value) => ({
+      template: value.template,
+      use: value.use,
+    }));
+    return new Set(selectedFields);
+  });
+
+  useEffect(() => {
+    Object.keys(columnsValues).map((mapColData) => {
+      const template = columnsValues[mapColData].template;
+      handleTemplateChange(mapColData, template);
+    });
+  }, []);
+
   const [values, setValues] = useState<{ [key: string]: Include }>(() => {
     const usedTemplateColumns = new Set<string>();
     return items.reduce((acc, uc) => {
@@ -51,7 +72,7 @@ export default function useReviewTable(items: UploadColumn[] = [], templateColum
 
   const handleTemplateChange = (id: string, template: string) => {
     setValues((prev) => {
-      const oldTemplate = prev[id].template;
+      const oldTemplate = prev[id]?.template;
       setSelectedTemplates((currentSelected) => {
         if (currentSelected.includes(oldTemplate)) {
           return currentSelected.filter((t) => t !== oldTemplate);
@@ -61,6 +82,16 @@ export default function useReviewTable(items: UploadColumn[] = [], templateColum
         }
         return currentSelected;
       });
+      const idTemplate = oldTemplate || template;
+      const updatedFieldsSet = new Set(
+        [...selectedFieldsSet].map((field) => {
+          if (field.template === idTemplate) {
+            return { ...field, use: !!template };
+          }
+          return field;
+        })
+      );
+      setSelectedFieldsSet(updatedFieldsSet);
       return { ...prev, [id]: { ...prev[id], template, use: !!template } };
     });
   };
@@ -108,19 +139,26 @@ export default function useReviewTable(items: UploadColumn[] = [], templateColum
           return !isTemplateUsed || isSuggestionTemplate;
         });
       }
+      if (selectedFieldsSet.size > 0) {
+        currentOptions = Object.keys(templateFields).filter((key) => {
+          const isSuggestionTemplate = templateFields[key].value === suggestion.template;
+          const isTemplateUsed = Array.from(selectedFieldsSet).some((val) => val.template === templateFields[key].value && val.use);
+          return !isTemplateUsed || isSuggestionTemplate;
+        });
+      }
+
       currentOptions = currentOptions?.reduce((acc, key) => {
         acc[key] = templateFields[key];
         return acc;
       }, {} as { [key: string]: InputOption });
-
       const isCurrentOptions = currentOptions && Object.keys(currentOptions).length > 0;
 
       return {
-        "File Column": {
+        "Your File Column": {
           raw: name || false,
           content: name || <em>- empty -</em>,
         },
-        "Sample Data": {
+        "Your Sample Data": {
           raw: "",
           content: (
             <div title={samples.join(", ")} className={style.samples}>
@@ -133,11 +171,12 @@ export default function useReviewTable(items: UploadColumn[] = [], templateColum
         "Destination Column": {
           raw: "",
           content: schemaless ? (
-            <SchemaLessInput
+            <SchemalessInput
               value={transformedName}
               setValues={(value) => {
                 handleValueChange(id, value);
               }}
+              readOnly={!!schemalessReadOnly}
             />
           ) : (
             <Input
@@ -152,7 +191,13 @@ export default function useReviewTable(items: UploadColumn[] = [], templateColum
         },
         Include: {
           raw: false,
-          content: <Checkbox checked={suggestion.use} disabled={!suggestion.template} onChange={(e) => handleUseChange(id, e.target.checked)} />,
+          content: (
+            <Checkbox
+              checked={suggestion.use}
+              disabled={(schemaless && schemalessReadOnly) || !suggestion.template}
+              onChange={(e) => handleUseChange(id, e.target.checked)}
+            />
+          ),
         },
       };
     });
@@ -160,7 +205,7 @@ export default function useReviewTable(items: UploadColumn[] = [], templateColum
   return { rows, formValues: values };
 }
 
-const SchemaLessInput = ({ value, setValues }: { value: string; setValues: (value: string) => void }) => {
+const SchemalessInput = ({ value, setValues, readOnly }: { value: string; setValues: (value: string) => void; readOnly: boolean }) => {
   const { transformedValue, transformValue } = useTransformValue(value);
   const [inputValue, setInputValue] = useState(transformedValue);
 
@@ -175,5 +220,5 @@ const SchemaLessInput = ({ value, setValues }: { value: string; setValues: (valu
     setValues(transformedValue);
   };
 
-  return <Input value={inputValue} variants={["small"]} onChange={handleOnChange} />;
+  return <Input value={inputValue} variants={["small"]} onChange={handleOnChange} disabled={readOnly} />;
 };

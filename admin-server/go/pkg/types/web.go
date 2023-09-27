@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"strconv"
+	"strings"
 )
 
 type Res struct {
@@ -12,10 +13,19 @@ type Res struct {
 }
 
 type Pagination struct {
-	Total  int `json:"total"`
-	Offset int `json:"offset"`
-	Limit  int `json:"limit"`
+	Total      int `json:"total"`
+	Limit      int `json:"limit"`
+	Offset     int `json:"offset"`
+	NextOffset int `json:"next_offset"`
 }
+
+type Filter string
+
+var (
+	ImportRowFilterAll   Filter = "all"
+	ImportRowFilterValid Filter = "valid"
+	ImportRowFilterError Filter = "error"
+)
 
 const PaginationDefaultOffset = 0
 const PaginationDefaultLimit = 100
@@ -61,4 +71,17 @@ func ParsePaginationQuery(c *gin.Context) (Pagination, error) {
 	pagination.Limit = limit
 	pagination.Offset = offset
 	return pagination, nil
+}
+
+func ParseImportRowFilterQuery(c *gin.Context) (Filter, error) {
+	filterParam, _ := c.GetQuery("filter")
+	switch strings.ToLower(filterParam) {
+	case "", string(ImportRowFilterAll):
+		return ImportRowFilterAll, nil
+	case string(ImportRowFilterValid):
+		return ImportRowFilterValid, nil
+	case string(ImportRowFilterError):
+		return ImportRowFilterError, nil
+	}
+	return "", fmt.Errorf("The parameter 'filter' is invalid")
 }
