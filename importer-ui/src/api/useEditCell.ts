@@ -3,16 +3,16 @@ import { ApiResponse } from "./types";
 import { post } from "./api";
 
 export default function useEditCell(uploadId: string): UseMutationResult<ApiResponse<any>> {
-  return useMutation(({ rowIndex, isError, cellKey, cellValue }: any) => mutateCell(uploadId, rowIndex, isError, cellKey, cellValue), {
+  return useMutation(({ rowIndex, isError: isErrorRow, cellKey, cellValue }: any) => mutateCell(uploadId, rowIndex, isErrorRow, cellKey, cellValue), {
     // onError: () => {},
   });
 }
 
-async function mutateCell(uploadId: string, rowIndex: number, isError: boolean, cellKey: string, cellValue: string): Promise<ApiResponse<any>> {
+async function mutateCell(uploadId: string, rowIndex: number, isErrorRow: boolean, cellKey: string, cellValue: string): Promise<ApiResponse<any>> {
   const endpoint = `import/${uploadId}/cell/edit`;
   const body = {
     row_index: rowIndex,
-    is_error: isError,
+    is_error_row: isErrorRow,
     cell_key: cellKey,
     cell_value: cellValue,
   };

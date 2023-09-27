@@ -15,6 +15,9 @@
     --ag-selected-row-background-color: var(--color-input-disabled);
   }
 }
+.ag-row-even, .ag-row-odd {
+  background-color: var(--color-input-disabled) !important;
+}
 .ag-body .ag-body-viewport {
   background-color: var(--ag-odd-row-background-color);
 }
