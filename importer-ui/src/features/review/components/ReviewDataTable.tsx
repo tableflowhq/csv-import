@@ -106,7 +106,7 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
           headerComponentParams: {
             displayDescription: displayDescription,
           },
-          editable: true,
+          editable: (params) => params.data && params.data.values,
           field: `values.${header}`,
           cellStyle: (params: any) => {
             if (params.data?.errors?.[header]) {
