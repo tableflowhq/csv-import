@@ -827,8 +827,8 @@ func importerEditImportCell(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Missing required parameter row_index"})
 		return
 	}
-	if req.IsError == nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Missing required parameter is_error"})
+	if req.IsErrorRow == nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Missing required parameter is_error_row"})
 		return
 	}
 	if req.CellKey == nil {
@@ -907,22 +907,16 @@ func importerEditImportCell(c *gin.Context) {
 
 	// At this point the cell edit is valid either because it passed any validations or there were no validations to
 	// perform, so we can now persist the edit
-	if *req.IsError {
+	if *req.IsErrorRow {
 		// Retrieve the error row, needed to determine if all errors are resolved and the record should be inserted into import_rows
 		row, err := scylla.GetImportRowError(imp.ID.String(), rowIndex)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("Could not update cell: %s", err)})
 			return
 		}
-		_, cellErrorExists := row.Errors[cellKey]
+		_, isEditingErrorCell := row.Errors[cellKey]
 		numErrors := len(row.Errors)
 
-		if !cellErrorExists {
-			// Cell error does not exist on the row
-			tf.Log.Warnw("Cell key does not exist on import_row_errors during edit", "import_id", imp.ID, "cell_key", cellKey, "row_index", rowIndex)
-			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No error exists on the current cell"})
-			return
-		}
 		if numErrors == 0 {
 			// No errors were returned from import_row_errors
 			tf.Log.Warnw("No errors returned from import_row_errors during edit", "import_id", imp.ID, "cell_key", cellKey, "row_index", rowIndex)
@@ -933,7 +927,7 @@ func importerEditImportCell(c *gin.Context) {
 		// Update the row values with the new value
 		row.Values[cellKey] = cellValue
 
-		if numErrors == 1 {
+		if isEditingErrorCell && numErrors == 1 {
 			// All errors are resolved on the row
 
 			// Add the record to import_rows
