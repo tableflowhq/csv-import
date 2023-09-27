@@ -52,6 +52,7 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
         }
         params.successCallback(rowThisPage, lastRow);
         setPaginatedData({ ...newData });
+        setColumnSizes();
       },
     };
     gridRef.current?.setDatasource?.(dataSource);
@@ -85,7 +86,9 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
           },
         ],
       };
-      gridRef.current && gridRef.current?.sizeColumnsToFit(options);
+      setTimeout(() => {
+        gridRef.current?.sizeColumnsToFit(options);
+      }, 100);
     }
   };
 
