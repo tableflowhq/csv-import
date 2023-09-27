@@ -18,6 +18,12 @@ const defaultOptions: Option[] = [
   { label: "Error (0)", filterValue: "error", selected: false, color: "#f04339" },
 ];
 
+type FilterOptionCounts = {
+  NumRows: number;
+  NumValidRows: number;
+  NumErrorRows: number;
+};
+
 export default function Review({ onCancel, onComplete, upload, template, reload, close }: ReviewProps) {
   const uploadId = upload?.id;
   const filter = useRef<QueryFilter>("all");
@@ -26,8 +32,8 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
   const { data, isLoading }: any = useReview(uploadId, {
     staleTime: 0,
   });
+  const [hasDataErrors, setHasDataErrors] = useState(false);
   const { mutate, error: submitError, isSuccess, isLoading: isSubmitting, data: dataSubmitted } = useSubmitReview(uploadId || "");
-
   const theme = useThemeStore((state) => state.theme);
   const [showLoading, setShowLoading] = useState(true);
   const submittedOk = dataSubmitted?.ok || {};
@@ -53,22 +59,40 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
     const endpoint = `import/${uploadId}/cell/edit`;
     const body = {
       row_index: event.data?.index,
-      is_error: !!event.data?.errors && typeof event.data?.errors[cellKey] !== "undefined",
+      is_error_row: !!event.data?.errors ?? false,
       cell_key: cellKey,
       cell_value: event.newValue,
     };
     post(endpoint, body).then((res) => {
+      const rowNode = event.api?.getRowNode(String(event.rowIndex));
+      if (!rowNode) {
+        console.error("Unable to retrieve row node from event API", event.rowIndex);
+        return;
+      }
       if (!res.ok) {
         cellValueChangeSet.current.add(cellId);
-        const rowNode = event.api?.getRowNode(String(event.rowIndex));
-        if (rowNode) {
-          rowNode.setDataValue(columnId, event.oldValue);
-        } else {
-          console.error("Unable to retrieve row node from event API", event.rowIndex);
-        }
+        rowNode.setDataValue(columnId, event.oldValue);
         alert(res.error);
       } else {
-        updateFilterOptionCounts(res.data?.num_rows, res.data?.num_valid_rows, res.data?.num_error_rows);
+        // Clear the errors on the cell
+        if (!!event.data?.errors && rowNode.data?.errors[cellKey]) {
+          delete rowNode.data.errors[cellKey];
+          // Remove the errors object if no more errors exist
+          if (Object.keys(rowNode.data.errors).length === 0) {
+            rowNode.data.errors = undefined;
+          }
+        }
+        // Refresh the row to update the styling
+        event.api?.refreshCells({ rowNodes: [rowNode], columns: [columnId], force: true });
+
+        // Update the has data errors state
+        setHasDataErrors(res.data?.num_error_rows > 0);
+
+        // Update the counts on the filter options
+        updateFilterOptions(
+          filter.current,
+          res.data ? { NumRows: res.data?.num_rows, NumValidRows: res.data?.num_valid_rows, NumErrorRows: res.data?.num_error_rows } : undefined
+        );
       }
     });
   }, []);
@@ -80,40 +104,42 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
     }
   }, [isSuccess, submitError]);
 
+  // Load the initial state from the data returned
   useEffect(() => {
-    updateFilterOptionCounts(data?.num_rows, data?.num_valid_rows, data?.num_error_rows);
-    if (data?.is_stored) {
-      setShowLoading(false);
+    updateFilterOptions(
+      filter.current,
+      data ? { NumRows: data?.num_rows, NumValidRows: data?.num_valid_rows, NumErrorRows: data?.num_error_rows } : undefined
+    );
+    if (data) {
+      setHasDataErrors(data?.num_error_rows > 0);
+      if (data?.is_stored) {
+        setShowLoading(false);
+      }
     }
   }, [JSON.stringify(data)]);
 
-  const onFilterChange = useCallback((option: string) => {
+  const updateFilterOptions = useCallback((option: string, counts?: FilterOptionCounts) => {
     filter.current = option as QueryFilter;
     setFilterOptions(
       filterOptions.map((fo) => {
         fo.selected = fo.filterValue === option;
+        if (counts) {
+          switch (fo.filterValue) {
+            case "all":
+              fo.label = `All ${counts.NumRows}`;
+              break;
+            case "valid":
+              fo.label = `Valid ${counts.NumValidRows}`;
+              break;
+            case "error":
+              fo.label = `Error ${counts.NumErrorRows}`;
+              break;
+          }
+        }
         return fo;
       })
     );
   }, []);
-
-  const updateFilterOptionCounts = (numRows: number, numValidRows: number, numErrorRows: number) => {
-    for (const fo of filterOptions) {
-      switch (fo.filterValue) {
-        case "all":
-          fo.label = `All ${numRows}`;
-          break;
-        case "valid":
-          fo.label = `Valid ${numValidRows}`;
-          break;
-        case "error":
-          fo.label = `Error ${numErrorRows}`;
-          break;
-      }
-    }
-    // TODO: Works only after clicking filter options
-    setFilterOptions(filterOptions);
-  };
 
   const handleSubmitClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -135,7 +161,9 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
   return (
     <div>
       <div className={style.reviewContainer}>
-        {hasValidations && <ToggleFilter options={filterOptions} className={style.filters} onChange={(option: string) => onFilterChange(option)} />}
+        {hasValidations && (
+          <ToggleFilter options={filterOptions} className={style.filters} onChange={(option: string) => updateFilterOptions(option)} />
+        )}
         <div className={style.tableWrapper}>
           {!isLoading && (
             <ReviewDataTable onCellValueChanged={onCellValueChanged} template={template} theme={theme} uploadId={uploadId} filter={filter.current} />
@@ -145,7 +173,11 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
           <Button type="button" variants={["secondary"]} onClick={onCancel}>
             Back
           </Button>
-          <Button variants={["primary"]} disabled={data?.num_error_rows > 0} onClick={handleSubmitClick}>
+          <Button
+            title={hasDataErrors ? "Please resolve all errors before submitting" : ""}
+            variants={["primary"]}
+            disabled={hasDataErrors}
+            onClick={handleSubmitClick}>
             Submit
           </Button>
         </div>
