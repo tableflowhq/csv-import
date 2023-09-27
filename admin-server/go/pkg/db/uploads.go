@@ -69,6 +69,25 @@ func DeleteUploadColumns(uploadID string) error {
 	return err
 }
 
+func ClearUploadColumnTemplateColumnIDs(upload *model.Upload) error {
+	if upload == nil || !upload.ID.Valid {
+		return errors.New("no upload provided")
+	}
+	err := tf.DB.Exec(`
+		update upload_columns
+		set template_column_id = null
+		where upload_id = ?
+		  and template_column_id is not null;`,
+		upload.ID).Error
+	if err == nil {
+		// Clear the template column IDs on the upload columns
+		for i, _ := range upload.UploadColumns {
+			upload.UploadColumns[i].TemplateColumnID = model.ID{}
+		}
+	}
+	return err
+}
+
 func SetTemplateColumnIDs(upload *model.Upload, columnMapping map[string]string) error {
 	numParams := len(columnMapping)
 	valuesStmt := make([]string, numParams, numParams)

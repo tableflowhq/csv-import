@@ -6,6 +6,6 @@ export interface Step {
 export enum Steps {
   Upload = "upload",
   RowSelection = "row-selection",
+  MapColumns = "map-columns",
   Review = "review",
-  Complete = "complete",
 }
