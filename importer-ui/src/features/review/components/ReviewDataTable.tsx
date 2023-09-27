@@ -1,19 +1,9 @@
 /* eslint-disable */
-import {
-  CellValueChangedEvent,
-  ColDef,
-  GridApi,
-  GridReadyEvent,
-  ICellRendererParams,
-  IDatasource,
-  ISizeColumnsToFitParams,
-  ValueGetterParams,
-} from "ag-grid-community";
+import { ColDef, GridApi, GridReadyEvent, ICellRendererParams, IDatasource, ISizeColumnsToFitParams, ValueGetterParams } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { classes, Icon, Tooltip } from "@tableflow/ui-library";
 import { IconType } from "@tableflow/ui-library/build/Icon/types";
-import { post } from "../../../api/api";
 import { fetchRows } from "../../../api/useGetRows";
 import { TableProps } from "../types";
 import style from "../style/Review.module.scss";
@@ -21,7 +11,7 @@ import "./TableStyle.scss";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 
-function ReviewDataTable({ theme, uploadId, filter, template }: TableProps) {
+function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged }: TableProps) {
   const customSelectClass = "ag-theme-alpine-dark-custom-select";
   const paginatedDataRef: any = useRef();
   const filterRef: any = useRef(filter);
@@ -31,55 +21,6 @@ function ReviewDataTable({ theme, uploadId, filter, template }: TableProps) {
   const [paginatedData, setPaginatedData] = useState<any>();
   const gridRef = useRef<GridApi | null>(null);
   const [selectedClass, setSelectedClass] = useState(customSelectClass);
-  const cellValueChangeSet = useRef(new Set<string>());
-
-  // const {
-  //   mutate: mutateCell,
-  //   error: editCellError,
-  //   isSuccess: cellEditIsSuccess,
-  //   isLoading: cellEditIsLoading,
-  //   data: cellEditData,
-  // } = useEditCell(uploadId || "");
-
-  const onCellValueChanged = useCallback((event: CellValueChangedEvent) => {
-    const columnId = event.column.getColId();
-    const cellId = `${event.rowIndex}-${columnId}`;
-    // Check if the change was done programmatically to not cause an infinite loop when reverting changes to cell edits
-    if (cellValueChangeSet.current.has(cellId)) {
-      cellValueChangeSet.current.delete(cellId);
-      return;
-    }
-    let cellKey = "";
-    const parts = columnId.split(".");
-    if (parts.length > 1 && parts[0] === "values") {
-      cellKey = parts[1];
-    } else {
-      console.error("Unexpected column ID format", columnId);
-      return;
-    }
-    const endpoint = `import/${uploadId}/cell/edit`;
-    const body = {
-      row_index: event.rowIndex,
-      is_error: event.data?.errors ? Object.keys(event.data.errors).length > 0 : false,
-      cell_key: cellKey,
-      cell_value: event.newValue,
-    };
-    post(endpoint, body).then((res) => {
-      if (!res.ok) {
-        cellValueChangeSet.current.add(cellId);
-        const rowNode = gridRef.current?.getRowNode(String(event.rowIndex));
-        if (rowNode) {
-          rowNode.setDataValue(columnId, event.oldValue);
-        }
-        alert(res.error);
-      } else {
-        // TODO:
-        // 1. Clear the error highlighting on the cell
-        // 2. Update the "All" "Valid" "Error" selector with the updated count (returned from this response) ...we might have to move this to the review/index component to do this
-        // 3. Update the other grids with the new value
-      }
-    });
-  }, []);
 
   useEffect(() => {
     paginatedDataRef.current = paginatedData;
@@ -91,14 +32,6 @@ function ReviewDataTable({ theme, uploadId, filter, template }: TableProps) {
     paginatedDataRef.current = null;
     gridRef.current && setDataSource();
   }, [filter]);
-
-  // useEffect(() => {
-  //   if (gridRef.current) {
-  //     // isLoading && gridRef.current.showLoadingOverlay();
-  //     // !isLoading && gridRef.current.hideOverlay();
-  //     setColumnSizes();
-  //   }
-  // }, [isLoading]);
 
   const setDataSource = () => {
     const dataSource: IDatasource = {
@@ -140,8 +73,8 @@ function ReviewDataTable({ theme, uploadId, filter, template }: TableProps) {
     // @ts-ignore
     if (!gridRef.current || gridRef.current?.destroyCalled) return;
     const columnCount = gridRef.current?.getColumnDefs?.()?.length || 0;
-    // onl resize if there are less than 5 columns
-    if (columnCount < 5) {
+    // onl resize if there are less than 7 columns
+    if (columnCount < 7) {
       // re-size all columns but index
       const options: ISizeColumnsToFitParams = {
         columnLimits: [
