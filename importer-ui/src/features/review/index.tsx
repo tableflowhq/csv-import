@@ -59,7 +59,7 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
     const endpoint = `import/${uploadId}/cell/edit`;
     const body = {
       row_index: event.data?.index,
-      is_error: !!event.data?.errors?.[cellKey] ?? false,
+      is_error_row: !!event.data?.errors ?? false,
       cell_key: cellKey,
       cell_value: event.newValue,
     };
@@ -76,7 +76,11 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
       } else {
         // Clear the errors on the cell
         if (!!event.data?.errors && rowNode.data?.errors[cellKey]) {
-          rowNode.data.errors[cellKey] = null;
+          delete rowNode.data.errors[cellKey];
+          // Remove the errors object if no more errors exist
+          if (Object.keys(rowNode.data.errors).length === 0) {
+            rowNode.data.errors = undefined;
+          }
         }
         // Refresh the row to update the styling
         event.api?.refreshCells({ rowNodes: [rowNode], columns: [columnId], force: true });
