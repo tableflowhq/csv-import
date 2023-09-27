@@ -127,16 +127,16 @@ export default function TemplateColumnForm({
             </label>
             <Tooltip className={style.checkboxLabel} title={"Users must map a column from their file to this column to proceed with the import"} />
           </div>
-          {/*<div className={style.checkboxInput}>*/}
-          {/*  <label>*/}
-          {/*    <Checkbox {...form.getInputProps("filled", { type: "checkbox" })} />*/}
-          {/*    <span className={style.checkboxLabel}>Cells must be filled</span>*/}
-          {/*  </label>*/}
-          {/*  <Tooltip*/}
-          {/*    className={style.checkboxLabel}*/}
-          {/*    title={"Every cell in this column must contain data. Empty cells will prevent users from completing the import"}*/}
-          {/*  />*/}
-          {/*</div>*/}
+          <div className={style.checkboxInput}>
+            <label>
+              <Checkbox {...form.getInputProps("filled", { type: "checkbox" })} />
+              <span className={style.checkboxLabel}>Cells must be filled</span>
+            </label>
+            <Tooltip
+              className={style.checkboxLabel}
+              title={"Every cell in this column must contain data. Empty cells will prevent users from completing the import"}
+            />
+          </div>
         </fieldset>
 
         <div className={classes([style.actions, style.compact])}>
