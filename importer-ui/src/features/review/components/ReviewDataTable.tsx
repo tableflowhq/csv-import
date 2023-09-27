@@ -14,6 +14,7 @@ import "ag-grid-community/styles/ag-theme-alpine.css";
 const TABLE_WIDTH = 1000;
 const INDEX_ROW_WIDTH = 70;
 const MAX_COLUMN_SCROLL = 7;
+const MAX_ROWS = 9;
 
 function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged }: TableProps) {
   const customSelectClass = "ag-theme-alpine-dark-custom-select";
@@ -37,6 +38,23 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
     gridRef.current && setDataSource();
   }, [filter]);
 
+  const addEmptyRows = (newData: any) => {
+    if (!!Object.keys(newData).length && newData.rows.length < MAX_ROWS) {
+      const missingRows = MAX_ROWS - newData.rows.length;
+      const rows = [...newData.rows, ...Array(missingRows).fill({})];
+
+      return {
+        ...newData,
+        pagination: {
+          ...newData.pagination,
+          total: MAX_ROWS,
+        },
+        rows,
+      };
+    }
+    return newData;
+  };
+
   const setDataSource = () => {
     const dataSource: IDatasource = {
       rowCount: paginatedData?.pagination?.total || undefined,
@@ -47,15 +65,16 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
         // gets the paginated data
         const newData = await fetchRows(uploadId, filterRef.current, 100, nextOffset);
 
-        const paginationInfo = newData?.pagination;
-        const rowThisPage = newData?.rows || [];
+        const tableData = addEmptyRows(newData);
+        const paginationInfo = tableData?.pagination;
+        const rowThisPage = tableData?.rows || [];
 
         let lastRow = -1;
         if (paginationInfo?.total !== undefined && paginationInfo.total <= params.endRow) {
           lastRow = paginationInfo.total;
         }
         params.successCallback(rowThisPage, lastRow);
-        setPaginatedData({ ...newData });
+        setPaginatedData({ ...tableData });
       },
     };
     gridRef.current?.setDatasource?.(dataSource);
@@ -87,7 +106,7 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
           headerComponentParams: {
             displayDescription: displayDescription,
           },
-          editable: true,
+          editable: (params) => params.data && params.data.values,
           field: `values.${header}`,
           cellStyle: (params: any) => {
             if (params.data?.errors?.[header]) {
@@ -106,7 +125,9 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
       generatedColumnDefs.push({
         headerName: "",
         // Set the index cell value to the node ID + 1
-        valueGetter: (params: ValueGetterParams) => Number(params.node?.id ?? 0) + 1,
+        valueGetter: (params: ValueGetterParams) => {
+          return params.data && params.data.values ? Number(params.node?.id ?? 0) + 1 : "";
+        },
         field: "index",
         width: INDEX_ROW_WIDTH,
         pinned: headers.length > MAX_COLUMN_SCROLL ? "left" : undefined,
