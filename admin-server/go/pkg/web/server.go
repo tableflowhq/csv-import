@@ -46,7 +46,7 @@ type ServerConfig struct {
 	GetUserID                      func(c *gin.Context) string
 	UploadLimitCheck               func(*model.Upload, *os.File) error
 	UploadAdditionalStorageHandler func(*model.Upload, *os.File) error
-	ImportCompleteHandler          func(types.Import)
+	ImportCompleteHandler          func(imp types.Import, workspaceID string)
 	AdditionalCORSOrigins          []string
 	AdditionalCORSHeaders          []string
 	AdditionalImporterRoutes       func(group *gin.RouterGroup)

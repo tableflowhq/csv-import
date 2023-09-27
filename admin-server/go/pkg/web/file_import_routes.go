@@ -1008,7 +1008,7 @@ func importerEditImportCell(c *gin.Context) {
 //	@Failure		400	{object}	types.Res
 //	@Router			/file-import/v1/import/{id}/submit [post]
 //	@Param			id	path	string	true	"Upload ID"
-func importerSubmitImport(c *gin.Context, importCompleteHandler func(types.Import)) {
+func importerSubmitImport(c *gin.Context, importCompleteHandler func(types.Import, string)) {
 	id := c.Param("id")
 	if len(id) == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No upload ID provided"})
@@ -1065,7 +1065,7 @@ func importerSubmitImport(c *gin.Context, importCompleteHandler func(types.Impor
 
 	if importCompleteHandler != nil {
 		util.SafeGo(func() {
-			importCompleteHandler(*importServiceImport)
+			importCompleteHandler(*importServiceImport, imp.WorkspaceID.String())
 		}, "import_id", imp.ID)
 	}
 
