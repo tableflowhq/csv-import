@@ -1,7 +1,6 @@
 .content {
   display: flex;
   gap: var(--m);
-  align-items: flex-start;
   align-self: center;
   flex-grow: 1;
 
@@ -19,13 +18,22 @@
 .box {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--m-s);
+  max-height: 550px;
 }
 
 .tableContainer {
-  overflow: hidden;
-  overflow-y: scroll;
-  max-height: 496px;
+  overflow-y: hidden;
+  flex: 0 1 auto;
   outline: 1px solid var(--color-border);
   border-radius: var(--border-radius-2);
+
+  &:hover {
+    overflow-y: auto;
+    outline: none;
+    padding: 1px;
+    margin: -1px;
+    padding-right: var(--m-s);
+    margin-right: calc(var(--m-s) * -1);
+  }
 }

@@ -1,4 +1,6 @@
 import { Button, Table, useThemeStore } from "@tableflow/ui-library";
+import { buttonVariant } from "@tableflow/ui-library/build/Button/types";
+import { InputVariants } from "@tableflow/ui-library/build/Input/types";
 import UppyWrapper from "../../components/UppyWrapper";
 import useTemplateTable from "./hooks/useTemplateTable";
 import { UploaderProps } from "./types";
@@ -56,8 +58,10 @@ export default function Uploader({
     link.click();
   }
 
+  const buttonVariants = ["fullWidth", theme !== "light" && "secondary"] as buttonVariant[];
+
   const downloadTemplateButton = showDownloadTemplateButton ? (
-    <Button icon="downloadFile" onClick={downloadTemplate} variants={theme === "light" ? [] : ["secondary"]}>
+    <Button icon="downloadFile" onClick={downloadTemplate} variants={buttonVariants}>
       Download Template
     </Button>
   ) : null;
@@ -67,7 +71,9 @@ export default function Uploader({
       {uppyWrapper}
       <div className={style.box}>
         <div className={style.tableContainer}>
-          <Table data={fields} background="dark" columnWidths={["65%", "35%"]} columnAlignments={["", "center"]} />
+          <div className={style.tableWrapper}>
+            <Table data={fields} background="dark" columnWidths={["65%", "35%"]} columnAlignments={["", "center"]} />
+          </div>
         </div>
         {downloadTemplateButton}
       </div>
