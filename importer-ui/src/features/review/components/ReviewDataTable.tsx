@@ -11,6 +11,10 @@ import "./TableStyle.scss";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 
+const TABLE_WIDTH = 1000;
+const INDEX_ROW_WIDTH = 70;
+const MAX_COLUMN_SCROLL = 7;
+
 function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged }: TableProps) {
   const customSelectClass = "ag-theme-alpine-dark-custom-select";
   const paginatedDataRef: any = useRef();
@@ -52,45 +56,15 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
         }
         params.successCallback(rowThisPage, lastRow);
         setPaginatedData({ ...newData });
-        setColumnSizes();
       },
     };
     gridRef.current?.setDatasource?.(dataSource);
-    setColumnSizes();
   };
 
   const onGridReady = useCallback((params: GridReadyEvent<any>) => {
     gridRef.current = params.api as any;
-    setTimeout(() => {
-      setColumnSizes();
-    }, 100);
     setDataSource();
   }, []);
-  window.addEventListener("resize", () => {
-    setColumnSizes();
-  });
-
-  const setColumnSizes = () => {
-    // @ts-ignore
-    if (!gridRef.current || gridRef.current?.destroyCalled) return;
-    const columnCount = gridRef.current?.getColumnDefs?.()?.length || 0;
-    // onl resize if there are less than 7 columns
-    if (columnCount < 7) {
-      // re-size all columns but index
-      const options: ISizeColumnsToFitParams = {
-        columnLimits: [
-          {
-            key: "index",
-            maxWidth: 70,
-            minWidth: 70,
-          },
-        ],
-      };
-      setTimeout(() => {
-        gridRef.current?.sizeColumnsToFit(options);
-      }, 100);
-    }
-  };
 
   const customHeaderComponent = (params: any) => {
     return (
@@ -125,6 +99,7 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
           sortable: false,
           filter: false,
           suppressMovable: true,
+          width: headers.length < MAX_COLUMN_SCROLL ? (TABLE_WIDTH - INDEX_ROW_WIDTH) / headers.length : undefined,
         } as ColDef;
       });
       // Add index column to the beginning of the columns
@@ -133,8 +108,8 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
         // Set the index cell value to the node ID + 1
         valueGetter: (params: ValueGetterParams) => Number(params.node?.id ?? 0) + 1,
         field: "index",
-        width: 70,
-        pinned: headers.length >= 5 ? "left" : undefined,
+        width: INDEX_ROW_WIDTH,
+        pinned: headers.length > MAX_COLUMN_SCROLL ? "left" : undefined,
       });
       setColumnDefs(generatedColumnDefs.reverse());
     }
