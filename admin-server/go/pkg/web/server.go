@@ -46,7 +46,7 @@ type ServerConfig struct {
 	GetUserID                      func(c *gin.Context) string
 	UploadLimitCheck               func(*model.Upload, *os.File) error
 	UploadAdditionalStorageHandler func(*model.Upload, *os.File) error
-	ImportCompleteHandler          func(types.Import)
+	ImportCompleteHandler          func(imp types.Import, workspaceID string)
 	AdditionalCORSOrigins          []string
 	AdditionalCORSHeaders          []string
 	AdditionalImporterRoutes       func(group *gin.RouterGroup)
@@ -188,6 +188,8 @@ func StartWebServer(config ServerConfig) *http.Server {
 	api.GET("/import/:id", getImportForExternalAPI)
 	api.GET("/import/:id/rows", getImportRowsForExternalAPI)
 	api.GET("/import/:id/download", downloadImportForExternalAPI)
+	api.POST("/importer", createImporterForExternalAPI)
+	api.DELETE("/importer/:id", deleteImporterForExternalAPI)
 
 	// Initialize the server in a goroutine so that it won't block shutdown handling
 	go func() {

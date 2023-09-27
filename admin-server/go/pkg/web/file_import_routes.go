@@ -152,7 +152,7 @@ func importerGetImporter(c *gin.Context) {
 			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("Invalid template provided: %v", err.Error())})
 			return
 		}
-		requestTemplate, err := types.ConvertUploadTemplate(jsonb.FromMap(req), false)
+		requestTemplate, err := types.ConvertRawTemplate(jsonb.FromMap(req), false)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 			return
@@ -531,7 +531,7 @@ func importerSetColumnMapping(c *gin.Context) {
 
 	} else if upload.Template.Valid {
 		// A template was set on the upload (SDK-defined template), use that instead of the importer template
-		importServiceTemplate, err := types.ConvertUploadTemplate(upload.Template, false)
+		importServiceTemplate, err := types.ConvertRawTemplate(upload.Template, false)
 		if err != nil {
 			tf.Log.Warnw("Could not convert upload template to import service template during import", "error", err, "upload_id", upload.ID, "upload_template", upload.Template)
 			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
@@ -631,7 +631,7 @@ func importerSetColumnMapping(c *gin.Context) {
 
 		// At this point we know the new column mapping is different, so the current column mapping needs to be cleared
 		// and the import needs to be deleted and re-imported
-		err = db.ClearUploadColumnTemplateColumnIDs(upload.ID.String())
+		err = db.ClearUploadColumnTemplateColumnIDs(upload)
 		if err != nil {
 			errStr := "Could not clear existing column mapping"
 			tf.Log.Errorw(errStr, "upload_id", upload.ID, "error", err)
@@ -857,7 +857,7 @@ func importerEditImportCell(c *gin.Context) {
 
 	if imp.Upload.Template.Valid {
 		// If the upload uses an SDK-defined template, retrieve any validations from the template on the upload
-		template, err := types.ConvertUploadTemplate(imp.Upload.Template, true)
+		template, err := types.ConvertRawTemplate(imp.Upload.Template, true)
 		if err != nil {
 			tf.Log.Errorw("Upload template invalid retrieving validations for cell edit", "upload_id", imp.Upload.ID, "error", err)
 			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "The SDK-defined template is invalid"})
@@ -1008,7 +1008,7 @@ func importerEditImportCell(c *gin.Context) {
 //	@Failure		400	{object}	types.Res
 //	@Router			/file-import/v1/import/{id}/submit [post]
 //	@Param			id	path	string	true	"Upload ID"
-func importerSubmitImport(c *gin.Context, importCompleteHandler func(types.Import)) {
+func importerSubmitImport(c *gin.Context, importCompleteHandler func(types.Import, string)) {
 	id := c.Param("id")
 	if len(id) == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No upload ID provided"})
@@ -1065,7 +1065,7 @@ func importerSubmitImport(c *gin.Context, importCompleteHandler func(types.Impor
 
 	if importCompleteHandler != nil {
 		util.SafeGo(func() {
-			importCompleteHandler(*importServiceImport)
+			importCompleteHandler(*importServiceImport, imp.WorkspaceID.String())
 		}, "import_id", imp.ID)
 	}
 

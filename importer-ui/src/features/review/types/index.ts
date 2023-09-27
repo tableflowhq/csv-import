@@ -1,3 +1,4 @@
+import { CellValueChangedEvent } from "ag-grid-community";
 import { QueryFilter, Template, Upload } from "../../../api/types";
 
 export type ReviewProps = {
@@ -15,4 +16,5 @@ export type TableProps = {
   uploadId: string;
   filter: QueryFilter;
   template: Template;
+  onCellValueChanged: (event: CellValueChangedEvent) => void;
 };

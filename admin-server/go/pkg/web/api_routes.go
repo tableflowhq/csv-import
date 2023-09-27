@@ -1,19 +1,26 @@
 package web
 
 import (
+	"bytes"
 	"encoding/csv"
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/guregu/null"
+	"gorm.io/gorm"
 	"io"
 	"net/http"
 	"os"
 	"strconv"
 	"tableflow/go/pkg/db"
 	"tableflow/go/pkg/file"
+	"tableflow/go/pkg/model"
+	"tableflow/go/pkg/model/jsonb"
 	"tableflow/go/pkg/scylla"
 	"tableflow/go/pkg/tf"
 	"tableflow/go/pkg/types"
 	"tableflow/go/pkg/util"
+	"time"
 )
 
 // getImportForExternalAPI
@@ -196,4 +203,211 @@ func downloadImportForExternalAPI(c *gin.Context) {
 		return
 	}
 	c.Status(http.StatusOK)
+}
+
+// TODO: Update for multi-user support
+func getWorkspaceUser(workspaceID string) (string, error) {
+	type Res struct {
+		UserID string
+	}
+	var res Res
+	err := tf.DB.Raw("select user_id::text from workspace_users where workspace_id = ? limit 1;", model.ParseID(workspaceID)).Scan(&res).Error
+	if err != nil {
+		return "", err
+	}
+	if len(res.UserID) == 0 {
+		return "", errors.New("error determining user in workspace")
+	}
+	return res.UserID, nil
+}
+
+// createImporterForExternalAPI
+//
+//	@Summary		Create importer
+//	@Description	Create an importer
+//	@Tags			External API
+//	@Success		200	{object}	types.Importer
+//	@Failure		400	{object}	types.Res
+//	@Router			/v1/importer [post]
+//	@Param			body	body	types.Importer	true	"Request body"
+func createImporterForExternalAPI(c *gin.Context) {
+	workspaceID := c.GetString("workspace_id")
+	userID, err := getWorkspaceUser(workspaceID)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, types.Res{Err: err.Error()})
+		return
+	}
+	user := model.User{ID: model.ParseID(userID)}
+
+	bodyBytes, err := io.ReadAll(c.Request.Body)
+	if err != nil {
+		tf.Log.Warnw("Could not read JSON body", "error", err, "workspace_id", workspaceID)
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+		return
+	}
+	// Write body back for subsequent middleware or handler
+	c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+
+	bodyJSON, err := jsonb.FromBytes(bodyBytes)
+	if err != nil {
+		tf.Log.Warnw("Invalid JSON body", "error", err, "workspace_id", workspaceID)
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+		return
+	}
+	importerRaw, ok := bodyJSON.AsMap()
+	if !ok {
+		tf.Log.Warnw("Invalid importer JSON body", "error", err, "workspace_id", workspaceID)
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Invalid JSON body"})
+		return
+	}
+	name, _ := importerRaw["name"].(string)
+	skipHeaderRowSelection, _ := importerRaw["skip_header_row_selection"].(bool)
+	if len(name) == 0 {
+		name = "My Importer"
+	}
+	importer := model.Importer{
+		ID:                     model.NewID(),
+		WorkspaceID:            model.ParseID(workspaceID),
+		Name:                   name,
+		SkipHeaderRowSelection: skipHeaderRowSelection,
+		CreatedBy:              user.ID,
+		UpdatedBy:              user.ID,
+	}
+
+	// Parse the template from the request
+	templateRaw, _ := importerRaw["template"]
+	templateJSON := jsonb.JSONB{
+		Data:  templateRaw,
+		Valid: templateRaw != nil,
+	}
+	if !templateJSON.Valid {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Invalid importer: The parameter 'template' is required"})
+		return
+	}
+	templateType, err := types.ConvertRawTemplate(templateJSON, true)
+	if err != nil {
+		tf.Log.Warnw("Invalid template JSON", "error", err, "workspace_id", workspaceID)
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+		return
+	}
+
+	err = tf.DB.Create(&importer).Error
+	if err != nil {
+		tf.Log.Errorw("Could not create importer", "error", err, "workspace_id", workspaceID)
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+		return
+	}
+	template := model.Template{
+		ID:          templateType.ID,
+		WorkspaceID: importer.WorkspaceID,
+		ImporterID:  importer.ID,
+		Name:        "Default Template",
+		CreatedBy:   user.ID,
+		UpdatedBy:   user.ID,
+	}
+	err = tf.DB.Create(&template).Error
+	if err != nil {
+		tf.Log.Errorw("Could not create template for importer", "error", err, "workspace_id", workspaceID)
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+		return
+	}
+
+	// TODO: After validations is released, migrate this to a types function that includes validations
+	for _, tc := range templateType.TemplateColumns {
+		template.TemplateColumns = append(template.TemplateColumns, &model.TemplateColumn{
+			ID:                tc.ID,
+			TemplateID:        templateType.ID,
+			Name:              tc.Name,
+			Key:               tc.Key,
+			Required:          tc.Required,
+			Description:       null.NewString(tc.Description, len(tc.Description) != 0),
+			SuggestedMappings: tc.SuggestedMappings,
+			CreatedBy:         user.ID,
+			UpdatedBy:         user.ID,
+			//Validations:       nil,
+		})
+	}
+	err = tf.DB.Create(template.TemplateColumns).Error
+	if err != nil {
+		tf.Log.Errorw("Could not create template columns", "error", err, "workspace_id", workspaceID)
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+		return
+	}
+	importer.Template = &template
+
+	importerType := types.Importer{
+		ID:                     importer.ID,
+		Name:                   importer.Name,
+		SkipHeaderRowSelection: importer.SkipHeaderRowSelection,
+		Template:               templateType,
+	}
+
+	c.JSON(http.StatusOK, &importerType)
+}
+
+// deleteImporterForExternalAPI
+//
+//	@Summary		Delete importer
+//	@Description	Delete an importer along with all associated objects (template, columns)
+//	@Tags			External API
+//	@Success		200	{object}	types.Res
+//	@Failure		400	{object}	types.Res
+//	@Router			/v1/importer/{id} [delete]
+//	@Param			id	path	string	true	"Importer ID"
+func deleteImporterForExternalAPI(c *gin.Context) {
+	id := c.Param("id")
+	if len(id) == 0 {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No importer ID provided"})
+		return
+	}
+	importer, err := db.GetImporter(id)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+		return
+	}
+	workspaceID := c.GetString("workspace_id")
+	if importer.WorkspaceID.String() != workspaceID {
+		tf.Log.Warnw("Attempted to delete importer not belonging to workspace", "workspace_id", workspaceID, "import_id", id)
+		c.AbortWithStatusJSON(http.StatusUnauthorized, types.Res{Err: "Unauthorized"})
+		return
+	}
+	userID, err := getWorkspaceUser(importer.WorkspaceID.String())
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, types.Res{Err: err.Error()})
+		return
+	}
+	user := model.User{ID: model.ParseID(userID)}
+	deletedAt := gorm.DeletedAt{Time: time.Now(), Valid: true}
+
+	importer.DeletedBy = user.ID
+	importer.DeletedAt = deletedAt
+
+	if importer.Template != nil {
+		importer.Template.DeletedBy = user.ID
+		importer.Template.DeletedAt = deletedAt
+		for i, _ := range importer.Template.TemplateColumns {
+			tc := importer.Template.TemplateColumns[i]
+			tc.DeletedBy = user.ID
+			tc.DeletedAt = deletedAt
+
+			// Delete any validations attached to the template column
+			if len(tc.Validations) != 0 {
+				err = tf.DB.Delete(tc.Validations).Error
+				if err != nil {
+					tf.Log.Errorw("Could not delete template column validations", "error", err, "template_column_id", tc.ID)
+					c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+					return
+				}
+			}
+		}
+	}
+
+	err = tf.DB.Session(&gorm.Session{FullSaveAssociations: true}).Save(&importer).Error
+	if err != nil {
+		tf.Log.Errorw("Could not delete importer", "error", err, "workspace_id", importer.WorkspaceID, "importer_id", importer.ID)
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, types.Res{Message: "success"})
 }

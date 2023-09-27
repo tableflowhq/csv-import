@@ -1,19 +1,9 @@
 /* eslint-disable */
-import {
-  CellValueChangedEvent,
-  ColDef,
-  GridApi,
-  GridReadyEvent,
-  ICellRendererParams,
-  IDatasource,
-  ISizeColumnsToFitParams,
-  ValueGetterParams,
-} from "ag-grid-community";
+import { ColDef, GridApi, GridReadyEvent, ICellRendererParams, IDatasource, ISizeColumnsToFitParams, ValueGetterParams } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { classes, Icon, Tooltip } from "@tableflow/ui-library";
 import { IconType } from "@tableflow/ui-library/build/Icon/types";
-import { post } from "../../../api/api";
 import { fetchRows } from "../../../api/useGetRows";
 import { TableProps } from "../types";
 import style from "../style/Review.module.scss";
@@ -21,7 +11,12 @@ import "./TableStyle.scss";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 
-function ReviewDataTable({ theme, uploadId, filter, template }: TableProps) {
+const TABLE_WIDTH = 1000;
+const INDEX_ROW_WIDTH = 70;
+const MAX_COLUMN_SCROLL = 7;
+const MAX_ROWS = 9;
+
+function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged }: TableProps) {
   const customSelectClass = "ag-theme-alpine-dark-custom-select";
   const paginatedDataRef: any = useRef();
   const filterRef: any = useRef(filter);
@@ -31,55 +26,6 @@ function ReviewDataTable({ theme, uploadId, filter, template }: TableProps) {
   const [paginatedData, setPaginatedData] = useState<any>();
   const gridRef = useRef<GridApi | null>(null);
   const [selectedClass, setSelectedClass] = useState(customSelectClass);
-  const cellValueChangeSet = useRef(new Set<string>());
-
-  // const {
-  //   mutate: mutateCell,
-  //   error: editCellError,
-  //   isSuccess: cellEditIsSuccess,
-  //   isLoading: cellEditIsLoading,
-  //   data: cellEditData,
-  // } = useEditCell(uploadId || "");
-
-  const onCellValueChanged = useCallback((event: CellValueChangedEvent) => {
-    const columnId = event.column.getColId();
-    const cellId = `${event.rowIndex}-${columnId}`;
-    // Check if the change was done programmatically to not cause an infinite loop when reverting changes to cell edits
-    if (cellValueChangeSet.current.has(cellId)) {
-      cellValueChangeSet.current.delete(cellId);
-      return;
-    }
-    let cellKey = "";
-    const parts = columnId.split(".");
-    if (parts.length > 1 && parts[0] === "values") {
-      cellKey = parts[1];
-    } else {
-      console.error("Unexpected column ID format", columnId);
-      return;
-    }
-    const endpoint = `import/${uploadId}/cell/edit`;
-    const body = {
-      row_index: event.rowIndex,
-      is_error: event.data?.errors ? Object.keys(event.data.errors).length > 0 : false,
-      cell_key: cellKey,
-      cell_value: event.newValue,
-    };
-    post(endpoint, body).then((res) => {
-      if (!res.ok) {
-        cellValueChangeSet.current.add(cellId);
-        const rowNode = gridRef.current?.getRowNode(String(event.rowIndex));
-        if (rowNode) {
-          rowNode.setDataValue(columnId, event.oldValue);
-        }
-        alert(res.error);
-      } else {
-        // TODO:
-        // 1. Clear the error highlighting on the cell
-        // 2. Update the "All" "Valid" "Error" selector with the updated count (returned from this response) ...we might have to move this to the review/index component to do this
-        // 3. Update the other grids with the new value
-      }
-    });
-  }, []);
 
   useEffect(() => {
     paginatedDataRef.current = paginatedData;
@@ -92,36 +38,20 @@ function ReviewDataTable({ theme, uploadId, filter, template }: TableProps) {
     gridRef.current && setDataSource();
   }, [filter]);
 
-  // useEffect(() => {
-  //   if (gridRef.current) {
-  //     // isLoading && gridRef.current.showLoadingOverlay();
-  //     // !isLoading && gridRef.current.hideOverlay();
-  //     setColumnSizes();
-  //   }
-  // }, [isLoading]);
-
   const addEmptyRows = (newData: any) => {
-    let dataPage = newData;
+    if (!!Object.keys(newData).length && newData.rows.length < MAX_ROWS) {
+      const missingRows = MAX_ROWS - newData.rows.length;
+      const rows = [...newData.rows, ...Array(missingRows).fill({})];
 
-    if (!!Object.keys(newData).length && newData.rows.length < 9) {
-      const missingRows = 9 - newData.rows.length;
-      const rows = [...newData.rows];
-
-      for (let i = 0; i < missingRows; i++) {
-        rows.push({});
-      }
-
-      dataPage = {
+      return {
         ...newData,
         pagination: {
           ...newData.pagination,
-          total: 9,
+          total: MAX_ROWS,
         },
         rows,
       };
     }
-
-    return dataPage;
   };
 
   const setDataSource = () => {
@@ -147,48 +77,20 @@ function ReviewDataTable({ theme, uploadId, filter, template }: TableProps) {
       },
     };
     gridRef.current?.setDatasource?.(dataSource);
-    setColumnSizes();
   };
 
   const onGridReady = useCallback((params: GridReadyEvent<any>) => {
     gridRef.current = params.api as any;
-    setTimeout(() => {
-      setColumnSizes();
-    }, 100);
     setDataSource();
   }, []);
-  window.addEventListener("resize", () => {
-    setColumnSizes();
-  });
 
-  const setColumnSizes = () => {
-    // @ts-ignore
-    if (!gridRef.current || gridRef.current?.destroyCalled) return;
-    const columnCount = gridRef.current?.getColumnDefs?.()?.length || 0;
-    // onl resize if there are less than 5 columns
-    if (columnCount < 5) {
-      // re-size all columns but index
-      const options: ISizeColumnsToFitParams = {
-        columnLimits: [
-          {
-            key: "index",
-            maxWidth: 70,
-            minWidth: 70,
-          },
-        ],
-      };
-      gridRef.current && gridRef.current?.sizeColumnsToFit(options);
-    }
+  const customHeaderComponent = (params: any) => {
+    return (
+      <div className={style.headerCell}>
+        {params.displayName} {params.displayDescription && <Tooltip title={params.displayDescription}></Tooltip>}
+      </div>
+    );
   };
-
-  // TODO: tooltip is showing cut off
-  // const customHeaderComponent = (params: any) => {
-  //   return (
-  //     <div className={style.headerCell}>
-  //       {params.displayName} {params.displayDescription && <Tooltip title={params.displayDescription}></Tooltip>}
-  //     </div>
-  //   );
-  // };
 
   useEffect(() => {
     if (paginatedData?.rows?.[0]?.values) {
@@ -199,7 +101,7 @@ function ReviewDataTable({ theme, uploadId, filter, template }: TableProps) {
 
         return {
           headerName: displayName || header,
-          // headerComponent: customHeaderComponent,
+          headerComponent: customHeaderComponent,
           headerComponentParams: {
             displayDescription: displayDescription,
           },
@@ -207,16 +109,15 @@ function ReviewDataTable({ theme, uploadId, filter, template }: TableProps) {
           field: `values.${header}`,
           cellStyle: (params: any) => {
             if (params.data?.errors?.[header]) {
-              return { backgroundColor: getCellBackgroundColor(params.data.errors[header][0].severity) };
+              return { backgroundColor: getCellBackgroundColor(params.data.errors[header][0].severity, theme) };
             }
             return null;
           },
           cellRenderer: (params: ICellRendererParams) => cellRenderer(params, header),
-          tooltipValueGetter: tooltipValueGetterImproved,
           sortable: false,
           filter: false,
           suppressMovable: true,
-          tooltipComponent: CustomTooltip,
+          width: headers.length < MAX_COLUMN_SCROLL ? (TABLE_WIDTH - INDEX_ROW_WIDTH) / headers.length : undefined,
         } as ColDef;
       });
       // Add index column to the beginning of the columns
@@ -227,8 +128,8 @@ function ReviewDataTable({ theme, uploadId, filter, template }: TableProps) {
           return params.data && params.data.values ? Number(params.node?.id ?? 0) + 1 : "";
         },
         field: "index",
-        width: 70,
-        pinned: headers.length >= 5 ? "left" : undefined,
+        width: INDEX_ROW_WIDTH,
+        pinned: headers.length > MAX_COLUMN_SCROLL ? "left" : undefined,
       });
       setColumnDefs(generatedColumnDefs.reverse());
     }
@@ -272,32 +173,6 @@ function ReviewDataTable({ theme, uploadId, filter, template }: TableProps) {
   );
 }
 
-function CustomTooltip(props: any) {
-  const { data } = props;
-  const { errors } = data;
-  const { headerName } = props.colDef;
-  const error = errors?.[headerName];
-  if (!error) return null;
-  return (
-    <Tooltip className={style.tableflowTooltip} icon={getIconType(error[0].severity)}>
-      {
-        <div className={style.tooltipContent}>
-          {error?.map((err: any, index: number) => (
-            <span key={index}>{err?.message}</span>
-          ))}
-        </div>
-      }
-    </Tooltip>
-  );
-}
-
-const tooltipValueGetterImproved = (params: any, header: string) => {
-  if (params.data?.errors?.[header]) {
-    return params.data.errors[header].map((err: any) => `• ${err.type.toUpperCase()}: ${err.message}`).join("");
-  }
-  return "Validation failed for this field."; // Fallback tooltip
-};
-
 type IconKeyType = "error" | "warning" | "info";
 
 const iconTypeMap: Record<IconKeyType, IconType> = {
@@ -310,13 +185,19 @@ const getIconType = (type: string): IconType => {
   return iconTypeMap[type as IconKeyType] || "info";
 };
 
-const getCellBackgroundColor = (severity: IconKeyType): string | null => {
-  const colorMap = {
-    error: "#f04339",
-    warning: "#ffcc00",
-    info: "#4caf50",
-  };
-
+const getCellBackgroundColor = (severity: IconKeyType, theme: string): string | null => {
+  const colorMap =
+    theme === "dark"
+      ? {
+          error: "#7A271A",
+          warning: "#B54708",
+          info: "#054F31",
+        }
+      : {
+          error: "#FDA29B",
+          warning: "#FEDF89",
+          info: "#A6F4C5",
+        };
   return colorMap[severity] || null;
 };
 
@@ -333,8 +214,8 @@ const cellRenderer = (params: any, header: string) => {
         }}>
         <span>{params.value}</span>
         {errors && (
-          <button className={style.iconButton}>
-            <Icon icon={getIconType(errors[0].type)} />
+          <button>
+            <Tooltip className={style.iconButton} title={errors[0].message} icon={getIconType(errors[0].type)} />
           </button>
         )}
       </span>

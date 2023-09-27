@@ -12,11 +12,11 @@ export default function MapColumns({
   onCancel,
   skipHeaderRowSelection,
   schemaless,
+  schemalessReadOnly,
   seColumnsValues,
   columnsValues,
 }: MapColumnsProps) {
-  const { rows, formValues } = useMapColumnsTable(upload?.upload_columns, template?.columns, schemaless, columnsValues);
-
+  const { rows, formValues } = useMapColumnsTable(upload?.upload_columns, template?.columns, schemaless, schemalessReadOnly, columnsValues);
   const { mutate, error, isSuccess, isLoading } = usePostUpload(upload?.id || "");
 
   const onSubmit = (e: FormEvent<HTMLFormElement>) => {

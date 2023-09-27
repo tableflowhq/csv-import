@@ -57,7 +57,12 @@ export default function Templates({ importer }: TemplatesProps) {
 
   // const { dataSorted, setSort, sortKey, sortAsc } = useSort<Template[]>(data || [], "updated_at");
 
-  const { dataFiltered, setFilter } = useFilter<TemplateColumn[]>(["name"], columns || []);
+  const dataWithCombinedProperty = (columns || []).map((item) => ({
+    ...item,
+    importerNameAndId: `${item.name}_${item.id}_${item.key}_${item.description}`,
+  }));
+
+  const { dataFiltered, setFilter } = useFilter<TemplateColumn[]>(["importerNameAndId"], dataWithCombinedProperty || []);
 
   const itemsPerPage = 25;
   const { dataPage, page, paginate, totalItems } = useSyncPagination(dataFiltered as any, itemsPerPage);

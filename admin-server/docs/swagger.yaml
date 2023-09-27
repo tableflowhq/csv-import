@@ -1361,6 +1361,50 @@ paths:
       summary: Get import rows
       tags:
       - External API
+  /v1/importer:
+    post:
+      description: Create an importer
+      parameters:
+      - description: Request body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/types.Importer'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.Importer'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/types.Res'
+      summary: Create importer
+      tags:
+      - External API
+  /v1/importer/{id}:
+    delete:
+      description: Delete an importer along with all associated objects (template,
+        columns)
+      parameters:
+      - description: Importer ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.Res'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/types.Res'
+      summary: Delete importer
+      tags:
+      - External API
 securityDefinitions:
   ApiKeyAuth:
     in: header

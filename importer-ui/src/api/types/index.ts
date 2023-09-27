@@ -36,6 +36,15 @@ export type TemplateColumn = {
   description?: string;
   required?: boolean;
   suggested_mappings?: string[];
+  validations?: Validation[];
+};
+
+export type Validation = {
+  id?: number;
+  type: string;
+  value?: any;
+  message?: string;
+  severity?: string;
 };
 
 export type Upload = {
