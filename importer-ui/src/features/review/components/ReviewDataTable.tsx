@@ -216,8 +216,8 @@ const cellRenderer = (params: any, header: string) => {
         }}>
         <span>{params.value}</span>
         {errors && (
-          <button className={style.iconButton}>
-            <Tooltip title={errors[0].message} icon={getIconType(errors[0].type)} />
+          <button>
+            <Tooltip className={style.iconButton} title={errors[0].message} icon={getIconType(errors[0].type)} />
           </button>
         )}
       </span>

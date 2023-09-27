@@ -16,7 +16,7 @@
   }
 
   .iconButton {
-    & > svg path {
+     svg {
       stroke: var(--color-text-on-primary);
     }
   }
