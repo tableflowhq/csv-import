@@ -89,14 +89,13 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
     }
   };
 
-  // TODO: tooltip is showing cut off
-  // const customHeaderComponent = (params: any) => {
-  //   return (
-  //     <div className={style.headerCell}>
-  //       {params.displayName} {params.displayDescription && <Tooltip title={params.displayDescription}></Tooltip>}
-  //     </div>
-  //   );
-  // };
+  const customHeaderComponent = (params: any) => {
+    return (
+      <div className={style.headerCell}>
+        {params.displayName} {params.displayDescription && <Tooltip title={params.displayDescription}></Tooltip>}
+      </div>
+    );
+  };
 
   useEffect(() => {
     if (paginatedData?.rows?.[0]?.values) {
@@ -107,7 +106,7 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
 
         return {
           headerName: displayName || header,
-          // headerComponent: customHeaderComponent,
+          headerComponent: customHeaderComponent,
           headerComponentParams: {
             displayDescription: displayDescription,
           },
@@ -120,11 +119,9 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
             return null;
           },
           cellRenderer: (params: ICellRendererParams) => cellRenderer(params, header),
-          tooltipValueGetter: tooltipValueGetterImproved,
           sortable: false,
           filter: false,
           suppressMovable: true,
-          tooltipComponent: CustomTooltip,
         } as ColDef;
       });
       // Add index column to the beginning of the columns
@@ -178,35 +175,6 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
   );
 }
 
-function CustomTooltip(props: any) {
-  const { data } = props;
-  const { errors } = data;
-  const { field } = props.colDef;
-  const parts = field?.split(".");
-  const lastPart = parts[parts?.length - 1];
-  const error = errors?.[lastPart!];
-
-  if (!error) return null;
-  return (
-    <Tooltip className={style.tableflowTooltip} icon={getIconType(error[0].severity)}>
-      {
-        <div className={style.tooltipContent}>
-          {error?.map((err: any, index: number) => (
-            <span key={index}>{err?.message}</span>
-          ))}
-        </div>
-      }
-    </Tooltip>
-  );
-}
-
-const tooltipValueGetterImproved = (params: any, header: string) => {
-  if (params.data?.errors?.[header]) {
-    return params.data.errors[header].map((err: any) => `• ${err.type.toUpperCase()}: ${err.message}`).join("");
-  }
-  return "Validation failed for this field."; // Fallback tooltip
-};
-
 type IconKeyType = "error" | "warning" | "info";
 
 const iconTypeMap: Record<IconKeyType, IconType> = {
@@ -249,7 +217,7 @@ const cellRenderer = (params: any, header: string) => {
         <span>{params.value}</span>
         {errors && (
           <button className={style.iconButton}>
-            <Icon icon={getIconType(errors[0].type)} />
+            <Tooltip title={errors[0].message} icon={getIconType(errors[0].type)} />
           </button>
         )}
       </span>

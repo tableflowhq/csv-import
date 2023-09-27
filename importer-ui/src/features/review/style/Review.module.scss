@@ -58,32 +58,6 @@
   width: fit-content;
 }
 
-.tableflowTooltip {
-  background-color: #333;
-  color: #fff;
-  padding: 10px;
-  border-radius: 5px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  position: relative;
-
-  .tooltipContent {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-}
-
-.tableflowTooltip::after {
-  content: "";
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  margin-left: -5px;
-  border-width: 5px;
-  border-style: solid;
-  border-color: #333 transparent transparent transparent;
-}
-
 .spinner {
   border: 1px solid var(--color-border);
   margin-top: var(--m);
