@@ -119,7 +119,7 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
             if (params.data?.errors?.[header]) {
               return { backgroundColor: getCellBackgroundColor(params.data.errors[header][0].severity, theme) };
             }
-            return null;
+            return { backgroundColor: "" };
           },
           cellRenderer: (params: ICellRendererParams) => cellRenderer(params, header),
           sortable: false,
