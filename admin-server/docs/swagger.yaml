@@ -375,12 +375,26 @@ definitions:
       cell_value:
         example: Laura
         type: string
-      is_error:
-        example: false
-        type: boolean
       row_index:
         example: 0
         type: integer
+    type: object
+  types.ImportCellEditResponse:
+    properties:
+      has_errors:
+        example: false
+        type: boolean
+      num_error_rows:
+        example: 32
+        type: integer
+      num_rows:
+        example: 256
+        type: integer
+      num_valid_rows:
+        example: 224
+        type: integer
+      row:
+        $ref: '#/definitions/types.ImportRow'
     type: object
   types.ImportData:
     properties:
@@ -1076,7 +1090,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.Import'
+            $ref: '#/definitions/types.ImportCellEditResponse'
         "400":
           description: Bad Request
           schema:
