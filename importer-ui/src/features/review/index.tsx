@@ -59,7 +59,6 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
     const endpoint = `import/${uploadId}/cell/edit`;
     const body = {
       row_index: event.data?.index,
-      is_error_row: !!event.data?.errors ?? false,
       cell_key: cellKey,
       cell_value: event.newValue,
     };
