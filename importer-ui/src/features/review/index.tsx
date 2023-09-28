@@ -66,7 +66,6 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
 
   useEffect(() => {
     if (dataCellEdited) {
-      console.log("dataCellEdited", dataCellEdited);
       if (!dataCellEdited?.ok) {
         const event = cellValueChangedEvent;
         if (event) {
@@ -83,9 +82,6 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
         }
       } else {
         const { num_rows, num_valid_rows, num_error_rows } = dataCellEdited?.data || {};
-        console.log("num_rows", num_rows);
-        console.log("num_valid_rows", num_valid_rows);
-        console.log("num_error_rows", num_error_rows);
         updateFilterOptionCounts(num_rows, num_valid_rows, num_error_rows);
       }
     }
