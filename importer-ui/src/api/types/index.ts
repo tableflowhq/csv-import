@@ -36,6 +36,15 @@ export type TemplateColumn = {
   description?: string;
   required?: boolean;
   suggested_mappings?: string[];
+  validations?: Validation[];
+};
+
+export type Validation = {
+  id?: number;
+  type: string;
+  value?: any;
+  message?: string;
+  severity?: string;
 };
 
 export type Upload = {
@@ -83,4 +92,36 @@ export type Import = {
   upload_id: string;
   workspace_id: string;
   importer?: Importer;
+};
+
+type Pagination = {
+  total: number;
+  offset: number;
+  limit: number;
+  next_offset: number;
+};
+
+type ErrorDetail = {
+  type: string;
+  severity: string;
+  message: string;
+};
+
+type Row = {
+  index: number;
+  values: {
+    email: string;
+    filled: string;
+  };
+  errors: {
+    filled: ErrorDetail[];
+  };
+};
+
+export type QueryFilter = "all" | "valid" | "error";
+
+export type ImportRowResponse = {
+  pagination: Pagination;
+  filter: QueryFilter;
+  rows: Row[];
 };

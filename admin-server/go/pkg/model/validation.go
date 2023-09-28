@@ -16,6 +16,13 @@ const (
 	ValidationSeverityInfo  ValidationSeverity = "info"
 )
 
+var validSeverities = map[string]ValidationSeverity{
+	"":                              ValidationSeverityError,
+	string(ValidationSeverityError): ValidationSeverityError,
+	string(ValidationSeverityWarn):  ValidationSeverityWarn,
+	string(ValidationSeverityInfo):  ValidationSeverityInfo,
+}
+
 type Validation struct {
 	ID               uint               `json:"id" swaggertype:"integer" example:"1"`
 	TemplateColumnID ID                 `json:"template_column_id" swaggertype:"string" example:"a1ed136d-33ce-4b7e-a7a4-8a5ccfe54cd5"`
@@ -39,22 +46,22 @@ func (v Validation) Validate(cell string) bool {
 	return passed
 }
 
-func (v Validation) ValidateWithResult(cell string) (bool, ValidationResult) {
+func (v Validation) ValidateWithResult(cell string) (ValidationResult, bool) {
 	passed, err := v.Type.Evaluator.Evaluate(v.Value.Data, cell)
 	if err != nil {
 		tf.Log.Warnw("Cell validation error", "validation_id", v.ID, "cell", cell, "value", v.Value.ToString(), "error", err)
-		return false, ValidationResult{
+		return ValidationResult{
 			Message:  fmt.Sprintf("Unexpected error: %v", err.Error()),
 			Severity: ValidationSeverityError,
-		}
+		}, false
 	}
 	if passed {
-		return true, ValidationResult{}
+		return ValidationResult{}, true
 	}
-	return false, ValidationResult{
+	return ValidationResult{
 		Message:  v.Message,
 		Severity: v.Severity,
-	}
+	}, false
 }
 
 func (v Validation) MarshalJSON() ([]byte, error) {
@@ -83,4 +90,55 @@ func (v *Validation) UnmarshalJSON(data []byte) error {
 	v.Type.Name = tmp.Type // Set into ValidationType
 	*v = Validation(tmp.Alias)
 	return nil
+}
+
+func (vs *ValidationSeverity) Parse(severity string) error {
+	s, ok := validSeverities[severity]
+	if !ok {
+		return fmt.Errorf("The validation severity %v is invalid", severity)
+	}
+	*vs = s
+	return nil
+}
+
+func ParseValidation(id uint, value jsonb.JSONB, typeStr, message, severity, templateColumnID string) (*Validation, error) {
+	// Severity
+	var s ValidationSeverity
+	if err := s.Parse(severity); err != nil {
+		return nil, err
+	}
+	var vt ValidationType
+
+	switch typeStr {
+	case ValidationFilled.Name:
+		vt = ValidationFilled
+		if !value.Valid {
+			// If no value is provided, default to true
+			value = jsonb.JSONB{
+				Data:  true,
+				Valid: true,
+			}
+		} else {
+			// Validate the value is the correct type
+			if _, ok := value.Data.(bool); !ok {
+				return nil, fmt.Errorf("The filled validation value must be boolean if provided")
+			}
+		}
+		if len(message) == 0 {
+			message = "The cell must be filled"
+		}
+		return &Validation{
+			ID:               id,
+			TemplateColumnID: ParseID(templateColumnID),
+			Type:             vt,
+			Value:            value,
+			Message:          message,
+			Severity:         s,
+		}, nil
+	//
+	//case model.ValidationRegex.Name:
+	//
+	default:
+		return nil, fmt.Errorf("The validation type %v is invalid", typeStr)
+	}
 }

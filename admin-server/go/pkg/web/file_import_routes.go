@@ -5,17 +5,14 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/gocql/gocql"
 	"github.com/guregu/null"
 	"github.com/samber/lo"
 	"github.com/tus/tusd/pkg/handler"
 	"gorm.io/gorm"
-	"math"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
-	"sync"
 	"tableflow/go/pkg/db"
 	"tableflow/go/pkg/file"
 	"tableflow/go/pkg/model"
@@ -24,20 +21,11 @@ import (
 	"tableflow/go/pkg/tf"
 	"tableflow/go/pkg/types"
 	"tableflow/go/pkg/util"
-	"time"
 )
-
-type importProcessResult struct {
-	NumRows            int
-	NumColumns         int
-	NumProcessedValues int
-	NumErrorRows       int
-	NumValidRows       int
-}
 
 // importServiceMaxNumRowsToPassData If the import has more rows than this value, then don't pass the data back to the
 // frontend callback. It must be retrieved from the API.
-var maxNumRowsForFrontendPassThrough = int(math.Min(25000, scylla.MaxAllRowRetrieval))
+var maxNumRowsForFrontendPassThrough = util.MinInt(10000, scylla.MaxAllRowRetrieval)
 
 // tusPostFile
 //
@@ -164,7 +152,7 @@ func importerGetImporter(c *gin.Context) {
 			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("Invalid template provided: %v", err.Error())})
 			return
 		}
-		requestTemplate, err := types.ConvertUploadTemplate(jsonb.FromMap(req), false)
+		requestTemplate, err := types.ConvertRawTemplate(jsonb.FromMap(req), false)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 			return
@@ -303,6 +291,10 @@ func importerSetHeaderRow(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return
 	}
+	if !upload.IsStored {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Upload is not yet stored, please wait until the upload has finished processing"})
+		return
+	}
 
 	// Validate and set the header row index on the upload
 	req := types.UploadHeaderRowSelection{}
@@ -329,21 +321,45 @@ func importerSetHeaderRow(c *gin.Context) {
 		return
 	}
 
-	// Allow the header row to be set again if the corresponding import does not exist by deleting the upload columns
-	if len(upload.UploadColumns) != 0 {
-		importExists, err := db.DoesImportExistByUploadID(upload.ID.String())
+	imp, err := db.GetImportByUploadID(id)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		c.AbortWithStatusJSON(http.StatusOK, types.Res{Err: err.Error()})
+		return
+	}
+	importExists := imp != nil
+	if importExists && imp.IsComplete {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Import is already submitted"})
+		return
+	}
+
+	// If the header row is already set and is being set again to its current value, just return the upload
+	if upload.HeaderRowIndex.Valid && index == upload.HeaderRowIndex.Int64 {
+		importerUpload, err := types.ConvertUpload(upload, nil)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 			return
 		}
-		if importExists {
-			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "The header row cannot be set again since the import is already complete"})
-			return
-		}
+		c.JSON(http.StatusOK, importerUpload)
+		return
+	}
+
+	// Allow the header row to be set again by deleting the upload columns and corresponding import (if exists)
+	if len(upload.UploadColumns) != 0 {
 		err = db.DeleteUploadColumns(upload.ID.String())
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("Could not delete upload columns to reselect header row: %v", err.Error())})
+			errStr := "Could not delete upload columns to reselect header row"
+			tf.Log.Errorw(errStr, "upload_id", upload.ID, "error", err)
+			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("%s: %s", errStr, err)})
 			return
+		}
+		if importExists {
+			err = db.DeleteImport(imp.ID.String())
+			if err != nil {
+				errStr := "Could not delete existing import to reselect header row"
+				tf.Log.Errorw(errStr, "import_id", imp.ID, "error", err)
+				c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("%s: %s", errStr, err)})
+				return
+			}
 		}
 		upload.UploadColumns = make([]*model.UploadColumn, 0)
 	}
@@ -386,17 +402,17 @@ func importerSetHeaderRow(c *gin.Context) {
 	c.JSON(http.StatusOK, importerUpload)
 }
 
-// importerSetColumnMappingAndImport
+// importerSetColumnMapping
 //
 //	@Summary		Set upload column mapping and import data
-//	@Description	Set the template column IDs for each upload column and trigger the import. Note: we will eventually have a separate import endpoint once there is a review step in the upload process.
+//	@Description	Set the template column IDs for each upload column and trigger the import
 //	@Tags			File Import
 //	@Success		200	{object}	types.Res
 //	@Failure		400	{object}	types.Res
 //	@Router			/file-import/v1/upload/{id}/set-column-mapping [post]
 //	@Param			id		path	string				true	"Upload ID"
 //	@Param			body	body	map[string]string	true	"Request body"
-func importerSetColumnMappingAndImport(c *gin.Context, importCompleteHandler func(*model.Import)) {
+func importerSetColumnMapping(c *gin.Context) {
 	id := c.Param("id")
 	if len(id) == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No upload ID provided"})
@@ -437,8 +453,22 @@ func importerSetColumnMappingAndImport(c *gin.Context, importCompleteHandler fun
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return
 	}
+	if !upload.IsStored {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Upload is not yet stored, please wait until the upload has finished processing"})
+		return
+	}
 	if !upload.HeaderRowIndex.Valid {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "The header row has not been set"})
+		return
+	}
+	imp, err := db.GetImportByUploadID(id)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		c.AbortWithStatusJSON(http.StatusOK, types.Res{Err: err.Error()})
+		return
+	}
+	importExists := imp != nil
+	if importExists && imp.IsComplete {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Import is already submitted"})
 		return
 	}
 
@@ -509,7 +539,7 @@ func importerSetColumnMappingAndImport(c *gin.Context, importCompleteHandler fun
 
 	} else if upload.Template.Valid {
 		// A template was set on the upload (SDK-defined template), use that instead of the importer template
-		importServiceTemplate, err := types.ConvertUploadTemplate(upload.Template, false)
+		importServiceTemplate, err := types.ConvertRawTemplate(upload.Template, false)
 		if err != nil {
 			tf.Log.Warnw("Could not convert upload template to import service template during import", "error", err, "upload_id", upload.ID, "upload_template", upload.Template)
 			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
@@ -527,6 +557,19 @@ func importerSetColumnMappingAndImport(c *gin.Context, importCompleteHandler fun
 				Required:          importColumn.Required,
 				Description:       null.NewString(importColumn.Description, len(importColumn.Description) != 0),
 				SuggestedMappings: importColumn.SuggestedMappings,
+			}
+			for _, v := range importColumn.Validations {
+				validation, err := model.ParseValidation(
+					v.ValidationID,
+					v.Value,
+					v.Type,
+					v.Message,
+					v.Severity,
+					importColumn.ID.String(),
+				)
+				if err != nil {
+					templateColumn.Validations = append(templateColumn.Validations, validation)
+				}
 			}
 			template.TemplateColumns = append(template.TemplateColumns, templateColumn)
 		}
@@ -559,6 +602,62 @@ func importerSetColumnMappingAndImport(c *gin.Context, importCompleteHandler fun
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "All required columns must be set"})
 		return
 	}
+
+	// Note: If the import exists but has not been stored yet, this means the column mapping has been set and the import
+	// has not finished processing. This should be allowed if the user is changing the column mapping.
+
+	// The next cases handle the column mapping having already been submitted with either the same or different mapping
+	columnsAlreadyMapped := lo.ContainsBy(upload.UploadColumns, func(uc *model.UploadColumn) bool {
+		return uc.TemplateColumnID.Valid
+	})
+	if columnsAlreadyMapped {
+		sameColumnMapping := true
+		for _, uc := range upload.UploadColumns {
+			tcID, ok := columnMapping[uc.ID.String()]
+
+			// Upload column does not have TemplateColumnID but columnMapping has a value
+			if !uc.TemplateColumnID.Valid && ok {
+				sameColumnMapping = false
+				break
+			}
+			// Upload column has a TemplateColumnID but columnMapping does not have a value
+			if uc.TemplateColumnID.Valid && !ok {
+				sameColumnMapping = false
+				break
+			}
+			// Both have values but they are different
+			if uc.TemplateColumnID.Valid && ok && tcID != uc.TemplateColumnID.String() {
+				sameColumnMapping = false
+				break
+			}
+		}
+		// If the column mapping already been set and the new column mapping is the same, no action is required
+		if sameColumnMapping {
+			c.JSON(http.StatusOK, types.Res{Message: "Column mapping unchanged"})
+			return
+		}
+
+		// At this point we know the new column mapping is different, so the current column mapping needs to be cleared
+		// and the import needs to be deleted and re-imported
+		err = db.ClearUploadColumnTemplateColumnIDs(upload)
+		if err != nil {
+			errStr := "Could not clear existing column mapping"
+			tf.Log.Errorw(errStr, "upload_id", upload.ID, "error", err)
+			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("%s: %s", errStr, err)})
+			return
+		}
+		if importExists {
+			tf.Log.Infow("Deleting import for changed column mapping", "import_id", imp.ID)
+			err = db.DeleteImport(imp.ID.String())
+			if err != nil {
+				errStr := "Could not delete existing import to update column mapping"
+				tf.Log.Errorw(errStr, "import_id", imp.ID, "error", err)
+				c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("%s: %s", errStr, err)})
+				return
+			}
+		}
+	}
+
 	err = db.SetTemplateColumnIDs(upload, columnMapping)
 	if err != nil {
 		tf.Log.Errorw("Could not set template column mapping", "error", err)
@@ -566,13 +665,12 @@ func importerSetColumnMappingAndImport(c *gin.Context, importCompleteHandler fun
 		return
 	}
 
-	// Trigger the import
-	// This will be its own endpoint or attached to the review stage once that is implemented
+	// Trigger the import where all rows are loaded and validated to be displayed next on the review step
 	util.SafeGo(func() {
-		importData(upload, template, importCompleteHandler)
+		file.ImportData(upload, template)
 	}, "upload_id", upload.ID)
 
-	c.JSON(http.StatusOK, types.Res{Message: "success"})
+	c.JSON(http.StatusOK, types.Res{Message: "Import submitted"})
 }
 
 // importerReviewImport
@@ -608,25 +706,16 @@ func importerReviewImport(c *gin.Context) {
 		NumErrorRows:       imp.NumErrorRows,
 		NumValidRows:       imp.NumValidRows,
 		CreatedAt:          imp.CreatedAt,
-		Data: &types.ImportData{
-			Pagination: &types.Pagination{},
-			Rows:       []types.ImportRow{},
-		},
 	}
 	if !imp.IsStored {
 		// Don't attempt to retrieve the data in Scylla if it's not stored
 		c.JSON(http.StatusOK, importServiceImport)
 		return
 	}
-
-	// Retrieve the first 100 rows for the validations screen
-	pagination := &types.Pagination{
-		Total:  int(imp.NumRows.Int64),
-		Offset: types.PaginationDefaultOffset,
-		Limit:  types.PaginationDefaultLimit,
+	if imp.IsComplete {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Import is already submitted"})
+		return
 	}
-	importServiceImport.Data.Pagination = pagination
-	importServiceImport.Data.Rows = scylla.PaginateImportRows(imp, pagination.Offset, pagination.Limit)
 
 	c.JSON(http.StatusOK, importServiceImport)
 }
@@ -642,6 +731,7 @@ func importerReviewImport(c *gin.Context) {
 //	@Param			id		path	string	true	"Upload ID"
 //	@Param			offset	query	int		true	"Pagination offset"	minimum(0)
 //	@Param			limit	query	int		true	"Pagination limit"	minimum(1)	maximum(1000)
+//	@Param			filter	query	string	false	"Pagination filter"	Enums(all, valid, error)
 func importerGetImportRows(c *gin.Context) {
 	id := c.Param("id")
 	if len(id) == 0 {
@@ -650,6 +740,12 @@ func importerGetImportRows(c *gin.Context) {
 	}
 
 	pagination, err := types.ParsePaginationQuery(c)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+		return
+	}
+
+	filter, err := types.ParseImportRowFilterQuery(c)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return
@@ -665,11 +761,28 @@ func importerGetImportRows(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Import is not yet stored, please wait until the import has finished processing"})
 		return
 	}
+	if imp.IsComplete {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Import is already submitted"})
+		return
+	}
 
-	pagination.Total = int(imp.NumRows.Int64)
+	if filter == types.ImportRowFilterValid {
+		pagination.Total = int(imp.NumValidRows.Int64)
+	} else if filter == types.ImportRowFilterError {
+		pagination.Total = int(imp.NumErrorRows.Int64)
+	} else {
+		pagination.Total = int(imp.NumRows.Int64)
+	}
 
-	rows := scylla.PaginateImportRows(imp, pagination.Offset, pagination.Limit)
+	rows := scylla.PaginateImportRows(imp, pagination.Offset, pagination.Limit, filter)
+	if len(rows) < pagination.Limit {
+		// There are no more rows, set the next offset to 0
+		pagination.NextOffset = 0
+	} else if len(rows) != 0 {
+		pagination.NextOffset = rows[len(rows)-1].Index + 1
+	}
 	data := &types.ImportData{
+		Filter:     &filter,
 		Pagination: &pagination,
 		Rows:       rows,
 	}
@@ -677,16 +790,227 @@ func importerGetImportRows(c *gin.Context) {
 	c.JSON(http.StatusOK, data)
 }
 
-// importerGetImport
+// importerEditImportCell
 //
-//	@Summary		Get import by upload ID
-//	@Description	Get a single import by the upload ID, including the data if the import is complete
+//	@Summary		Edit a cell in an import
+//	@Description	Edit the value in a cell for an import. If the cell contains an error, it will run it through the validation before allowing the edit.
 //	@Tags			File Import
 //	@Success		200	{object}	types.Import
 //	@Failure		400	{object}	types.Res
-//	@Router			/file-import/v1/import/{id} [get]
+//	@Router			/file-import/v1/import/{id}/cell/edit [post]
+//	@Param			id		path	string				true	"Upload ID"
+//	@Param			body	body	types.ImportCell	true	"Request body"
+func importerEditImportCell(c *gin.Context) {
+	id := c.Param("id")
+	if len(id) == 0 {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No upload ID provided"})
+		return
+	}
+	imp, err := db.GetImportByUploadIDWithUpload(id)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusOK, gin.H{})
+		return
+	}
+	if !imp.IsStored {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Import is not yet stored, please wait until the import has finished processing"})
+		return
+	}
+	if imp.IsComplete {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Import is already submitted"})
+		return
+	}
+	if imp.Upload == nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Import not attached to upload"})
+		return
+	}
+
+	// Validate the import cell
+	req := types.ImportCell{}
+	if err = c.BindJSON(&req); err != nil {
+		tf.Log.Warnw("Could not bind JSON", "error", err)
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+		return
+	}
+	if req.RowIndex == nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Missing required parameter row_index"})
+		return
+	}
+	if req.IsErrorRow == nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Missing required parameter is_error_row"})
+		return
+	}
+	if req.CellKey == nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Missing required parameter cell_key"})
+		return
+	}
+	if req.CellValue == nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Missing required parameter cell_value"})
+		return
+	}
+	if *req.RowIndex < 0 || *req.RowIndex > int(imp.NumRows.Int64) {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Parameter row_index out of range"})
+		return
+	}
+	if len(*req.CellKey) == 0 {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Missing parameter cell_key"})
+		return
+	}
+
+	rowIndex := *req.RowIndex
+	cellKey := *req.CellKey
+	cellValue := *req.CellValue
+
+	// Retrieve any validations to perform on the cell
+	var validations []*model.Validation
+
+	if imp.Upload.Template.Valid {
+		// If the upload uses an SDK-defined template, retrieve any validations from the template on the upload
+		template, err := types.ConvertRawTemplate(imp.Upload.Template, true)
+		if err != nil {
+			tf.Log.Errorw("Upload template invalid retrieving validations for cell edit", "upload_id", imp.Upload.ID, "error", err)
+			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "The SDK-defined template is invalid"})
+			return
+		}
+		for _, templateColumn := range template.TemplateColumns {
+			for _, v := range templateColumn.Validations {
+				validation, err := model.ParseValidation(
+					v.ValidationID,
+					v.Value,
+					v.Type,
+					v.Message,
+					v.Severity,
+					templateColumn.ID.String(),
+				)
+				if err != nil {
+					validations = append(validations, validation)
+				}
+			}
+		}
+	} else {
+		// Retrieve any validations from the db
+		validations, err = db.GetValidationsByImporterAndTemplateColumnKey(imp.ImporterID.String(), cellKey)
+		if err != nil {
+			tf.Log.Errorw("Could not retrieve validations from db for cell edit", "upload_id", imp.Upload.ID, "error", err)
+			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "An error occurred retrieving the validations for this cell"})
+			return
+		}
+	}
+
+	for _, validation := range validations {
+		res, passed := validation.ValidateWithResult(cellValue)
+		if !passed {
+			switch res.Severity {
+			case model.ValidationSeverityError:
+				c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: res.Message})
+				return
+			default:
+				// TODO: Update this condition once we support warning and info validation severities
+				// We'll most likely need to persist the warning or info into where they are stored when this occurs
+				// instead of returning an error here.
+				c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Unsupported validation severity"})
+				return
+			}
+		}
+	}
+
+	// At this point the cell edit is valid either because it passed any validations or there were no validations to
+	// perform, so we can now persist the edit
+	if *req.IsErrorRow {
+		// Retrieve the error row, needed to determine if all errors are resolved and the record should be inserted into import_rows
+		row, err := scylla.GetImportRowError(imp.ID.String(), rowIndex)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("Could not update cell: %s", err)})
+			return
+		}
+		_, isEditingErrorCell := row.Errors[cellKey]
+		numErrors := len(row.Errors)
+
+		if numErrors == 0 {
+			// No errors were returned from import_row_errors
+			tf.Log.Warnw("No errors returned from import_row_errors during edit", "import_id", imp.ID, "cell_key", cellKey, "row_index", rowIndex)
+			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No error exists for the current row"})
+			return
+		}
+
+		// Update the row values with the new value
+		row.Values[cellKey] = cellValue
+
+		if isEditingErrorCell && numErrors == 1 {
+			// All errors are resolved on the row
+
+			// Add the record to import_rows
+			err = tf.Scylla.Query("insert into import_rows (import_id, row_index, values) values (?, ?, ?)", imp.ID.String(), rowIndex, row.Values).Exec()
+			if err != nil {
+				tf.Log.Errorw("Could not insert into import_rows during cell edit", "import_id", imp.ID, "cell_key", cellKey, "row_index", rowIndex, "error", err)
+				c.AbortWithStatusJSON(http.StatusInternalServerError, types.Res{Err: fmt.Sprintf("Could not update cell: %s", err)})
+				return
+			}
+
+			// Delete the record from import_row_errors
+			err = tf.Scylla.Query("delete from import_row_errors where import_id = ? and row_index = ?", imp.ID.String(), rowIndex).Exec()
+			if err != nil {
+				tf.Log.Errorw("Could not delete from import_row_errors during cell edit", "import_id", imp.ID, "cell_key", cellKey, "row_index", rowIndex, "error", err)
+				c.AbortWithStatusJSON(http.StatusInternalServerError, types.Res{Err: fmt.Sprintf("Could not update cell: %s", err)})
+				return
+			}
+
+			// Update the aggregate row numbers on the import
+			imp.NumValidRows.Int64++
+			imp.NumErrorRows.Int64--
+			err = tf.DB.Save(imp).Error
+			if err != nil {
+				tf.Log.Errorw("Could not update import in database", "import_id", imp.ID, "error", err)
+				c.AbortWithStatusJSON(http.StatusInternalServerError, types.Res{Err: fmt.Sprintf("Could not update cell: %s", err)})
+				return
+			}
+		} else {
+			// There are still other errors on the row, update the import_row_errors record to remove the error for the current cell
+			err = tf.Scylla.Query("update import_row_errors set errors[?] = null, values[?] = ? where import_id = ? and row_index = ?",
+				cellKey, cellKey, cellValue, imp.ID.String(), rowIndex).Exec()
+			if err != nil {
+				tf.Log.Errorw("Could update import_row_errors during cell edit", "import_id", imp.ID, "cell_key", cellKey, "row_index", rowIndex, "error", err)
+				c.AbortWithStatusJSON(http.StatusInternalServerError, types.Res{Err: fmt.Sprintf("Could not update cell: %s", err)})
+				return
+			}
+		}
+	} else {
+		// Update the import_row record with the new value
+		err = tf.Scylla.Query("update import_rows set values[?] = ? where import_id = ? and row_index = ?",
+			cellKey, cellValue, imp.ID.String(), rowIndex).Exec()
+		if err != nil {
+			tf.Log.Errorw("Could update import_rows during cell edit", "import_id", imp.ID, "cell_key", cellKey, "row_index", rowIndex, "error", err)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, types.Res{Err: fmt.Sprintf("Could not update cell: %s", err)})
+			return
+		}
+	}
+
+	importServiceImport := &types.Import{
+		ID:                 imp.ID,
+		UploadID:           imp.UploadID,
+		ImporterID:         imp.ImporterID,
+		NumRows:            imp.NumRows,
+		NumColumns:         imp.NumColumns,
+		NumProcessedValues: imp.NumProcessedValues,
+		Metadata:           imp.Metadata,
+		IsStored:           imp.IsStored,
+		HasErrors:          imp.HasErrors(),
+		NumErrorRows:       imp.NumErrorRows,
+		NumValidRows:       imp.NumValidRows,
+		CreatedAt:          imp.CreatedAt,
+	}
+	c.JSON(http.StatusOK, importServiceImport)
+}
+
+// importerSubmitImport
+//
+//	@Summary		Submit an import by upload ID
+//	@Description	Submit the reviewed import by the upload ID once the data is reviewed and any errors are fixed
+//	@Tags			File Import
+//	@Success		200	{object}	types.Import
+//	@Failure		400	{object}	types.Res
+//	@Router			/file-import/v1/import/{id}/submit [post]
 //	@Param			id	path	string	true	"Upload ID"
-func importerGetImport(c *gin.Context) {
+func importerSubmitImport(c *gin.Context, importCompleteHandler func(types.Import, string)) {
 	id := c.Param("id")
 	if len(id) == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No upload ID provided"})
@@ -697,6 +1021,27 @@ func importerGetImport(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusOK, gin.H{})
 		return
 	}
+	if !imp.IsStored {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Import is not yet stored, please wait until the import has finished processing"})
+		return
+	}
+	if imp.HasErrors() {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "All errors must be resolved before submitting"})
+		return
+	}
+	if imp.IsComplete {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Import is already submitted"})
+		return
+	}
+
+	imp.IsComplete = true
+	err = tf.DB.Save(imp).Error
+	if err != nil {
+		tf.Log.Errorw("Could not update import in database", "import_id", imp.ID, "error", err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, types.Res{Err: err.Error()})
+		return
+	}
+
 	importServiceImport := &types.Import{
 		ID:                 imp.ID,
 		UploadID:           imp.UploadID,
@@ -712,220 +1057,21 @@ func importerGetImport(c *gin.Context) {
 		CreatedAt:          imp.CreatedAt,
 		Rows:               []types.ImportRow{},
 	}
-	if int(imp.NumRows.Int64) > maxNumRowsForFrontendPassThrough {
+	if int(imp.NumRows.Int64) <= maxNumRowsForFrontendPassThrough {
+		importServiceImport.Rows = scylla.RetrieveAllImportRows(imp)
+	} else {
 		importServiceImport.Error = null.StringFrom(fmt.Sprintf("This import has %v rows which exceeds the max "+
-			"allowed number of rows for frontend callback (%v). Use the API to retrieve the data.",
+			"allowed number of rows to receive in one response (%v). Please use the API to retrieve the data.",
 			imp.NumRows.Int64, maxNumRowsForFrontendPassThrough))
-		c.JSON(http.StatusOK, importServiceImport)
-		return
-	}
-	if !imp.IsStored {
-		// Don't attempt to retrieve the data in Scylla if it's not stored
-		c.JSON(http.StatusOK, importServiceImport)
-		return
-	}
-
-	rows := scylla.RetrieveAllImportRows(imp)
-	importServiceImport.Rows = rows
-
-	c.JSON(http.StatusOK, importServiceImport)
-}
-
-func importData(upload *model.Upload, template *model.Template, importCompleteHandler func(*model.Import)) {
-	imp := &model.Import{
-		ID:          model.NewID(),
-		UploadID:    upload.ID,
-		ImporterID:  upload.ImporterID,
-		WorkspaceID: upload.WorkspaceID,
-		Metadata:    upload.Metadata,
-	}
-	err := tf.DB.Create(imp).Error
-	if err != nil {
-		tf.Log.Errorw("Could not create import in database", "error", err, "upload_id", upload.ID)
-		return
-	}
-
-	importStartTime := time.Now()
-
-	importResult, err := processAndStoreImport(template, upload, imp)
-	if err != nil {
-		tf.Log.Errorw("Could not process and store import", "error", err, "import_id", imp.ID)
-		return
-	}
-	tf.Log.Debugw("Import processing and storage complete", "import_id", imp.ID, "time_taken", time.Since(importStartTime))
-
-	imp.IsStored = true
-	imp.NumRows = null.IntFrom(int64(importResult.NumRows))
-	imp.NumColumns = null.IntFrom(int64(importResult.NumColumns))
-	imp.NumProcessedValues = null.IntFrom(int64(importResult.NumProcessedValues))
-	imp.NumErrorRows = null.IntFrom(int64(importResult.NumErrorRows))
-	imp.NumValidRows = null.IntFrom(int64(importResult.NumValidRows))
-
-	err = tf.DB.Save(imp).Error
-	if err != nil {
-		tf.Log.Errorw("Could not update import in database", "error", err, "import_id", imp.ID)
-		return
 	}
 
 	if importCompleteHandler != nil {
-		importCompleteHandler(imp)
+		util.SafeGo(func() {
+			importCompleteHandler(*importServiceImport, imp.WorkspaceID.String())
+		}, "import_id", imp.ID)
 	}
 
-	tf.Log.Debugw("Import complete", "import_id", imp.ID)
-}
-
-func processAndStoreImport(template *model.Template, upload *model.Upload, imp *model.Import) (importProcessResult, error) {
-	columnKeyMap := generateColumnKeyMap(template, upload)
-	numColumns := len(columnKeyMap)
-	importID := imp.ID.String()
-
-	importRowIndex := 0
-	numProcessedValues := 0
-	numValidRows := 0
-	numErrorRows := 0
-
-	goroutines := 8
-	batchCounter := 0
-	batchSize := 0                      // cumulative batch size in bytes
-	maxMutationSize := 16 * 1024 * 1024 // 16MB
-	safetyMargin := 0.75
-
-	in := make(chan *gocql.Batch, 0)
-	var wg sync.WaitGroup
-	for i := 0; i < goroutines; i++ {
-		util.SafeGo(func() { scylla.ProcessBatch(in, &wg) }, "import_id", imp.ID)
-	}
-	b := scylla.NewBatchInserter()
-
-	paginationPageSize := 1000
-
-	// Start paginating through the upload rows after the header row
-	for offset := int(upload.HeaderRowIndex.Int64) + 1; ; offset += paginationPageSize {
-		if offset > int(upload.NumRows.Int64) {
-			in <- b
-			break
-		}
-		uploadRows := scylla.PaginateUploadRows(upload.ID.String(), offset, paginationPageSize)
-
-		// Iterate over the upload rows in pages returned from Scylla
-		for pageRowIndex := 0; pageRowIndex < len(uploadRows); pageRowIndex++ {
-			approxMutationSize := 0
-
-			// uploadRow example:
-			// {0: 'Mary', 1: 'Jenkins', 2: 'mary@example.com', 3: '02/22/2020', 4: ''}
-			uploadRow := uploadRows[pageRowIndex]
-
-			// importRowValues example:
-			// {'first_name': 'Mary', 'last_name': 'Jenkins', 'email': 'mary@example.com'}
-			importRowValues := make(map[string]string, numColumns)
-
-			// importRowErrors example (the numbers are the validation ID(s) which did not pass):
-			// {'first_name': {4281}, 'email': {4281, 4295}}
-			importRowErrors := make(map[string][]uint)
-
-			// Iterate over columnKeyMap, the columns that have mappings set (also included any validations)
-			// Rows ending in blank values may not exist in the uploadRow (i.e. excel), but we still want to set empty
-			// values for those cells as they are logically empty in the source file
-			//
-			// columnKeyMap example:
-			// {0: 'first_name', 1: 'last_name', 2: 'email'}
-
-			for uploadColumnIndex, key := range columnKeyMap {
-
-				// uploadColumnIndex = 0
-				// cellValue         = Mary
-				// key = first_name + validations
-				// importRowValue    = {'first_name': 'Mary'}
-
-				cellValue := uploadRow[uploadColumnIndex]
-
-				// Perform validations on the cell, if any
-				for _, v := range key.Validations {
-					passed := v.Validate(cellValue)
-					if !passed {
-						// Add the validation ID to the slice at the key, or create a new entry if the key doesn't exist
-						if _, ok := importRowErrors[key.Key]; ok {
-							importRowErrors[key.Key] = append(importRowErrors[key.Key], v.ID)
-						} else {
-							importRowErrors[key.Key] = []uint{v.ID}
-						}
-					}
-				}
-
-				// Add the cell value and update progress
-				importRowValues[key.Key] = cellValue
-				approxMutationSize += len(cellValue)
-				numProcessedValues++
-			}
-
-			batchCounter++
-			batchSize += approxMutationSize
-
-			if len(importRowErrors) == 0 {
-				numValidRows++
-				b.Query("insert into import_rows (import_id, row_index, values) values (?, ?, ?)", importID, importRowIndex, importRowValues)
-			} else {
-				numErrorRows++
-				b.Query("insert into import_row_errors (import_id, row_index, values, errors) values (?, ?, ?, ?)", importID, importRowIndex, importRowValues, importRowErrors)
-			}
-
-			batchSizeApproachingLimit := batchSize > int(float64(maxMutationSize)*safetyMargin)
-			if batchSizeApproachingLimit {
-				tf.Log.Infow("Sending in batch early due to limit approaching", "import_id", imp.ID, "batch_size", batchSize, "batch_counter", batchCounter)
-			}
-			if batchCounter == scylla.BatchInsertSize || batchSizeApproachingLimit {
-				// Send in the batch and start a new one
-				in <- b
-				b = scylla.NewBatchInserter()
-				batchCounter = 0
-				batchSize = 0
-			}
-			importRowIndex++
-		}
-	}
-
-	close(in)
-	wg.Wait()
-
-	return importProcessResult{
-		NumRows:            importRowIndex,
-		NumColumns:         numColumns,
-		NumProcessedValues: numProcessedValues,
-		NumErrorRows:       numErrorRows,
-		NumValidRows:       numValidRows,
-	}, nil
-}
-
-type TemplateColumnKeyValidation struct {
-	Key         string
-	Validations []model.Validation
-}
-
-// generateColumnKeyMap
-// For the columns that a user set a mapping for, create a map of the upload column indexes to the template column key
-// This is used to store the import data in Scylla by the template column key
-func generateColumnKeyMap(template *model.Template, upload *model.Upload) map[int]TemplateColumnKeyValidation {
-
-	// templateRowMap == template column ID -> template column key + validations
-	templateRowMap := make(map[string]TemplateColumnKeyValidation)
-	for _, tc := range template.TemplateColumns {
-		templateRowMap[tc.ID.String()] = TemplateColumnKeyValidation{
-			Key:         tc.Key,
-			Validations: lo.Map(tc.Validations, func(v *model.Validation, _ int) model.Validation { return *v }),
-		}
-	}
-
-	// columnKeyMap == upload column index -> template column key + validations
-	columnKeyMap := make(map[int]TemplateColumnKeyValidation)
-	for _, uc := range upload.UploadColumns {
-		if !uc.TemplateColumnID.Valid {
-			continue
-		}
-		if key, ok := templateRowMap[uc.TemplateColumnID.String()]; ok {
-			columnKeyMap[uc.Index] = key
-		}
-	}
-	return columnKeyMap
+	c.JSON(http.StatusOK, importServiceImport)
 }
 
 func validateAllowedDomains(c *gin.Context, importer *model.Importer) error {

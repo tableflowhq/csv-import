@@ -32,3 +32,25 @@ func GetValidationsMapForImporterUnscoped(importerID string) (map[uint]model.Val
 	}
 	return validationsMap, nil
 }
+
+func GetValidationsByImporterAndTemplateColumnKey(importerID, templateColumnKey string) ([]*model.Validation, error) {
+	if len(importerID) == 0 {
+		return nil, errors.New("no importer ID provided")
+	}
+	if len(templateColumnKey) == 0 {
+		return nil, errors.New("no template column key provided")
+	}
+
+	var validations []*model.Validation
+	err := tf.DB.
+		Joins("join template_columns on validations.template_column_id = template_columns.id").
+		Joins("join templates on template_columns.template_id = templates.id").
+		Where("templates.importer_id = ?", model.ParseID(importerID)).
+		Where("template_columns.key = ?", templateColumnKey).
+		Find(&validations).Error
+
+	if err != nil {
+		return nil, err
+	}
+	return validations, nil
+}

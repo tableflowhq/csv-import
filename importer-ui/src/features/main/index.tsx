@@ -11,7 +11,7 @@ import useApi from "./hooks/useApi";
 import useModifiedSteps from "./hooks/useModifiedSteps";
 import { Steps } from "./types";
 import style from "./style/Main.module.scss";
-import Complete from "../complete";
+import MapColumns from "../map-columns";
 import Review from "../review";
 import RowSelection from "../row-selection";
 import Uploader from "../uploader";
@@ -21,8 +21,8 @@ const TUS_ENDPOINT = getAPIBaseURL("v1") + "files";
 const stepsConfig = [
   { label: "Upload", id: Steps.Upload },
   { label: "Select Header", id: Steps.RowSelection },
+  { label: "Map Columns", id: Steps.MapColumns },
   { label: "Review", id: Steps.Review },
-  { label: "Complete", id: Steps.Complete },
 ];
 
 export default function Main() {
@@ -37,6 +37,7 @@ export default function Main() {
     skipHeaderRowSelection,
     template: sdkDefinedTemplate,
     schemaless,
+    schemalessReadOnly,
     showDownloadTemplateButton,
     cssOverrides,
   } = useEmbedStore((state) => state.embedParams);
@@ -64,6 +65,7 @@ export default function Main() {
   );
 
   const isEmbeddedInIframe = window?.top !== window?.self;
+  const [columnsValues, seColumnsValues] = useState({});
 
   // Apply CSS overrides
   useCssOverrides(cssOverrides, organizationStatus);
@@ -128,9 +130,10 @@ export default function Main() {
 
   // Reload on close modal if completed
   useEffect(() => {
-    if (!modalIsOpen && step === Steps.Complete) {
-      reload();
-    }
+    // TODO: ****************************** Update this to actually check if completed ********************************
+    // if (!modalIsOpen && step === Steps.Review) {
+    //   reload();
+    // }
   }, [modalIsOpen]);
 
   // Actions
@@ -139,10 +142,6 @@ export default function Main() {
     setTusId("");
     stepper.setCurrent(0);
     location.reload();
-  };
-
-  const rowSelection = () => {
-    stepper.setCurrent(1);
   };
 
   // Send messages to parent (SDK iframe)
@@ -178,7 +177,13 @@ export default function Main() {
     setTusId("");
   };
 
-  // Render
+  const handleCancelReview = () => {
+    if (skipHeader) {
+      stepper.setCurrent(1);
+    } else {
+      stepper.setCurrent(2);
+    }
+  };
 
   if (!initialPageLoaded) {
     return null;
@@ -230,26 +235,31 @@ export default function Main() {
             setSelectedHeaderRow={setSelectedHeaderRow}
           />
         );
-      case Steps.Review:
+      case Steps.MapColumns:
         return (
-          <Review
+          <MapColumns
             template={template}
             upload={skipHeader ? upload : uploadFromHeaderRowSelection}
             onSuccess={() => {
               skipHeader ? stepper.setCurrent(2) : stepper.setCurrent(3);
             }}
             skipHeaderRowSelection={skipHeader}
-            onCancel={skipHeader ? reload : rowSelection}
+            onCancel={skipHeader ? reload : () => stepper.setCurrent(1)}
             schemaless={schemaless}
+            schemalessReadOnly={schemalessReadOnly}
+            seColumnsValues={seColumnsValues}
+            columnsValues={columnsValues}
           />
         );
-      case Steps.Complete:
+      case Steps.Review:
         return (
-          <Complete
-            reload={reload}
+          <Review
+            template={template}
+            onCancel={handleCancelReview}
             close={requestClose}
-            onSuccess={handleComplete}
+            onComplete={handleComplete}
             upload={upload}
+            reload={reload}
             showImportLoadingStatus={showImportLoadingStatus}
           />
         );

@@ -20,6 +20,7 @@ export default function Embed({ children }: EmbedProps) {
     skipHeaderRowSelection,
     cssOverrides,
     schemaless,
+    schemalessReadOnly,
     showDownloadTemplateButton,
   } = useSearchParams();
 
@@ -52,6 +53,7 @@ export default function Embed({ children }: EmbedProps) {
       skipHeaderRowSelection: strToOptionalBoolean(skipHeaderRowSelection),
       isModal: strToDefaultBoolean(isModal, true),
       schemaless: strToOptionalBoolean(schemaless),
+      schemalessReadOnly: strToOptionalBoolean(schemalessReadOnly),
       showDownloadTemplateButton: strToDefaultBoolean(showDownloadTemplateButton, true),
       cssOverrides: validateJSON(cssOverrides),
     });
