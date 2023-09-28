@@ -4,9 +4,11 @@
   .uppy {
     &-Root {
       font-family: var(--font-family-1);
+      height: 100%;
     }
 
     &-Dashboard {
+      height: 100%;
       &-inner {
         background-color: var(--color-background);
         border-radius: var(--border-radius-4);
@@ -14,6 +16,7 @@
         color: var(--color-text-soft);
         width: auto !important;
         min-width: 200px;
+        height: 100% !important;
       }
 
       &-AddFiles,
