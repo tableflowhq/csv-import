@@ -68,7 +68,6 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
       cell_value: newValue ?? "",
     };
     post(endpoint, body).then((res) => {
-      // Retrieve the row node
       const rowNode = api?.getRowNode(String(rowIndex));
       if (!rowNode) {
         console.error("Unable to retrieve row node from event API", rowIndex);
