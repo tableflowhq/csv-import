@@ -4,9 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/gocql/gocql"
-	"github.com/guregu/null"
-	"github.com/tus/tusd/pkg/handler"
 	"io"
 	"math"
 	"os"
@@ -21,6 +18,10 @@ import (
 	"tableflow/go/pkg/types"
 	"tableflow/go/pkg/util"
 	"time"
+
+	"github.com/gocql/gocql"
+	"github.com/guregu/null"
+	"github.com/tus/tusd/pkg/handler"
 )
 
 type uploadProcessResult struct {
@@ -115,8 +116,9 @@ func UploadCompleteHandler(event handler.HookEvent, uploadAdditionalStorageHandl
 
 	uploadResult, err := processAndStoreUpload(upload, file)
 	if err != nil {
+		////"An error occurred processing your file. Please check the file and try again."
 		tf.Log.Errorw("Could not process upload", "error", err, "upload_id", upload.ID)
-		saveUploadError(upload, "An error occurred processing your file. Please check the file and try again.")
+		saveUploadError(upload, err.Error())
 		removeUploadFileFromDisk(file, fileName, upload.ID.String())
 		return
 	}
@@ -177,7 +179,7 @@ func processAndStoreUpload(upload *model.Upload, file *os.File) (uploadProcessRe
 	it, err := util.OpenDataFileIterator(file, upload.FileType.String)
 	defer it.Close()
 	if err != nil {
-		return uploadProcessResult{}, err
+		return uploadProcessResult{}, fmt.Errorf("an error occurred processing your file. Please check the file and try again")
 	}
 
 	uploadID := upload.ID.String()
@@ -187,6 +189,7 @@ func processAndStoreUpload(upload *model.Upload, file *os.File) (uploadProcessRe
 	batchSize := 0                      // cumulative batch size in bytes
 	maxMutationSize := 16 * 1024 * 1024 // 16MB
 	safetyMargin := 0.75
+	maxCellSize := 1200 //1MB
 
 	in := make(chan *gocql.Batch, 0)
 	var wg sync.WaitGroup
@@ -240,6 +243,11 @@ func processAndStoreUpload(upload *model.Upload, file *os.File) (uploadProcessRe
 			}
 			if util.IsBlankUnicode(cellValue) {
 				numBlankCells++
+			}
+			if len(cellValue) > maxCellSize {
+				var errMessage = fmt.Sprint(" cellValue reached for max legth, row_index : ", i+1, ", column_index : ", columnIndex+1, ", max cell size : ", maxCellSize, ", total cell size : ", len(cellValue))
+				tf.Log.Error(errMessage)
+				return uploadProcessResult{}, fmt.Errorf(errMessage)
 			}
 			// TODO: Deal with invalid characters better, determine charsets programmatically? Or just surface these to the user?
 			uploadRow[int16(columnIndex)] = strings.ToValidUTF8(cellValue, "")
