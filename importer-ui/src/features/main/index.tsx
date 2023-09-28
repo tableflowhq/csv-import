@@ -269,7 +269,7 @@ export default function Main() {
   };
 
   return (
-    <div className={style.mainContainer}>
+    <div className={isEmbeddedInIframe ? style.contentNoMargin : style.mainContainer}>
       <div className={style.wrapper}>
         <div className={style.header}>
           <Stepper {...stepper} />

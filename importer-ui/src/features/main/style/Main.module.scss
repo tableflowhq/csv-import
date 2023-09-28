@@ -1,7 +1,10 @@
-.mainContainer{
+.mainContainer {
   background-color: #708090;
   height: 100vh;
   padding: 20px;
+}
+.contentNoMargin {
+  margin: 0;
 }
 
 .wrapper {
@@ -9,6 +12,7 @@
   align-items: center;
   justify-content: center;
   flex-direction: column;
+  border-radius: 10px;
   height: 100%;
   background-color: var(--color-background);
 }
