@@ -412,28 +412,37 @@ func removeUploadFileFromDisk(file *os.File, fileName, uploadID string) {
 	}
 }
 
-// Add column mapping sugestion to the upload columns 
-func AddColumnMappingSuggestions(upload *types.Upload, templateColumns []*model.TemplateColumn){
-	
-	for _, uploadColumn := range upload.UploadColumns{
-		for _,templateColumn := range(templateColumns){
-			formattedUploadColumnName := strings.ToLower(strings.TrimSpace(uploadColumn.Name))
-			formattedTemplateColumnName := strings.ToLower(strings.TrimSpace(templateColumn.Name))
-			
-			// TYPE 1: Exact Match of strings
-			if (formattedUploadColumnName == formattedTemplateColumnName) {
-				uploadColumn.SuggestedTemplateColumnID = templateColumn.ID
+// AddColumnMappingSuggestions Adds mapping suggestions to the upload columns
+func AddColumnMappingSuggestions(upload *types.Upload, templateColumns []*model.TemplateColumn) {
+	usedTemplateIds := make(map[model.ID]bool)
+
+	for _, uploadColumn := range upload.UploadColumns {
+		var maxSimilarityScore float32 = 0
+		var bestMatchColumnId model.ID
+
+		for _, templateColumn := range templateColumns {
+			if usedTemplateIds[templateColumn.ID] {
 				continue
 			}
-			
-			// TYPE 2: String Similarity Comparision
-			similarityScore := util.GetStringSimilarityScore(formattedUploadColumnName, formattedTemplateColumnName)
-			if(similarityScore > 0.9){
-				uploadColumn.SuggestedTemplateColumnID = templateColumn.ID
-				continue
+			formattedUploadColumnName := strings.Replace(strings.ToLower(strings.TrimSpace(uploadColumn.Name)), "_", " ", -1)
+			formattedTemplateColumnName := strings.Replace(strings.ToLower(strings.TrimSpace(templateColumn.Name)), "_", " ", -1)
+
+			// TYPE 1: Exact Match of strings
+			if formattedUploadColumnName == formattedTemplateColumnName {
+				bestMatchColumnId = templateColumn.ID
+				break
 			}
 
-			// TODO: Add more types : fuzzy logic
+			// TYPE 2: String Similarity Comparison
+			similarityScore := util.GetStringSimilarityScore(formattedUploadColumnName, formattedTemplateColumnName)
+			if similarityScore > 0.9 {
+				if similarityScore > maxSimilarityScore {
+					maxSimilarityScore = similarityScore
+					bestMatchColumnId = templateColumn.ID
+				}
+			}
 		}
+		uploadColumn.SuggestedTemplateColumnID = bestMatchColumnId
+		usedTemplateIds[bestMatchColumnId] = true
 	}
 }
