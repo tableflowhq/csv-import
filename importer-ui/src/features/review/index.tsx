@@ -27,6 +27,7 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
   const { data, isLoading }: any = useReview(uploadId, {
     staleTime: 0,
   });
+  const [cellValueChangedEvent, setCellValueChangedEvent] = useState<CellValueChangedEvent>();
   const { mutate, error: submitError, isSuccess, isLoading: isSubmitting, data: dataSubmitted } = useSubmitReview(uploadId || "");
   const { mutate: postEditCell, error: errorEditCell, data: dataCellEdited } = usePostReviewEditCell(uploadId);
 
@@ -59,22 +60,36 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
       cell_key: cellKey,
       cell_value: event.newValue,
     };
+    setCellValueChangedEvent(event);
     postEditCell({ body });
-
-    if (!dataCellEdited?.ok) {
-      cellValueChangeSet.current.add(cellId);
-      const rowNode = event.api?.getRowNode(String(event.rowIndex));
-      if (rowNode) {
-        rowNode.setDataValue(columnId, event.oldValue);
-      } else {
-        console.error("Unable to retrieve row node from event API", event.rowIndex);
-      }
-      alert(errorEditCell);
-    } else {
-      const { num_rows, num_valid_rows, num_error_rows } = dataCellEdited?.data || {};
-      updateFilterOptionCounts(num_rows, num_valid_rows, num_error_rows);
-    }
   }, []);
+
+  useEffect(() => {
+    if (dataCellEdited) {
+      console.log("dataCellEdited", dataCellEdited);
+      if (!dataCellEdited?.ok) {
+        const event = cellValueChangedEvent;
+        if (event) {
+          const columnId = event.column.getColId();
+          const cellId = `${event.rowIndex}-${columnId}`;
+          cellValueChangeSet.current.add(cellId);
+          const rowNode = event.api?.getRowNode(String(event.rowIndex));
+          if (rowNode) {
+            rowNode.setDataValue(columnId, event.oldValue);
+          } else {
+            console.error("Unable to retrieve row node from event API", event.rowIndex);
+          }
+          alert(errorEditCell);
+        }
+      } else {
+        const { num_rows, num_valid_rows, num_error_rows } = dataCellEdited?.data || {};
+        console.log("num_rows", num_rows);
+        console.log("num_valid_rows", num_valid_rows);
+        console.log("num_error_rows", num_error_rows);
+        updateFilterOptionCounts(num_rows, num_valid_rows, num_error_rows);
+      }
+    }
+  }, [dataCellEdited, cellValueChangedEvent]);
 
   useEffect(() => {
     if (isSuccess || submitError) {
@@ -101,7 +116,8 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
   }, []);
 
   const updateFilterOptionCounts = (numRows: number, numValidRows: number, numErrorRows: number) => {
-    for (const fo of filterOptions) {
+    const updatedFilterOptions = [...filterOptions];
+    for (const fo of updatedFilterOptions) {
       switch (fo.filterValue) {
         case "all":
           fo.label = `All ${numRows}`;
@@ -115,7 +131,7 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
       }
     }
     // TODO: Works only after clicking filter options
-    setFilterOptions(filterOptions);
+    setFilterOptions(updatedFilterOptions);
   };
 
   const handleSubmitClick = (e: React.MouseEvent<HTMLButtonElement>) => {
