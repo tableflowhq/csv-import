@@ -904,6 +904,7 @@ func importerEditImportCell(c *gin.Context) {
 		}
 	}
 
+	// TODO: Update GetAnyImportRowErrorFirst to take in validations, do some refactoring in the scylla package to make this cleaner
 	row, isErrorRow, err := scylla.GetAnyImportRowErrorFirst(imp.ID.String(), rowIndex)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("Could retrieve row to update cell: %s", err)})
