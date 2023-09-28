@@ -4,6 +4,7 @@ import { Button, Errors, ToggleFilter, useThemeStore } from "@tableflow/ui-libra
 import { Option } from "@tableflow/ui-library/build/ToggleFilter/types";
 import { post } from "../../api/api";
 import { QueryFilter } from "../../api/types";
+import usePostReviewEditCell from "../../api/usePostReviewEditCell";
 import useReview from "../../api/useReview";
 import useSubmitReview from "../../api/useSubmitReview";
 import LoadingSpinner from "./components/LoadingSpinner";
@@ -32,6 +33,7 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
   const [showLoading, setShowLoading] = useState(true);
   const submittedOk = dataSubmitted?.ok || {};
   const hasValidations = template.columns.some((tc) => tc.validations && tc.validations.length > 0);
+  const postEditCell = usePostReviewEditCell(uploadId);
 
   const cellValueChangeSet = useRef(new Set<string>());
   const onCellValueChanged = useCallback((event: CellValueChangedEvent) => {
@@ -57,20 +59,38 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
       cell_key: cellKey,
       cell_value: event.newValue,
     };
-    post(endpoint, body).then((res) => {
-      if (!res.ok) {
-        cellValueChangeSet.current.add(cellId);
-        const rowNode = event.api?.getRowNode(String(event.rowIndex));
-        if (rowNode) {
-          rowNode.setDataValue(columnId, event.oldValue);
-        } else {
-          console.error("Unable to retrieve row node from event API", event.rowIndex);
-        }
-        alert(res.error);
-      } else {
-        updateFilterOptionCounts(res.data?.num_rows, res.data?.num_valid_rows, res.data?.num_error_rows);
+    postEditCell.mutate(
+      { endpoint, body },
+      {
+        onSuccess: () => {
+          updateFilterOptionCounts(data?.num_rows, data?.num_valid_rows, data?.num_error_rows);
+        },
+        onError: (error) => {
+          cellValueChangeSet.current.add(cellId);
+          const rowNode = event.api?.getRowNode(String(event.rowIndex));
+          if (rowNode) {
+            rowNode.setDataValue(columnId, event.oldValue);
+          } else {
+            console.error("Unable to retrieve row node from event API", event.rowIndex);
+          }
+          alert(error);
+        },
       }
-    });
+    );
+    // post(endpoint, body).then((res) => {
+    //   if (!res.ok) {
+    //     cellValueChangeSet.current.add(cellId);
+    //     const rowNode = event.api?.getRowNode(String(event.rowIndex));
+    //     if (rowNode) {
+    //       rowNode.setDataValue(columnId, event.oldValue);
+    //     } else {
+    //       console.error("Unable to retrieve row node from event API", event.rowIndex);
+    //     }
+    //     alert(res.error);
+    //   } else {
+    //     updateFilterOptionCounts(res.data?.num_rows, res.data?.num_valid_rows, res.data?.num_error_rows);
+    //   }
+    // });
   }, []);
 
   useEffect(() => {
