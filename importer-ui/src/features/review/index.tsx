@@ -28,12 +28,12 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
     staleTime: 0,
   });
   const { mutate, error: submitError, isSuccess, isLoading: isSubmitting, data: dataSubmitted } = useSubmitReview(uploadId || "");
+  const { mutate: postEditCell, error: errorEditCell, data: dataCellEdited } = usePostReviewEditCell(uploadId);
 
   const theme = useThemeStore((state) => state.theme);
   const [showLoading, setShowLoading] = useState(true);
   const submittedOk = dataSubmitted?.ok || {};
   const hasValidations = template.columns.some((tc) => tc.validations && tc.validations.length > 0);
-  const postEditCell = usePostReviewEditCell(uploadId);
 
   const cellValueChangeSet = useRef(new Set<string>());
   const onCellValueChanged = useCallback((event: CellValueChangedEvent) => {
@@ -52,45 +52,28 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
       console.error("Unexpected column ID format", columnId);
       return;
     }
-    const endpoint = `import/${uploadId}/cell/edit`;
+
     const body = {
       row_index: event.data?.index,
       is_error: !!event.data?.errors && typeof event.data?.errors[cellKey] !== "undefined",
       cell_key: cellKey,
       cell_value: event.newValue,
     };
-    postEditCell.mutate(
-      { endpoint, body },
-      {
-        onSuccess: () => {
-          updateFilterOptionCounts(data?.num_rows, data?.num_valid_rows, data?.num_error_rows);
-        },
-        onError: (error) => {
-          cellValueChangeSet.current.add(cellId);
-          const rowNode = event.api?.getRowNode(String(event.rowIndex));
-          if (rowNode) {
-            rowNode.setDataValue(columnId, event.oldValue);
-          } else {
-            console.error("Unable to retrieve row node from event API", event.rowIndex);
-          }
-          alert(error);
-        },
+    postEditCell({ body });
+
+    if (!dataCellEdited?.ok) {
+      cellValueChangeSet.current.add(cellId);
+      const rowNode = event.api?.getRowNode(String(event.rowIndex));
+      if (rowNode) {
+        rowNode.setDataValue(columnId, event.oldValue);
+      } else {
+        console.error("Unable to retrieve row node from event API", event.rowIndex);
       }
-    );
-    // post(endpoint, body).then((res) => {
-    //   if (!res.ok) {
-    //     cellValueChangeSet.current.add(cellId);
-    //     const rowNode = event.api?.getRowNode(String(event.rowIndex));
-    //     if (rowNode) {
-    //       rowNode.setDataValue(columnId, event.oldValue);
-    //     } else {
-    //       console.error("Unable to retrieve row node from event API", event.rowIndex);
-    //     }
-    //     alert(res.error);
-    //   } else {
-    //     updateFilterOptionCounts(res.data?.num_rows, res.data?.num_valid_rows, res.data?.num_error_rows);
-    //   }
-    // });
+      alert(errorEditCell);
+    } else {
+      const { num_rows, num_valid_rows, num_error_rows } = dataCellEdited?.data || {};
+      updateFilterOptionCounts(num_rows, num_valid_rows, num_error_rows);
+    }
   }, []);
 
   useEffect(() => {
