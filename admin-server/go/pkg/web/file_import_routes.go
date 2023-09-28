@@ -892,8 +892,6 @@ func importerEditImportCell(c *gin.Context) {
 			case model.ValidationSeverityError:
 				failedValidations = append(failedValidations, *validation)
 				continue
-				//c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: res.Message})
-				//return
 			default:
 				// TODO: Update this condition once we support warning and info validation severities
 				// We'll most likely need to persist the warning or info into where they are stored when this occurs
