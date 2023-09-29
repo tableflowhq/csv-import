@@ -156,6 +156,7 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
     };
 
     window.addEventListener("resize", handleResize);
+    handleResize();
 
     return () => {
       window.removeEventListener("resize", handleResize);
