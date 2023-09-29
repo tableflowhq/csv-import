@@ -58,6 +58,10 @@
   margin-top: var(--m);
   padding: var(--m);
   border-radius: var(--border-radius-1);
+
+  svg {
+    margin: 0px !important;
+  }
 }
 
 .errorContainer {
