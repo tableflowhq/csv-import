@@ -116,7 +116,6 @@ func UploadCompleteHandler(event handler.HookEvent, uploadAdditionalStorageHandl
 
 	uploadResult, err := processAndStoreUpload(upload, file)
 	if err != nil {
-		////"An error occurred processing your file. Please check the file and try again."
 		tf.Log.Errorw("Could not process upload", "error", err, "upload_id", upload.ID)
 		saveUploadError(upload, err.Error())
 		removeUploadFileFromDisk(file, fileName, upload.ID.String())
@@ -179,7 +178,7 @@ func processAndStoreUpload(upload *model.Upload, file *os.File) (uploadProcessRe
 	it, err := util.OpenDataFileIterator(file, upload.FileType.String)
 	defer it.Close()
 	if err != nil {
-		return uploadProcessResult{}, fmt.Errorf("an error occurred processing your file. Please check the file and try again")
+		return uploadProcessResult{}, err
 	}
 
 	uploadID := upload.ID.String()
@@ -245,9 +244,9 @@ func processAndStoreUpload(upload *model.Upload, file *os.File) (uploadProcessRe
 				numBlankCells++
 			}
 			if len(cellValue) > maxCellSize {
-				var errMessage = fmt.Sprint(" cellValue reached for max legth, row_index : ", i+1, ", column_index : ", columnIndex+1, ", max cell size : ", maxCellSize, ", total cell size : ", len(cellValue))
-				tf.Log.Error(errMessage)
-				return uploadProcessResult{}, fmt.Errorf(errMessage)
+				tf.Log.Errorw("A cell in your file exceeds the max cell size of 1MB (row : ", i+1, ", column : ", columnIndex+1, ", upload_id : ", upload.ID, ". Please check the file and try again")
+
+				return uploadProcessResult{}, fmt.Errorf("A cell in your file exceeds the max cell size of 1MB (row %v, column %v). Please check the file and try again", i+1, columnIndex+1)
 			}
 			// TODO: Deal with invalid characters better, determine charsets programmatically? Or just surface these to the user?
 			uploadRow[int16(columnIndex)] = strings.ToValidUTF8(cellValue, "")
