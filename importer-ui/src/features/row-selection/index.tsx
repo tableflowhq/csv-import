@@ -61,6 +61,7 @@ export default function RowSelection({ upload, onSuccess, onCancel, selectedHead
         {upload ? (
           <div className={style.tableWrapper}>
             <Table
+              fixHeader
               mergeThemes={true}
               data={dataWithRadios || []}
               heading={
