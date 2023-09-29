@@ -67,7 +67,7 @@ export default function Uploader({
       {uppyWrapper}
       <div className={style.box}>
         <div className={style.tableContainer}>
-          <Table data={fields} background="dark" columnWidths={["65%", "35%"]} columnAlignments={["", "center"]} />
+          <Table fixHeader data={fields} background="dark" columnWidths={["65%", "35%"]} columnAlignments={["", "center"]} />
         </div>
         {downloadTemplateButton}
       </div>
