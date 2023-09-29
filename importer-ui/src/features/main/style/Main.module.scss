@@ -1,4 +1,7 @@
 .wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .header {
@@ -7,6 +10,8 @@
 
 .content {
   padding: 20px;
+  flex: 1;
+  overflow: hidden;
 }
 
 .status {
