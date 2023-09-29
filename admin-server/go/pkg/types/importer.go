@@ -124,10 +124,17 @@ type ImportRowError struct {
 }
 
 type ImportCell struct {
-	RowIndex   *int    `json:"row_index" example:"0"`
-	IsErrorRow *bool   `json:"is_error_row" example:"false"`
-	CellKey    *string `json:"cell_key" example:"first_name"`
-	CellValue  *string `json:"cell_value" example:"Laura"`
+	RowIndex  *int    `json:"row_index" example:"0"`
+	CellKey   *string `json:"cell_key" example:"first_name"`
+	CellValue *string `json:"cell_value" example:"Laura"`
+}
+
+type ImportCellEditResponse struct {
+	NumRows      null.Int  `json:"num_rows" swaggertype:"integer" example:"256"`
+	NumValidRows null.Int  `json:"num_valid_rows" swaggertype:"integer" example:"224"`
+	NumErrorRows null.Int  `json:"num_error_rows" swaggertype:"integer" example:"32"`
+	HasErrors    bool      `json:"has_errors" example:"false"`
+	Row          ImportRow `json:"row,omitempty"`
 }
 
 func ConvertUpload(upload *model.Upload, uploadRows []UploadRow) (*Upload, error) {

@@ -12,7 +12,6 @@ async function mutateCell(uploadId: string, rowIndex: number, isErrorRow: boolea
   const endpoint = `import/${uploadId}/cell/edit`;
   const body = {
     row_index: rowIndex,
-    is_error_row: isErrorRow,
     cell_key: cellKey,
     cell_value: cellValue,
   };
