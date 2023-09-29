@@ -109,7 +109,7 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
   useEffect(() => {
     if (isSuccess || submitError) {
       setShowLoading(false);
-      onComplete(dataSubmitted);
+      onComplete(dataSubmitted?.data);
     }
   }, [isSuccess, submitError]);
 
