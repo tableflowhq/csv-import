@@ -65,25 +65,24 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
   }, []);
 
   useEffect(() => {
-    if (dataCellEdited) {
-      if (!dataCellEdited?.ok) {
-        const event = cellValueChangedEvent;
-        if (event) {
-          const columnId = event.column.getColId();
-          const cellId = `${event.rowIndex}-${columnId}`;
-          cellValueChangeSet.current.add(cellId);
-          const rowNode = event.api?.getRowNode(String(event.rowIndex));
-          if (rowNode) {
-            rowNode.setDataValue(columnId, event.oldValue);
-          } else {
-            console.error("Unable to retrieve row node from event API", event.rowIndex);
-          }
+    if (!dataCellEdited) return;
+    if (!dataCellEdited?.ok) {
+      const event = cellValueChangedEvent;
+      if (event) {
+        const columnId = event.column.getColId();
+        const cellId = `${event.rowIndex}-${columnId}`;
+        cellValueChangeSet.current.add(cellId);
+        const rowNode = event.api?.getRowNode(String(event.rowIndex));
+        if (rowNode) {
+          rowNode.setDataValue(columnId, event.oldValue);
+        } else {
+          console.error("Unable to retrieve row node from event API", event.rowIndex);
           alert(errorEditCell);
         }
-      } else {
-        const { num_rows, num_valid_rows, num_error_rows } = dataCellEdited?.data || {};
-        updateFilterOptionCounts(num_rows, num_valid_rows, num_error_rows);
       }
+    } else {
+      const { num_rows, num_valid_rows, num_error_rows } = dataCellEdited?.data || {};
+      updateFilterOptionCounts(num_rows, num_valid_rows, num_error_rows);
     }
   }, [dataCellEdited, cellValueChangedEvent]);
 
