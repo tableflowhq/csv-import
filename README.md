@@ -68,11 +68,11 @@ sudo yum update -y && \
 sudo yum install -y docker git && \
 sudo service docker start && \
 sudo usermod -a -G docker $USER && \
-sudo curl -L "https://github.com/docker/compose/releases/download/v2.19.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && \
+sudo wget -O /usr/local/bin/docker-compose https://github.com/docker/compose/releases/download/v2.19.1/docker-compose-$(uname -s)-$(uname -m) && \
 sudo mv /usr/local/bin/docker-compose /usr/bin/docker-compose && \
 sudo chmod +x /usr/bin/docker-compose && \
 mkdir tableflow && cd tableflow && \
-curl --ssl-no-revoke -O https://github.com/tableflowhq/tableflow/blob/main/docker-compose.base.yml -O https://github.com/tableflowhq/tableflow/blob/main/docker-compose.yml -O https://github.com/tableflowhq/tableflow/blob/main/.env.example
+wget --no-check-certificate https://raw.githubusercontent.com/tableflowhq/tableflow/main/{.env.example,docker-compose.yml,docker-compose.base.yml} && \
 mv .env.example .env && \
 sg docker -c 'docker-compose up -d'
 ```
