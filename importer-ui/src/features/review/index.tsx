@@ -4,6 +4,7 @@ import { Button, Errors, ToggleFilter, useThemeStore } from "@tableflow/ui-libra
 import { Option } from "@tableflow/ui-library/build/ToggleFilter/types";
 import { post } from "../../api/api";
 import { QueryFilter } from "../../api/types";
+import usePostReviewEditCell from "../../api/usePostReviewEditCell";
 import useReview from "../../api/useReview";
 import useSubmitReview from "../../api/useSubmitReview";
 import LoadingSpinner from "./components/LoadingSpinner";
@@ -32,8 +33,10 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
   const { data, isLoading }: any = useReview(uploadId, {
     staleTime: 0,
   });
+  const [cellValueChangedEvent, setCellValueChangedEvent] = useState<CellValueChangedEvent>();
   const [hasDataErrors, setHasDataErrors] = useState(false);
   const { mutate, error: submitError, isSuccess, isLoading: isSubmitting, data: dataSubmitted } = useSubmitReview(uploadId || "");
+  const { mutate: postEditCell, error: errorEditCell, data: dataCellEdited } = usePostReviewEditCell(uploadId);
   const theme = useThemeStore((state) => state.theme);
   const [showLoading, setShowLoading] = useState(true);
   const submittedOk = dataSubmitted?.ok || {};
@@ -41,7 +44,7 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
 
   const cellValueChangeSet = useRef(new Set<string>());
   const onCellValueChanged = useCallback((event: CellValueChangedEvent) => {
-    const { rowIndex, column, data, newValue, oldValue, api } = event;
+    const { rowIndex, column, data, newValue } = event;
     const columnId = column.getColId();
     const cellId = `${rowIndex}-${columnId}`;
 
@@ -61,50 +64,36 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
       return;
     }
 
-    const endpoint = `import/${uploadId}/cell/edit`;
     const body = {
       row_index: data?.index,
       cell_key: cellKey,
       cell_value: newValue ?? "",
     };
-    post(endpoint, body).then((res) => {
-      const rowNode = api?.getRowNode(String(rowIndex));
-      if (!rowNode) {
-        console.error("Unable to retrieve row node from event API", rowIndex);
-        return;
-      }
-      if (!res.ok) {
-        cellValueChangeSet.current.add(cellId);
-        rowNode.setDataValue(columnId, oldValue);
-        alert(res.error);
-        return;
-      }
+    setCellValueChangedEvent(event);
+    postEditCell({ body });
+  }, []);
 
-      if (res.data?.row?.errors && res.data.row.errors[cellKey]) {
-        // The edit caused a validation error, update the row node errors
-        rowNode.data.errors = rowNode.data.errors || {};
-        rowNode.data.errors[cellKey] = res.data.row.errors[cellKey];
-      } else if (data?.errors && rowNode.data?.errors[cellKey]) {
-        // The edit passed validations, remove the error from the row node
-        delete rowNode.data.errors[cellKey];
-        if (Object.keys(rowNode.data.errors).length === 0) {
-          rowNode.data.errors = undefined;
+  useEffect(() => {
+    if (!dataCellEdited) return;
+    if (!dataCellEdited?.ok) {
+      const event = cellValueChangedEvent;
+      if (event) {
+        const columnId = event.column.getColId();
+        const cellId = `${event.rowIndex}-${columnId}`;
+        cellValueChangeSet.current.add(cellId);
+        const rowNode = event.api?.getRowNode(String(event.rowIndex));
+        if (rowNode) {
+          rowNode.setDataValue(columnId, event.oldValue);
+        } else {
+          console.error("Unable to retrieve row node from event API", event.rowIndex);
+          alert(errorEditCell);
         }
       }
-
-      // Refresh the row to update the styling
-      api?.refreshCells({ rowNodes: [rowNode], columns: [columnId], force: true });
-
-      // Update the has data errors state
-      setHasDataErrors(res.data?.num_error_rows > 0);
-
-      // Update the counts on the filter options
-      updateFilterOptions(
-        filter.current,
-        res.data ? { NumRows: res.data.num_rows, NumValidRows: res.data.num_valid_rows, NumErrorRows: res.data.num_error_rows } : undefined
-      );
-    });
-  }, []);
+    } else {
+      const { num_rows, num_valid_rows, num_error_rows } = dataCellEdited?.data || {};
+      updateFilterOptionCounts(num_rows, num_valid_rows, num_error_rows);
+    }
+  }, [dataCellEdited, cellValueChangedEvent]);
 
   useEffect(() => {
     if (isSuccess || submitError) {
@@ -149,6 +138,25 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
       })
     );
   }, []);
+
+  const updateFilterOptionCounts = (numRows: number, numValidRows: number, numErrorRows: number) => {
+    const updatedFilterOptions = [...filterOptions];
+    for (const fo of updatedFilterOptions) {
+      switch (fo.filterValue) {
+        case "all":
+          fo.label = `All ${numRows}`;
+          break;
+        case "valid":
+          fo.label = `Valid ${numValidRows}`;
+          break;
+        case "error":
+          fo.label = `Error ${numErrorRows}`;
+          break;
+      }
+    }
+    // TODO: Works only after clicking filter options
+    setFilterOptions(updatedFilterOptions);
+  };
 
   const handleSubmitClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
