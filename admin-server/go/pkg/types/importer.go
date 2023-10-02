@@ -101,12 +101,12 @@ type Import struct {
 	NumValidRows       null.Int       `json:"num_valid_rows" swaggertype:"integer" example:"224"`
 	CreatedAt          model.NullTime `json:"created_at" swaggertype:"integer" example:"1682366228"`
 	Error              null.String    `json:"error,omitempty" swaggerignore:"true"`
-	Data               *ImportData    `json:"data,omitempty"` // Used internally within the importer
 	Rows               []ImportRow    `json:"rows,omitempty"` // Used for the final step in the onComplete
 }
 
 type ImportData struct {
 	Pagination *Pagination `json:"pagination,omitempty"`
+	Filter     *Filter     `json:"filter,omitempty"`
 	Rows       []ImportRow `json:"rows"`
 }
 
@@ -123,6 +123,20 @@ type ImportRowError struct {
 	Message      string `json:"message"`
 }
 
+type ImportCell struct {
+	RowIndex  *int    `json:"row_index" example:"0"`
+	CellKey   *string `json:"cell_key" example:"first_name"`
+	CellValue *string `json:"cell_value" example:"Laura"`
+}
+
+type ImportCellEditResponse struct {
+	NumRows      null.Int  `json:"num_rows" swaggertype:"integer" example:"256"`
+	NumValidRows null.Int  `json:"num_valid_rows" swaggertype:"integer" example:"224"`
+	NumErrorRows null.Int  `json:"num_error_rows" swaggertype:"integer" example:"32"`
+	HasErrors    bool      `json:"has_errors" example:"false"`
+	Row          ImportRow `json:"row,omitempty"`
+}
+
 func ConvertUpload(upload *model.Upload, uploadRows []UploadRow) (*Upload, error) {
 	if uploadRows == nil {
 		uploadRows = make([]UploadRow, 0)
@@ -136,7 +150,7 @@ func ConvertUpload(upload *model.Upload, uploadRows []UploadRow) (*Upload, error
 			SampleData: uc.SampleData,
 		}
 	}
-	uploadTemplate, err := ConvertUploadTemplate(upload.Template, false)
+	uploadTemplate, err := ConvertRawTemplate(upload.Template, false)
 	if err != nil {
 		tf.Log.Warnw("Could not convert upload template to import service template", "error", err, "upload_id", upload.ID, "upload_template", upload.Template)
 		return nil, err
@@ -160,7 +174,7 @@ func ConvertUpload(upload *model.Upload, uploadRows []UploadRow) (*Upload, error
 	return importerUpload, nil
 }
 
-func ConvertUploadTemplate(rawTemplate jsonb.JSONB, generateIDs bool) (*Template, error) {
+func ConvertRawTemplate(rawTemplate jsonb.JSONB, generateIDs bool) (*Template, error) {
 	if !rawTemplate.Valid {
 		// No template provided, this means the template from the importer will be used
 		return nil, nil
@@ -184,6 +198,7 @@ func ConvertUploadTemplate(rawTemplate jsonb.JSONB, generateIDs bool) (*Template
 
 	seenKeys := make(map[string]bool)
 	seenSuggestedMappings := make(map[string]bool)
+	var generatedValidationID uint = 1
 
 	for _, item := range columnSlice {
 		columnMap, ok := item.(map[string]interface{})
@@ -197,24 +212,7 @@ func ConvertUploadTemplate(rawTemplate jsonb.JSONB, generateIDs bool) (*Template
 		required, _ := columnMap["required"].(bool)
 		description, _ := columnMap["description"].(string)
 		suggestedMappings := make([]string, 0)
-
-		if suggestedMappingsInterface, ok := columnMap["suggested_mappings"].([]interface{}); ok {
-			for _, v := range suggestedMappingsInterface {
-				if mappingVal, ok := v.(string); ok {
-					mappingVal = strings.TrimSpace(mappingVal)
-					// Make sure the new mappings are all unique (case-insensitive) and don't contain blank values
-					if util.IsBlankUnicode(mappingVal) {
-						return nil, fmt.Errorf("Invalid template: suggested_mappings cannot contain blank values")
-					}
-					str := strings.ToLower(mappingVal)
-					if seenSuggestedMappings[str] {
-						return nil, fmt.Errorf("Invalid template: suggested_mappings cannot contain duplicate values (%v)", mappingVal)
-					}
-					seenSuggestedMappings[str] = true
-					suggestedMappings = append(suggestedMappings, mappingVal)
-				}
-			}
-		}
+		validations := make([]*Validation, 0)
 
 		if name == "" {
 			return nil, fmt.Errorf("Invalid template: The paramter 'name' is required for each column")
@@ -237,10 +235,68 @@ func ConvertUploadTemplate(rawTemplate jsonb.JSONB, generateIDs bool) (*Template
 		}
 		seenKeys[key] = true
 
+		// Suggested mappings
+		if suggestedMappingsInterface, ok := columnMap["suggested_mappings"].([]interface{}); ok {
+			for _, v := range suggestedMappingsInterface {
+				if mappingVal, ok := v.(string); ok {
+					mappingVal = strings.TrimSpace(mappingVal)
+					// Make sure the new mappings are all unique (case-insensitive) and don't contain blank values
+					if util.IsBlankUnicode(mappingVal) {
+						return nil, fmt.Errorf("Invalid template: suggested_mappings cannot contain blank values")
+					}
+					str := strings.ToLower(mappingVal)
+					if seenSuggestedMappings[str] {
+						return nil, fmt.Errorf("Invalid template: suggested_mappings cannot contain duplicate values (%v)", mappingVal)
+					}
+					seenSuggestedMappings[str] = true
+					suggestedMappings = append(suggestedMappings, mappingVal)
+				}
+			}
+		}
+
+		// Validations
+		if validationsInterface, ok := columnMap["validations"].([]interface{}); ok {
+			for _, v := range validationsInterface {
+				if validationMap, ok := v.(map[string]interface{}); ok {
+					validationID, _ := validationMap["id"].(float64)
+					validationType, _ := validationMap["type"].(string)
+					validationValue, _ := validationMap["value"]
+					validationMessage, _ := validationMap["message"].(string)
+					validationSeverity, _ := validationMap["severity"].(string)
+
+					if generateIDs {
+						validationID = float64(generatedValidationID)
+						generatedValidationID++
+					}
+					validationValueJSON, err := jsonb.FromInterface(validationValue)
+					if err != nil {
+						return nil, fmt.Errorf("Invalid template: invalid validation value json")
+					}
+					validation, err := model.ParseValidation(
+						uint(validationID),
+						validationValueJSON,
+						validationType,
+						validationMessage,
+						validationSeverity,
+						"",
+					)
+					if err != nil {
+						return nil, err
+					}
+					validations = append(validations, &Validation{
+						ValidationID: validation.ID,
+						Type:         validation.Type.Name,
+						Value:        validation.Value,
+						Message:      validation.Message,
+						Severity:     string(validation.Severity),
+					})
+				}
+			}
+		}
+
 		if generateIDs {
 			id = model.NewID().String()
 		}
-
 		columns = append(columns, &TemplateColumn{
 			ID:                model.ParseID(id),
 			Name:              name,

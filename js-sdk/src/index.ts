@@ -22,6 +22,7 @@ export default function createTableFlowImporter({
   skipHeaderRowSelection,
   cssOverrides,
   schemaless,
+  schemalessReadOnly,
 }: TableFlowImporterProps) {
   // CSS classes
   const baseClass = "TableFlowImporter";
@@ -60,6 +61,7 @@ export default function createTableFlowImporter({
     skipHeaderRowSelection: parseOptionalBoolean(skipHeaderRowSelection),
     ...(cssOverrides ? { cssOverrides: JSON.stringify(cssOverrides) } : {}),
     schemaless: parseOptionalBoolean(schemaless),
+    schemalessReadOnly: parseOptionalBoolean(schemalessReadOnly),
   };
 
   const uploaderUrl = getUploaderUrl(urlParams, hostUrl);
@@ -85,10 +87,27 @@ export default function createTableFlowImporter({
     }
 
     if (messageData?.type === "complete" && onComplete) {
-      onComplete({
-        data: messageData?.data || null,
-        error: messageData?.error || null,
-      });
+      // Add extra data field for temporary backwards compatibility
+      // TODO: Remove in later version
+      const response = {
+        ...messageData?.data,
+        // Add the deprecated data field with getter and setter
+        get data() {
+          console.warn(
+            "WARNING: the extra data field is deprecated in the onComplete and will be removed in a later version. The parent object contains all of the import data needed."
+          );
+          return this._data;
+        },
+        set data(value) {
+          console.warn(
+            "WARNING: the extra data field is deprecated in the onComplete and will be removed in a later version. The parent object contains all of the import data needed."
+          );
+          this._data = value;
+        },
+      };
+      response._data = messageData?.data;
+
+      onComplete(response);
       postMessages.push(messageData?.id);
     }
 

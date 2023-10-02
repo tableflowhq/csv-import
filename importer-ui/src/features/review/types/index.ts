@@ -1,11 +1,20 @@
-import { Template, Upload } from "../../../api/types";
+import { CellValueChangedEvent } from "ag-grid-community";
+import { QueryFilter, Template, Upload } from "../../../api/types";
 
 export type ReviewProps = {
-  upload?: Upload;
-  template: Template;
-  onSuccess: (uploadId: string) => void;
+  upload: Upload;
   onCancel: () => void;
+  close: () => void;
+  onComplete: (data: any) => void;
   showImportLoadingStatus?: boolean;
-  skipHeaderRowSelection?: boolean;
-  schemaless?: boolean;
+  template: Template;
+  reload: () => void;
+};
+
+export type TableProps = {
+  theme: "light" | "dark";
+  uploadId: string;
+  filter: QueryFilter;
+  template: Template;
+  onCellValueChanged: (event: CellValueChangedEvent) => void;
 };

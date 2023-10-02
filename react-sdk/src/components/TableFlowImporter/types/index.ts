@@ -21,11 +21,12 @@ export type TableFlowImporterProps = (HTMLAttributes<HTMLDialogElement> & HTMLAt
   darkMode?: boolean;
   primaryColor?: string;
   metadata?: Record<string, unknown> | string;
-  onComplete?: (data: { data: any; error: any }) => void;
+  onComplete?: (data: any) => void;
   customStyles?: Record<string, string>;
   showImportLoadingStatus?: boolean;
   showDownloadTemplateButton?: boolean;
   skipHeaderRowSelection?: boolean;
   cssOverrides?: Record<string, string>;
   schemaless?: boolean;
+  schemalessReadOnly?: boolean;
 } & ModalParams;

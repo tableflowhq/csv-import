@@ -310,7 +310,7 @@ func generateUploadTemplate(uploadTemplateEncodedStr string) (jsonb.JSONB, error
 	}
 
 	// Convert the JSON to an importer template object to validate it and generate template column IDs
-	template, err := types.ConvertUploadTemplate(uploadTemplate, true)
+	template, err := types.ConvertRawTemplate(uploadTemplate, true)
 	if err != nil {
 		return jsonb.JSONB{}, fmt.Errorf("could not convert upload template: %v", err.Error())
 	}

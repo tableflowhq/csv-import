@@ -24,14 +24,14 @@ func (v *ValidationType) Scan(value interface{}) error {
 	if !ok {
 		return errors.New("failed to scan ValidationType")
 	}
-	// Set the Evaluator from the string type field
+	// Set the Evaluator from the string type
 	switch typeStr {
 	case ValidationFilled.Name:
 		*v = ValidationFilled
 	case ValidationRegex.Name:
-		*v = ValidationRegex
+		*v = ValidationFilled
 	default:
-		return fmt.Errorf("unknown ValidationType: %s", typeStr)
+		return fmt.Errorf("The validation type %v is invalid", typeStr)
 	}
 	return nil
 }
