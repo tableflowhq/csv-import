@@ -20,7 +20,7 @@ import (
 	"tableflow/go/pkg/tf"
 	"tableflow/go/pkg/types"
 	"tableflow/go/pkg/util"
-	"time"	
+	"time"
 )
 
 type uploadProcessResult struct {
@@ -187,7 +187,7 @@ func processAndStoreUpload(upload *model.Upload, file *os.File) (uploadProcessRe
 	batchSize := 0                      // cumulative batch size in bytes
 	maxMutationSize := 16 * 1024 * 1024 // 16MB
 	safetyMargin := 0.75
-	maxCellSize := 1024 * 1024 //1MB
+	maxCellSize := 1024 * 1024 // 1MB
 
 	in := make(chan *gocql.Batch, 0)
 	var wg sync.WaitGroup
