@@ -15,32 +15,12 @@
     --ag-selected-row-background-color: var(--color-input-disabled);
   }
 }
+.ag-row-even, .ag-row-odd {
+  background-color: var(--color-input-disabled) !important;
+}
 .ag-body .ag-body-viewport {
   background-color: var(--ag-odd-row-background-color);
 }
-
-// Remove the overflow in the inner divs of the header to show the inner tooltip.
-// .ag-header.ag-pivot-off.ag-header-allow-overflow {
-//   overflow: unset;
-//   .ag-pinned-left-header {
-//     overflow: unset;
-//   }
-//   .ag-header-viewport {
-//     overflow: unset;
-//   }
-
-//   .ag-header-row {
-//     overflow: unset;
-//   }
-
-//   .ag-header-cell {
-//     overflow: unset;
-//   }
-
-//   .ag-header-cell-comp-wrapper {
-//     overflow: unset;
-//   }
-// }
 
 .ag-theme-alpine .ag-header,
 .ag-theme-alpine-dark .ag-header {
@@ -50,9 +30,8 @@
 
 .ag-theme-alpine .ag-root-wrapper,
 .ag-theme-alpine-dark .ag-root-wrapper {
-  border: none;
-  border-bottom-right-radius: 10px;
-  border-bottom-left-radius: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
   background-color: transparent;
 }
 

@@ -23,7 +23,7 @@ import createTableFlowImporter from "@tableflow/js";
 const importer = createTableFlowImporter({
   importerId: "6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353", // Use your importer ID from https://app.tableflow.com/importers
   modalOnCloseTriggered: () => importer.close(),
-  onComplete: (data, error) => console.log(data),
+  onComplete: (data) => console.log(data),
   darkMode: true,
 });
 
@@ -44,7 +44,7 @@ Or directly in HTML
     const importer = createTableFlowImporter({
       importerId: "6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353", // Use your importer ID from https://app.tableflow.com/importers
       modalOnCloseTriggered: () => importer.close(),
-      onComplete: (data, error) => console.log(data),
+      onComplete: (data) => console.log(data),
       darkMode: true,
     });
 
@@ -202,20 +202,8 @@ Or directly in HTML
   contains the importer row data and information about the import such as the number of rows and `error` contains any
   errors that occurred during the import.
   ```javascript
-  onComplete: (data, error) => {
-    if (error) {
-      alert(error); // Handle any errors that occurred during the import
-    } else {
-      console.log(data); // Use the imported data directly in your frontend
-    }
-  }
+  onComplete: (data) => console.log(data)
   ```
-</ResponseField>
-
-<ResponseField name="showImportLoadingStatus" type="boolean" default={false}>
-  When set to `true`, show a loading indicator while data is being imported at the final stage of an import. The loading
-  indicator will show until the `onComplete` callback is fired. This can be useful if you want to use the imported data
-  in your frontend after it has finished processing.
 </ResponseField>
 
 <ResponseField name="showDownloadTemplateButton" type="boolean" default={true}>
