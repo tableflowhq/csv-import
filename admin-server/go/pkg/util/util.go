@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"github.com/hbollon/go-edlib"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 	"net/mail"
@@ -216,4 +217,13 @@ func ValidateKey(input string) bool {
 		}
 	}
 	return true
+}
+
+func StringSimilarity(str1 string, str2 string) float32 {
+	res, err := edlib.StringsSimilarity(str1, str2, edlib.Levenshtein)
+	if err != nil {
+		return 0
+	} else {
+		return res
+	}
 }

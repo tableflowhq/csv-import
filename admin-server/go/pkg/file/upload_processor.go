@@ -411,3 +411,57 @@ func removeUploadFileFromDisk(file *os.File, fileName, uploadID string) {
 		return
 	}
 }
+
+// AddColumnMappingSuggestions Iterates through the template and upload columns to determine if there is a match to
+// pre-select during the column mapping stage of the import
+func AddColumnMappingSuggestions(upload *types.Upload, templateColumns []*model.TemplateColumn) {
+	matchedTemplateColumnIDs := make(map[string]bool)
+
+	// TODO: Idea for improving this: Keep track of similarity scores across all upload/template columns. An exact match
+	// would be a 1. If a match is overwritten, we need to reevaluate the match for the previous upload column.
+
+	// TODO: We should persist these on the upload to avoid having to regenerate them in different scenarios.
+
+	for _, uploadColumn := range upload.UploadColumns {
+		var bestSimilarityScore float32 = 0
+		var bestMatchColumnID model.ID
+
+		for _, templateColumn := range templateColumns {
+			if matchedTemplateColumnIDs[templateColumn.ID.String()] {
+				continue
+			}
+
+			uploadColumnName := strings.ToLower(strings.TrimSpace(uploadColumn.Name))
+			templateColumnName := strings.ToLower(strings.TrimSpace(templateColumn.Name))
+			if len(uploadColumnName) == 0 || len(templateColumnName) == 0 {
+				continue
+			}
+
+			// Exact match
+			if uploadColumnName == templateColumnName {
+				bestMatchColumnID = templateColumn.ID
+				continue
+			}
+
+			// Exact match, with spaces replaced by underscores
+			uploadColumnNameReplaced := strings.ReplaceAll(uploadColumnName, " ", "_")
+			templateColumnNameReplaced := strings.ReplaceAll(templateColumnName, " ", "_")
+			if uploadColumnNameReplaced == templateColumnNameReplaced {
+				bestMatchColumnID = templateColumn.ID
+				continue
+			}
+
+			// String similarity comparison
+			similarityScore := util.StringSimilarity(uploadColumnName, templateColumnName)
+			if similarityScore > 0.9 && similarityScore > bestSimilarityScore {
+				bestSimilarityScore = similarityScore
+				bestMatchColumnID = templateColumn.ID
+				continue
+			}
+		}
+		if bestMatchColumnID.Valid {
+			uploadColumn.SuggestedTemplateColumnID = bestMatchColumnID
+			matchedTemplateColumnIDs[bestMatchColumnID.String()] = true
+		}
+	}
+}

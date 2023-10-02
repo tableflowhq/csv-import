@@ -267,6 +267,17 @@ func importerGetUpload(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return
 	}
+
+	// Add suggested template column mappings if the HeaderRowIndex has been set
+	if upload.HeaderRowIndex.Valid {
+		template, err := db.GetTemplateByImporter(importerUpload.ImporterID.String())
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+			return
+		}
+		file.AddColumnMappingSuggestions(importerUpload, template.TemplateColumns)
+	}
+
 	c.JSON(http.StatusOK, importerUpload)
 }
 
@@ -339,6 +350,14 @@ func importerSetHeaderRow(c *gin.Context) {
 			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 			return
 		}
+		// Add suggested template column mappings
+		template, err := db.GetTemplateByImporter(upload.ImporterID.String())
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+			return
+		}
+		file.AddColumnMappingSuggestions(importerUpload, template.TemplateColumns)
+
 		c.JSON(http.StatusOK, importerUpload)
 		return
 	}
@@ -391,6 +410,15 @@ func importerSetHeaderRow(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return
 	}
+
+	// Add suggested template column mappings
+	template, err := db.GetTemplateByImporter(upload.ImporterID.String())
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+		return
+	}
+	file.AddColumnMappingSuggestions(importerUpload, template.TemplateColumns)
+
 	c.JSON(http.StatusOK, importerUpload)
 }
 
