@@ -1,7 +1,11 @@
 .reviewContainer {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 
   .tableWrapper {
     overflow: hidden;
+    flex: 1;
   }
 
   .actions {
@@ -11,7 +15,7 @@
   }
 
   .iconButton {
-     svg {
+    svg {
       stroke: var(--color-text-on-primary);
     }
   }

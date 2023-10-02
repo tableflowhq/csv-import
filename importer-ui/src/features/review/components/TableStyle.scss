@@ -15,7 +15,8 @@
     --ag-selected-row-background-color: var(--color-input-disabled);
   }
 }
-.ag-row-even, .ag-row-odd {
+.ag-row-even,
+.ag-row-odd {
   background-color: var(--color-input-disabled) !important;
 }
 .ag-body .ag-body-viewport {
@@ -44,4 +45,7 @@
   &:last-of-type {
     border-right: none;
   }
+}
+.grid-wrapper {
+  height: 100%;
 }
