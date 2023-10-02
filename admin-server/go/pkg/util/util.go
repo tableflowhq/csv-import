@@ -219,7 +219,7 @@ func ValidateKey(input string) bool {
 	return true
 }
 
-func GetStringSimilarityScore(str1 string, str2 string) float32 {
+func StringSimilarity(str1 string, str2 string) float32 {
 	res, err := edlib.StringsSimilarity(str1, str2, edlib.Levenshtein)
 	if err != nil {
 		return 0

@@ -412,37 +412,56 @@ func removeUploadFileFromDisk(file *os.File, fileName, uploadID string) {
 	}
 }
 
-// AddColumnMappingSuggestions Adds mapping suggestions to the upload columns
+// AddColumnMappingSuggestions Iterates through the template and upload columns to determine if there is a match to
+// pre-select during the column mapping stage of the import
 func AddColumnMappingSuggestions(upload *types.Upload, templateColumns []*model.TemplateColumn) {
-	usedTemplateIds := make(map[model.ID]bool)
+	matchedTemplateColumnIDs := make(map[string]bool)
+
+	// TODO: Idea for improving this: Keep track of similarity scores across all upload/template columns. An exact match
+	// would be a 1. If a match is overwritten, we need to reevaluate the match for the previous upload column.
+
+	// TODO: We should persist these on the upload to avoid having to regenerate them in different scenarios.
 
 	for _, uploadColumn := range upload.UploadColumns {
-		var maxSimilarityScore float32 = 0
-		var bestMatchColumnId model.ID
+		var bestSimilarityScore float32 = 0
+		var bestMatchColumnID model.ID
 
 		for _, templateColumn := range templateColumns {
-			if usedTemplateIds[templateColumn.ID] {
+			if matchedTemplateColumnIDs[templateColumn.ID.String()] {
 				continue
 			}
-			formattedUploadColumnName := strings.Replace(strings.ToLower(strings.TrimSpace(uploadColumn.Name)), "_", " ", -1)
-			formattedTemplateColumnName := strings.Replace(strings.ToLower(strings.TrimSpace(templateColumn.Name)), "_", " ", -1)
 
-			// TYPE 1: Exact Match of strings
-			if formattedUploadColumnName == formattedTemplateColumnName {
-				bestMatchColumnId = templateColumn.ID
-				break
+			uploadColumnName := strings.ToLower(strings.TrimSpace(uploadColumn.Name))
+			templateColumnName := strings.ToLower(strings.TrimSpace(templateColumn.Name))
+			if len(uploadColumnName) == 0 || len(templateColumnName) == 0 {
+				continue
 			}
 
-			// TYPE 2: String Similarity Comparison
-			similarityScore := util.GetStringSimilarityScore(formattedUploadColumnName, formattedTemplateColumnName)
-			if similarityScore > 0.9 {
-				if similarityScore > maxSimilarityScore {
-					maxSimilarityScore = similarityScore
-					bestMatchColumnId = templateColumn.ID
-				}
+			// Exact match
+			if uploadColumnName == templateColumnName {
+				bestMatchColumnID = templateColumn.ID
+				continue
+			}
+
+			// Exact match, with spaces replaced by underscores
+			uploadColumnNameReplaced := strings.ReplaceAll(uploadColumnName, " ", "_")
+			templateColumnNameReplaced := strings.ReplaceAll(templateColumnName, " ", "_")
+			if uploadColumnNameReplaced == templateColumnNameReplaced {
+				bestMatchColumnID = templateColumn.ID
+				continue
+			}
+
+			// String similarity comparison
+			similarityScore := util.StringSimilarity(uploadColumnName, templateColumnName)
+			if similarityScore > 0.9 && similarityScore > bestSimilarityScore {
+				bestSimilarityScore = similarityScore
+				bestMatchColumnID = templateColumn.ID
+				continue
 			}
 		}
-		uploadColumn.SuggestedTemplateColumnID = bestMatchColumnId
-		usedTemplateIds[bestMatchColumnId] = true
+		if bestMatchColumnID.Valid {
+			uploadColumn.SuggestedTemplateColumnID = bestMatchColumnID
+			matchedTemplateColumnIDs[bestMatchColumnID.String()] = true
+		}
 	}
 }
