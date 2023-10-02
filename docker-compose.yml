@@ -12,7 +12,7 @@ services:
       service: scylla
 
   backend:
-    image: tableflow/admin-server
+    image: tableflowhq.docker.scarf.sh/tableflow/admin-server
     extends:
       file: docker-compose.base.yml
       service: backend
@@ -26,7 +26,7 @@ services:
     depends_on:
       backend:
         condition: service_healthy
-    image: tableflow/admin-ui
+    image: tableflowhq.docker.scarf.sh/tableflow/admin-ui
     platform: linux/amd64
     # Un-comment if using Apple silicon
     #platform: linux/arm64
@@ -40,7 +40,7 @@ services:
     depends_on:
       backend:
         condition: service_healthy
-    image: tableflow/importer-ui
+    image: tableflowhq.docker.scarf.sh/tableflow/importer-ui
     platform: linux/amd64
     # Un-comment if using Apple silicon
     #platform: linux/arm64
