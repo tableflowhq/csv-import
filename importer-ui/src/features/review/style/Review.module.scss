@@ -62,6 +62,10 @@
   margin-top: var(--m);
   padding: var(--m);
   border-radius: var(--border-radius-1);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .errorContainer {
