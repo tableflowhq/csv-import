@@ -1,10 +1,6 @@
 import { useEffect } from "react";
 
-export default function useListenMessage(
-  importerId: string,
-  onComplete?: (data: { data: any; error: any }) => void,
-  modalOnCloseTriggered?: () => void
-) {
+export default function useListenMessage(importerId: string, onComplete?: (data: any) => void, modalOnCloseTriggered?: () => void) {
   useEffect(() => {
     let postMessages: string[] = [];
 
@@ -23,10 +19,27 @@ export default function useListenMessage(
       }
 
       if (messageData?.type === "complete" && onComplete) {
-        onComplete({
-          data: messageData?.data || null,
-          error: messageData?.error || null,
-        });
+        // Add extra data field for temporary backwards compatibility
+        // TODO: Remove in later version
+        const response = {
+          ...messageData?.data,
+          // Add the deprecated data field with getter and setter
+          get data() {
+            console.warn(
+              "WARNING: the extra data field is deprecated in the onComplete and will be removed in a later version. The parent object contains all of the import data needed."
+            );
+            return this._data;
+          },
+          set data(value) {
+            console.warn(
+              "WARNING: the extra data field is deprecated in the onComplete and will be removed in a later version. The parent object contains all of the import data needed."
+            );
+            this._data = value;
+          },
+        };
+        response._data = messageData?.data;
+
+        onComplete(response);
         postMessages.push(messageData?.id);
       }
       if (messageData?.type === "close" && modalOnCloseTriggered) {

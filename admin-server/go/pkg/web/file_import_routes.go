@@ -267,6 +267,17 @@ func importerGetUpload(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return
 	}
+
+	// Add suggested template column mappings if the HeaderRowIndex has been set
+	if upload.HeaderRowIndex.Valid {
+		template, err := db.GetTemplateByImporter(importerUpload.ImporterID.String())
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+			return
+		}
+		file.AddColumnMappingSuggestions(importerUpload, template.TemplateColumns)
+	}
+
 	c.JSON(http.StatusOK, importerUpload)
 }
 
@@ -339,6 +350,14 @@ func importerSetHeaderRow(c *gin.Context) {
 			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 			return
 		}
+		// Add suggested template column mappings
+		template, err := db.GetTemplateByImporter(upload.ImporterID.String())
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+			return
+		}
+		file.AddColumnMappingSuggestions(importerUpload, template.TemplateColumns)
+
 		c.JSON(http.StatusOK, importerUpload)
 		return
 	}
@@ -391,6 +410,15 @@ func importerSetHeaderRow(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return
 	}
+
+	// Add suggested template column mappings
+	template, err := db.GetTemplateByImporter(upload.ImporterID.String())
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+		return
+	}
+	file.AddColumnMappingSuggestions(importerUpload, template.TemplateColumns)
+
 	c.JSON(http.StatusOK, importerUpload)
 }
 
@@ -787,7 +815,7 @@ func importerGetImportRows(c *gin.Context) {
 //	@Summary		Edit a cell in an import
 //	@Description	Edit the value in a cell for an import. If the cell contains an error, it will run it through the validation before allowing the edit.
 //	@Tags			File Import
-//	@Success		200	{object}	types.Import
+//	@Success		200	{object}	types.ImportCellEditResponse
 //	@Failure		400	{object}	types.Res
 //	@Router			/file-import/v1/import/{id}/cell/edit [post]
 //	@Param			id		path	string				true	"Upload ID"
@@ -825,10 +853,6 @@ func importerEditImportCell(c *gin.Context) {
 	}
 	if req.RowIndex == nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Missing required parameter row_index"})
-		return
-	}
-	if req.IsErrorRow == nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Missing required parameter is_error_row"})
 		return
 	}
 	if req.CellKey == nil {
@@ -888,13 +912,14 @@ func importerEditImportCell(c *gin.Context) {
 		}
 	}
 
+	failedValidations := make([]model.Validation, 0)
 	for _, validation := range validations {
 		res, passed := validation.ValidateWithResult(cellValue)
 		if !passed {
 			switch res.Severity {
 			case model.ValidationSeverityError:
-				c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: res.Message})
-				return
+				failedValidations = append(failedValidations, *validation)
+				continue
 			default:
 				// TODO: Update this condition once we support warning and info validation severities
 				// We'll most likely need to persist the warning or info into where they are stored when this occurs
@@ -905,68 +930,112 @@ func importerEditImportCell(c *gin.Context) {
 		}
 	}
 
-	// At this point the cell edit is valid either because it passed any validations or there were no validations to
-	// perform, so we can now persist the edit
-	if *req.IsErrorRow {
-		// Retrieve the error row, needed to determine if all errors are resolved and the record should be inserted into import_rows
-		row, err := scylla.GetImportRowError(imp.ID.String(), rowIndex)
+	// TODO: Update GetAnyImportRowErrorFirst to take in validations, do some refactoring in the scylla package to make this cleaner
+	row, isErrorRow, err := scylla.GetAnyImportRowErrorFirst(imp.ID.String(), rowIndex)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("Could retrieve row to update cell: %s", err)})
+		return
+	}
+	if isErrorRow && len(row.Errors) == 0 {
+		// No errors were returned from import_row_errors
+		tf.Log.Warnw("No errors returned from import_row_errors during edit", "import_id", imp.ID, "cell_key", cellKey, "row_index", rowIndex)
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No error exists for the current row"})
+		return
+	}
+
+	// Update the row values for the current cell with the new value
+	row.Values[cellKey] = cellValue
+
+	// Update the errors map for the current cell with the new validations, or nil if there are no new errors
+	if len(failedValidations) != 0 {
+		if row.Errors == nil {
+			row.Errors = make(map[string][]types.ImportRowError)
+		}
+		row.Errors[cellKey] = lo.Map(failedValidations, func(v model.Validation, _ int) types.ImportRowError {
+			return types.ImportRowError{
+				ValidationID: v.ID,
+				Type:         v.Type.Name,
+				Severity:     string(v.Severity),
+				Message:      v.Message,
+			}
+		})
+	} else {
+		delete(row.Errors, cellKey)
+		if len(row.Errors) == 0 {
+			row.Errors = nil
+		}
+	}
+
+	if len(row.Errors) != 0 {
+		// Update or insert into the import_row_errors record to add any new errors or remove the error for the current cell
+
+		rawRowErrors := lo.Map(row.Errors[cellKey], func(ire types.ImportRowError, _ int) uint { return ire.ValidationID })
+		if len(rawRowErrors) == 0 {
+			rawRowErrors = nil
+		}
+		err = tf.Scylla.Query("update import_row_errors set errors[?] = ?, values = ? where import_id = ? and row_index = ?",
+			cellKey, rawRowErrors, row.Values, imp.ID.String(), rowIndex).Exec()
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("Could not update cell: %s", err)})
+			tf.Log.Errorw("Could update import_row_errors during cell edit", "import_id", imp.ID, "cell_key", cellKey, "row_index", rowIndex, "error", err)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, types.Res{Err: fmt.Sprintf("Could not update cell: %s", err)})
 			return
 		}
-		_, isEditingErrorCell := row.Errors[cellKey]
-		numErrors := len(row.Errors)
-
-		if numErrors == 0 {
-			// No errors were returned from import_row_errors
-			tf.Log.Warnw("No errors returned from import_row_errors during edit", "import_id", imp.ID, "cell_key", cellKey, "row_index", rowIndex)
-			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No error exists for the current row"})
-			return
-		}
-
-		// Update the row values with the new value
-		row.Values[cellKey] = cellValue
-
-		if isEditingErrorCell && numErrors == 1 {
-			// All errors are resolved on the row
-
-			// Add the record to import_rows
-			err = tf.Scylla.Query("insert into import_rows (import_id, row_index, values) values (?, ?, ?)", imp.ID.String(), rowIndex, row.Values).Exec()
+		if !isErrorRow {
+			// Delete the record from import_rows as we went from a valid row to a row with errors
+			err = tf.Scylla.Query("delete from import_rows where import_id = ? and row_index = ?", imp.ID.String(), rowIndex).Exec()
 			if err != nil {
-				tf.Log.Errorw("Could not insert into import_rows during cell edit", "import_id", imp.ID, "cell_key", cellKey, "row_index", rowIndex, "error", err)
+				tf.Log.Errorw("Could not delete from import_rows during cell edit", "import_id", imp.ID, "cell_key", cellKey, "row_index", rowIndex, "error", err)
 				c.AbortWithStatusJSON(http.StatusInternalServerError, types.Res{Err: fmt.Sprintf("Could not update cell: %s", err)})
 				return
 			}
-
-			// Delete the record from import_row_errors
-			err = tf.Scylla.Query("delete from import_row_errors where import_id = ? and row_index = ?", imp.ID.String(), rowIndex).Exec()
-			if err != nil {
-				tf.Log.Errorw("Could not delete from import_row_errors during cell edit", "import_id", imp.ID, "cell_key", cellKey, "row_index", rowIndex, "error", err)
-				c.AbortWithStatusJSON(http.StatusInternalServerError, types.Res{Err: fmt.Sprintf("Could not update cell: %s", err)})
-				return
-			}
-
 			// Update the aggregate row numbers on the import
-			imp.NumValidRows.Int64++
-			imp.NumErrorRows.Int64--
+			imp.NumValidRows.Int64--
+			imp.NumErrorRows.Int64++
 			err = tf.DB.Save(imp).Error
 			if err != nil {
 				tf.Log.Errorw("Could not update import in database", "import_id", imp.ID, "error", err)
 				c.AbortWithStatusJSON(http.StatusInternalServerError, types.Res{Err: fmt.Sprintf("Could not update cell: %s", err)})
 				return
 			}
-		} else {
-			// There are still other errors on the row, update the import_row_errors record to remove the error for the current cell
-			err = tf.Scylla.Query("update import_row_errors set errors[?] = null, values[?] = ? where import_id = ? and row_index = ?",
-				cellKey, cellKey, cellValue, imp.ID.String(), rowIndex).Exec()
-			if err != nil {
-				tf.Log.Errorw("Could update import_row_errors during cell edit", "import_id", imp.ID, "cell_key", cellKey, "row_index", rowIndex, "error", err)
-				c.AbortWithStatusJSON(http.StatusInternalServerError, types.Res{Err: fmt.Sprintf("Could not update cell: %s", err)})
-				return
-			}
+		}
+		res := &types.ImportCellEditResponse{
+			NumRows:      imp.NumRows,
+			NumValidRows: imp.NumValidRows,
+			NumErrorRows: imp.NumErrorRows,
+			HasErrors:    imp.HasErrors(),
+			Row:          row,
+		}
+		c.JSON(http.StatusOK, res)
+		return
+	}
+
+	// At this point all errors are resolved or there never was an error
+	if isErrorRow {
+		// Move the record from import_row_errors to import_rows (the user was editing an error row and all errors are now resolved)
+		err = tf.Scylla.Query("insert into import_rows (import_id, row_index, values) values (?, ?, ?)", imp.ID.String(), rowIndex, row.Values).Exec()
+		if err != nil {
+			tf.Log.Errorw("Could not insert into import_rows during cell edit", "import_id", imp.ID, "cell_key", cellKey, "row_index", rowIndex, "error", err)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, types.Res{Err: fmt.Sprintf("Could not update cell: %s", err)})
+			return
+		}
+		err = tf.Scylla.Query("delete from import_row_errors where import_id = ? and row_index = ?", imp.ID.String(), rowIndex).Exec()
+		if err != nil {
+			tf.Log.Errorw("Could not delete from import_row_errors during cell edit", "import_id", imp.ID, "cell_key", cellKey, "row_index", rowIndex, "error", err)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, types.Res{Err: fmt.Sprintf("Could not update cell: %s", err)})
+			return
+		}
+
+		// Update the aggregate row numbers on the import
+		imp.NumValidRows.Int64++
+		imp.NumErrorRows.Int64--
+		err = tf.DB.Save(imp).Error
+		if err != nil {
+			tf.Log.Errorw("Could not update import in database", "import_id", imp.ID, "error", err)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, types.Res{Err: fmt.Sprintf("Could not update cell: %s", err)})
+			return
 		}
 	} else {
-		// Update the import_row record with the new value
+		// Update import_rows (the user was editing a non-error row and the edit was valid)
 		err = tf.Scylla.Query("update import_rows set values[?] = ? where import_id = ? and row_index = ?",
 			cellKey, cellValue, imp.ID.String(), rowIndex).Exec()
 		if err != nil {
@@ -976,21 +1045,15 @@ func importerEditImportCell(c *gin.Context) {
 		}
 	}
 
-	importServiceImport := &types.Import{
-		ID:                 imp.ID,
-		UploadID:           imp.UploadID,
-		ImporterID:         imp.ImporterID,
-		NumRows:            imp.NumRows,
-		NumColumns:         imp.NumColumns,
-		NumProcessedValues: imp.NumProcessedValues,
-		Metadata:           imp.Metadata,
-		IsStored:           imp.IsStored,
-		HasErrors:          imp.HasErrors(),
-		NumErrorRows:       imp.NumErrorRows,
-		NumValidRows:       imp.NumValidRows,
-		CreatedAt:          imp.CreatedAt,
+	res := &types.ImportCellEditResponse{
+		NumRows:      imp.NumRows,
+		NumValidRows: imp.NumValidRows,
+		NumErrorRows: imp.NumErrorRows,
+		HasErrors:    imp.HasErrors(),
+		Row:          row,
 	}
-	c.JSON(http.StatusOK, importServiceImport)
+	c.JSON(http.StatusOK, res)
+	return
 }
 
 // importerSubmitImport

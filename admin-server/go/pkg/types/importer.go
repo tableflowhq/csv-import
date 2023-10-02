@@ -70,10 +70,11 @@ type Upload struct {
 }
 
 type UploadColumn struct {
-	ID         model.ID       `json:"id" swaggertype:"string" example:"3c79e7fd-1018-4a27-8b86-9cee84221cd8"`
-	Name       string         `json:"name" example:"Work Email"`
-	Index      int            `json:"index" example:"0"`
-	SampleData pq.StringArray `json:"sample_data" gorm:"type:text[]" swaggertype:"array,string" example:"test@example.com"`
+	ID                        model.ID       `json:"id" swaggertype:"string" example:"3c79e7fd-1018-4a27-8b86-9cee84221cd8"`
+	Name                      string         `json:"name" example:"Work Email"`
+	Index                     int            `json:"index" example:"0"`
+	SampleData                pq.StringArray `json:"sample_data" gorm:"type:text[]" swaggertype:"array,string" example:"test@example.com"`
+	SuggestedTemplateColumnID model.ID       `json:"suggested_template_column_id" swaggertype:"string" example:"a1ed136d-33ce-4b7e-a7a4-8a5ccfe54cd5"`
 }
 
 type UploadHeaderRowSelection struct {
@@ -124,10 +125,17 @@ type ImportRowError struct {
 }
 
 type ImportCell struct {
-	RowIndex   *int    `json:"row_index" example:"0"`
-	IsErrorRow *bool   `json:"is_error_row" example:"false"`
-	CellKey    *string `json:"cell_key" example:"first_name"`
-	CellValue  *string `json:"cell_value" example:"Laura"`
+	RowIndex  *int    `json:"row_index" example:"0"`
+	CellKey   *string `json:"cell_key" example:"first_name"`
+	CellValue *string `json:"cell_value" example:"Laura"`
+}
+
+type ImportCellEditResponse struct {
+	NumRows      null.Int  `json:"num_rows" swaggertype:"integer" example:"256"`
+	NumValidRows null.Int  `json:"num_valid_rows" swaggertype:"integer" example:"224"`
+	NumErrorRows null.Int  `json:"num_error_rows" swaggertype:"integer" example:"32"`
+	HasErrors    bool      `json:"has_errors" example:"false"`
+	Row          ImportRow `json:"row,omitempty"`
 }
 
 func ConvertUpload(upload *model.Upload, uploadRows []UploadRow) (*Upload, error) {
@@ -137,10 +145,11 @@ func ConvertUpload(upload *model.Upload, uploadRows []UploadRow) (*Upload, error
 	importerUploadColumns := make([]*UploadColumn, len(upload.UploadColumns))
 	for n, uc := range upload.UploadColumns {
 		importerUploadColumns[n] = &UploadColumn{
-			ID:         uc.ID,
-			Name:       uc.Name,
-			Index:      uc.Index,
-			SampleData: uc.SampleData,
+			ID:                        uc.ID,
+			Name:                      uc.Name,
+			Index:                     uc.Index,
+			SampleData:                uc.SampleData,
+			SuggestedTemplateColumnID: uc.TemplateColumnID,
 		}
 	}
 	uploadTemplate, err := ConvertRawTemplate(upload.Template, false)

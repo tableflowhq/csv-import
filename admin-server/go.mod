@@ -11,6 +11,7 @@ require (
 	github.com/gocql/gocql v1.6.0
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/guregu/null v4.0.0+incompatible
+	github.com/hbollon/go-edlib v1.6.0
 	github.com/joho/godotenv v1.5.1
 	github.com/lib/pq v1.10.9
 	github.com/samber/lo v1.38.1

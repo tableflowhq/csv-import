@@ -20,7 +20,7 @@ function MyComponent() {
         modalIsOpen={isOpen}
         modalOnCloseTriggered={() => setIsOpen(false)}
         darkMode={${props.theme !== "light"}}
-        onComplete={(data, error) => console.log(data)}
+        onComplete={(data) => console.log(data)}
       />
     </>
   );
