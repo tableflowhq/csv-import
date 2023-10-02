@@ -11,6 +11,11 @@ import "./TableStyle.scss";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 
+const TABLE_WIDTH = 1000;
+const INDEX_ROW_WIDTH = 70;
+const MAX_COLUMN_SCROLL = 7;
+const MAX_ROWS = 9;
+
 function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged }: TableProps) {
   const customSelectClass = "ag-theme-alpine-dark-custom-select";
   const paginatedDataRef: any = useRef();
@@ -33,6 +38,23 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
     gridRef.current && setDataSource();
   }, [filter]);
 
+  const addEmptyRows = (newData: any) => {
+    if (!!Object.keys(newData).length && newData.rows.length < MAX_ROWS) {
+      const missingRows = MAX_ROWS - newData.rows.length;
+      const rows = [...newData.rows, ...Array(missingRows).fill({})];
+
+      return {
+        ...newData,
+        pagination: {
+          ...newData.pagination,
+          total: MAX_ROWS,
+        },
+        rows,
+      };
+    }
+    return newData;
+  };
+
   const setDataSource = () => {
     const dataSource: IDatasource = {
       rowCount: paginatedData?.pagination?.total || undefined,
@@ -43,54 +65,25 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
         // gets the paginated data
         const newData = await fetchRows(uploadId, filterRef.current, 100, nextOffset);
 
-        const paginationInfo = newData?.pagination;
-        const rowThisPage = newData?.rows || [];
+        const tableData = addEmptyRows(newData);
+        const paginationInfo = tableData?.pagination;
+        const rowThisPage = tableData?.rows || [];
 
         let lastRow = -1;
         if (paginationInfo?.total !== undefined && paginationInfo.total <= params.endRow) {
           lastRow = paginationInfo.total;
         }
         params.successCallback(rowThisPage, lastRow);
-        setPaginatedData({ ...newData });
-        setColumnSizes();
+        setPaginatedData({ ...tableData });
       },
     };
     gridRef.current?.setDatasource?.(dataSource);
-    setColumnSizes();
   };
 
   const onGridReady = useCallback((params: GridReadyEvent<any>) => {
     gridRef.current = params.api as any;
-    setTimeout(() => {
-      setColumnSizes();
-    }, 100);
     setDataSource();
   }, []);
-  window.addEventListener("resize", () => {
-    setColumnSizes();
-  });
-
-  const setColumnSizes = () => {
-    // @ts-ignore
-    if (!gridRef.current || gridRef.current?.destroyCalled) return;
-    const columnCount = gridRef.current?.getColumnDefs?.()?.length || 0;
-    // onl resize if there are less than 7 columns
-    if (columnCount < 7) {
-      // re-size all columns but index
-      const options: ISizeColumnsToFitParams = {
-        columnLimits: [
-          {
-            key: "index",
-            maxWidth: 70,
-            minWidth: 70,
-          },
-        ],
-      };
-      setTimeout(() => {
-        gridRef.current?.sizeColumnsToFit(options);
-      }, 100);
-    }
-  };
 
   const customHeaderComponent = (params: any) => {
     return (
@@ -113,28 +106,31 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
           headerComponentParams: {
             displayDescription: displayDescription,
           },
-          editable: true,
+          editable: (params) => params.data && params.data.values,
           field: `values.${header}`,
           cellStyle: (params: any) => {
             if (params.data?.errors?.[header]) {
               return { backgroundColor: getCellBackgroundColor(params.data.errors[header][0].severity, theme) };
             }
-            return null;
+            return { backgroundColor: "" };
           },
           cellRenderer: (params: ICellRendererParams) => cellRenderer(params, header),
           sortable: false,
           filter: false,
           suppressMovable: true,
+          width: headers.length < MAX_COLUMN_SCROLL ? (TABLE_WIDTH - INDEX_ROW_WIDTH) / headers.length : undefined,
         } as ColDef;
       });
       // Add index column to the beginning of the columns
       generatedColumnDefs.push({
         headerName: "",
         // Set the index cell value to the node ID + 1
-        valueGetter: (params: ValueGetterParams) => Number(params.node?.id ?? 0) + 1,
+        valueGetter: (params: ValueGetterParams) => {
+          return params.data && params.data.values ? Number(params.node?.id ?? 0) + 1 : "";
+        },
         field: "index",
-        width: 70,
-        pinned: headers.length >= 5 ? "left" : undefined,
+        width: INDEX_ROW_WIDTH,
+        pinned: headers.length > MAX_COLUMN_SCROLL ? "left" : undefined,
       });
       setColumnDefs(generatedColumnDefs.reverse());
     }

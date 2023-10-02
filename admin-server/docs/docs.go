@@ -587,7 +587,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/types.Import"
+                            "$ref": "#/definitions/types.ImportCellEditResponse"
                         }
                     },
                     "400": {
@@ -1599,13 +1599,33 @@ const docTemplate = `{
                     "type": "string",
                     "example": "Laura"
                 },
-                "is_error": {
-                    "type": "boolean",
-                    "example": false
-                },
                 "row_index": {
                     "type": "integer",
                     "example": 0
+                }
+            }
+        },
+        "types.ImportCellEditResponse": {
+            "type": "object",
+            "properties": {
+                "has_errors": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "num_error_rows": {
+                    "type": "integer",
+                    "example": 32
+                },
+                "num_rows": {
+                    "type": "integer",
+                    "example": 256
+                },
+                "num_valid_rows": {
+                    "type": "integer",
+                    "example": 224
+                },
+                "row": {
+                    "$ref": "#/definitions/types.ImportRow"
                 }
             }
         },

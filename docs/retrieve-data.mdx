@@ -7,56 +7,47 @@ After a user completes a CSV or Excel file import, you have a few options for ho
 
 # 1. Frontend Callback
 
-The [React](https://www.npmjs.com/package/@tableflow/react) and [JavaScript](https://www.npmjs.com/package/@tableflow/js) SDKs have an `onComplete` event that is triggered when an import is completed. It contains the actual row data along with other information about the import.
+The [React](https://www.npmjs.com/package/@tableflow/react) and [JavaScript](https://www.npmjs.com/package/@tableflow/js) SDKs have an `onComplete` event that is triggered when an import is completed.
 ```javascript
-onComplete: (data, error) => {
-  if (error) {
-    alert(error); // Handle import error
-  } else {
-    console.log(data); // Use import data
-  }
-}
+onComplete: (data) => console.log(data)
 ```
 
-With this callback function you’ll receive two parameters: `data` and `error`
-
-`data` is an object that contains the actual row data along with information about the completed import such as the number of rows imported:
+The `data` object contains the actual row data along with information about the completed import such as the number of rows imported:
 ```javascript
 {
-  "data": {
-    "id": "f7ecdlb4-bfd6-460e-b524-7f23d70d9500",
-    "importer_id": "b0fldb1d-9888-4fcb-b185-22b984bcb227",
-    "num_rows": 5,
-    "num_columns": 3,
-    "num_processed_values": 13,
-    "metadata": {
-      "userEmail": "test@example.com",
-      "userId": 1234
-    },
-    "created_at": 1690565037,
-    "rows": [
-      {
-        "index": 0,
-        "values": {
-          "email": "laura@example.com",
-          "first_name": "Laura",
-          "last_name": "Jenkins"
-        }
-      },
-      {
-        "index": 1,
-        "values": {
-          "email": "craig@example.com",
-          "first_name": "Craig",
-          "last_name": "Johnson"
-        }
+  "id": "f7ecdlb4-bfd6-460e-b524-7f23d70d9500",
+  "importer_id": "b0fldb1d-9888-4fcb-b185-22b984bcb227",
+  "num_rows": 5,
+  "num_columns": 3,
+  "num_processed_values": 13,
+  "metadata": {
+    "userEmail": "test@example.com",
+    "userId": 1234
+  },
+  "created_at": 1690565037,
+  "rows": [
+    {
+      "index": 0,
+      "values": {
+        "email": "laura@example.com",
+        "first_name": "Laura",
+        "last_name": "Jenkins"
       }
-    ]
-  }
+    },
+    {
+      "index": 1,
+      "values": {
+        "email": "craig@example.com",
+        "first_name": "Craig",
+        "last_name": "Johnson"
+      }
+    }
+  ],
+  "error": "Example error"
 }
 ```
 
-`error` is a string that will be non-empty if an error occurs during an import:
+The field `error` is a string that will be non-empty if an error occurs during an import:
 ```javascript
 "This import has 12000 rows which exceeds the max allowed number of rows for frontend callback (10000). Use the API to retrieve the data."
 ```

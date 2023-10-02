@@ -19,6 +19,12 @@ const defaultOptions: Option[] = [
   { label: "Error (0)", filterValue: "error", selected: false, color: "#f04339" },
 ];
 
+type FilterOptionCounts = {
+  NumRows: number;
+  NumValidRows: number;
+  NumErrorRows: number;
+};
+
 export default function Review({ onCancel, onComplete, upload, template, reload, close }: ReviewProps) {
   const uploadId = upload?.id;
   const filter = useRef<QueryFilter>("all");
@@ -28,9 +34,9 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
     staleTime: 0,
   });
   const [cellValueChangedEvent, setCellValueChangedEvent] = useState<CellValueChangedEvent>();
+  const [hasDataErrors, setHasDataErrors] = useState(false);
   const { mutate, error: submitError, isSuccess, isLoading: isSubmitting, data: dataSubmitted } = useSubmitReview(uploadId || "");
   const { mutate: postEditCell, error: errorEditCell, data: dataCellEdited } = usePostReviewEditCell(uploadId);
-
   const theme = useThemeStore((state) => state.theme);
   const [showLoading, setShowLoading] = useState(true);
   const submittedOk = dataSubmitted?.ok || {};
@@ -38,15 +44,19 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
 
   const cellValueChangeSet = useRef(new Set<string>());
   const onCellValueChanged = useCallback((event: CellValueChangedEvent) => {
-    const columnId = event.column.getColId();
-    const cellId = `${event.rowIndex}-${columnId}`;
+    const { rowIndex, column, data, newValue } = event;
+    const columnId = column.getColId();
+    const cellId = `${rowIndex}-${columnId}`;
+
     // Check if the change was done programmatically to not cause an infinite loop when reverting changes to cell edits
     if (cellValueChangeSet.current.has(cellId)) {
       cellValueChangeSet.current.delete(cellId);
       return;
     }
-    let cellKey = "";
+
+    // Extract the cell key from column ID
     const parts = columnId.split(".");
+    let cellKey = "";
     if (parts.length > 1 && parts[0] === "values") {
       cellKey = parts[1];
     } else {
@@ -55,10 +65,9 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
     }
 
     const body = {
-      row_index: event.data?.index,
-      is_error: !!event.data?.errors && typeof event.data?.errors[cellKey] !== "undefined",
+      row_index: data?.index,
       cell_key: cellKey,
-      cell_value: event.newValue,
+      cell_value: newValue ?? "",
     };
     setCellValueChangedEvent(event);
     postEditCell({ body });
@@ -89,22 +98,42 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
   useEffect(() => {
     if (isSuccess || submitError) {
       setShowLoading(false);
-      onComplete(dataSubmitted, dataSubmitted?.error || submitError?.toString() || null);
+      onComplete(dataSubmitted?.data);
     }
   }, [isSuccess, submitError]);
 
+  // Load the initial state from the data returned
   useEffect(() => {
-    updateFilterOptionCounts(data?.num_rows, data?.num_valid_rows, data?.num_error_rows);
-    if (data?.is_stored) {
-      setShowLoading(false);
+    updateFilterOptions(
+      filter.current,
+      data ? { NumRows: data?.num_rows, NumValidRows: data?.num_valid_rows, NumErrorRows: data?.num_error_rows } : undefined
+    );
+    if (data) {
+      setHasDataErrors(data?.num_error_rows > 0);
+      if (data?.is_stored) {
+        setShowLoading(false);
+      }
     }
   }, [JSON.stringify(data)]);
 
-  const onFilterChange = useCallback((option: string) => {
+  const updateFilterOptions = useCallback((option: string, counts?: FilterOptionCounts) => {
     filter.current = option as QueryFilter;
     setFilterOptions(
       filterOptions.map((fo) => {
         fo.selected = fo.filterValue === option;
+        if (counts) {
+          switch (fo.filterValue) {
+            case "all":
+              fo.label = `All ${counts.NumRows}`;
+              break;
+            case "valid":
+              fo.label = `Valid ${counts.NumValidRows}`;
+              break;
+            case "error":
+              fo.label = `Error ${counts.NumErrorRows}`;
+              break;
+          }
+        }
         return fo;
       })
     );
@@ -149,7 +178,9 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
   return (
     <div>
       <div className={style.reviewContainer}>
-        {hasValidations && <ToggleFilter options={filterOptions} className={style.filters} onChange={(option: string) => onFilterChange(option)} />}
+        {hasValidations && (
+          <ToggleFilter options={filterOptions} className={style.filters} onChange={(option: string) => updateFilterOptions(option)} />
+        )}
         <div className={style.tableWrapper}>
           {!isLoading && (
             <ReviewDataTable onCellValueChanged={onCellValueChanged} template={template} theme={theme} uploadId={uploadId} filter={filter.current} />
@@ -159,7 +190,11 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
           <Button type="button" variants={["secondary"]} onClick={onCancel}>
             Back
           </Button>
-          <Button variants={["primary"]} disabled={data?.num_error_rows > 0} onClick={handleSubmitClick}>
+          <Button
+            title={hasDataErrors ? "Please resolve all errors before submitting" : ""}
+            variants={["primary"]}
+            disabled={hasDataErrors}
+            onClick={handleSubmitClick}>
             Submit
           </Button>
         </div>

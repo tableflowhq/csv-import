@@ -164,11 +164,10 @@ export default function Main() {
     postMessage(message);
   };
 
-  const handleComplete = (data: any, error: string | null) => {
+  const handleComplete = (data: any) => {
     if (isEmbeddedInIframe && onComplete) {
       const message = {
         data,
-        error,
         type: "complete",
         importerId,
       };

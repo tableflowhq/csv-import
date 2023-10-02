@@ -56,6 +56,17 @@ func GetAnyImportRow(importID string, index int) (types.ImportRow, error) {
 	return row, err
 }
 
+// GetAnyImportRowErrorFirst Retrieve a row from import_row_errors. If it does not exist in import_row_errors, attempt retrieve the row from import_rows
+func GetAnyImportRowErrorFirst(importID string, index int) (types.ImportRow, bool, error) {
+	isErrorRow := true
+	row, err := GetImportRowError(importID, index)
+	if len(row.Values) == 0 {
+		row, err = GetImportRow(importID, index)
+		isErrorRow = false
+	}
+	return row, isErrorRow, err
+}
+
 func GetImportRow(importID string, index int) (types.ImportRow, error) {
 	row := types.ImportRow{}
 	err := tf.Scylla.Query("select row_index, values from import_rows where import_id = ? and row_index = ?", importID, index).Scan(&row.Index, &row.Values)
