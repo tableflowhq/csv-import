@@ -14,8 +14,8 @@ type ValidationType struct {
 
 // Pre-defined ValidationTypes
 var (
-	ValidationFilled = ValidationType{"filled", evaluator.FilledEvaluator{}}
-	ValidationRegex  = ValidationType{"regex", evaluator.RegexEvaluator{}}
+	ValidationNotBlank = ValidationType{"not_blank", evaluator.NotBlankEvaluator{}}
+	ValidationRegex    = ValidationType{"regex", evaluator.RegexEvaluator{}}
 )
 
 func (v *ValidationType) Scan(value interface{}) error {
@@ -26,10 +26,10 @@ func (v *ValidationType) Scan(value interface{}) error {
 	}
 	// Set the Evaluator from the string type
 	switch typeStr {
-	case ValidationFilled.Name:
-		*v = ValidationFilled
+	case ValidationNotBlank.Name:
+		*v = ValidationNotBlank
 	case ValidationRegex.Name:
-		*v = ValidationFilled
+		*v = ValidationNotBlank
 	default:
 		return fmt.Errorf("The validation type %v is invalid", typeStr)
 	}

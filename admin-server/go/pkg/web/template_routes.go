@@ -38,9 +38,9 @@ type TemplateColumnEditRequest struct {
 
 type TemplateColumnValidationRequest struct {
 	ID       int         `json:"id" example:"1"`
-	Type     string      `json:"type" example:"filled"`
+	Type     string      `json:"type" example:"not_blank"`
 	Value    jsonb.JSONB `json:"value" swaggertype:"string" example:"true"`
-	Message  string      `json:"message" example:"This column must contain a value"`
+	Message  string      `json:"message" example:"The cell must contain a value"`
 	Severity string      `json:"severity" example:"error"`
 }
 

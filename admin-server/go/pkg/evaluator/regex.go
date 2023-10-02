@@ -5,7 +5,9 @@ import (
 	"regexp"
 )
 
-type RegexEvaluator struct{}
+type RegexEvaluator struct {
+	//Regexp *regexp.Regexp
+}
 
 func (e RegexEvaluator) TypeCheck(value interface{}) error {
 	_, ok := value.(string)

@@ -111,10 +111,10 @@ type Row = {
   index: number;
   values: {
     email: string;
-    filled: string;
+    not_blank: string;
   };
   errors: {
-    filled: ErrorDetail[];
+    not_blank: ErrorDetail[];
   };
 };
 

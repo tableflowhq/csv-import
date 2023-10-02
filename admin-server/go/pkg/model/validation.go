@@ -26,7 +26,7 @@ var validSeverities = map[string]ValidationSeverity{
 type Validation struct {
 	ID               uint               `json:"id" swaggertype:"integer" example:"1"`
 	TemplateColumnID ID                 `json:"template_column_id" swaggertype:"string" example:"a1ed136d-33ce-4b7e-a7a4-8a5ccfe54cd5"`
-	Type             ValidationType     `json:"type" swaggertype:"string" example:"filled"`
+	Type             ValidationType     `json:"type" swaggertype:"string" example:"not_blank"`
 	Value            jsonb.JSONB        `json:"value" swaggertype:"string" example:"true"`
 	Message          string             `json:"message" example:"This column must contain a value"`
 	Severity         ValidationSeverity `json:"severity" swaggertype:"string" example:"error"`
@@ -110,8 +110,8 @@ func ParseValidation(id uint, value jsonb.JSONB, typeStr, message, severity, tem
 	var vt ValidationType
 
 	switch typeStr {
-	case ValidationFilled.Name:
-		vt = ValidationFilled
+	case ValidationNotBlank.Name:
+		vt = ValidationNotBlank
 		if !value.Valid {
 			// If no value is provided, default to true
 			value = jsonb.JSONB{
@@ -121,11 +121,11 @@ func ParseValidation(id uint, value jsonb.JSONB, typeStr, message, severity, tem
 		} else {
 			// Validate the value is the correct type
 			if _, ok := value.Data.(bool); !ok {
-				return nil, fmt.Errorf("The filled validation value must be boolean if provided")
+				return nil, fmt.Errorf("The not_blank validation value must be boolean if provided")
 			}
 		}
 		if len(message) == 0 {
-			message = "The cell must be filled"
+			message = "The cell must contain a value"
 		}
 		return &Validation{
 			ID:               id,
@@ -135,9 +135,10 @@ func ParseValidation(id uint, value jsonb.JSONB, typeStr, message, severity, tem
 			Message:          message,
 			Severity:         s,
 		}, nil
-	//
-	//case model.ValidationRegex.Name:
-	//
+
+	//case ValidationRegex.Name:
+	//	vt = ValidationRegex
+
 	default:
 		return nil, fmt.Errorf("The validation type %v is invalid", typeStr)
 	}
