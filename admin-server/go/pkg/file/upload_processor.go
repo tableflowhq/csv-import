@@ -116,7 +116,7 @@ func UploadCompleteHandler(event handler.HookEvent, uploadAdditionalStorageHandl
 	uploadResult, err := processAndStoreUpload(upload, file)
 	if err != nil {
 		tf.Log.Errorw("Could not process upload", "error", err, "upload_id", upload.ID)
-		saveUploadError(upload, "An error occurred processing your file. Please check the file and try again.")
+		saveUploadError(upload, err.Error())
 		removeUploadFileFromDisk(file, fileName, upload.ID.String())
 		return
 	}
@@ -187,6 +187,7 @@ func processAndStoreUpload(upload *model.Upload, file *os.File) (uploadProcessRe
 	batchSize := 0                      // cumulative batch size in bytes
 	maxMutationSize := 16 * 1024 * 1024 // 16MB
 	safetyMargin := 0.75
+	maxCellSize := 1024 * 1024 // 1MB
 
 	in := make(chan *gocql.Batch, 0)
 	var wg sync.WaitGroup
@@ -240,6 +241,9 @@ func processAndStoreUpload(upload *model.Upload, file *os.File) (uploadProcessRe
 			}
 			if util.IsBlankUnicode(cellValue) {
 				numBlankCells++
+			}
+			if len(cellValue) > maxCellSize {
+				return uploadProcessResult{}, fmt.Errorf("A cell in your file exceeds the max cell size of 1MB (row %v, column %v). Please check the file and try again", i+1, columnIndex+1)
 			}
 			// TODO: Deal with invalid characters better, determine charsets programmatically? Or just surface these to the user?
 			uploadRow[int16(columnIndex)] = strings.ToValidUTF8(cellValue, "")
