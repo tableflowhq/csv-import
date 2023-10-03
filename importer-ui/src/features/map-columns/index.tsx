@@ -44,7 +44,7 @@ export default function MapColumns({
       <form onSubmit={onSubmit}>
         {upload ? (
           <div className={style.tableWrapper}>
-            <Table data={rows} background="dark" fixHeader columnWidths={["20%", "30%", "30%", "20%"]} columnAlignments={["", "", "", "center"]} />
+            <Table data={rows} background="dark" columnWidths={["20%", "30%", "30%", "20%"]} columnAlignments={["", "", "", "center"]} />
           </div>
         ) : (
           <>Loading...</>
