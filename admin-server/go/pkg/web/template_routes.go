@@ -22,6 +22,7 @@ type TemplateColumnCreateRequest struct {
 	Name              string                            `json:"name" example:"First Name"`
 	Key               string                            `json:"key" example:"first_name"`
 	Required          bool                              `json:"required" example:"false"`
+	DataType          string                            `json:"data_type" example:"string"`
 	Description       string                            `json:"description" example:"The first name"`
 	Validations       []TemplateColumnValidationRequest `json:"validations"`
 	SuggestedMappings *[]string                         `json:"suggested_mappings"`
@@ -38,8 +39,8 @@ type TemplateColumnEditRequest struct {
 
 type TemplateColumnValidationRequest struct {
 	ID       int         `json:"id" example:"1"`
-	Type     string      `json:"type" example:"not_blank"`
-	Value    jsonb.JSONB `json:"value" swaggertype:"string" example:"true"`
+	Validate string      `json:"validate" example:"not_blank"`
+	Options  jsonb.JSONB `json:"options" swaggertype:"string" example:"true"`
 	Message  string      `json:"message" example:"The cell must contain a value"`
 	Severity string      `json:"severity" example:"error"`
 }
@@ -138,17 +139,14 @@ func createTemplateColumn(c *gin.Context, getWorkspaceUser func(*gin.Context, st
 		UpdatedBy:         user.ID,
 	}
 
+	if len(req.DataType) == 0 {
+
+	}
+
 	// Validations
 	var validations []*model.Validation
 	for _, v := range req.Validations {
-		validation, err := model.ParseValidation(
-			uint(v.ID),
-			v.Value,
-			v.Type,
-			v.Message,
-			v.Severity,
-			templateColumn.ID.String(),
-		)
+		validation, err := model.ParseValidation(uint(v.ID), templateColumn.ID.String(), v.Validate, v.Options, v.Message, v.Severity)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 			return
@@ -267,14 +265,7 @@ func editTemplateColumn(c *gin.Context, getWorkspaceUser func(*gin.Context, stri
 		// Delete: If a validation does not exist on the request but does exist in the database, delete it
 		var validationsToCreateOrEdit []*model.Validation
 		for _, v := range *req.Validations {
-			validation, err := model.ParseValidation(
-				uint(v.ID),
-				v.Value,
-				v.Type,
-				v.Message,
-				v.Severity,
-				templateColumn.ID.String(),
-			)
+			validation, err := model.ParseValidation(uint(v.ID), templateColumn.ID.String(), v.Validate, v.Options, v.Message, v.Severity)
 			if err != nil {
 				c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 				return

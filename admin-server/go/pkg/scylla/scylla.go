@@ -235,7 +235,7 @@ func getImportRowErrors(importID string, offset, limit int, validations map[uint
 				if v, ok := validations[id]; ok {
 					importRowErrors[j] = types.ImportRowError{
 						ValidationID: id,
-						Type:         v.Type.Name,
+						Validate:     v.Validate,
 						Severity:     string(v.Severity),
 						Message:      v.Message,
 					}
@@ -314,7 +314,7 @@ func GetScyllaSchemaConfigurationCQL() []string {
 		    import_id uuid,
 		    row_index int,
 		    -- values: Holds the actual import_row data. As an error is resolved this is updated. Once all errors are resolved, we insert into import_rows.
-		    values    map<text, text>,             -- <Row key, Cell Value>
+		    values    map<text, text>,             -- <Row key, Cell Options>
 		    -- errors: Holds a set of Validation IDs that failed for a given cell. As errors are resolved the IDs are removed from the set. If all errors are resolved for a cell, the key is removed from the map.
 		    errors    map<text, frozen<set<int>>>, -- <Row key, Set of Validation IDs (stored in Postgres to reference complete validation information and keep this table smaller)>
 		    primary key ((import_id),row_index)

@@ -1,24 +1,19 @@
 package evaluator
 
 import (
-	"fmt"
 	"tableflow/go/pkg/util"
 )
 
 type NotBlankEvaluator struct{}
 
-func (e NotBlankEvaluator) TypeCheck(value interface{}) error {
-	_, ok := value.(bool)
-	if !ok {
-		return fmt.Errorf("invalid type, expected bool: %v", value)
-	}
+func (e NotBlankEvaluator) Initialize(_ interface{}) error {
 	return nil
 }
 
-func (e NotBlankEvaluator) Evaluate(value interface{}, cell string) (bool, error) {
-	if err := e.TypeCheck(value); err != nil {
-		return false, err
-	}
-	// A value of true (the default value) means the cell must not be blank
-	return !util.IsBlankUnicode(cell) == value.(bool), nil
+func (e NotBlankEvaluator) Evaluate(cell string) (bool, error) {
+	return !util.IsBlankUnicode(cell), nil
+}
+
+func (e NotBlankEvaluator) DefaultMessage() string {
+	return "The cell must contain a value"
 }

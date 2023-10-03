@@ -43,9 +43,9 @@ type TemplateColumn struct {
 
 type Validation struct {
 	ValidationID uint        `json:"id" swaggertype:"integer" example:"4581"`
-	Type         string      `json:"type" example:"not_blank"`
-	Value        jsonb.JSONB `json:"value" swaggertype:"string" example:"true"`
-	Message      string      `json:"message" example:"This column must contain a value"`
+	Validate     string      `json:"validate" example:"not_blank"`
+	Options      jsonb.JSONB `json:"options" swaggertype:"string" example:"true"`
+	Message      string      `json:"message" example:"The cell must contain a value"`
 	Severity     string      `json:"severity" example:"error"`
 }
 
@@ -119,7 +119,7 @@ type ImportRow struct {
 
 type ImportRowError struct {
 	ValidationID uint   `json:"-"`
-	Type         string `json:"type"`
+	Validate     string `json:"validate"`
 	Severity     string `json:"severity"`
 	Message      string `json:"message"`
 }
@@ -261,8 +261,8 @@ func ConvertRawTemplate(rawTemplate jsonb.JSONB, generateIDs bool) (*Template, e
 			for _, v := range validationsInterface {
 				if validationMap, ok := v.(map[string]interface{}); ok {
 					validationID, _ := validationMap["id"].(float64)
-					validationType, _ := validationMap["type"].(string)
-					validationValue, _ := validationMap["value"]
+					validationValidate, _ := validationMap["validate"].(string)
+					validationOptions, _ := validationMap["options"]
 					validationMessage, _ := validationMap["message"].(string)
 					validationSeverity, _ := validationMap["severity"].(string)
 
@@ -270,25 +270,18 @@ func ConvertRawTemplate(rawTemplate jsonb.JSONB, generateIDs bool) (*Template, e
 						validationID = float64(generatedValidationID)
 						generatedValidationID++
 					}
-					validationValueJSON, err := jsonb.FromInterface(validationValue)
+					validationValueJSON, err := jsonb.FromInterface(validationOptions)
 					if err != nil {
-						return nil, fmt.Errorf("Invalid template: invalid validation value json")
+						return nil, fmt.Errorf("Invalid template: invalid validation options json")
 					}
-					validation, err := model.ParseValidation(
-						uint(validationID),
-						validationValueJSON,
-						validationType,
-						validationMessage,
-						validationSeverity,
-						"",
-					)
+					validation, err := model.ParseValidation(uint(validationID), "", validationValidate, validationValueJSON, validationMessage, validationSeverity)
 					if err != nil {
 						return nil, err
 					}
 					validations = append(validations, &Validation{
 						ValidationID: validation.ID,
-						Type:         validation.Type.Name,
-						Value:        validation.Value,
+						Validate:     validation.Validate,
+						Options:      validation.Options,
 						Message:      validation.Message,
 						Severity:     string(validation.Severity),
 					})

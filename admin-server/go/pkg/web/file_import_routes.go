@@ -202,8 +202,8 @@ func importerGetImporter(c *gin.Context) {
 			Validations: lo.Map(tc.Validations, func(v *model.Validation, _ int) *types.Validation {
 				return &types.Validation{
 					ValidationID: v.ID,
-					Type:         v.Type.Name,
-					Value:        v.Value,
+					Validate:     v.Validate,
+					Options:      v.Options,
 					Severity:     string(v.Severity),
 					Message:      v.Message,
 				}
@@ -579,14 +579,7 @@ func importerSetColumnMapping(c *gin.Context) {
 				SuggestedMappings: importColumn.SuggestedMappings,
 			}
 			for _, v := range importColumn.Validations {
-				validation, err := model.ParseValidation(
-					v.ValidationID,
-					v.Value,
-					v.Type,
-					v.Message,
-					v.Severity,
-					importColumn.ID.String(),
-				)
+				validation, err := model.ParseValidation(v.ValidationID, importColumn.ID.String(), v.Validate, v.Options, v.Message, v.Severity)
 				if err != nil {
 					templateColumn.Validations = append(templateColumn.Validations, validation)
 				}
@@ -889,14 +882,7 @@ func importerEditImportCell(c *gin.Context) {
 		}
 		for _, templateColumn := range template.TemplateColumns {
 			for _, v := range templateColumn.Validations {
-				validation, err := model.ParseValidation(
-					v.ValidationID,
-					v.Value,
-					v.Type,
-					v.Message,
-					v.Severity,
-					templateColumn.ID.String(),
-				)
+				validation, err := model.ParseValidation(v.ValidationID, templateColumn.ID.String(), v.Validate, v.Options, v.Message, v.Severity)
 				if err != nil {
 					validations = append(validations, validation)
 				}
@@ -914,7 +900,7 @@ func importerEditImportCell(c *gin.Context) {
 
 	failedValidations := make([]model.Validation, 0)
 	for _, validation := range validations {
-		res, passed := validation.ValidateWithResult(cellValue)
+		res, passed := validation.EvaluateWithResult(cellValue)
 		if !passed {
 			switch res.Severity {
 			case model.ValidationSeverityError:
@@ -954,7 +940,7 @@ func importerEditImportCell(c *gin.Context) {
 		row.Errors[cellKey] = lo.Map(failedValidations, func(v model.Validation, _ int) types.ImportRowError {
 			return types.ImportRowError{
 				ValidationID: v.ID,
-				Type:         v.Type.Name,
+				Validate:     v.Validate,
 				Severity:     string(v.Severity),
 				Message:      v.Message,
 			}

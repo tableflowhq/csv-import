@@ -128,7 +128,7 @@ func processAndStoreImport(template *model.Template, upload *model.Upload, imp *
 
 				// Perform validations on the cell, if any
 				for _, v := range key.Validations {
-					passed := v.Validate(cellValue)
+					passed := v.Evaluate(cellValue)
 					if !passed {
 						// Add the validation ID to the slice at the key, or create a new entry if the key doesn't exist
 						if _, ok := importRowErrors[key.Key]; ok {
