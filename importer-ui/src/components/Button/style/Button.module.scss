@@ -1,0 +1,183 @@
+.button {
+    padding: 0.5px var(--m-s);
+    border-radius: var(--border-radius-2);
+    border: 1px solid var(--color-button-border);
+    display: inline-flex;
+    gap: var(--m-xs);
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-button);
+    color: var(--color-button-text);
+    white-space: nowrap;
+    font-size: var(--font-size-xs);
+    font-weight: 400;
+
+    .label {
+        padding: var(--m-xxs) 0;
+    }
+
+    &:hover {
+        background-color: var(--color-button-hover);
+    }
+
+    &:not([disabled]):not(.disableHover) {
+        cursor: pointer;
+    }
+
+    &:is([disabled]) {
+        background-color: var(--color-button-disabled);
+        color: var(--color-button-text-disabled);
+    }
+
+    svg {
+        display: block;
+    }
+
+    .icon {
+        svg:not([data-stroke="no-stroke"]) {
+            path {
+                stroke: currentColor;
+            }
+        }
+        svg:is([data-stroke="no-stroke"]):not([data-fill="no-fill"]) {
+            path {
+                fill: currentColor;
+            }
+        }
+    }
+
+    &.primary {
+        background-color: var(--color-primary);
+        color: var(--color-text-on-primary);
+
+        &:not([disabled]):not(.disableHover):hover,
+        &:not([disabled]):not(.disableHover):active {
+            background-color: var(--color-primary-hover);
+            color: var(--color-text-on-primary);
+        }
+
+        &:is([disabled]) {
+            background-color: var(--color-primary-button-disabled);
+            color: var(--color-text-on-primary-button-disabled);
+        }
+    }
+
+    &.secondary {
+        background-color: var(--color-secondary);
+        color: var(--color-text-on-secondary);
+
+        &:not([disabled]):not(.disableHover):hover,
+        &:not([disabled]):not(.disableHover):active {
+            background-color: var(--color-secondary-hover);
+            color: var(--color-text-on-secondary);
+        }
+
+        &:is([disabled]) {
+            background-color: var(--color-secondary-disabled);
+            color: var(--color-text-on-secondary-disabled);
+        }
+    }
+
+    &.tertiary {
+        background-color: var(--color-tertiary);
+        color: var(--color-text-on-tertiary);
+        border-color: var(--color-border);
+
+        &:not([disabled]):not(.disableHover):hover,
+        &:not([disabled]):not(.disableHover):active {
+            background-color: var(--color-tertiary-hover);
+            color: var(--color-text-on-tertiary);
+        }
+
+        &:is([disabled]) {
+            background-color: var(--color-tertiary-disabled);
+            color: var(--color-text-on-tertiary-disabled);
+        }
+    }
+
+    &.warning {
+        background-color: var(--color-background-error);
+        color: var(--color-text-on-primary);
+        border-color: var(--color-background-error);
+
+        &:not([disabled]):not(.disableHover):hover {
+            background-color: var(--color-background-error-hover);
+            color: var(--color-text-on-primary);
+        }
+
+        &:is([disabled]) {
+            background-color: var(--color-background-error);
+            color: var(--color-text-on-primary-disabled);
+        }
+    }
+
+    &.bare {
+        background-color: transparent;
+        border-color: transparent;
+        color: var(--color-text);
+
+        &:hover {
+            color: var(--color-text);
+        }
+    }
+
+    &.noFill {
+        background-color: transparent;
+        border-color: var(--color-border);
+        color: var(--color-text);
+
+        &:hover {
+            color: var(--color-text);
+            border-color: var(--color-text-soft);
+        }
+    }
+
+    &.small {
+        padding: 0 var(--m-xs);
+
+        .label {
+            padding: var(--m-xxxs) 0;
+        }
+    }
+
+    &.square {
+        padding: 0 var(--m-xxxs);
+        aspect-ratio: 1;
+    }
+
+    &.fullWidth {
+        width: 100%;
+    }
+
+    &.noMargin {
+        margin-bottom: 0;
+    }
+
+    &.alignLeft {
+        justify-content: flex-start;
+    }
+
+    &.alignRight {
+        justify-content: flex-end;
+    }
+
+    &.sort,
+    &.sortUp,
+    &.sortDown {
+        path[data] {
+            stroke: var(--color-text-soft);
+        }
+    }
+
+    &.sortUp {
+        path[data="up"] {
+            stroke: var(--color-text);
+        }
+    }
+
+    &.sortDown {
+        path[data="down"] {
+            stroke: var(--color-text);
+        }
+    }
+}

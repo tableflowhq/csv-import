@@ -1,0 +1,108 @@
+html,
+body,
+#root {
+    height: 100%;
+}
+
+html {
+    color-scheme: dark light;
+}
+
+body {
+    font-family: var(--font-family-1);
+    background-color: var(--color-background);
+    color: var(--color-text);
+    font-size: var(--font-size);
+    font-weight: 500;
+    line-height: 1.5;
+
+    &:has([data-layout="main"]) {
+        background-color: var(--color-background-main);
+    }
+}
+
+.docs-story {
+    background-color: var(--color-background);
+}
+
+#root {
+    transition: filter ease-out var(--speed), transform ease-out var(--speed);
+}
+
+body.modal [data-root] {
+    filter: blur(var(--blurred));
+    transform: scale(0.99);
+}
+
+*,
+*:before,
+*:after {
+    box-sizing: border-box;
+}
+
+// * {
+//   transition: var(--transition-ui);
+// }
+
+button:not(:disabled) {
+    cursor: pointer;
+}
+
+label,
+input,
+button,
+textarea,
+select {
+    font: inherit;
+    color: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+    background-color: transparent;
+    border: none;
+    text-align: inherit;
+    padding: 0;
+    font-size: inherit;
+    accent-color: var(--color-primary);
+}
+
+p:not(:last-child) {
+    margin-bottom: var(--m-s);
+}
+
+a {
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+
+    &:hover {
+        text-decoration: none;
+    }
+}
+
+strong {
+    font-weight: bold;
+}
+
+em {
+    font-style: italic;
+}
+
+h1 {
+    font-size: var(--font-size-h);
+    font-weight: 700;
+}
+
+h2 {
+    font-size: var(--font-size-xxl);
+    font-weight: 500;
+}
+
+small {
+    font-size: var(--font-size-s);
+}
+
+hr {
+    border: 1px solid var(--color-border);
+    border-width: 0 0 1px 0;
+    margin: var(--m-s) 0;
+}

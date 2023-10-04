@@ -1,5 +1,8 @@
 import { useEffect } from "react";
-import { Button, Errors, Table, Tooltip } from "@tableflow/ui-library";
+import Button from "../../components/Button";
+import Errors from "../../components/Errors";
+import Table from "../../components/Table";
+import Tooltip from "../../components/Tooltip";
 import usePostSetHeader from "../../api/usePostSetHeader";
 import { RowSelectionProps } from "./types";
 import style from "./style/RowSelection.module.scss";

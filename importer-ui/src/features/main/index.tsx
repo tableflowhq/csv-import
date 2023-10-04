@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
-import { Button, Errors, Stepper, useStepper } from "@tableflow/ui-library";
+import Button from "../../components/Button";
+import Errors from "../../components/Errors";
 import Spinner from "../../components/Spinner";
+import Stepper from "../../components/Stepper";
+import useStepper from "../../components/Stepper/hooks/useStepper";
 import { defaultImporterHost, getAPIBaseURL } from "../../api/api";
 import useCssOverrides from "../../hooks/useCssOverrides";
 import useDelayedLoader from "../../hooks/useDelayLoader";
