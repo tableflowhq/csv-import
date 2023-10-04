@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/guregu/null"
 	"github.com/lib/pq"
+	"strconv"
 	"strings"
 	"tableflow/go/pkg/model"
 	"tableflow/go/pkg/model/jsonb"
@@ -36,6 +37,7 @@ type TemplateColumn struct {
 	Name              string        `json:"name" example:"First Name"`
 	Key               string        `json:"key" example:"email"`
 	Required          bool          `json:"required" example:"false"`
+	DataType          string        `json:"data_type" example:"string"`
 	Description       string        `json:"description" example:"The first name"`
 	Validations       []*Validation `json:"validations,omitempty"`
 	SuggestedMappings []string      `json:"suggested_mappings" swaggertype:"array,string" example:"first_name"`
@@ -89,20 +91,20 @@ type UploadRow struct {
 /* ---------------------------  Import types  --------------------------- */
 
 type Import struct {
-	ID                 model.ID       `json:"id" swaggertype:"string" example:"da5554e3-6c87-41b2-9366-5449a2f15b53"`
-	UploadID           model.ID       `json:"upload_id" swaggertype:"string" example:"50ca61e1-f683-4b03-9ec4-4b3adb592bf1"`
-	ImporterID         model.ID       `json:"importer_id" swaggertype:"string" example:"6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353"`
-	NumRows            null.Int       `json:"num_rows" swaggertype:"integer" example:"256"`
-	NumColumns         null.Int       `json:"num_columns" swaggertype:"integer" example:"8"`
-	NumProcessedValues null.Int       `json:"num_processed_values" swaggertype:"integer" example:"128"`
-	Metadata           jsonb.JSONB    `json:"metadata"`
-	IsStored           bool           `json:"is_stored" example:"false"`
-	HasErrors          bool           `json:"has_errors" example:"false"`
-	NumErrorRows       null.Int       `json:"num_error_rows" swaggertype:"integer" example:"32"`
-	NumValidRows       null.Int       `json:"num_valid_rows" swaggertype:"integer" example:"224"`
-	CreatedAt          model.NullTime `json:"created_at" swaggertype:"integer" example:"1682366228"`
-	Error              null.String    `json:"error,omitempty" swaggerignore:"true"`
-	Rows               []ImportRow    `json:"rows,omitempty"` // Used for the final step in the onComplete
+	ID                 model.ID            `json:"id" swaggertype:"string" example:"da5554e3-6c87-41b2-9366-5449a2f15b53"`
+	UploadID           model.ID            `json:"upload_id" swaggertype:"string" example:"50ca61e1-f683-4b03-9ec4-4b3adb592bf1"`
+	ImporterID         model.ID            `json:"importer_id" swaggertype:"string" example:"6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353"`
+	NumRows            null.Int            `json:"num_rows" swaggertype:"integer" example:"256"`
+	NumColumns         null.Int            `json:"num_columns" swaggertype:"integer" example:"8"`
+	NumProcessedValues null.Int            `json:"num_processed_values" swaggertype:"integer" example:"128"`
+	Metadata           jsonb.JSONB         `json:"metadata"`
+	IsStored           bool                `json:"is_stored" example:"false"`
+	HasErrors          bool                `json:"has_errors" example:"false"`
+	NumErrorRows       null.Int            `json:"num_error_rows" swaggertype:"integer" example:"32"`
+	NumValidRows       null.Int            `json:"num_valid_rows" swaggertype:"integer" example:"224"`
+	CreatedAt          model.NullTime      `json:"created_at" swaggertype:"integer" example:"1682366228"`
+	Error              null.String         `json:"error,omitempty" swaggerignore:"true"`
+	Rows               []ImportRowResponse `json:"rows,omitempty"` // Used for the final step in the onComplete
 }
 
 type ImportData struct {
@@ -114,6 +116,13 @@ type ImportData struct {
 type ImportRow struct {
 	Index  int                         `json:"index" example:"0"`
 	Values map[string]string           `json:"values"`
+	Errors map[string][]ImportRowError `json:"errors,omitempty"`
+}
+
+// ImportRowResponse used to return values externally in the data type expected
+type ImportRowResponse struct {
+	Index  int                         `json:"index" example:"0"`
+	Values map[string]interface{}      `json:"values"`
 	Errors map[string][]ImportRowError `json:"errors,omitempty"`
 }
 
@@ -212,12 +221,18 @@ func ConvertRawTemplate(rawTemplate jsonb.JSONB, generateIDs bool) (*Template, e
 		name, _ := columnMap["name"].(string)
 		key, _ := columnMap["key"].(string)
 		required, _ := columnMap["required"].(bool)
+		dataTypeStr, _ := columnMap["data_type"].(string)
 		description, _ := columnMap["description"].(string)
 		suggestedMappings := make([]string, 0)
 		validations := make([]*Validation, 0)
 
 		if name == "" {
 			return nil, fmt.Errorf("Invalid template: The paramter 'name' is required for each column")
+		}
+
+		dataType, err := model.ParseTemplateColumnDataType(dataTypeStr)
+		if err != nil {
+			return nil, fmt.Errorf("Invalid template: %s", err.Error())
 		}
 
 		generatedKey := false
@@ -297,6 +312,7 @@ func ConvertRawTemplate(rawTemplate jsonb.JSONB, generateIDs bool) (*Template, e
 			Name:              name,
 			Key:               key,
 			Required:          required,
+			DataType:          string(dataType),
 			Description:       description,
 			SuggestedMappings: suggestedMappings,
 		})
@@ -320,4 +336,64 @@ func ConvertRawTemplate(rawTemplate jsonb.JSONB, generateIDs bool) (*Template, e
 		ID:              templateID,
 		TemplateColumns: columns,
 	}, nil
+}
+
+/*
+
+******************************************** TODO ********************************************
+
+We'll need to persist the data types with the import instead of retrieving them from TemplateColumn, since they could change. And I don't like retrieving them in the DB.
+
+Option 1: Update model.Import to save a map of column keys to data types
+Option 2: Persist data types in scylla (nty)
+Option 3: ???
+
+
+Also don't forget about adding compatibility with SDK-defined templates (should just work if types are set on the import)
+
+
+*/
+
+// ConvertImportRowsResponse converts []ImportRow to []ImportRowResponse to the response will have the values in the correct data type
+func ConvertImportRowsResponse(rows []ImportRow, templateColumns []*model.TemplateColumn) []ImportRowResponse {
+	dataTypes := make(map[string]model.TemplateColumnDataType)
+	for _, tc := range templateColumns {
+		dataTypes[tc.Key] = tc.DataType
+	}
+	rowsResponse := make([]ImportRowResponse, len(rows), len(rows))
+	for i, row := range rows {
+		rowsResponse[i] = convertImportRow(row, dataTypes)
+	}
+	return rowsResponse
+}
+
+func convertImportRow(row ImportRow, dataTypes map[string]model.TemplateColumnDataType) ImportRowResponse {
+	response := ImportRowResponse{
+		Index:  row.Index,
+		Values: make(map[string]interface{}, len(row.Values)),
+		Errors: row.Errors,
+	}
+	for k, v := range row.Values {
+		dataType := dataTypes[k]
+		switch dataType {
+		case model.TemplateColumnDataTypeString, "":
+			response.Values[k] = v
+		case model.TemplateColumnDataTypeNumber:
+			val, err := util.StringToNumber(v)
+			if err != nil {
+				tf.Log.Warnw("Failed to convert import row value from data type", "index", row.Index, "value", v, "data_type", dataType)
+			}
+			response.Values[k] = val
+		case model.TemplateColumnDataTypeBoolean:
+			val, err := strconv.ParseBool(strings.ToLower(v))
+			if err != nil {
+				tf.Log.Warnw("Failed to convert import row value from data type", "index", row.Index, "value", v, "data_type", dataType)
+			}
+			response.Values[k] = val
+		case model.TemplateColumnDataTypeDate:
+			// TODO: Date support!
+			response.Values[k] = v
+		}
+	}
+	return response
 }

@@ -58,7 +58,7 @@ func getImportForExternalAPI(c *gin.Context) {
 //	@Summary		Get import rows
 //	@Description	Paginate the rows of an import
 //	@Tags			External API
-//	@Success		200	{array}		types.ImportRow
+//	@Success		200	{array}		types.ImportRowResponse
 //	@Failure		400	{object}	types.Res
 //	@Router			/v1/import/{id}/rows [get]
 //	@Param			id		path	string	true	"Import ID"
@@ -93,9 +93,16 @@ func getImportRowsForExternalAPI(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusPreconditionFailed, types.Res{Err: "Import has not finished processing"})
 		return
 	}
+	template, err := db.GetTemplateByImporter(imp.ImporterID.String())
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+		return
+	}
 
 	rows := scylla.PaginateImportRows(imp, pagination.Offset, pagination.Limit, types.ImportRowFilterAll)
-	c.JSON(http.StatusOK, rows)
+	rowsResponse := types.ConvertImportRowsResponse(rows, template.TemplateColumns)
+
+	c.JSON(http.StatusOK, rowsResponse)
 }
 
 // downloadImportForExternalAPI
@@ -320,6 +327,7 @@ func createImporterForExternalAPI(c *gin.Context) {
 			Name:              tc.Name,
 			Key:               tc.Key,
 			Required:          tc.Required,
+			DataType:          model.TemplateColumnDataType(tc.DataType),
 			Description:       null.NewString(tc.Description, len(tc.Description) != 0),
 			SuggestedMappings: tc.SuggestedMappings,
 			CreatedBy:         user.ID,

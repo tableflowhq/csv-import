@@ -1,6 +1,7 @@
 package db
 
 import (
+	"github.com/guregu/null"
 	"tableflow/go/pkg/model"
 	"tableflow/go/pkg/tf"
 )
@@ -38,31 +39,39 @@ func CreateObjectsForNewUser(user *model.User) (workspaceID string, err error) {
 	}
 	templateColumns := &[]*model.TemplateColumn{
 		{
-			ID:         model.NewID(),
-			TemplateID: template.ID,
-			Name:       "First Name",
-			Key:        "first_name",
-			Required:   false,
-			CreatedBy:  user.ID,
-			UpdatedBy:  user.ID,
+			ID:                model.NewID(),
+			TemplateID:        template.ID,
+			Name:              "First Name",
+			Key:               "first_name",
+			Required:          false,
+			DataType:          model.TemplateColumnDataTypeString,
+			Description:       null.StringFrom("The user's first name"),
+			SuggestedMappings: []string{"first"},
+			CreatedBy:         user.ID,
+			UpdatedBy:         user.ID,
 		},
 		{
-			ID:         model.NewID(),
-			TemplateID: template.ID,
-			Name:       "Last Name",
-			Key:        "last_name",
-			Required:   false,
-			CreatedBy:  user.ID,
-			UpdatedBy:  user.ID,
+			ID:                model.NewID(),
+			TemplateID:        template.ID,
+			Name:              "Last Name",
+			Key:               "last_name",
+			Required:          false,
+			DataType:          model.TemplateColumnDataTypeString,
+			Description:       null.StringFrom("The user's last name"),
+			SuggestedMappings: []string{"last"},
+			CreatedBy:         user.ID,
+			UpdatedBy:         user.ID,
 		},
 		{
-			ID:         model.NewID(),
-			TemplateID: template.ID,
-			Name:       "Email",
-			Key:        "email",
-			Required:   true,
-			CreatedBy:  user.ID,
-			UpdatedBy:  user.ID,
+			ID:          model.NewID(),
+			TemplateID:  template.ID,
+			Name:        "Email",
+			Key:         "email",
+			Required:    true,
+			DataType:    model.TemplateColumnDataTypeString,
+			Description: null.StringFrom("The email of the user"),
+			CreatedBy:   user.ID,
+			UpdatedBy:   user.ID,
 		},
 	}
 	err = tf.DB.Create(organization).Error

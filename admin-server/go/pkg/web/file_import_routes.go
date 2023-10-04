@@ -198,6 +198,7 @@ func importerGetImporter(c *gin.Context) {
 			Name:        tc.Name,
 			Key:         tc.Key,
 			Required:    tc.Required,
+			DataType:    string(tc.DataType),
 			Description: tc.Description.String,
 			Validations: lo.Map(tc.Validations, func(v *model.Validation, _ int) *types.Validation {
 				return &types.Validation{
@@ -548,11 +549,9 @@ func importerSetColumnMapping(c *gin.Context) {
 		}
 		for _, importColumn := range importServiceTemplate.TemplateColumns {
 			templateColumn := &model.TemplateColumn{
-				ID:          importColumn.ID,
-				Name:        importColumn.Name,
-				Key:         importColumn.Key,
-				Required:    importColumn.Required,
-				Description: null.NewString(importColumn.Description, len(importColumn.Description) != 0),
+				ID:   importColumn.ID,
+				Name: importColumn.Name,
+				Key:  importColumn.Key,
 			}
 			template.TemplateColumns = append(template.TemplateColumns, templateColumn)
 		}
@@ -575,6 +574,7 @@ func importerSetColumnMapping(c *gin.Context) {
 				Name:              importColumn.Name,
 				Key:               importColumn.Key,
 				Required:          importColumn.Required,
+				DataType:          model.TemplateColumnDataType(importColumn.DataType),
 				Description:       null.NewString(importColumn.Description, len(importColumn.Description) != 0),
 				SuggestedMappings: importColumn.SuggestedMappings,
 			}
@@ -1096,10 +1096,17 @@ func importerSubmitImport(c *gin.Context, importCompleteHandler func(types.Impor
 		NumErrorRows:       imp.NumErrorRows,
 		NumValidRows:       imp.NumValidRows,
 		CreatedAt:          imp.CreatedAt,
-		Rows:               []types.ImportRow{},
+		Rows:               []types.ImportRowResponse{},
 	}
 	if int(imp.NumRows.Int64) <= maxNumRowsForFrontendPassThrough {
-		importServiceImport.Rows = scylla.RetrieveAllImportRows(imp)
+		template, err := db.GetTemplateByImporter(imp.ImporterID.String())
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+			return
+		}
+		rows := scylla.RetrieveAllImportRows(imp)
+		importServiceImport.Rows = types.ConvertImportRowsResponse(rows, template.TemplateColumns)
+
 	} else {
 		importServiceImport.Error = null.StringFrom(fmt.Sprintf("This import has %v rows which exceeds the max "+
 			"allowed number of rows to receive in one response (%v). Please use the API to retrieve the data.",

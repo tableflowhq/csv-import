@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"github.com/hbollon/go-edlib"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
@@ -12,6 +13,7 @@ import (
 	"reflect"
 	"runtime/debug"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"tableflow/go/pkg/tf"
@@ -226,4 +228,19 @@ func StringSimilarity(str1 string, str2 string) float32 {
 	} else {
 		return res
 	}
+}
+
+func StringToNumber(s string) (interface{}, error) {
+	// Attempt to convert the string to an int
+	if i, err := strconv.Atoi(s); err == nil {
+		return i, nil
+	}
+
+	// Attempt to convert the string to a float64
+	if f, err := strconv.ParseFloat(s, 64); err == nil {
+		return f, nil
+	}
+
+	// Return an error if the string couldn't be converted to any number type
+	return nil, fmt.Errorf("failed to convert string to number: %s", s)
 }

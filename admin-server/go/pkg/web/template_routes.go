@@ -127,20 +127,23 @@ func createTemplateColumn(c *gin.Context, getWorkspaceUser func(*gin.Context, st
 		}
 	}
 
+	dataType, err := model.ParseTemplateColumnDataType(req.DataType)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("The data type '%s' is invalid", req.DataType)})
+		return
+	}
+
 	templateColumn := model.TemplateColumn{
 		ID:                model.NewID(),
 		TemplateID:        template.ID,
 		Name:              req.Name,
 		Key:               req.Key,
 		Required:          req.Required,
+		DataType:          dataType,
 		Description:       null.NewString(req.Description, len(req.Description) != 0),
 		SuggestedMappings: suggestedMappings,
 		CreatedBy:         user.ID,
 		UpdatedBy:         user.ID,
-	}
-
-	if len(req.DataType) == 0 {
-
 	}
 
 	// Validations
