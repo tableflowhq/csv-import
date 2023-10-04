@@ -38,7 +38,7 @@ export default function TemplateColumnForm({
     values.validations = null;
     if (values.not_blank && !hasExistingValidation) {
       // If not_blank is selected and there is no existing validation, add the validation to the request
-      values.validations = [{ type: "not_blank" }];
+      values.validations = [{ validate: "not_blank" }];
     } else if (hasExistingValidation) {
       // If not_blank is not selected and the validation exists, add an empty validation array so the backend will remove it
       values.validations = [];

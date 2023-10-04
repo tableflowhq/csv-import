@@ -5,10 +5,18 @@ import (
 	"tableflow/go/pkg/model/jsonb"
 )
 
+var allDataTypes = []string{
+	"string",
+	"number",
+	"boolean",
+	"date",
+}
+
 type Evaluator interface {
 	Initialize(options interface{}) error
 	Evaluate(cell string) (bool, error)
 	DefaultMessage() string
+	AllowedDataTypes() []string
 }
 
 func Parse(validate string, options jsonb.JSONB) (Evaluator, error) {

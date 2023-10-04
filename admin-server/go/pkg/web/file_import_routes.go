@@ -579,7 +579,7 @@ func importerSetColumnMapping(c *gin.Context) {
 				SuggestedMappings: importColumn.SuggestedMappings,
 			}
 			for _, v := range importColumn.Validations {
-				validation, err := model.ParseValidation(v.ValidationID, importColumn.ID.String(), v.Validate, v.Options, v.Message, v.Severity)
+				validation, err := model.ParseValidation(v.ValidationID, importColumn.ID.String(), v.Validate, v.Options, v.Message, v.Severity, templateColumn.DataType)
 				if err != nil {
 					templateColumn.Validations = append(templateColumn.Validations, validation)
 				}
@@ -882,7 +882,7 @@ func importerEditImportCell(c *gin.Context) {
 		}
 		for _, templateColumn := range template.TemplateColumns {
 			for _, v := range templateColumn.Validations {
-				validation, err := model.ParseValidation(v.ValidationID, templateColumn.ID.String(), v.Validate, v.Options, v.Message, v.Severity)
+				validation, err := model.ParseValidation(v.ValidationID, templateColumn.ID.String(), v.Validate, v.Options, v.Message, v.Severity, model.TemplateColumnDataType(templateColumn.DataType))
 				if err != nil {
 					validations = append(validations, validation)
 				}
@@ -1099,13 +1099,8 @@ func importerSubmitImport(c *gin.Context, importCompleteHandler func(types.Impor
 		Rows:               []types.ImportRowResponse{},
 	}
 	if int(imp.NumRows.Int64) <= maxNumRowsForFrontendPassThrough {
-		template, err := db.GetTemplateByImporter(imp.ImporterID.String())
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
-			return
-		}
 		rows := scylla.RetrieveAllImportRows(imp)
-		importServiceImport.Rows = types.ConvertImportRowsResponse(rows, template.TemplateColumns)
+		importServiceImport.Rows = types.ConvertImportRowsResponse(rows, imp)
 
 	} else {
 		importServiceImport.Error = null.StringFrom(fmt.Sprintf("This import has %v rows which exceeds the max "+

@@ -378,6 +378,8 @@ func GetDatabaseSchemaInitSQL() string {
 
 		alter table template_columns
 		    add column if not exists data_type text not null default 'string';
+		alter table imports
+		    add column if not exists data_types jsonb;
 		do
 		$$
 		    begin

@@ -45,6 +45,9 @@ func IsEmailValid(email string) bool {
 }
 
 func IsBlankUnicode(s string) bool {
+	if s == "" {
+		return true
+	}
 	for _, r := range s {
 		if !unicode.IsSpace(r) {
 			return false
@@ -54,6 +57,9 @@ func IsBlankUnicode(s string) bool {
 }
 
 func IsBlankASCII(s string) bool {
+	if s == "" {
+		return true
+	}
 	for i := 0; i < len(s); i++ {
 		c := s[i]
 		if c != ' ' && c != '\t' && c != '\n' && c != '\r' {
@@ -230,7 +236,17 @@ func StringSimilarity(str1 string, str2 string) float32 {
 	}
 }
 
-func StringToNumber(s string) (interface{}, error) {
+func StringToNumberOrNil(s string) (interface{}, error) {
+	if IsBlankUnicode(s) {
+		return nil, nil
+	}
+	s = strings.TrimSpace(s)
+	lower := strings.ToLower(s)
+
+	if lower == "null" || lower == "nil" {
+		return nil, nil
+	}
+
 	// Attempt to convert the string to an int
 	if i, err := strconv.Atoi(s); err == nil {
 		return i, nil
@@ -243,4 +259,27 @@ func StringToNumber(s string) (interface{}, error) {
 
 	// Return an error if the string couldn't be converted to any number type
 	return nil, fmt.Errorf("failed to convert string to number: %s", s)
+}
+
+func StringToBoolOrNil(s string) (*bool, error) {
+	if IsBlankUnicode(s) {
+		return nil, nil
+	}
+	s = strings.TrimSpace(s)
+	lower := strings.ToLower(s)
+
+	if lower == "null" || lower == "nil" {
+		return nil, nil
+	}
+
+	res := false
+	switch lower {
+	case "1", "t", "true":
+		res = true
+		return &res, nil
+	case "0", "f", "false":
+		return &res, nil
+	}
+
+	return nil, fmt.Errorf("failed to convert string to boolean: %s", s)
 }

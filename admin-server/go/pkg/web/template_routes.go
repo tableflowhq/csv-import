@@ -149,7 +149,7 @@ func createTemplateColumn(c *gin.Context, getWorkspaceUser func(*gin.Context, st
 	// Validations
 	var validations []*model.Validation
 	for _, v := range req.Validations {
-		validation, err := model.ParseValidation(uint(v.ID), templateColumn.ID.String(), v.Validate, v.Options, v.Message, v.Severity)
+		validation, err := model.ParseValidation(uint(v.ID), templateColumn.ID.String(), v.Validate, v.Options, v.Message, v.Severity, templateColumn.DataType)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 			return
@@ -268,7 +268,7 @@ func editTemplateColumn(c *gin.Context, getWorkspaceUser func(*gin.Context, stri
 		// Delete: If a validation does not exist on the request but does exist in the database, delete it
 		var validationsToCreateOrEdit []*model.Validation
 		for _, v := range *req.Validations {
-			validation, err := model.ParseValidation(uint(v.ID), templateColumn.ID.String(), v.Validate, v.Options, v.Message, v.Severity)
+			validation, err := model.ParseValidation(uint(v.ID), templateColumn.ID.String(), v.Validate, v.Options, v.Message, v.Severity, templateColumn.DataType)
 			if err != nil {
 				c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 				return

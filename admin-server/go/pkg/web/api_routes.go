@@ -93,14 +93,9 @@ func getImportRowsForExternalAPI(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusPreconditionFailed, types.Res{Err: "Import has not finished processing"})
 		return
 	}
-	template, err := db.GetTemplateByImporter(imp.ImporterID.String())
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
-		return
-	}
 
 	rows := scylla.PaginateImportRows(imp, pagination.Offset, pagination.Limit, types.ImportRowFilterAll)
-	rowsResponse := types.ConvertImportRowsResponse(rows, template.TemplateColumns)
+	rowsResponse := types.ConvertImportRowsResponse(rows, imp)
 
 	c.JSON(http.StatusOK, rowsResponse)
 }

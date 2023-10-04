@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+	"github.com/samber/lo"
 	"gorm.io/gorm"
 	"strings"
 	"tableflow/go/pkg/evaluator"
@@ -75,7 +76,7 @@ func (v Validation) EvaluateWithResult(cell string) (ValidationResult, bool) {
 	}, false
 }
 
-func ParseValidation(id uint, templateColumnID, validateStr string, options jsonb.JSONB, message, severity string) (*Validation, error) {
+func ParseValidation(id uint, templateColumnID, validateStr string, options jsonb.JSONB, message, severity string, dataType TemplateColumnDataType) (*Validation, error) {
 	v := &Validation{
 		ID:               id,
 		TemplateColumnID: ParseID(templateColumnID),
@@ -89,6 +90,12 @@ func ParseValidation(id uint, templateColumnID, validateStr string, options json
 	}
 	if v.Evaluator, err = evaluator.Parse(validateStr, options); err != nil {
 		return nil, err
+	}
+	if lo.Contains(v.Evaluator.AllowedDataTypes(), string(dataType)) {
+		return nil, fmt.Errorf("The validation %s is only compatible with the data type%s %s",
+			validateStr,
+			lo.Ternary(len(v.Evaluator.AllowedDataTypes()) == 1, "", "s"),
+			strings.Join(v.Evaluator.AllowedDataTypes(), ", "))
 	}
 	if len(v.Message) == 0 {
 		v.Message = v.Evaluator.DefaultMessage()

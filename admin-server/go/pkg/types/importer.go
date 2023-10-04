@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/guregu/null"
 	"github.com/lib/pq"
-	"strconv"
 	"strings"
 	"tableflow/go/pkg/model"
 	"tableflow/go/pkg/model/jsonb"
@@ -289,7 +288,15 @@ func ConvertRawTemplate(rawTemplate jsonb.JSONB, generateIDs bool) (*Template, e
 					if err != nil {
 						return nil, fmt.Errorf("Invalid template: invalid validation options json")
 					}
-					validation, err := model.ParseValidation(uint(validationID), "", validationValidate, validationValueJSON, validationMessage, validationSeverity)
+					validation, err := model.ParseValidation(
+						uint(validationID),
+						"",
+						validationValidate,
+						validationValueJSON,
+						validationMessage,
+						validationSeverity,
+						dataType,
+					)
 					if err != nil {
 						return nil, err
 					}
@@ -342,24 +349,36 @@ func ConvertRawTemplate(rawTemplate jsonb.JSONB, generateIDs bool) (*Template, e
 
 ******************************************** TODO ********************************************
 
-We'll need to persist the data types with the import instead of retrieving them from TemplateColumn, since they could change. And I don't like retrieving them in the DB.
 
-Option 1: Update model.Import to save a map of column keys to data types
-Option 2: Persist data types in scylla (nty)
-Option 3: ???
-
-
-Also don't forget about adding compatibility with SDK-defined templates (should just work if types are set on the import)
-
+1. Update dev docs with new validations format and data types
+3. Also add basic type validator for number and boolean
+4. Release with migration script for validations schema
 
 */
 
 // ConvertImportRowsResponse converts []ImportRow to []ImportRowResponse to the response will have the values in the correct data type
-func ConvertImportRowsResponse(rows []ImportRow, templateColumns []*model.TemplateColumn) []ImportRowResponse {
-	dataTypes := make(map[string]model.TemplateColumnDataType)
-	for _, tc := range templateColumns {
-		dataTypes[tc.Key] = tc.DataType
+func ConvertImportRowsResponse(rows []ImportRow, imp *model.Import) []ImportRowResponse {
+	dataTypesRaw, ok := imp.DataTypes.AsMap()
+	if !ok {
+		tf.Log.Errorw("Failed to parse import data types", "import_id", imp.ID)
+		return make([]ImportRowResponse, 0)
 	}
+
+	dataTypes := make(map[string]model.TemplateColumnDataType, len(dataTypesRaw))
+	for k, v := range dataTypesRaw {
+		dataTypeStr, ok := dataTypesRaw[k].(string)
+		if !ok {
+			tf.Log.Errorw("Import row data type value not string", "import_id", imp.ID, "key", k, "value", v, "data_type", dataTypeStr)
+			continue
+		}
+		dataType, err := model.ParseTemplateColumnDataType(dataTypeStr)
+		if err != nil {
+			tf.Log.Errorw("Failed to parse import row data type", "import_id", imp.ID, "key", k, "value", v, "data_type", dataTypeStr)
+			continue
+		}
+		dataTypes[k] = dataType
+	}
+
 	rowsResponse := make([]ImportRowResponse, len(rows), len(rows))
 	for i, row := range rows {
 		rowsResponse[i] = convertImportRow(row, dataTypes)
@@ -376,16 +395,16 @@ func convertImportRow(row ImportRow, dataTypes map[string]model.TemplateColumnDa
 	for k, v := range row.Values {
 		dataType := dataTypes[k]
 		switch dataType {
-		case model.TemplateColumnDataTypeString, "":
+		case model.TemplateColumnDataTypeString:
 			response.Values[k] = v
 		case model.TemplateColumnDataTypeNumber:
-			val, err := util.StringToNumber(v)
+			val, err := util.StringToNumberOrNil(v)
 			if err != nil {
 				tf.Log.Warnw("Failed to convert import row value from data type", "index", row.Index, "value", v, "data_type", dataType)
 			}
 			response.Values[k] = val
 		case model.TemplateColumnDataTypeBoolean:
-			val, err := strconv.ParseBool(strings.ToLower(v))
+			val, err := util.StringToBoolOrNil(v)
 			if err != nil {
 				tf.Log.Warnw("Failed to convert import row value from data type", "index", row.Index, "value", v, "data_type", dataType)
 			}

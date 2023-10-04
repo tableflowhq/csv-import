@@ -6,6 +6,7 @@ import (
 	"github.com/lib/pq"
 	"gorm.io/gorm"
 	"regexp"
+	"strings"
 )
 
 type TemplateColumnDataType string
@@ -26,7 +27,8 @@ var validDataTypes = map[string]TemplateColumnDataType{
 }
 
 func ParseTemplateColumnDataType(dataType string) (TemplateColumnDataType, error) {
-	dt, ok := validDataTypes[dataType]
+	dataTypeParsed := strings.TrimSpace(strings.ToLower(dataType))
+	dt, ok := validDataTypes[dataTypeParsed]
 	if !ok {
 		return "", fmt.Errorf("The data type %v is invalid", dataType)
 	}

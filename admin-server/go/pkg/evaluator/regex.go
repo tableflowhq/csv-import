@@ -40,3 +40,7 @@ func (e RegexEvaluator) DefaultMessage() string {
 	}
 	return fmt.Sprintf("%s %s", message, e.Regexp.String())
 }
+
+func (e RegexEvaluator) AllowedDataTypes() []string {
+	return []string{"string"}
+}
