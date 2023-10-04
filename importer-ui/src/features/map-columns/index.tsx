@@ -1,5 +1,7 @@
 import { FormEvent, useEffect } from "react";
-import { Button, Errors, Table } from "@tableflow/ui-library";
+import Button from "../../components/Button";
+import Errors from "../../components/Errors";
+import Table from "../../components/Table";
 import usePostUpload from "../../api/usePostUpload";
 import useMapColumnsTable from "./hooks/useMapColumnsTable";
 import { MapColumnsProps } from "./types";
