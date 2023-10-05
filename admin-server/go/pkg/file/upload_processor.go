@@ -441,6 +441,14 @@ func AddColumnMappingSuggestions(upload *types.Upload, templateColumns []*model.
 				continue
 			}
 
+			// Suggested mappings
+			for _, suggestedMapping := range templateColumn.SuggestedMappings {
+				if uploadColumnName == strings.ToLower(suggestedMapping) {
+					bestMatchColumnID = templateColumn.ID
+					continue
+				}
+			}
+
 			// Exact match
 			if uploadColumnName == templateColumnName {
 				bestMatchColumnID = templateColumn.ID
