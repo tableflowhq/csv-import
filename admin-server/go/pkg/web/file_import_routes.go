@@ -271,12 +271,30 @@ func importerGetUpload(c *gin.Context) {
 
 	// Add suggested template column mappings if the HeaderRowIndex has been set
 	if upload.HeaderRowIndex.Valid {
-		template, err := db.GetTemplateByImporter(importerUpload.ImporterID.String())
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
-			return
+		templateColumns := make([]*model.TemplateColumn, 0)
+		if importerUpload.Template != nil {
+			// If the template exists on the upload, use those template columns for the mapping
+			for _, tc := range importerUpload.Template.TemplateColumns {
+				templateColumns = append(templateColumns, &model.TemplateColumn{
+					ID:                tc.ID,
+					Name:              tc.Name,
+					Key:               tc.Key,
+					Required:          tc.Required,
+					DataType:          model.TemplateColumnDataType(tc.DataType),
+					Description:       null.NewString(tc.Description, len(tc.Description) != 0),
+					SuggestedMappings: tc.SuggestedMappings,
+					//Validations:       nil,
+				})
+			}
+		} else {
+			template, err := db.GetTemplateByImporter(importerUpload.ImporterID.String())
+			if err != nil {
+				c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+				return
+			}
+			templateColumns = template.TemplateColumns
 		}
-		file.AddColumnMappingSuggestions(importerUpload, template.TemplateColumns)
+		file.AddColumnMappingSuggestions(importerUpload, templateColumns)
 	}
 
 	c.JSON(http.StatusOK, importerUpload)
@@ -352,12 +370,30 @@ func importerSetHeaderRow(c *gin.Context) {
 			return
 		}
 		// Add suggested template column mappings
-		template, err := db.GetTemplateByImporter(upload.ImporterID.String())
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
-			return
+		templateColumns := make([]*model.TemplateColumn, 0)
+		if importerUpload.Template != nil {
+			// If the template exists on the upload, use those template columns for the mapping
+			for _, tc := range importerUpload.Template.TemplateColumns {
+				templateColumns = append(templateColumns, &model.TemplateColumn{
+					ID:                tc.ID,
+					Name:              tc.Name,
+					Key:               tc.Key,
+					Required:          tc.Required,
+					DataType:          model.TemplateColumnDataType(tc.DataType),
+					Description:       null.NewString(tc.Description, len(tc.Description) != 0),
+					SuggestedMappings: tc.SuggestedMappings,
+					//Validations:       nil,
+				})
+			}
+		} else {
+			template, err := db.GetTemplateByImporter(importerUpload.ImporterID.String())
+			if err != nil {
+				c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+				return
+			}
+			templateColumns = template.TemplateColumns
 		}
-		file.AddColumnMappingSuggestions(importerUpload, template.TemplateColumns)
+		file.AddColumnMappingSuggestions(importerUpload, templateColumns)
 
 		c.JSON(http.StatusOK, importerUpload)
 		return
@@ -413,12 +449,30 @@ func importerSetHeaderRow(c *gin.Context) {
 	}
 
 	// Add suggested template column mappings
-	template, err := db.GetTemplateByImporter(upload.ImporterID.String())
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
-		return
+	templateColumns := make([]*model.TemplateColumn, 0)
+	if importerUpload.Template != nil {
+		// If the template exists on the upload, use those template columns for the mapping
+		for _, tc := range importerUpload.Template.TemplateColumns {
+			templateColumns = append(templateColumns, &model.TemplateColumn{
+				ID:                tc.ID,
+				Name:              tc.Name,
+				Key:               tc.Key,
+				Required:          tc.Required,
+				DataType:          model.TemplateColumnDataType(tc.DataType),
+				Description:       null.NewString(tc.Description, len(tc.Description) != 0),
+				SuggestedMappings: tc.SuggestedMappings,
+				//Validations:       nil,
+			})
+		}
+	} else {
+		template, err := db.GetTemplateByImporter(importerUpload.ImporterID.String())
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+			return
+		}
+		templateColumns = template.TemplateColumns
 	}
-	file.AddColumnMappingSuggestions(importerUpload, template.TemplateColumns)
+	file.AddColumnMappingSuggestions(importerUpload, templateColumns)
 
 	c.JSON(http.StatusOK, importerUpload)
 }

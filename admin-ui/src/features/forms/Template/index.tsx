@@ -22,7 +22,7 @@ export default function TemplateColumnForm({
       description: column?.description || "",
       key: column?.key || "",
       required: column?.required || false,
-      not_blank: (column?.validations && column?.validations.length !== 0) || false,
+      not_blank: (column?.validations && column?.validations.some((v) => v.validate === "not_blank")) || false,
       suggested_mappings: column?.suggested_mappings || [],
     },
   });
@@ -34,7 +34,7 @@ export default function TemplateColumnForm({
 
   const onSubmit = (values: any) => {
     // Note the validation logic here and "not_blank" in the form will be removed once we support multiple validations
-    const hasExistingValidation = column?.validations && column?.validations.length !== 0;
+    const hasExistingValidation = column?.validations && column?.validations.some((v) => v.validate === "not_blank");
     values.validations = null;
     if (values.not_blank && !hasExistingValidation) {
       // If not_blank is selected and there is no existing validation, add the validation to the request
