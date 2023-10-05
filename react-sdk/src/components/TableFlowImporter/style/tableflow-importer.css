@@ -45,7 +45,6 @@
   width: 80vw;
   height: 80vh;
   min-width: 907px;
-  min-height: 650px;
   border: none;
 }
 
@@ -54,4 +53,11 @@
   display: block;
   width: 100%;
   min-height: 700px;
+}
+
+@media (max-width: 768px) { 
+  .TableFlowImporter-dialog iframe {
+    width: 90vw;
+    min-width: 950px;
+  }
 }
