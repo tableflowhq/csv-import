@@ -241,6 +241,7 @@ func StringToNumberOrNil(s string) (interface{}, error) {
 		return nil, nil
 	}
 	s = strings.TrimSpace(s)
+	s = strings.Replace(s, ",", "", -1) // Remove commas
 	lower := strings.ToLower(s)
 
 	if lower == "null" || lower == "nil" {

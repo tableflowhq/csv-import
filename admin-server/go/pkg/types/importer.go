@@ -5,6 +5,7 @@ import (
 	"github.com/guregu/null"
 	"github.com/lib/pq"
 	"strings"
+	"tableflow/go/pkg/evaluator"
 	"tableflow/go/pkg/model"
 	"tableflow/go/pkg/model/jsonb"
 	"tableflow/go/pkg/tf"
@@ -184,7 +185,7 @@ func ConvertUpload(upload *model.Upload, uploadRows []UploadRow) (*Upload, error
 	return importerUpload, nil
 }
 
-func ConvertRawTemplate(rawTemplate jsonb.JSONB, generateIDs bool) (*Template, error) {
+func ConvertRawTemplate(rawTemplate jsonb.JSONB, isCreation bool) (*Template, error) {
 	if !rawTemplate.Valid {
 		// No template provided, this means the template from the importer will be used
 		return nil, nil
@@ -208,7 +209,6 @@ func ConvertRawTemplate(rawTemplate jsonb.JSONB, generateIDs bool) (*Template, e
 
 	seenKeys := make(map[string]bool)
 	seenSuggestedMappings := make(map[string]bool)
-	var generatedValidationID uint = 1
 
 	for _, item := range columnSlice {
 		columnMap, ok := item.(map[string]interface{})
@@ -270,6 +270,25 @@ func ConvertRawTemplate(rawTemplate jsonb.JSONB, generateIDs bool) (*Template, e
 			}
 		}
 
+		if isCreation {
+			id = model.NewID().String()
+
+			if evaluator.IsDataTypeEvaluator(string(dataType)) {
+				// Add the default data type validation
+				validation, err := model.ParseValidation(0, id, string(dataType), jsonb.NewNull(), "", "", dataType)
+				if err != nil {
+					return nil, err
+				}
+				validations = append(validations, &Validation{
+					ValidationID: validation.ID,
+					Validate:     validation.Validate,
+					Options:      validation.Options,
+					Message:      validation.Message,
+					Severity:     string(validation.Severity),
+				})
+			}
+		}
+
 		// Validations
 		if validationsInterface, ok := columnMap["validations"].([]interface{}); ok {
 			for _, v := range validationsInterface {
@@ -280,9 +299,14 @@ func ConvertRawTemplate(rawTemplate jsonb.JSONB, generateIDs bool) (*Template, e
 					validationMessage, _ := validationMap["message"].(string)
 					validationSeverity, _ := validationMap["severity"].(string)
 
-					if generateIDs {
-						validationID = float64(generatedValidationID)
-						generatedValidationID++
+					if isCreation {
+						// Note: Validations should not add an ID on creation since they are sequenced. If they need to
+						// be saved to the DB (i.e. API creation) we don't want IDs to be set here
+
+						// Don't allow the user to add a data type validator (these are added automatically based on the data type)
+						if evaluator.IsDataTypeEvaluator(validationValidate) {
+							return nil, fmt.Errorf("Invalid template: the validate type %v cannot be added directly and is automatically added when setting a data type", validationValidate)
+						}
 					}
 					validationValueJSON, err := jsonb.FromInterface(validationOptions)
 					if err != nil {
@@ -290,7 +314,7 @@ func ConvertRawTemplate(rawTemplate jsonb.JSONB, generateIDs bool) (*Template, e
 					}
 					validation, err := model.ParseValidation(
 						uint(validationID),
-						"",
+						id,
 						validationValidate,
 						validationValueJSON,
 						validationMessage,
@@ -311,9 +335,6 @@ func ConvertRawTemplate(rawTemplate jsonb.JSONB, generateIDs bool) (*Template, e
 			}
 		}
 
-		if generateIDs {
-			id = model.NewID().String()
-		}
 		columns = append(columns, &TemplateColumn{
 			ID:                model.ParseID(id),
 			Name:              name,
@@ -330,7 +351,7 @@ func ConvertRawTemplate(rawTemplate jsonb.JSONB, generateIDs bool) (*Template, e
 	}
 
 	templateID := model.ID{}
-	if generateIDs {
+	if isCreation {
 		templateID = model.NewID()
 	} else {
 		id, ok := template["id"].(string)

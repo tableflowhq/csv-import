@@ -296,7 +296,7 @@ func createImporterForExternalAPI(c *gin.Context) {
 	err = tf.DB.Create(&importer).Error
 	if err != nil {
 		tf.Log.Errorw("Could not create importer", "error", err, "workspace_id", workspaceID)
-		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("Could not create importer: %v", err.Error())})
 		return
 	}
 	template := model.Template{
@@ -310,13 +310,12 @@ func createImporterForExternalAPI(c *gin.Context) {
 	err = tf.DB.Create(&template).Error
 	if err != nil {
 		tf.Log.Errorw("Could not create template for importer", "error", err, "workspace_id", workspaceID)
-		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("Could not create template: %v", err.Error())})
 		return
 	}
 
-	// TODO: After validations is released, migrate this to a types function that includes validations
 	for _, tc := range templateType.TemplateColumns {
-		template.TemplateColumns = append(template.TemplateColumns, &model.TemplateColumn{
+		templateColumn := &model.TemplateColumn{
 			ID:                tc.ID,
 			TemplateID:        templateType.ID,
 			Name:              tc.Name,
@@ -327,16 +326,37 @@ func createImporterForExternalAPI(c *gin.Context) {
 			SuggestedMappings: tc.SuggestedMappings,
 			CreatedBy:         user.ID,
 			UpdatedBy:         user.ID,
-			//Validations:       nil,
-		})
+		}
+
+		for _, v := range tc.Validations {
+			validation, err := model.ParseValidation(v.ValidationID, tc.ID.String(), v.Validate, v.Options, v.Message, v.Severity, model.TemplateColumnDataType(tc.DataType))
+			if err != nil {
+				c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+				return
+			}
+			templateColumn.Validations = append(templateColumn.Validations, validation)
+		}
+		template.TemplateColumns = append(template.TemplateColumns)
 	}
+
 	err = tf.DB.Create(template.TemplateColumns).Error
 	if err != nil {
 		tf.Log.Errorw("Could not create template columns", "error", err, "workspace_id", workspaceID)
-		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("Could not create template columns: %v", err.Error())})
 		return
 	}
 	importer.Template = &template
+
+	for _, tc := range template.TemplateColumns {
+		if len(tc.Validations) != 0 {
+			err = tf.DB.Create(tc.Validations).Error
+			if err != nil {
+				tf.Log.Errorw("Could not create validations", "error", err, "template_id", template.ID, "template_column_id", tc.ID)
+				c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("Could not create validations: %v", err.Error())})
+				return
+			}
+		}
+	}
 
 	importerType := types.Importer{
 		ID:                     importer.ID,

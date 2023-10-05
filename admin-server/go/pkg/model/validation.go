@@ -91,7 +91,7 @@ func ParseValidation(id uint, templateColumnID, validateStr string, options json
 	if v.Evaluator, err = evaluator.Parse(validateStr, options); err != nil {
 		return nil, err
 	}
-	if lo.Contains(v.Evaluator.AllowedDataTypes(), string(dataType)) {
+	if !lo.Contains(v.Evaluator.AllowedDataTypes(), string(dataType)) {
 		return nil, fmt.Errorf("The validation %s is only compatible with the data type%s %s",
 			validateStr,
 			lo.Ternary(len(v.Evaluator.AllowedDataTypes()) == 1, "", "s"),
