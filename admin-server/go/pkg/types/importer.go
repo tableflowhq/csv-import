@@ -350,9 +350,9 @@ func ConvertRawTemplate(rawTemplate jsonb.JSONB, generateIDs bool) (*Template, e
 ******************************************** TODO ********************************************
 
 
-1. Update dev docs with new validations format and data types
-3. Also add basic type validator for number and boolean
-4. Release with migration script for validations schema
+1. Also add basic type validator for number and boolean
+2. Release with migration script for validations schema
+3. Update dev docs with new validations format and data types
 
 */
 
