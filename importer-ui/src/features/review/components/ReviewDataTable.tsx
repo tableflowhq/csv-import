@@ -95,30 +95,26 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
 
   useEffect(() => {
     if (paginatedData?.rows?.[0]?.values) {
-      const validKeys = Object.keys(paginatedData.rows[0].values);
-      const filteredTemplateColumns = template?.columns.filter((c) => validKeys.includes(c.key));
-      const columnsNames = filteredTemplateColumns?.map((c) => c.name);
-
-      const headers = columnsNames || validKeys;
-      const generatedColumnDefs = headers.map((header: string, index: number) => {
-        const colKey = validKeys[index];
-        const displayDescription = template?.columns.find((c) => c.key === colKey)?.description;
+      const headers = Object.keys(paginatedData.rows[0]?.values);
+      const generatedColumnDefs = headers.map((header: string) => {
+        const displayName = template?.columns.find((c) => c.key === header)?.name;
+        const displayDescription = template?.columns.find((c) => c.key === header)?.description;
 
         return {
-          headerName: header,
+          headerName: displayName || header,
           headerComponent: customHeaderComponent,
           headerComponentParams: {
             displayDescription: displayDescription,
           },
           editable: (params) => params.data && params.data.values,
-          field: `values.${colKey}`,
+          field: `values.${header}`,
           cellStyle: (params: any) => {
-            if (params.data?.errors?.[colKey]) {
-              return { backgroundColor: getCellBackgroundColor(params.data.errors[colKey][0].severity, theme) };
+            if (params.data?.errors?.[header]) {
+              return { backgroundColor: getCellBackgroundColor(params.data.errors[header][0].severity, theme) };
             }
             return { backgroundColor: "" };
           },
-          cellRenderer: (params: ICellRendererParams) => cellRenderer(params, colKey),
+          cellRenderer: (params: ICellRendererParams) => cellRenderer(params, header),
           sortable: false,
           filter: false,
           suppressMovable: true,
@@ -126,7 +122,7 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
         } as ColDef;
       });
       // Add index column to the beginning of the columns
-      generatedColumnDefs.unshift({
+      generatedColumnDefs.push({
         headerName: "",
         // Set the index cell value to the node ID + 1
         valueGetter: (params: ValueGetterParams) => {
@@ -136,7 +132,7 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
         width: INDEX_ROW_WIDTH,
         pinned: headers.length > MAX_COLUMN_SCROLL ? "left" : undefined,
       });
-      setColumnDefs(generatedColumnDefs);
+      setColumnDefs(generatedColumnDefs.reverse());
     }
   }, [JSON.stringify(paginatedData?.rows), JSON.stringify(template)]);
 
