@@ -366,17 +366,6 @@ func ConvertRawTemplate(rawTemplate jsonb.JSONB, isCreation bool) (*Template, er
 	}, nil
 }
 
-/*
-
-******************************************** TODO ********************************************
-
-
-1. Also add basic type validator for number and boolean
-2. Release with migration script for validations schema
-3. Update dev docs with new validations format and data types
-
-*/
-
 // ConvertImportRowsResponse converts []ImportRow to []ImportRowResponse to the response will have the values in the correct data type
 func ConvertImportRowsResponse(rows []ImportRow, imp *model.Import) []ImportRowResponse {
 	dataTypesRaw, ok := imp.DataTypes.AsMap()
