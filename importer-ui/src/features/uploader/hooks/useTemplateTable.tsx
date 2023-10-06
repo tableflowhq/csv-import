@@ -1,7 +1,7 @@
 import { useMemo } from "react";
-import Icon from "../../../components/Icon";
 import Tooltip from "../../../components/Tooltip";
 import { TemplateColumn } from "../../../api/types";
+import { FaCheck } from "react-icons/fa";
 
 export default function useTemplateTable(fields: TemplateColumn[] = []) {
   if (!fields) {
@@ -19,7 +19,7 @@ export default function useTemplateTable(fields: TemplateColumn[] = []) {
             ),
           }
         : item.name,
-      Required: { raw: item?.required ? 1 : 0, content: item?.required ? <Icon icon="check" /> : <></> },
+      Required: { raw: item?.required ? 1 : 0, content: item?.required ? <FaCheck /> : <></> },
     }));
   }, [fields]);
 

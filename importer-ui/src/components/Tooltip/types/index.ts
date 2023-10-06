@@ -10,5 +10,5 @@ export type AsMap = {
 export type TooltipProps<T extends keyof AsMap = "span"> = {
   as?: T;
   title?: string | ReactNode;
-  icon?: IconType
+  icon?: IconType | ReactNode;
 } & AsMap[T];

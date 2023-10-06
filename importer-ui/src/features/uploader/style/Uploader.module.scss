@@ -24,7 +24,7 @@
 
 .tableContainer {
   overflow: hidden;
-  overflow-y: scroll;
+  overflow-y: auto;
   max-height: 496px;
   outline: 1px solid var(--color-border);
   border-radius: var(--border-radius-2);

@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useColorMode } from "@chakra-ui/react";
 import useSearchParams from "../hooks/useSearchParams";
 import useEmbedStore from "../stores/embed";
 import useThemeStore from "../stores/theme";
@@ -62,9 +63,12 @@ export default function Embed({ children }: EmbedProps) {
   // Set Light/Dark mode
   const darkMode = strToBoolean(darkModeString);
   const setTheme = useThemeStore((state) => state.setTheme);
+  const { colorMode, toggleColorMode } = useColorMode();
 
   useEffect(() => {
     setTheme(darkMode ? "dark" : "light");
+    if (darkMode && colorMode === "light") toggleColorMode();
+    if (!darkMode && colorMode === "dark") toggleColorMode();
   }, [darkMode]);
 
   // Apply primary color

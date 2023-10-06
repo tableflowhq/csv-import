@@ -1,10 +1,11 @@
-import { useThemeStore } from "@tableflow/ui-library";
 import Button from "../../components/Button";
 import Table from "../../components/Table";
 import UppyWrapper from "../../components/UppyWrapper";
+import useThemeStore from "../../stores/theme";
 import useTemplateTable from "./hooks/useTemplateTable";
 import { UploaderProps } from "./types";
 import style from "./style/Uploader.module.scss";
+import { FaDownload } from "react-icons/fa";
 
 export default function Uploader({
   template,
@@ -59,7 +60,7 @@ export default function Uploader({
   }
 
   const downloadTemplateButton = showDownloadTemplateButton ? (
-    <Button icon="downloadFile" onClick={downloadTemplate} variants={theme === "light" ? [] : ["secondary"]}>
+    <Button icon={<FaDownload />} onClick={downloadTemplate} variants={theme === "light" ? [] : ["secondary"]}>
       Download Template
     </Button>
   ) : null;
