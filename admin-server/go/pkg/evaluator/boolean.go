@@ -4,7 +4,7 @@ import "tableflow/go/pkg/util"
 
 type BooleanEvaluator struct{}
 
-func (e BooleanEvaluator) Initialize(_ interface{}) error {
+func (e *BooleanEvaluator) Initialize(_ interface{}) error {
 	return nil
 }
 

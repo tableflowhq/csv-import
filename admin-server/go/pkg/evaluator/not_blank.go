@@ -6,7 +6,7 @@ import (
 
 type NotBlankEvaluator struct{}
 
-func (e NotBlankEvaluator) Initialize(_ interface{}) error {
+func (e *NotBlankEvaluator) Initialize(_ interface{}) error {
 	return nil
 }
 

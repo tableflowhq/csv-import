@@ -31,15 +31,15 @@ func Parse(validate string, options jsonb.JSONB) (Evaluator, error) {
 	var e Evaluator
 	switch validate {
 	case "number":
-		e = NumberEvaluator{}
+		e = &NumberEvaluator{}
 	case "boolean":
-		e = BooleanEvaluator{}
+		e = &BooleanEvaluator{}
 	case "date":
-		e = DateEvaluator{}
+		e = &DateEvaluator{}
 	case "not_blank":
-		e = NotBlankEvaluator{}
+		e = &NotBlankEvaluator{}
 	case "regex":
-		e = RegexEvaluator{}
+		e = &RegexEvaluator{}
 	default:
 		return nil, fmt.Errorf("The validate type %s is invalid", validate)
 	}

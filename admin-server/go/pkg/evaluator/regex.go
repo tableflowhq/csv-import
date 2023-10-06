@@ -10,7 +10,7 @@ type RegexEvaluator struct {
 	Regexp *regexp.Regexp
 }
 
-func (e RegexEvaluator) Initialize(options interface{}) error {
+func (e *RegexEvaluator) Initialize(options interface{}) error {
 	if options == nil {
 		return errors.New("not provided")
 	}

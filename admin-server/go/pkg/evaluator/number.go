@@ -4,7 +4,7 @@ import "tableflow/go/pkg/util"
 
 type NumberEvaluator struct{}
 
-func (e NumberEvaluator) Initialize(_ interface{}) error {
+func (e *NumberEvaluator) Initialize(_ interface{}) error {
 	return nil
 }
 

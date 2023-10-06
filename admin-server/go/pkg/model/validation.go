@@ -81,6 +81,7 @@ func ParseValidation(id uint, templateColumnID, validateStr string, options json
 		ID:               id,
 		TemplateColumnID: ParseID(templateColumnID),
 		Validate:         validateStr,
+		Options:          options,
 		Message:          strings.TrimSpace(message),
 	}
 	var err error

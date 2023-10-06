@@ -2,7 +2,7 @@ package evaluator
 
 type DateEvaluator struct{}
 
-func (e DateEvaluator) Initialize(_ interface{}) error {
+func (e *DateEvaluator) Initialize(_ interface{}) error {
 	return nil
 }
 
