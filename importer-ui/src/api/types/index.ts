@@ -41,8 +41,8 @@ export type TemplateColumn = {
 
 export type Validation = {
   id?: number;
-  type: string;
-  value?: any;
+  validate: string;
+  options?: any;
   message?: string;
   severity?: string;
 };

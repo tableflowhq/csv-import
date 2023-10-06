@@ -3011,9 +3011,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tableflow/ui-library@npm:^1.68.0":
-  version: 1.68.0
-  resolution: "@tableflow/ui-library@npm:1.68.0"
+"@tableflow/ui-library@npm:^1.69.0":
+  version: 1.69.0
+  resolution: "@tableflow/ui-library@npm:1.69.0"
   dependencies:
     babel-plugin-inline-react-svg: ^2.0.2
     tslib: ^2.5.3
@@ -3021,7 +3021,7 @@ __metadata:
     react: ">=18.2.0"
     react-dom: ">=18.2.0"
     zustand: ^4.3.8
-  checksum: 6960aa57b89f57787b92b8c2d4758973db7fcadf0b549ea15351e8a6f85bfb802d5dcda278b75bfd8926d02e8876409bf57f053585ef2dc9cc287343e45654c7
+  checksum: afc7739fb019936df5b3d3241b9f990dd7c6476a68e77c20cbb8c77d59387b320c9310472060e9fb2b7607244f98a656221bf4c615de4f751bf026ab7b56c7aa
   languageName: node
   linkType: hard
 
@@ -3982,7 +3982,7 @@ __metadata:
     "@mantine/form": ^6.0.4
     "@mantine/hooks": ^6.0.10
     "@mantine/notifications": ^6.0.10
-    "@tableflow/ui-library": ^1.68.0
+    "@tableflow/ui-library": ^1.69.0
     "@testing-library/jest-dom": ^5.14.1
     "@testing-library/react": ^13.0.0
     "@testing-library/user-event": ^13.2.1

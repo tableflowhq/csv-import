@@ -2,9 +2,10 @@
 import { ColDef, GridApi, GridReadyEvent, ICellRendererParams, IDatasource, ISizeColumnsToFitParams, ValueGetterParams } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { classes, Icon, Tooltip } from "@tableflow/ui-library";
-import { IconType } from "@tableflow/ui-library/build/Icon/types";
+import { IconType } from "../../../components/Icon/types";
+import Tooltip from "../../../components/Tooltip";
 import { fetchRows } from "../../../api/useGetRows";
+import classes from "../../../utils/classes";
 import { TableProps } from "../types";
 import style from "../style/Review.module.scss";
 import "./TableStyle.scss";

@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { Checkbox, Input } from "@tableflow/ui-library";
-import { InputOption } from "@tableflow/ui-library/build/Input/types";
+import Checkbox from "../../../components/Checkbox";
+import Input from "../../../components/Input";
+import { InputOption } from "../../../components/Input/types";
 import { TemplateColumn, UploadColumn } from "../../../api/types";
-import stringsSimilarity from "../../../utils/stringSimilarity";
 import style from "../style/MapColumns.module.scss";
 import useTransformValue from "./useNameChange";
 
