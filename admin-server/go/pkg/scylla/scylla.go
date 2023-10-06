@@ -29,10 +29,9 @@ func PaginateUploadRows(uploadID string, offset, limit int) []map[int]string {
 					from upload_rows
 					where upload_id = ?
 					  and row_index >= ?
-					  and row_index < ?
 					order by row_index
 					limit ?`,
-		uploadID, offset, offset+limit, limit).Iter()
+		uploadID, offset, limit).Iter()
 
 	res := make([]map[int]string, 0, limit)
 	for i := 0; ; i++ {
@@ -48,15 +47,49 @@ func PaginateUploadRows(uploadID string, offset, limit int) []map[int]string {
 	return res
 }
 
-func GetImportRow(imp *model.Import, index int) (types.ImportRow, error) {
-	importID := imp.ID.String()
+// GetAnyImportRow Retrieve a row from import_rows. If it does not exist in import_rows, attempt retrieve the row from import_row_errors
+func GetAnyImportRow(importID string, index int) (types.ImportRow, error) {
+	row, err := GetImportRow(importID, index)
+	if len(row.Values) == 0 {
+		row, err = GetImportRowError(importID, index)
+	}
+	return row, err
+}
 
+// GetAnyImportRowErrorFirst Retrieve a row from import_row_errors. If it does not exist in import_row_errors, attempt retrieve the row from import_rows
+func GetAnyImportRowErrorFirst(importID string, index int) (types.ImportRow, bool, error) {
+	isErrorRow := true
+	row, err := GetImportRowError(importID, index)
+	if len(row.Values) == 0 {
+		row, err = GetImportRow(importID, index)
+		isErrorRow = false
+	}
+	return row, isErrorRow, err
+}
+
+func GetImportRow(importID string, index int) (types.ImportRow, error) {
 	row := types.ImportRow{}
 	err := tf.Scylla.Query("select row_index, values from import_rows where import_id = ? and row_index = ?", importID, index).Scan(&row.Index, &row.Values)
+	return row, err
+}
 
-	// If the row does not exist it could be an error row, attempt to retrieve it from import_row_errors
-	if len(row.Values) == 0 {
-		err = tf.Scylla.Query("select row_index, values from import_row_errors where import_id = ? and row_index = ?", importID, index).Scan(&row.Index, &row.Values)
+// GetImportRowError Note the errors retrieved from this only have the cell keys and validation IDs, they don't contain
+// the additional validation information from Postgres
+func GetImportRowError(importID string, index int) (types.ImportRow, error) {
+	row := types.ImportRow{}
+	errors := make(map[string][]uint)
+	err := tf.Scylla.Query("select row_index, values, errors from import_row_errors where import_id = ? and row_index = ?", importID, index).Scan(&row.Index, &row.Values, &errors)
+	if err != nil {
+		return row, err
+	}
+	row.Errors = make(map[string][]types.ImportRowError)
+	for k, v := range errors {
+		if _, ok := row.Errors[k]; !ok {
+			row.Errors[k] = []types.ImportRowError{}
+		}
+		for _, validationID := range v {
+			row.Errors[k] = append(row.Errors[k], types.ImportRowError{ValidationID: validationID})
+		}
 	}
 	return row, err
 }
@@ -67,13 +100,27 @@ func RetrieveAllImportRows(imp *model.Import) []types.ImportRow {
 		return make([]types.ImportRow, 0)
 	}
 
-	var validations map[uint]model.Validation
+	validations := make(map[uint]model.Validation)
 	var err error
 
 	if imp.HasErrors() {
-		validations, err = db.GetValidationsMapForImporterUnscoped(imp.ImporterID.String())
-		if err != nil {
-			tf.Log.Errorw("Could not retrieve template by importer to get validations", "import_id", imp.ID, "error", err)
+		if imp.Upload.Template.Valid {
+			template, err := types.ConvertRawTemplate(imp.Upload.Template, false)
+			if err == nil {
+				for _, templateColumn := range template.TemplateColumns {
+					for _, v := range templateColumn.Validations {
+						validation, err := model.ParseValidation(v.ValidationID, templateColumn.ID.String(), v.Validate, v.Options, v.Message, v.Severity, model.TemplateColumnDataType(templateColumn.DataType))
+						if err == nil {
+							validations[v.ValidationID] = *validation
+						}
+					}
+				}
+			}
+		} else {
+			validations, err = db.GetValidationsMapForImporterUnscoped(imp.ImporterID.String())
+			if err != nil {
+				tf.Log.Errorw("Could not retrieve template by importer to get validations", "import_id", imp.ID, "error", err)
+			}
 		}
 	}
 
@@ -82,54 +129,86 @@ func RetrieveAllImportRows(imp *model.Import) []types.ImportRow {
 		if offset > int(imp.NumRows.Int64) {
 			break
 		}
-		rows = append(rows, paginateImportRowsWithValidations(imp, validations, offset, DefaultPaginationSize)...)
+		rows = append(rows, paginateImportRowsWithValidations(imp, validations, offset, DefaultPaginationSize, types.ImportRowFilterAll)...)
 	}
 	return rows
 }
 
-func PaginateImportRows(imp *model.Import, offset, limit int) []types.ImportRow {
-	var validations map[uint]model.Validation
+func PaginateImportRows(imp *model.Import, offset, limit int, filter types.Filter) []types.ImportRow {
+	validations := make(map[uint]model.Validation)
 	var err error
 
 	if imp.HasErrors() {
-		validations, err = db.GetValidationsMapForImporterUnscoped(imp.ImporterID.String())
-		if err != nil {
-			tf.Log.Errorw("Could not retrieve template by importer to get validations", "import_id", imp.ID, "error", err)
+		if imp.Upload.Template.Valid {
+			template, err := types.ConvertRawTemplate(imp.Upload.Template, false)
+			if err == nil {
+				for _, templateColumn := range template.TemplateColumns {
+					for _, v := range templateColumn.Validations {
+						validation, err := model.ParseValidation(v.ValidationID, templateColumn.ID.String(), v.Validate, v.Options, v.Message, v.Severity, model.TemplateColumnDataType(templateColumn.DataType))
+						if err == nil {
+							validations[v.ValidationID] = *validation
+						}
+					}
+				}
+			}
+		} else {
+			validations, err = db.GetValidationsMapForImporterUnscoped(imp.ImporterID.String())
+			if err != nil {
+				tf.Log.Errorw("Could not retrieve template by importer to get validations", "import_id", imp.ID, "error", err)
+			}
 		}
 	}
 
-	return paginateImportRowsWithValidations(imp, validations, offset, limit)
+	return paginateImportRowsWithValidations(imp, validations, offset, limit, filter)
 }
 
-func paginateImportRowsWithValidations(imp *model.Import, validations map[uint]model.Validation, offset, limit int) []types.ImportRow {
+func paginateImportRowsWithValidations(imp *model.Import, validations map[uint]model.Validation, offset, limit int, filter types.Filter) []types.ImportRow {
 	importID := imp.ID.String()
 	if limit > maxPageSize {
 		tf.Log.Errorw("Attempted to paginate import greater than max page size", "import_id", importID, "page_size", limit)
 		return []types.ImportRow{}
 	}
 
-	if !imp.HasErrors() {
+	switch filter {
+	case types.ImportRowFilterAll:
+		// Retrieve the combined rows from import_rows and import_row_errors
+
+		// No errors, just return the data from import_rows
+		if !imp.HasErrors() {
+			return getImportRows(importID, offset, limit)
+		}
+		importRows := getImportRows(importID, offset, limit)
+
+		// If all the import rows exist in the expected page size, don't bother querying import_row_errors as no errors
+		// exist for the page, or they have been resolved
+		expectedPageSize := util.MinInt(int(imp.NumRows.Int64)-offset, limit)
+		if len(importRows) == expectedPageSize {
+			return importRows
+		}
+
+		// Retrieve the rows with errors to combine the results
+		importRowErrors := getImportRowErrors(importID, offset, limit, validations)
+		rows := append(importRows, importRowErrors...)
+
+		// Sort the combined rows by the row index
+		sort.Slice(rows, func(i, j int) bool {
+			return rows[i].Index < rows[j].Index
+		})
+		return rows
+
+	case types.ImportRowFilterValid:
 		return getImportRows(importID, offset, limit)
+
+	case types.ImportRowFilterError:
+		if !imp.HasErrors() {
+			return []types.ImportRow{}
+		}
+		return getImportRowErrors(importID, offset, limit, validations)
+
+	default:
+		tf.Log.Errorw("Invalid filter provided to import row pagination", "import_id", importID, "filter", filter)
+		return []types.ImportRow{}
 	}
-
-	importRows := getImportRows(importID, offset, limit)
-
-	// If all the import rows exist in the expected page size, don't bother querying import_row_errors as no errors
-	// exist for the page, or they have been resolved
-	expectedPageSize := util.MinInt(int(imp.NumRows.Int64)-offset, limit)
-	if len(importRows) == expectedPageSize {
-		return importRows
-	}
-
-	// Retrieve the rows with errors to combine the results
-	importRowErrors := getImportRowErrors(importID, offset, limit, validations)
-	rows := append(importRows, importRowErrors...)
-
-	// Sort the combined rows by the row index
-	sort.Slice(rows, func(i, j int) bool {
-		return rows[i].Index < rows[j].Index
-	})
-	return rows
 }
 
 func getImportRows(importID string, offset, limit int) []types.ImportRow {
@@ -139,10 +218,9 @@ func getImportRows(importID string, offset, limit int) []types.ImportRow {
 					from import_rows
 					where import_id = ?
 					  and row_index >= ?
-					  and row_index < ?
 					order by row_index
 					limit ?`,
-		importID, offset, offset+limit, limit).Iter()
+		importID, offset, limit).Iter()
 
 	res := make([]types.ImportRow, 0, limit)
 	for i := 0; ; i++ {
@@ -166,10 +244,9 @@ func getImportRowErrors(importID string, offset, limit int, validations map[uint
 					from import_row_errors
 					where import_id = ?
 					  and row_index >= ?
-					  and row_index < ?
 					order by row_index
 					limit ?`,
-		importID, offset, offset+limit, limit).Iter()
+		importID, offset, limit).Iter()
 
 	res := make([]types.ImportRow, 0, limit)
 	for i := 0; ; i++ {
@@ -186,7 +263,7 @@ func getImportRowErrors(importID string, offset, limit int, validations map[uint
 				if v, ok := validations[id]; ok {
 					importRowErrors[j] = types.ImportRowError{
 						ValidationID: id,
-						Type:         v.Type.Name,
+						Validate:     v.Validate,
 						Severity:     string(v.Severity),
 						Message:      v.Message,
 					}

@@ -1,61 +1,67 @@
-import { TableFlowImporterProps } from "./types/index";
+import { TableFlowImporterProps } from "./types";
 import "./index.css";
 
 let postMessages: string[] = [];
 
 export default function createTableFlowImporter({
   elementId = "tableflow-importer",
-  onRequestClose = () => null,
   importerId,
-  template,
   hostUrl,
+  isModal = true,
+  modalOnCloseTriggered = () => null,
+  modalCloseOnOutsideClick,
+  template,
   darkMode = false,
   primaryColor = "#7a5ef8",
   metadata = "{}",
-  closeOnClickOutside,
   onComplete,
   customStyles,
   className,
   showImportLoadingStatus,
   showDownloadTemplateButton,
   skipHeaderRowSelection,
+  cssOverrides,
   schemaless,
+  schemalessReadOnly,
 }: TableFlowImporterProps) {
   // CSS classes
   const baseClass = "TableFlowImporter";
   const themeClass = darkMode && `${baseClass}-dark`;
-  const dialogClass = [`${baseClass}-dialog`, themeClass, className].filter((i) => i).join(" ");
+  const domElementClass = [`${baseClass}-${isModal ? "dialog" : "div"}`, themeClass, className].filter((i) => i).join(" ");
 
-  // dialog element
-  let dialog = document.getElementById(elementId) as HTMLDialogElement;
+  // domElement element
+  let domElement = document.getElementById(elementId) as HTMLDialogElement | HTMLDivElement;
 
   const backdropClick = () => {
-    if (closeOnClickOutside) onRequestClose();
+    if (modalCloseOnOutsideClick) modalOnCloseTriggered();
   };
 
-  if (dialog === null) {
-    dialog = document.createElement("dialog") as HTMLDialogElement;
-    document.body.appendChild(dialog);
-    dialog.setAttribute("id", elementId);
-    dialog.addEventListener("click", backdropClick);
+  if (domElement === null) {
+    domElement = isModal ? (document.createElement("dialog") as HTMLDialogElement) : (document.createElement("div") as HTMLDivElement);
+    document.body.appendChild(domElement);
+    domElement.setAttribute("id", elementId);
+    if (isModal) domElement.addEventListener("click", backdropClick);
   }
 
-  dialog.setAttribute("class", dialogClass);
+  domElement.setAttribute("class", domElementClass);
 
   // iframe element
   let urlParams = {
     importerId,
+    isModal: isModal ? "true" : "false",
+    modalIsOpen: "true",
     template: parseObjectOrStringJSON("template", template),
     darkMode: darkMode.toString(),
     primaryColor,
     metadata: parseObjectOrStringJSON("metadata", metadata),
-    isOpen: "true",
     onComplete: onComplete ? "true" : "false",
     customStyles: JSON.stringify(customStyles),
     showImportLoadingStatus: parseOptionalBoolean(showImportLoadingStatus),
     showDownloadTemplateButton: parseOptionalBoolean(showDownloadTemplateButton),
     skipHeaderRowSelection: parseOptionalBoolean(skipHeaderRowSelection),
+    ...(cssOverrides ? { cssOverrides: JSON.stringify(cssOverrides) } : {}),
     schemaless: parseOptionalBoolean(schemaless),
+    schemalessReadOnly: parseOptionalBoolean(schemalessReadOnly),
   };
 
   const uploaderUrl = getUploaderUrl(urlParams, hostUrl);
@@ -74,37 +80,54 @@ export default function createTableFlowImporter({
       return;
     }
 
-    if (messageData?.type === "start" && urlParams.isOpen !== "true") {
-      urlParams = { ...urlParams, isOpen: "true" };
+    if (messageData?.type === "start" && urlParams.modalIsOpen !== "true") {
+      urlParams = { ...urlParams, modalIsOpen: "true" };
       const uploaderUrl = getUploaderUrl(urlParams, hostUrl);
-      dialog.innerHTML = `<iframe src="${uploaderUrl}" />`;
+      domElement.innerHTML = `<iframe src="${uploaderUrl}" />`;
     }
 
     if (messageData?.type === "complete" && onComplete) {
-      onComplete({
-        data: messageData?.data || null,
-        error: messageData?.error || null,
-      });
+      // Add extra data field for temporary backwards compatibility
+      // TODO: Remove in later version
+      const response = {
+        ...messageData?.data,
+        // Add the deprecated data field with getter and setter
+        get data() {
+          console.warn(
+            "WARNING: the extra data field is deprecated in the onComplete and will be removed in a later version. The parent object contains all of the import data needed."
+          );
+          return this._data;
+        },
+        set data(value) {
+          console.warn(
+            "WARNING: the extra data field is deprecated in the onComplete and will be removed in a later version. The parent object contains all of the import data needed."
+          );
+          this._data = value;
+        },
+      };
+      response._data = messageData?.data;
+
+      onComplete(response);
       postMessages.push(messageData?.id);
     }
 
-    if (messageData?.type === "close" && onRequestClose) {
-      onRequestClose();
+    if (messageData?.type === "close" && modalOnCloseTriggered) {
+      modalOnCloseTriggered();
       postMessages.push(messageData?.id);
 
-      if (urlParams.isOpen !== "false") {
-        urlParams = { ...urlParams, isOpen: "false" };
+      if (urlParams.modalIsOpen !== "false") {
+        urlParams = { ...urlParams, modalIsOpen: "false" };
         const uploaderUrl = getUploaderUrl(urlParams, hostUrl);
-        dialog.innerHTML = `<iframe src="${uploaderUrl}" />`;
+        domElement.innerHTML = `<iframe src="${uploaderUrl}" />`;
       }
     }
   }
 
   window.addEventListener("message", messageListener);
 
-  dialog.innerHTML = `<iframe src="${uploaderUrl}" />`;
+  domElement.innerHTML = `<iframe src="${uploaderUrl}" />`;
 
-  return dialog;
+  return domElement;
 }
 
 function getUploaderUrl(urlParams: any, hostUrl?: string) {

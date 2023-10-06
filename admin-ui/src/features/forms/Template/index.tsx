@@ -22,7 +22,7 @@ export default function TemplateColumnForm({
       description: column?.description || "",
       key: column?.key || "",
       required: column?.required || false,
-      filled: (column?.validations && column?.validations.length !== 0) || false,
+      not_blank: (column?.validations && column?.validations.some((v) => v.validate === "not_blank")) || false,
       suggested_mappings: column?.suggested_mappings || [],
     },
   });
@@ -33,14 +33,14 @@ export default function TemplateColumnForm({
   }, [isSuccess, error, isLoading]);
 
   const onSubmit = (values: any) => {
-    // Note the validation logic here and "filled" in the form will be removed once we support multiple validations
-    const hasExistingValidation = column?.validations && column?.validations.length !== 0;
+    // Note the validation logic here and "not_blank" in the form will be removed once we support multiple validations
+    const hasExistingValidation = column?.validations && column?.validations.some((v) => v.validate === "not_blank");
     values.validations = null;
-    if (values.filled && !hasExistingValidation) {
-      // If filled is selected and there is no existing validation, add the validation to the request
-      values.validations = [{ type: "filled" }];
+    if (values.not_blank && !hasExistingValidation) {
+      // If not_blank is selected and there is no existing validation, add the validation to the request
+      values.validations = [{ validate: "not_blank" }];
     } else if (hasExistingValidation) {
-      // If filled is not selected and the validation exists, add an empty validation array so the backend will remove it
+      // If not_blank is not selected and the validation exists, add an empty validation array so the backend will remove it
       values.validations = [];
     }
     mutate(values);
@@ -127,16 +127,16 @@ export default function TemplateColumnForm({
             </label>
             <Tooltip className={style.checkboxLabel} title={"Users must map a column from their file to this column to proceed with the import"} />
           </div>
-          {/*<div className={style.checkboxInput}>*/}
-          {/*  <label>*/}
-          {/*    <Checkbox {...form.getInputProps("filled", { type: "checkbox" })} />*/}
-          {/*    <span className={style.checkboxLabel}>Cells must be filled</span>*/}
-          {/*  </label>*/}
-          {/*  <Tooltip*/}
-          {/*    className={style.checkboxLabel}*/}
-          {/*    title={"Every cell in this column must contain data. Empty cells will prevent users from completing the import"}*/}
-          {/*  />*/}
-          {/*</div>*/}
+          <div className={style.checkboxInput}>
+            <label>
+              <Checkbox {...form.getInputProps("not_blank", { type: "checkbox" })} />
+              <span className={style.checkboxLabel}>Cells must contain a value</span>
+            </label>
+            <Tooltip
+              className={style.checkboxLabel}
+              title={"Every cell in this column must contain data. Empty cells will prevent users from completing the import"}
+            />
+          </div>
         </fieldset>
 
         <div className={classes([style.actions, style.compact])}>

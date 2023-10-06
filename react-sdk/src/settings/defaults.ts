@@ -1,7 +1,7 @@
 import { TableFlowImporterProps } from "../components/TableFlowImporter/types";
 
 const defaults: TableFlowImporterProps = {
-  importerId: "89872e9f-3ccd-43e7-93c1-d7dfb680b45b", // 7e83ef24-c8f8-479f-8825-046e7da368c4
+  importerId: "7e83ef24-c8f8-479f-8825-046e7da368c4",
   hostUrl: "http://localhost:3001", // https://importer.tableflow.com
   metadata: { userId: 1234, userEmail: "test@example.com" },
   // template: {
@@ -15,8 +15,9 @@ const defaults: TableFlowImporterProps = {
   //   ],
   // },
   // schemaless: false,
+  // schemalessReadOnly: true,
   darkMode: true,
-  onComplete: ({ data, error }) => console.log("onComplete", data, error),
+  onComplete: (data) => console.log("onComplete", data),
   // customStyles: {
   //   "font-family": "cursive",
   //   "font-size": "15px",
@@ -41,6 +42,15 @@ const defaults: TableFlowImporterProps = {
   //   "color-background-menu-hover": "bisque",
   //   "color-green-ui": "darkGreen",
   // },
+  // cssOverrides: {
+  //   ".uppy-Dashboard-AddFiles": "border: none",
+  //   Main_header: "margin-bottom: var(--m-xxs)",
+  //   "Stepper-module_stepper": "gap: var(--m-l)",
+  //   "Stepper-module_step": "flex-direction: column",
+  //   "Stepper-module_step:before, Uploader_box": "display: none",
+  // },
+  isModal: true,
+  modalCloseOnOutsideClick: true,
 };
 
 export default defaults;

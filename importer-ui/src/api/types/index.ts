@@ -11,6 +11,10 @@ export type ApiResponse<T> = {
 
 // Entities
 
+export type Organization = {
+  status?: boolean;
+};
+
 export type Importer = {
   id: string;
   name: string;
@@ -32,6 +36,15 @@ export type TemplateColumn = {
   description?: string;
   required?: boolean;
   suggested_mappings?: string[];
+  validations?: Validation[];
+};
+
+export type Validation = {
+  id?: number;
+  validate: string;
+  options?: any;
+  message?: string;
+  severity?: string;
 };
 
 export type Upload = {
@@ -55,6 +68,7 @@ export type UploadColumn = {
   index: number;
   name: string;
   sample_data: string[];
+  suggested_template_column_id: string;
 };
 
 export type UploadRow = {
@@ -78,4 +92,36 @@ export type Import = {
   upload_id: string;
   workspace_id: string;
   importer?: Importer;
+};
+
+type Pagination = {
+  total: number;
+  offset: number;
+  limit: number;
+  next_offset: number;
+};
+
+type ErrorDetail = {
+  type: string;
+  severity: string;
+  message: string;
+};
+
+type Row = {
+  index: number;
+  values: {
+    email: string;
+    not_blank: string;
+  };
+  errors: {
+    not_blank: ErrorDetail[];
+  };
+};
+
+export type QueryFilter = "all" | "valid" | "error";
+
+export type ImportRowResponse = {
+  pagination: Pagination;
+  filter: QueryFilter;
+  rows: Row[];
 };

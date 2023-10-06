@@ -4,12 +4,16 @@ type SearchParams = Record<
   | "primaryColor"
   | "metadata"
   | "template"
-  | "isOpen"
+  | "isModal"
+  | "isOpen" // Deprecated: use modalIsOpen
+  | "modalIsOpen"
   | "onComplete"
   | "customStyles"
   | "showImportLoadingStatus"
   | "skipHeaderRowSelection"
+  | "cssOverrides"
   | "schemaless"
+  | "schemalessReadOnly"
   | "showDownloadTemplateButton",
   string
 >;

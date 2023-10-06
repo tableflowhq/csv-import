@@ -1,7 +1,7 @@
 import { useEffect } from "react";
-import { useThemeStore } from "@tableflow/ui-library";
 import useSearchParams from "../hooks/useSearchParams";
 import useEmbedStore from "../stores/embed";
+import useThemeStore from "../stores/theme";
 import { EmbedProps } from "./types";
 
 export default function Embed({ children }: EmbedProps) {
@@ -11,12 +11,16 @@ export default function Embed({ children }: EmbedProps) {
     primaryColor,
     metadata,
     template,
-    isOpen,
+    isModal,
+    isOpen, // Deprecated: use modalIsOpen
+    modalIsOpen,
     onComplete,
     customStyles,
     showImportLoadingStatus,
     skipHeaderRowSelection,
+    cssOverrides,
     schemaless,
+    schemalessReadOnly,
     showDownloadTemplateButton,
   } = useSearchParams();
 
@@ -25,7 +29,7 @@ export default function Embed({ children }: EmbedProps) {
   const strToBoolean = (str: string) => !!str && (str.toLowerCase() === "true" || str === "1");
   const strToOptionalBoolean = (str: string) => (str ? str.toLowerCase() === "true" || str === "1" : undefined);
   const strToDefaultBoolean = (str: string, defaultValue: boolean) => (str ? str.toLowerCase() === "true" || str === "1" : defaultValue);
-  const validateJSON = (str: string) => {
+  const validateJSON = (str: string, paramName: string) => {
     if (!str) {
       return "";
     }
@@ -33,6 +37,7 @@ export default function Embed({ children }: EmbedProps) {
       const obj = JSON.parse(str);
       return JSON.stringify(obj);
     } catch (e) {
+      console.error(`The parameter ${paramName} could not be parsed as JSON`, e);
       return "";
     }
   };
@@ -40,14 +45,18 @@ export default function Embed({ children }: EmbedProps) {
   useEffect(() => {
     setEmbedParams({
       importerId,
-      metadata: validateJSON(metadata),
-      template: validateJSON(template),
-      isOpen: strToBoolean(isOpen),
+      metadata: validateJSON(metadata, "metadata"),
+      template: validateJSON(template, "template"),
+      // If only the deprecated isOpen is provided, use that. Else, use modalIsOpen
+      modalIsOpen: strToBoolean(modalIsOpen === "" && isOpen !== "" ? isOpen : modalIsOpen),
       onComplete: strToBoolean(onComplete),
       showImportLoadingStatus: strToBoolean(showImportLoadingStatus),
       skipHeaderRowSelection: strToOptionalBoolean(skipHeaderRowSelection),
+      isModal: strToDefaultBoolean(isModal, true),
       schemaless: strToOptionalBoolean(schemaless),
+      schemalessReadOnly: strToOptionalBoolean(schemalessReadOnly),
       showDownloadTemplateButton: strToDefaultBoolean(showDownloadTemplateButton, true),
+      cssOverrides: validateJSON(cssOverrides, "cssOverrides"),
     });
   }, [importerId, metadata]);
 
@@ -59,7 +68,7 @@ export default function Embed({ children }: EmbedProps) {
     setTheme(darkMode ? "dark" : "light");
   }, [darkMode]);
 
-  // Set primary color
+  // Apply primary color
   useEffect(() => {
     if (primaryColor) {
       const root = document.documentElement;
@@ -67,6 +76,7 @@ export default function Embed({ children }: EmbedProps) {
     }
   }, [primaryColor]);
 
+  // Apply custom CSS properties
   useEffect(() => {
     try {
       if (customStyles && customStyles !== "undefined") {

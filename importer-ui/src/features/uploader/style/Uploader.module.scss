@@ -3,16 +3,29 @@
   gap: var(--m);
   align-items: flex-start;
   align-self: center;
+  flex-grow: 1;
 
   & > * {
-    &:first-of-type {
-      width: 62%;
+    &:first-child {
+      flex: 1 1 500px;
+      overflow: hidden;
+    }
+    &:last-child {
+      flex-basis: 38%;
     }
   }
 }
 
-.box{
+.box {
   display: flex;
   flex-direction: column;
   gap: 14px;
+}
+
+.tableContainer {
+  overflow: hidden;
+  overflow-y: scroll;
+  max-height: 496px;
+  outline: 1px solid var(--color-border);
+  border-radius: var(--border-radius-2);
 }

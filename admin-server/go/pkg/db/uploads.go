@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"gorm.io/gorm"
+	"sort"
 	"strings"
 	"tableflow/go/pkg/model"
 	"tableflow/go/pkg/tf"
@@ -52,6 +53,9 @@ func GetUploadByTusID(tusID string) (*model.Upload, error) {
 		// If the upload has been stored, retrieve the upload columns as well
 		var uploadColumns []*model.UploadColumn
 		tf.DB.Where("upload_id = ?", upload.ID).Find(&uploadColumns)
+		sort.Slice(uploadColumns, func(i, j int) bool {
+			return uploadColumns[i].Index < uploadColumns[j].Index
+		})
 		upload.UploadColumns = uploadColumns
 	}
 	return &upload, nil
@@ -62,6 +66,25 @@ func DeleteUploadColumns(uploadID string) error {
 		return errors.New("no upload ID provided")
 	}
 	err := tf.DB.Where("upload_id = ?", model.ParseID(uploadID)).Delete(&model.UploadColumn{}).Error
+	return err
+}
+
+func ClearUploadColumnTemplateColumnIDs(upload *model.Upload) error {
+	if upload == nil || !upload.ID.Valid {
+		return errors.New("no upload provided")
+	}
+	err := tf.DB.Exec(`
+		update upload_columns
+		set template_column_id = null
+		where upload_id = ?
+		  and template_column_id is not null;`,
+		upload.ID).Error
+	if err == nil {
+		// Clear the template column IDs on the upload columns
+		for i, _ := range upload.UploadColumns {
+			upload.UploadColumns[i].TemplateColumnID = model.ID{}
+		}
+	}
 	return err
 }
 

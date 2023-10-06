@@ -18,6 +18,9 @@ definitions:
       importer_id:
         example: 6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353
         type: string
+      is_complete:
+        example: false
+        type: boolean
       is_stored:
         example: false
         type: boolean
@@ -326,8 +329,6 @@ definitions:
       created_at:
         example: 1682366228
         type: integer
-      data:
-        $ref: '#/definitions/types.ImportData'
       has_errors:
         example: false
         type: boolean
@@ -358,7 +359,7 @@ definitions:
         example: 224
         type: integer
       rows:
-        description: 'Deprecated: Use Data.Rows instead'
+        description: Used for the final step in the onComplete
         items:
           $ref: '#/definitions/types.ImportRow'
         type: array
@@ -366,8 +367,39 @@ definitions:
         example: 50ca61e1-f683-4b03-9ec4-4b3adb592bf1
         type: string
     type: object
+  types.ImportCell:
+    properties:
+      cell_key:
+        example: first_name
+        type: string
+      cell_value:
+        example: Laura
+        type: string
+      row_index:
+        example: 0
+        type: integer
+    type: object
+  types.ImportCellEditResponse:
+    properties:
+      has_errors:
+        example: false
+        type: boolean
+      num_error_rows:
+        example: 32
+        type: integer
+      num_rows:
+        example: 256
+        type: integer
+      num_valid_rows:
+        example: 224
+        type: integer
+      row:
+        $ref: '#/definitions/types.ImportRow'
+    type: object
   types.ImportData:
     properties:
+      filter:
+        type: string
       pagination:
         $ref: '#/definitions/types.Pagination'
       rows:
@@ -417,6 +449,8 @@ definitions:
   types.Pagination:
     properties:
       limit:
+        type: integer
+      next_offset:
         type: integer
       offset:
         type: integer
@@ -1036,26 +1070,32 @@ paths:
       summary: Patch file (tus)
       tags:
       - File Import
-  /file-import/v1/import/{id}:
-    get:
-      description: Get a single import by the upload ID, including the data if the
-        import is complete
+  /file-import/v1/import/{id}/cell/edit:
+    post:
+      description: Edit the value in a cell for an import. If the cell contains an
+        error, it will run it through the validation before allowing the edit.
       parameters:
       - description: Upload ID
         in: path
         name: id
         required: true
         type: string
+      - description: Request body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/types.ImportCell'
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/types.Import'
+            $ref: '#/definitions/types.ImportCellEditResponse'
         "400":
           description: Bad Request
           schema:
             $ref: '#/definitions/types.Res'
-      summary: Get import by upload ID
+      summary: Edit a cell in an import
       tags:
       - File Import
   /file-import/v1/import/{id}/review:
@@ -1102,6 +1142,14 @@ paths:
         name: limit
         required: true
         type: integer
+      - description: Pagination filter
+        enum:
+        - all
+        - valid
+        - error
+        in: query
+        name: filter
+        type: string
       responses:
         "200":
           description: OK
@@ -1112,6 +1160,28 @@ paths:
           schema:
             $ref: '#/definitions/types.Res'
       summary: Get import rows by upload ID for the review screen
+      tags:
+      - File Import
+  /file-import/v1/import/{id}/submit:
+    post:
+      description: Submit the reviewed import by the upload ID once the data is reviewed
+        and any errors are fixed
+      parameters:
+      - description: Upload ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.Import'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/types.Res'
+      summary: Submit an import by upload ID
       tags:
       - File Import
   /file-import/v1/importer/{id}:
@@ -1165,9 +1235,8 @@ paths:
       - File Import
   /file-import/v1/upload/{id}/set-column-mapping:
     post:
-      description: 'Set the template column IDs for each upload column and trigger
-        the import. Note: we will eventually have a separate import endpoint once
-        there is a review step in the upload process.'
+      description: Set the template column IDs for each upload column and trigger
+        the import
       parameters:
       - description: Upload ID
         in: path
@@ -1304,6 +1373,50 @@ paths:
           schema:
             $ref: '#/definitions/types.Res'
       summary: Get import rows
+      tags:
+      - External API
+  /v1/importer:
+    post:
+      description: Create an importer
+      parameters:
+      - description: Request body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/types.Importer'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.Importer'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/types.Res'
+      summary: Create importer
+      tags:
+      - External API
+  /v1/importer/{id}:
+    delete:
+      description: Delete an importer along with all associated objects (template,
+        columns)
+      parameters:
+      - description: Importer ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.Res'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/types.Res'
+      summary: Delete importer
       tags:
       - External API
 securityDefinitions:

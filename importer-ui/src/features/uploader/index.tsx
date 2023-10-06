@@ -1,5 +1,7 @@
-import { Button, Table, useThemeStore } from "@tableflow/ui-library";
+import Button from "../../components/Button";
+import Table from "../../components/Table";
 import UppyWrapper from "../../components/UppyWrapper";
+import useThemeStore from "../../stores/theme";
 import useTemplateTable from "./hooks/useTemplateTable";
 import { UploaderProps } from "./types";
 import style from "./style/Uploader.module.scss";
@@ -42,7 +44,6 @@ export default function Uploader({
       schemaless={schemaless}
     />
   );
-
   if (schemaless) {
     return uppyWrapper;
   }
@@ -67,7 +68,9 @@ export default function Uploader({
     <div className={style.content}>
       {uppyWrapper}
       <div className={style.box}>
-        <Table data={fields} background="dark" columnWidths={["65%", "35%"]} columnAlignments={["", "center"]} />
+        <div className={style.tableContainer}>
+          <Table data={fields} background="dark" columnWidths={["65%", "35%"]} columnAlignments={["", "center"]} />
+        </div>
         {downloadTemplateButton}
       </div>
     </div>

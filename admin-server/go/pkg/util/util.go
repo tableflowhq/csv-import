@@ -5,13 +5,18 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
+	"github.com/hbollon/go-edlib"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 	"net/mail"
 	"reflect"
+	"runtime/debug"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
+	"tableflow/go/pkg/tf"
 	"unicode"
 )
 
@@ -40,6 +45,9 @@ func IsEmailValid(email string) bool {
 }
 
 func IsBlankUnicode(s string) bool {
+	if s == "" {
+		return true
+	}
 	for _, r := range s {
 		if !unicode.IsSpace(r) {
 			return false
@@ -49,6 +57,9 @@ func IsBlankUnicode(s string) bool {
 }
 
 func IsBlankASCII(s string) bool {
+	if s == "" {
+		return true
+	}
 	for i := 0; i < len(s); i++ {
 		c := s[i]
 		if c != ' ' && c != '\t' && c != '\n' && c != '\r' {
@@ -175,6 +186,25 @@ func ShutdownHandler(ctx context.Context, wg *sync.WaitGroup, close func()) {
 	}
 }
 
+func SafeGo(f func(), contextFields ...interface{}) {
+	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				// Log all relevant context and stack information
+				var fields []interface{}
+				fields = append(fields, "panic", r)
+				fields = append(fields, "stack", string(debug.Stack()))
+
+				// Add dynamic context fields
+				fields = append(fields, contextFields...)
+
+				tf.Log.Errorw("Recovered from panic", fields...)
+			}
+		}()
+		f()
+	}()
+}
+
 func SanitizeKey(input string) string {
 	// Replace spaces with underscores
 	result := strings.ReplaceAll(strings.ToLower(input), " ", "_")
@@ -195,4 +225,62 @@ func ValidateKey(input string) bool {
 		}
 	}
 	return true
+}
+
+func StringSimilarity(str1 string, str2 string) float32 {
+	res, err := edlib.StringsSimilarity(str1, str2, edlib.Levenshtein)
+	if err != nil {
+		return 0
+	} else {
+		return res
+	}
+}
+
+func StringToNumberOrNil(s string) (interface{}, error) {
+	if IsBlankUnicode(s) {
+		return nil, nil
+	}
+	s = strings.TrimSpace(s)
+	s = strings.Replace(s, ",", "", -1) // Remove commas
+	lower := strings.ToLower(s)
+
+	if lower == "null" || lower == "nil" {
+		return nil, nil
+	}
+
+	// Attempt to convert the string to an int
+	if i, err := strconv.Atoi(s); err == nil {
+		return i, nil
+	}
+
+	// Attempt to convert the string to a float64
+	if f, err := strconv.ParseFloat(s, 64); err == nil {
+		return f, nil
+	}
+
+	// Return an error if the string couldn't be converted to any number type
+	return nil, fmt.Errorf("failed to convert string to number: %s", s)
+}
+
+func StringToBoolOrNil(s string) (*bool, error) {
+	if IsBlankUnicode(s) {
+		return nil, nil
+	}
+	s = strings.TrimSpace(s)
+	lower := strings.ToLower(s)
+
+	if lower == "null" || lower == "nil" {
+		return nil, nil
+	}
+
+	res := false
+	switch lower {
+	case "1", "t", "true":
+		res = true
+		return &res, nil
+	case "0", "f", "false":
+		return &res, nil
+	}
+
+	return nil, fmt.Errorf("failed to convert string to boolean: %s", s)
 }

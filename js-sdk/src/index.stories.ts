@@ -7,9 +7,14 @@ let dialog: any;
 const meta = {
   title: "App",
   render: (args) => {
-    const onRequestClose = () => dialog.close();
-    dialog = createTableFlowImporter({ ...args, onRequestClose });
-    return `<button type="button" id="uploadButton">Import</button>`;
+    const modalOnCloseTriggered = () => dialog.close();
+
+    dialog = createTableFlowImporter({
+      ...(args.isModal ? { modalOnCloseTriggered } : {}),
+      ...(args.isModal ? { modalCloseOnOutsideClick: args.modalCloseOnOutsideClick } : {}),
+      ...args,
+    } as TableFlowImporterProps);
+    return args?.isModal ? `<button type="button" id="uploadButton">Import</button>` : "";
   },
   argTypes: {
     elementId: { control: "text" },
@@ -17,11 +22,12 @@ const meta = {
     hostUrl: { control: "text" },
     darkMode: { control: "boolean" },
     primaryColor: { control: "color" },
-    closeOnClickOutside: { control: "boolean" },
+    modalCloseOnOutsideClick: { control: "boolean" },
     showImportLoadingStatus: { control: "boolean" },
     skipHeaderRowSelection: { control: "boolean" },
     showDownloadTemplateButton: { control: "boolean" },
     schemaless: { control: "boolean" },
+    schemalessReadOnly: { control: "boolean" },
   },
 } satisfies Meta<TableFlowImporterProps>;
 
@@ -46,7 +52,7 @@ export const App: Story = {
     //     },
     //   ],
     // },
-    onComplete: (data: any) => console.log(data),
+    onComplete: (data: any) => console.log("onComplete", data),
     // customStyles: {
     //   "font-family": "cursive",
     //   "font-size": "15px",
@@ -71,6 +77,15 @@ export const App: Story = {
     //   "color-background-menu-hover": "bisque",
     //   "color-green-ui": "darkGreen",
     // },
+    // cssOverrides: {
+    //   ".uppy-Dashboard-AddFiles": "border: none",
+    //   Main_header: "margin-bottom: var(--m-xxs)",
+    //   "Stepper-module_stepper": "gap: var(--m-l)",
+    //   "Stepper-module_step": "flex-direction: column",
+    //   "Stepper-module_step:before, Uploader_box": "display: none",
+    // },
+    isModal: true,
+    modalCloseOnOutsideClick: true,
   },
 };
 

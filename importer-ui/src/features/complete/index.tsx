@@ -1,29 +1,19 @@
-import { useEffect, useMemo, useState } from "react";
-import { Box, Button, Icon } from "@tableflow/ui-library";
+import Box from "../../components/Box";
+import Button from "../../components/Button";
+import Icon from "../../components/Icon";
 import Spinner from "../../components/Spinner";
-import useGetImport from "../../api/useGetImport";
+import useEmbedStore from "../../stores/embed";
 import { CompleteProps } from "./types";
 import style from "./style/Complete.module.scss";
 
-export default function Complete({ reload, close, onSuccess, upload, showImportLoadingStatus }: CompleteProps) {
-  const uploadMemo = useMemo(() => upload, [upload]);
-
-  const { data, error } = useGetImport(uploadMemo?.id || "");
-  const [showLoading, setShowLoading] = useState(true);
-  const { is_stored: isStored } = data || {};
+export default function Complete({ reload, close, showImportLoadingStatus }: CompleteProps) {
+  const { isModal } = useEmbedStore((state) => state.embedParams);
 
   const isEmbeddedInIframe = window?.top !== window?.self;
 
-  useEffect(() => {
-    if (isStored || error) {
-      setShowLoading(false);
-      onSuccess(data, data?.error || error?.toString() || null);
-    }
-  }, [isStored, error]);
-
   return (
     <>
-      {showLoading && showImportLoadingStatus ? (
+      {showImportLoadingStatus ? (
         <Spinner className={style.spinner}>Importing your data...</Spinner>
       ) : (
         <Box className={style.content} variants={[]}>
@@ -32,7 +22,7 @@ export default function Complete({ reload, close, onSuccess, upload, showImportL
           </span>
           <div>Import Successful</div>
           <div className={style.actions}>
-            {isEmbeddedInIframe && (
+            {isEmbeddedInIframe && isModal && (
               <Button type="button" variants={["tertiary"]} icon="cross" onClick={close}>
                 Close
               </Button>

@@ -9,8 +9,8 @@ export default function getCodeJavaScript(props: CodeProps) {
 
 const importer = createTableFlowImporter({
   importerId: "${props.importerId || "YOUR_IMPORTER_ID"}",${hostUrlLine}
-  onRequestClose: () => importer.close(),
-  onComplete: (data, error) => console.log(data),
+  modalOnCloseTriggered: () => importer.close(),
+  onComplete: (data) => console.log(data),
   darkMode: ${props.theme !== "light"},
 });
 

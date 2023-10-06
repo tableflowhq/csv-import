@@ -56,9 +56,11 @@ func UploadCompleteHandler(event handler.HookEvent, uploadAdditionalStorageHandl
 	}
 
 	// If a template is provided from the SDK, use that instead of the template on the importer
+	uploadError := "" // TODO: Refactor this so the upload object is created higher up and other fatal errors can exist
 	uploadTemplate, err := generateUploadTemplate(event.HTTPRequest.Header.Get("X-Import-Template"))
 	if err != nil {
 		tf.Log.Warnw("Could not generate upload template", "error", err, "tus_id", event.Upload.ID, "importer_id", importerID)
+		uploadError = fmt.Sprintf("Invalid template: %s", err.Error())
 	}
 
 	// Determine if the header row selection step should be skipped, setting the header row to the first row of the file
@@ -87,11 +89,15 @@ func UploadCompleteHandler(event handler.HookEvent, uploadAdditionalStorageHandl
 		Metadata:      importMetadata,
 		Template:      uploadTemplate,
 		Schemaless:    schemaless,
+		Error:         null.NewString(uploadError, len(uploadError) != 0),
 	}
 	fileName := fmt.Sprintf("%s/%s", TempUploadsDirectory, upload.TusID)
 	err = tf.DB.Create(upload).Error
 	if err != nil {
 		tf.Log.Errorw("Could not create upload in database", "error", err, "upload_id", upload.ID, "tus_id", upload.TusID)
+		return
+	}
+	if upload.Error.Valid {
 		return
 	}
 
@@ -116,7 +122,7 @@ func UploadCompleteHandler(event handler.HookEvent, uploadAdditionalStorageHandl
 	uploadResult, err := processAndStoreUpload(upload, file)
 	if err != nil {
 		tf.Log.Errorw("Could not process upload", "error", err, "upload_id", upload.ID)
-		saveUploadError(upload, "An error occurred processing your file. Please check the file and try again.")
+		saveUploadError(upload, err.Error())
 		removeUploadFileFromDisk(file, fileName, upload.ID.String())
 		return
 	}
@@ -162,11 +168,11 @@ func UploadCompleteHandler(event handler.HookEvent, uploadAdditionalStorageHandl
 	}
 
 	if uploadAdditionalStorageHandler != nil {
-		go func(u *model.Upload, f *os.File, fn string) {
-			uploadAdditionalStorageHandler(u, f)
-			removeUploadFileFromDisk(f, fn, u.ID.String())
-			tf.Log.Debugw("Upload complete", "upload_id", u.ID)
-		}(upload, file, fileName)
+		util.SafeGo(func() {
+			uploadAdditionalStorageHandler(upload, file)
+			removeUploadFileFromDisk(file, fileName, upload.ID.String())
+			tf.Log.Debugw("Upload complete", "upload_id", upload.ID)
+		}, "upload_id", upload.ID)
 	} else {
 		removeUploadFileFromDisk(file, fileName, upload.ID.String())
 		tf.Log.Debugw("Upload complete", "upload_id", upload.ID)
@@ -187,11 +193,12 @@ func processAndStoreUpload(upload *model.Upload, file *os.File) (uploadProcessRe
 	batchSize := 0                      // cumulative batch size in bytes
 	maxMutationSize := 16 * 1024 * 1024 // 16MB
 	safetyMargin := 0.75
+	maxCellSize := 1024 * 1024 // 1MB
 
 	in := make(chan *gocql.Batch, 0)
 	var wg sync.WaitGroup
 	for i := 0; i < goroutines; i++ {
-		go scylla.ProcessBatch(in, &wg)
+		util.SafeGo(func() { scylla.ProcessBatch(in, &wg) }, "upload_id", upload.ID)
 	}
 	b := scylla.NewBatchInserter()
 	startTime := time.Now()
@@ -240,6 +247,9 @@ func processAndStoreUpload(upload *model.Upload, file *os.File) (uploadProcessRe
 			}
 			if util.IsBlankUnicode(cellValue) {
 				numBlankCells++
+			}
+			if len(cellValue) > maxCellSize {
+				return uploadProcessResult{}, fmt.Errorf("A cell in your file exceeds the max cell size of 1MB (row %v, column %v). Please check the file and try again", i+1, columnIndex+1)
 			}
 			// TODO: Deal with invalid characters better, determine charsets programmatically? Or just surface these to the user?
 			uploadRow[int16(columnIndex)] = strings.ToValidUTF8(cellValue, "")
@@ -310,7 +320,7 @@ func generateUploadTemplate(uploadTemplateEncodedStr string) (jsonb.JSONB, error
 	}
 
 	// Convert the JSON to an importer template object to validate it and generate template column IDs
-	template, err := types.ConvertUploadTemplate(uploadTemplate, true)
+	template, err := types.ConvertRawTemplate(uploadTemplate, true)
 	if err != nil {
 		return jsonb.JSONB{}, fmt.Errorf("could not convert upload template: %v", err.Error())
 	}
@@ -409,5 +419,67 @@ func removeUploadFileFromDisk(file *os.File, fileName, uploadID string) {
 	if err != nil {
 		tf.Log.Errorw("Could not delete upload info from file system", "error", err, "upload_id", uploadID)
 		return
+	}
+}
+
+// AddColumnMappingSuggestions Iterates through the template and upload columns to determine if there is a match to
+// pre-select during the column mapping stage of the import
+func AddColumnMappingSuggestions(upload *types.Upload, templateColumns []*model.TemplateColumn) {
+	matchedTemplateColumnIDs := make(map[string]bool)
+
+	// TODO: Idea for improving this: Keep track of similarity scores across all upload/template columns. An exact match
+	// would be a 1. If a match is overwritten, we need to reevaluate the match for the previous upload column.
+
+	// TODO: We should persist these on the upload to avoid having to regenerate them in different scenarios.
+
+	for _, uploadColumn := range upload.UploadColumns {
+		var bestSimilarityScore float32 = 0
+		var bestMatchColumnID model.ID
+
+		for _, templateColumn := range templateColumns {
+			if matchedTemplateColumnIDs[templateColumn.ID.String()] {
+				continue
+			}
+
+			uploadColumnName := strings.ToLower(strings.TrimSpace(uploadColumn.Name))
+			templateColumnName := strings.ToLower(strings.TrimSpace(templateColumn.Name))
+			if len(uploadColumnName) == 0 || len(templateColumnName) == 0 {
+				continue
+			}
+
+			// Suggested mappings
+			for _, suggestedMapping := range templateColumn.SuggestedMappings {
+				if uploadColumnName == strings.ToLower(suggestedMapping) {
+					bestMatchColumnID = templateColumn.ID
+					continue
+				}
+			}
+
+			// Exact match
+			if uploadColumnName == templateColumnName {
+				bestMatchColumnID = templateColumn.ID
+				continue
+			}
+
+			// Exact match, with spaces replaced by underscores
+			uploadColumnNameReplaced := strings.ReplaceAll(uploadColumnName, " ", "_")
+			templateColumnNameReplaced := strings.ReplaceAll(templateColumnName, " ", "_")
+			if uploadColumnNameReplaced == templateColumnNameReplaced {
+				bestMatchColumnID = templateColumn.ID
+				continue
+			}
+
+			// String similarity comparison
+			similarityScore := util.StringSimilarity(uploadColumnName, templateColumnName)
+			if similarityScore > 0.9 && similarityScore > bestSimilarityScore {
+				bestSimilarityScore = similarityScore
+				bestMatchColumnID = templateColumn.ID
+				continue
+			}
+		}
+		if bestMatchColumnID.Valid {
+			uploadColumn.SuggestedTemplateColumnID = bestMatchColumnID
+			matchedTemplateColumnIDs[bestMatchColumnID.String()] = true
+		}
 	}
 }
