@@ -44,7 +44,7 @@ type TemplateColumn struct {
 }
 
 type Validation struct {
-	ValidationID uint        `json:"id" swaggertype:"integer" example:"4581"`
+	ValidationID uint        `json:"id,omitempty" swaggertype:"integer" example:"4581"`
 	Validate     string      `json:"validate" example:"not_blank"`
 	Options      jsonb.JSONB `json:"options" swaggertype:"string" example:"true"`
 	Message      string      `json:"message" example:"The cell must contain a value"`

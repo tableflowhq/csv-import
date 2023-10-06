@@ -329,14 +329,15 @@ func createImporterForExternalAPI(c *gin.Context) {
 		}
 
 		for _, v := range tc.Validations {
-			validation, err := model.ParseValidation(0, tc.ID.String(), v.Validate, v.Options, v.Message, v.Severity, model.TemplateColumnDataType(tc.DataType))
+			v.ValidationID = 0
+			validation, err := model.ParseValidation(v.ValidationID, tc.ID.String(), v.Validate, v.Options, v.Message, v.Severity, model.TemplateColumnDataType(tc.DataType))
 			if err != nil {
 				c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 				return
 			}
 			templateColumn.Validations = append(templateColumn.Validations, validation)
 		}
-		template.TemplateColumns = append(template.TemplateColumns)
+		template.TemplateColumns = append(template.TemplateColumns, templateColumn)
 	}
 
 	err = tf.DB.Create(template.TemplateColumns).Error
@@ -346,17 +347,6 @@ func createImporterForExternalAPI(c *gin.Context) {
 		return
 	}
 	importer.Template = &template
-
-	for _, tc := range template.TemplateColumns {
-		if len(tc.Validations) != 0 {
-			err = tf.DB.Create(tc.Validations).Error
-			if err != nil {
-				tf.Log.Errorw("Could not create validations", "error", err, "template_id", template.ID, "template_column_id", tc.ID)
-				c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("Could not create validations: %v", err.Error())})
-				return
-			}
-		}
-	}
 
 	importerType := types.Importer{
 		ID:                     importer.ID,
