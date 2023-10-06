@@ -1,4 +1,4 @@
-import { FormEvent, useEffect } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import Button from "../../components/Button";
 import Errors from "../../components/Errors";
 import Table from "../../components/Table";
@@ -20,6 +20,7 @@ export default function MapColumns({
 }: MapColumnsProps) {
   const { rows, formValues } = useMapColumnsTable(upload?.upload_columns, template?.columns, schemaless, schemalessReadOnly, columnsValues);
   const { mutate, error, isSuccess, isLoading } = usePostUpload(upload?.id || "");
+  const [selectedColumns, setSelectedColumns] = useState<any>([]);
 
   const onSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -29,13 +30,14 @@ export default function MapColumns({
       const { template, use } = formValues[key];
       return { ...acc, ...(use ? { [key]: template } : {}) };
     }, {});
+    setSelectedColumns(columns);
 
     mutate(columns);
   };
 
   useEffect(() => {
     if (isSuccess && !error && !isLoading && upload) {
-      onSuccess(upload.id);
+      onSuccess(upload.id, selectedColumns);
     }
   }, [isSuccess, error, isLoading]);
 
