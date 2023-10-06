@@ -101,10 +101,10 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
     const orderedIds = Object.values(columnsOrder);
 
     // Map over orderedIds to get the corresponding columns from templateCols
-    const orderedColumns = orderedIds.map((id) => template.columns.find((col) => col.id === id)).filter(Boolean) || [];
+    const orderedColumns = orderedIds.map((id) => template?.columns?.find((col) => col.id === id)).filter(Boolean) || [];
 
     const generatedColumnDefs = orderedColumns.map(({ name: colName, key: colKey }: any) => {
-      const displayDescription = template?.columns.find((c) => c.key === colKey)?.description;
+      const displayDescription = template?.columns?.find((c) => c.key === colKey)?.description;
 
       return {
         headerName: colName,
