@@ -1,8 +1,8 @@
-version: "4"
+version: "3"
 
 services:
   postgres:
-    image: "postgres:latest"
+    image: "postgres:15.4"
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -17,10 +17,10 @@ services:
       test: ["CMD", "pg_isready", "-p", "${POSTGRES_PORT}"]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
 
   scylla:
-    image: scylladb/scylla:latest
+    image: scylladb/scylla:5.2
     container_name: scylla
     ports:
       - "9042:9042"
@@ -30,9 +30,9 @@ services:
     command: --authorizer=AllowAllAuthorizer
     healthcheck:
       test: ["CMD", "cqlsh", "-e", "DESCRIBE KEYSPACES;"]
-      interval: 10s
+      interval: 5s
       timeout: 5s
-      retries: 10
+      retries: 30
 
   backend:
     platform: linux/amd64

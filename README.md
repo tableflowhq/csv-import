@@ -72,7 +72,7 @@ sudo wget -O /usr/local/bin/docker-compose https://github.com/docker/compose/rel
 sudo mv /usr/local/bin/docker-compose /usr/bin/docker-compose && \
 sudo chmod +x /usr/bin/docker-compose && \
 mkdir tableflow && cd tableflow && \
-wget --no-check-certificate https://raw.githubusercontent.com/tableflowhq/tableflow/main/{.env.example,docker-compose.yml,docker-compose.base.yml} && \
+wget https://raw.githubusercontent.com/tableflowhq/tableflow/main/{.env.example,docker-compose.yml,docker-compose.base.yml} && \
 mv .env.example .env && \
 sg docker -c 'docker-compose up -d'
 ```
