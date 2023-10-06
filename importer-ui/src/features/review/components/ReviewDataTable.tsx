@@ -17,7 +17,7 @@ const INDEX_ROW_WIDTH = 70;
 const MAX_COLUMN_SCROLL = 7;
 const MAX_ROWS = 9;
 
-function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged }: TableProps) {
+function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged, columnsOrder }: TableProps) {
   const customSelectClass = "ag-theme-alpine-dark-custom-select";
   const paginatedDataRef: any = useRef();
   const filterRef: any = useRef(filter);
@@ -95,47 +95,51 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
   };
 
   useEffect(() => {
-    if (paginatedData?.rows?.[0]?.values) {
-      const headers = Object.keys(paginatedData.rows[0]?.values);
-      const generatedColumnDefs = headers.map((header: string) => {
-        const displayName = template?.columns.find((c) => c.key === header)?.name;
-        const displayDescription = template?.columns.find((c) => c.key === header)?.description;
+    if (!paginatedData?.rows?.[0]?.values) return;
+    if (!columnsOrder) return;
+    // Extract ids from columnOrder and preserve the order
+    const orderedIds = Object.values(columnsOrder);
 
-        return {
-          headerName: displayName || header,
-          headerComponent: customHeaderComponent,
-          headerComponentParams: {
-            displayDescription: displayDescription,
-          },
-          editable: (params) => params.data && params.data.values,
-          field: `values.${header}`,
-          cellStyle: (params: any) => {
-            if (params.data?.errors?.[header]) {
-              return { backgroundColor: getCellBackgroundColor(params.data.errors[header][0].severity, theme) };
-            }
-            return { backgroundColor: "" };
-          },
-          cellRenderer: (params: ICellRendererParams) => cellRenderer(params, header),
-          sortable: false,
-          filter: false,
-          suppressMovable: true,
-          width: headers.length < MAX_COLUMN_SCROLL ? (TABLE_WIDTH - INDEX_ROW_WIDTH) / headers.length : undefined,
-        } as ColDef;
-      });
-      // Add index column to the beginning of the columns
-      generatedColumnDefs.push({
-        headerName: "",
-        // Set the index cell value to the node ID + 1
-        valueGetter: (params: ValueGetterParams) => {
-          return params.data && params.data.values ? Number(params.node?.id ?? 0) + 1 : "";
+    // Map over orderedIds to get the corresponding columns from templateCols
+    const orderedColumns = orderedIds.map((id) => template?.columns?.find((col) => col.id === id)).filter(Boolean) || [];
+
+    const generatedColumnDefs = orderedColumns.map(({ name: colName, key: colKey }: any) => {
+      const displayDescription = template?.columns?.find((c) => c.key === colKey)?.description;
+
+      return {
+        headerName: colName,
+        headerComponent: customHeaderComponent,
+        headerComponentParams: {
+          displayDescription: displayDescription,
         },
-        field: "index",
-        width: INDEX_ROW_WIDTH,
-        pinned: headers.length > MAX_COLUMN_SCROLL ? "left" : undefined,
-      });
-      setColumnDefs(generatedColumnDefs.reverse());
-    }
-  }, [JSON.stringify(paginatedData?.rows), JSON.stringify(template)]);
+        editable: (params) => params.data && params.data.values,
+        field: `values.${colKey}`,
+        cellStyle: (params: any) => {
+          if (params.data?.errors?.[colKey]) {
+            return { backgroundColor: getCellBackgroundColor(params.data.errors[colKey][0].severity, theme) };
+          }
+          return { backgroundColor: "" };
+        },
+        cellRenderer: (params: ICellRendererParams) => cellRenderer(params, colKey),
+        sortable: false,
+        filter: false,
+        suppressMovable: true,
+        width: orderedColumns.length < MAX_COLUMN_SCROLL ? (TABLE_WIDTH - INDEX_ROW_WIDTH) / orderedColumns.length : undefined,
+      } as ColDef;
+    });
+    // Add index column to the beginning of the columns
+    generatedColumnDefs.unshift({
+      headerName: "",
+      // Set the index cell value to the node ID + 1
+      valueGetter: (params: ValueGetterParams) => {
+        return params.data && params.data.values ? Number(params.node?.id ?? 0) + 1 : "";
+      },
+      field: "index",
+      width: INDEX_ROW_WIDTH,
+      pinned: orderedColumns.length > MAX_COLUMN_SCROLL ? "left" : undefined,
+    });
+    setColumnDefs(generatedColumnDefs);
+  }, [JSON.stringify(paginatedData?.rows), JSON.stringify(template), JSON.stringify(columnsOrder)]);
 
   const onCellMouseDown = (params: any) => {
     if (params.colDef.field !== "index") {
