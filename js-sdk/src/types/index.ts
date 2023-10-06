@@ -8,8 +8,6 @@ type ModalParams =
     }
   | {
       isModal: false;
-      modalOnCloseTriggered: never;
-      modalCloseOnOutsideClick: never;
     };
 
 export type TableFlowImporterProps = HTMLDialogElement & {
