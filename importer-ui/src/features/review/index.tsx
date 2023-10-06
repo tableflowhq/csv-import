@@ -24,7 +24,7 @@ type FilterOptionCounts = {
   NumErrorRows: number;
 };
 
-export default function Review({ onCancel, onComplete, upload, template, reload, close }: ReviewProps) {
+export default function Review({ onCancel, onComplete, upload, template, reload, close, columnsOrder }: ReviewProps) {
   const uploadId = upload?.id;
   const filter = useRef<QueryFilter>("all");
   const [filterOptions, setFilterOptions] = useState<Option[]>(defaultOptions);
@@ -38,6 +38,8 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
   const [showLoading, setShowLoading] = useState(true);
   const submittedOk = dataSubmitted?.ok || {};
   const hasValidations = template.columns.some((tc) => tc.validations && tc.validations.length > 0);
+
+  console.log(columnsOrder);
 
   const cellValueChangeSet = useRef(new Set<string>());
   const onCellValueChanged = useCallback((event: CellValueChangedEvent) => {
@@ -175,7 +177,14 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
         )}
         <div className={style.tableWrapper}>
           {!isLoading && (
-            <ReviewDataTable onCellValueChanged={onCellValueChanged} template={template} theme={theme} uploadId={uploadId} filter={filter.current} />
+            <ReviewDataTable
+              onCellValueChanged={onCellValueChanged}
+              template={template}
+              columnsOrder={columnsOrder}
+              theme={theme}
+              uploadId={uploadId}
+              filter={filter.current}
+            />
           )}
         </div>
         <div className={style.actions}>

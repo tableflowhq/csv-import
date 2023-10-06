@@ -16,7 +16,7 @@ const INDEX_ROW_WIDTH = 70;
 const MAX_COLUMN_SCROLL = 7;
 const MAX_ROWS = 9;
 
-function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged }: TableProps) {
+function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged, columnsOrder }: TableProps) {
   const customSelectClass = "ag-theme-alpine-dark-custom-select";
   const paginatedDataRef: any = useRef();
   const filterRef: any = useRef(filter);
@@ -95,17 +95,17 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
 
   useEffect(() => {
     if (paginatedData?.rows?.[0]?.values) {
-      const validKeys = Object.keys(paginatedData.rows[0].values);
-      const filteredTemplateColumns = template?.columns.filter((c) => validKeys.includes(c.key));
-      const columnsNames = filteredTemplateColumns?.map((c) => c.name);
+      // Extract ids from columnOrder and preserve the order
+      const orderedIds = Object.values(columnsOrder);
 
-      const headers = columnsNames || validKeys;
-      const generatedColumnDefs = headers.map((header: string, index: number) => {
-        const colKey = validKeys[index];
+      // Map over orderedIds to get the corresponding columns from templateCols
+      const orderedColumns = orderedIds.map((id) => template.columns.find((col) => col.id === id)).filter(Boolean) || [];
+
+      const generatedColumnDefs = orderedColumns.map(({ name: colName, key: colKey }: any) => {
         const displayDescription = template?.columns.find((c) => c.key === colKey)?.description;
 
         return {
-          headerName: header,
+          headerName: colName,
           headerComponent: customHeaderComponent,
           headerComponentParams: {
             displayDescription: displayDescription,
@@ -122,7 +122,7 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
           sortable: false,
           filter: false,
           suppressMovable: true,
-          width: headers.length < MAX_COLUMN_SCROLL ? (TABLE_WIDTH - INDEX_ROW_WIDTH) / headers.length : undefined,
+          width: orderedColumns.length < MAX_COLUMN_SCROLL ? (TABLE_WIDTH - INDEX_ROW_WIDTH) / orderedColumns.length : undefined,
         } as ColDef;
       });
       // Add index column to the beginning of the columns
@@ -134,11 +134,11 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
         },
         field: "index",
         width: INDEX_ROW_WIDTH,
-        pinned: headers.length > MAX_COLUMN_SCROLL ? "left" : undefined,
+        pinned: orderedColumns.length > MAX_COLUMN_SCROLL ? "left" : undefined,
       });
       setColumnDefs(generatedColumnDefs);
     }
-  }, [JSON.stringify(paginatedData?.rows), JSON.stringify(template)]);
+  }, [JSON.stringify(paginatedData?.rows), JSON.stringify(template), JSON.stringify(columnsOrder)]);
 
   const onCellMouseDown = (params: any) => {
     if (params.colDef.field !== "index") {
