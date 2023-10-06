@@ -1,6 +1,7 @@
 package db
 
 import (
+	"github.com/guregu/null"
 	"tableflow/go/pkg/model"
 	"tableflow/go/pkg/tf"
 )
@@ -38,31 +39,39 @@ func CreateObjectsForNewUser(user *model.User) (workspaceID string, err error) {
 	}
 	templateColumns := &[]*model.TemplateColumn{
 		{
-			ID:         model.NewID(),
-			TemplateID: template.ID,
-			Name:       "First Name",
-			Key:        "first_name",
-			Required:   false,
-			CreatedBy:  user.ID,
-			UpdatedBy:  user.ID,
+			ID:                model.NewID(),
+			TemplateID:        template.ID,
+			Name:              "First Name",
+			Key:               "first_name",
+			Required:          false,
+			DataType:          model.TemplateColumnDataTypeString,
+			Description:       null.StringFrom("The user's first name"),
+			SuggestedMappings: []string{"first"},
+			CreatedBy:         user.ID,
+			UpdatedBy:         user.ID,
 		},
 		{
-			ID:         model.NewID(),
-			TemplateID: template.ID,
-			Name:       "Last Name",
-			Key:        "last_name",
-			Required:   false,
-			CreatedBy:  user.ID,
-			UpdatedBy:  user.ID,
+			ID:                model.NewID(),
+			TemplateID:        template.ID,
+			Name:              "Last Name",
+			Key:               "last_name",
+			Required:          false,
+			DataType:          model.TemplateColumnDataTypeString,
+			Description:       null.StringFrom("The user's last name"),
+			SuggestedMappings: []string{"last"},
+			CreatedBy:         user.ID,
+			UpdatedBy:         user.ID,
 		},
 		{
-			ID:         model.NewID(),
-			TemplateID: template.ID,
-			Name:       "Email",
-			Key:        "email",
-			Required:   true,
-			CreatedBy:  user.ID,
-			UpdatedBy:  user.ID,
+			ID:          model.NewID(),
+			TemplateID:  template.ID,
+			Name:        "Email",
+			Key:         "email",
+			Required:    true,
+			DataType:    model.TemplateColumnDataTypeString,
+			Description: null.StringFrom("The email of the user"),
+			CreatedBy:   user.ID,
+			UpdatedBy:   user.ID,
 		},
 	}
 	err = tf.DB.Create(organization).Error
@@ -301,10 +310,10 @@ func GetDatabaseSchemaInitSQL() string {
 		create table if not exists validations (
 		    id                 serial primary key,
 		    template_column_id uuid  not null,
-		    type               text  not null,
+		    validate           text  not null,
+		    options            jsonb,
 		    message            text,
 		    severity           text  not null default 'error',
-		    value              jsonb not null,
 		    deleted_at         timestamp with time zone,
 		    constraint fk_template_column_id
 		        foreign key (template_column_id)
@@ -366,5 +375,36 @@ func GetDatabaseSchemaInitSQL() string {
 		drop index if exists imports_upload_id_idx;
 		create index if not exists imports_upload_id_non_unique_idx on imports(upload_id);
 		create unique index if not exists imports_upload_id_deleted_at_idx on imports(upload_id) where (deleted_at is null);
+
+		alter table template_columns
+		    add column if not exists data_type text not null default 'string';
+		alter table imports
+		    add column if not exists data_types jsonb;
+		do
+		$$
+		    begin
+		        if exists (
+		            select *
+		            from information_schema.columns
+		            where table_name = 'validations'
+		              and column_name = 'type'
+		        ) then
+		            alter table validations
+		                rename column type to validate;
+		        end if;
+		
+		        if exists (
+		            select *
+		            from information_schema.columns
+		            where table_name = 'validations'
+		              and column_name = 'value'
+		        ) then
+		            alter table validations
+		                rename column value to options;
+		        end if;
+		    end
+		$$;
+		alter table validations
+		    alter column options drop not null;
 	`
 }

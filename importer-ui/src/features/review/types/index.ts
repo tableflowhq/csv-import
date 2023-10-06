@@ -9,6 +9,7 @@ export type ReviewProps = {
   showImportLoadingStatus?: boolean;
   template: Template;
   reload: () => void;
+  columnsOrder?: ColumnsOrder;
 };
 
 export type TableProps = {
@@ -17,4 +18,9 @@ export type TableProps = {
   filter: QueryFilter;
   template: Template;
   onCellValueChanged: (event: CellValueChangedEvent) => void;
+  columnsOrder?: ColumnsOrder;
 };
+
+export interface ColumnsOrder {
+  [key: string]: string;
+}
