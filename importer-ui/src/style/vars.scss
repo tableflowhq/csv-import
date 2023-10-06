@@ -1,0 +1,55 @@
+:root {
+  // DIMENSIONS
+
+  // margins and paddings
+  --base-spacing: 24px;
+  --m-xxxxs: calc(var(--base-spacing) / 5);
+  --m-xxxs: calc(var(--base-spacing) / 4);
+  --m-xxs: calc(var(--base-spacing) / 3);
+  --m-xs: calc(var(--base-spacing) / 2);
+  --m-s: calc(var(--base-spacing) * 2 / 3);
+  --m: var(--base-spacing);
+  --m-mm: calc(var(--base-spacing) * 3 / 2);
+  --m-l: calc(var(--base-spacing) * 5 / 3);
+  --m-xl: calc(var(--base-spacing) * 2);
+  --m-xxl: calc(var(--base-spacing) * 5 / 2);
+  --m-xxxl: calc(var(--base-spacing) * 3);
+
+  // FONTS
+
+  --font-size-xs: calc(var(--font-size) * 16 / 17);
+  --font-size-s: calc(var(--font-size) * 13 / 14);
+  --font-size: 0.875rem;
+  --font-size-l: calc(var(--font-size) * 8 / 7);
+  --font-size-xl: calc(var(--font-size) * 9 / 7);
+  --font-size-xxl: calc(var(--font-size) * 12 / 7);
+  --font-size-xxxl: calc(var(--font-size) * 18 / 7);
+  --font-size-h: calc(var(--font-size) * 24 / 7);
+
+  --font-family: "Inter", sans-serif;
+  --font-family-1: var(--font-family);
+  --font-family-2: "Laxan", sans-serif;
+
+  // BORDERS
+
+  --border-radius: 4px;
+  --border-radius-1: var(--border-radius);
+  --border-radius-2: calc(var(--border-radius) * 2);
+  --border-radius-3: calc(var(--border-radius) * 3);
+  --border-radius-4: calc(var(--border-radius) * 4);
+  --border-radius-5: calc(var(--border-radius) * 5);
+  --border-radius-r: 50%;
+
+  // TRANSITIONS
+
+  --fast: 0.3s;
+  --speed: 0.4s;
+  --slow: 0.9s;
+  --ease: ease-out;
+  --transition-ui: background-color var(--fast) var(--ease), border-color var(--fast) var(--ease), opacity var(--fast) var(--ease),
+    transform var(--fast) var(--ease), color var(--fast) var(--ease);
+
+  // BLURRED
+
+  --blurred: 5px;
+}

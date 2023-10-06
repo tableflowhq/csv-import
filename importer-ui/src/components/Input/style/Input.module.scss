@@ -1,0 +1,223 @@
+@import "./mixins.scss";
+
+.container {
+  margin-bottom: var(--m);
+  text-align: left;
+
+  &:only-child {
+    margin: var(--m-xxs) 0;
+  }
+
+  &:has(input[disabled]) {
+    .label {
+      cursor: default;
+    }
+  }
+}
+
+.label {
+  display: inline-block;
+  margin-bottom: var(--m-xxs);
+  cursor: pointer;
+  line-height: 1;
+  font-weight: 500;
+  font-family: var(--font-family-1);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.inputWrapper {
+  background-color: var(--color-input-background);
+  border-radius: var(--border-radius-2);
+  outline: 1px solid transparent;
+  padding: calc(var(--m-xxs) / 2);
+  border: 1px solid var(--color-border);
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  min-width: 270px;
+  position: relative;
+
+  svg {
+    display: block;
+  }
+
+  &:focus-within,
+  &:has(.open) {
+    outline-color: var(--color-text);
+    z-index: 11;
+
+    .icon svg:not([data-stroke="no-stroke"]) path {
+      stroke: var(--color-text);
+    }
+
+    .options {
+      display: flex;
+    }
+  }
+
+  &:has(> [error]),
+  &.hasError {
+    border-color: var(--color-text-error);
+
+    .icon svg:not([data-stroke="no-stroke"]) path {
+      stroke: var(--color-text-error);
+    }
+  }
+
+  &:has(> [disabled]) {
+    background-color: var(--color-input-disabled);
+    color: var(--color-input-text-disabled);
+    border-color: var(--color-border-soft);
+
+    .icon.dropdownIcon {
+      cursor: default;
+    }
+  }
+
+  .icon {
+    padding: 0 var(--m-xxxs);
+    cursor: pointer;
+    display: flex;
+
+    button {
+      background: none;
+      padding: 0;
+      border: none;
+      cursor: pointer;
+    }
+
+    svg:not([data-stroke="no-stroke"]) path {
+      display: block;
+      stroke: var(--color-text-soft);
+    }
+  }
+
+  input,
+  select,
+  textarea {
+    -webkit-tap-highlight-color: transparent;
+    appearance: none;
+    resize: none;
+    width: 100%;
+    display: block;
+    padding: calc(var(--m-xxs) / 2);
+    border: none;
+    background-color: transparent;
+    flex-grow: 1;
+    color: var(--color-text);
+
+    @include placeholder {
+      color: var(--color-text-soft);
+    }
+
+    option:disabled {
+      color: var(--color-text-soft);
+    }
+    option:not([value]) {
+      display: none;
+    }
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  select option {
+    background-color: var(--color-input-background);
+    border: none;
+    padding: var(--m);
+  }
+
+  .fluid & {
+    min-width: auto;
+  }
+
+  .small & {
+    padding: 0 var(--m-xxxs);
+    min-width: auto;
+    border-radius: var(--border-radius-1);
+
+    .options {
+      border-radius: var(--border-radius-1);
+
+      .option {
+        border-radius: var(--border-radius-1);
+      }
+    }
+  }
+
+  .optionsRef {
+    display: flex;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    left: 0;
+  }
+
+  .select:not([disabled]) {
+    cursor: pointer;
+  }
+}
+
+.options {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  left: 0;
+  z-index: 1000;
+
+  .inner {
+    display: flex;
+    background-color: var(--color-input-background);
+    border-radius: var(--border-radius-2);
+    padding: var(--m-xxxxs);
+    outline: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+    gap: var(--m-xxxxs);
+    max-height: calc(100vh - 8px);
+    overflow-y: auto;
+    margin-top: var(--m-xxxxs);
+  }
+
+  .option {
+    padding: var(--m-xxs) var(--m-xxs);
+    border-radius: var(--border-radius-2);
+
+    &[disabled] {
+      color: var(--color-text-soft);
+    }
+
+    &:not([disabled]) {
+      cursor: pointer;
+
+      &:hover,
+      &:focus,
+      &.selected {
+        background-color: var(--color-background-menu-hover);
+      }
+      &.placeholder {
+        color: var(--color-text-soft);
+      }
+    }
+    .requiredMark {
+      color: var(--color-text-error);
+    }
+  }
+}
+
+.error {
+  color: var(--color-text-error);
+  margin-top: var(--m-xxs);
+  line-height: 1;
+  font-weight: 400;
+}
+
+.footer {
+  color: var(--color-text-soft);
+  margin-top: var(--m-xxs);
+  line-height: 1;
+  font-weight: 400;
+}

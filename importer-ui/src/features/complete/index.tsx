@@ -1,4 +1,6 @@
-import { Box, Button, Icon } from "@tableflow/ui-library";
+import Box from "../../components/Box";
+import Button from "../../components/Button";
+import Icon from "../../components/Icon";
 import Spinner from "../../components/Spinner";
 import useEmbedStore from "../../stores/embed";
 import { CompleteProps } from "./types";
