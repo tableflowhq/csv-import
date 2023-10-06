@@ -7,6 +7,7 @@ import useDelayedLoader from "../../hooks/useDelayLoader";
 import useEmbedStore from "../../stores/embed";
 import { providedCssOverrides } from "../../utils/cssInterpreter";
 import postMessage from "../../utils/postMessage";
+import { ColumnsOrder } from "../review/types";
 import useApi from "./hooks/useApi";
 import useModifiedSteps from "./hooks/useModifiedSteps";
 import { Steps } from "./types";
@@ -76,7 +77,7 @@ export default function Main() {
   // Header row selection state
   const [selectedHeaderRow, setSelectedHeaderRow] = useState<number>(0);
   const [uploadFromHeaderRowSelection, setUploadFromHeaderRowSelection] = useState<any | null>(null);
-  const [columnsOrder, setColumnsOrder] = useState<any | null>(null);
+  const [columnsOrder, setColumnsOrder] = useState<ColumnsOrder>();
 
   // Stepper handler
   const steps = useModifiedSteps(stepsConfig, skipHeader);

@@ -94,50 +94,50 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
   };
 
   useEffect(() => {
-    if (paginatedData?.rows?.[0]?.values) {
-      // Extract ids from columnOrder and preserve the order
-      const orderedIds = Object.values(columnsOrder);
+    if (!paginatedData?.rows?.[0]?.values) return;
+    if (!columnsOrder) return;
+    // Extract ids from columnOrder and preserve the order
+    const orderedIds = Object.values(columnsOrder);
 
-      // Map over orderedIds to get the corresponding columns from templateCols
-      const orderedColumns = orderedIds.map((id) => template.columns.find((col) => col.id === id)).filter(Boolean) || [];
+    // Map over orderedIds to get the corresponding columns from templateCols
+    const orderedColumns = orderedIds.map((id) => template.columns.find((col) => col.id === id)).filter(Boolean) || [];
 
-      const generatedColumnDefs = orderedColumns.map(({ name: colName, key: colKey }: any) => {
-        const displayDescription = template?.columns.find((c) => c.key === colKey)?.description;
+    const generatedColumnDefs = orderedColumns.map(({ name: colName, key: colKey }: any) => {
+      const displayDescription = template?.columns.find((c) => c.key === colKey)?.description;
 
-        return {
-          headerName: colName,
-          headerComponent: customHeaderComponent,
-          headerComponentParams: {
-            displayDescription: displayDescription,
-          },
-          editable: (params) => params.data && params.data.values,
-          field: `values.${colKey}`,
-          cellStyle: (params: any) => {
-            if (params.data?.errors?.[colKey]) {
-              return { backgroundColor: getCellBackgroundColor(params.data.errors[colKey][0].severity, theme) };
-            }
-            return { backgroundColor: "" };
-          },
-          cellRenderer: (params: ICellRendererParams) => cellRenderer(params, colKey),
-          sortable: false,
-          filter: false,
-          suppressMovable: true,
-          width: orderedColumns.length < MAX_COLUMN_SCROLL ? (TABLE_WIDTH - INDEX_ROW_WIDTH) / orderedColumns.length : undefined,
-        } as ColDef;
-      });
-      // Add index column to the beginning of the columns
-      generatedColumnDefs.unshift({
-        headerName: "",
-        // Set the index cell value to the node ID + 1
-        valueGetter: (params: ValueGetterParams) => {
-          return params.data && params.data.values ? Number(params.node?.id ?? 0) + 1 : "";
+      return {
+        headerName: colName,
+        headerComponent: customHeaderComponent,
+        headerComponentParams: {
+          displayDescription: displayDescription,
         },
-        field: "index",
-        width: INDEX_ROW_WIDTH,
-        pinned: orderedColumns.length > MAX_COLUMN_SCROLL ? "left" : undefined,
-      });
-      setColumnDefs(generatedColumnDefs);
-    }
+        editable: (params) => params.data && params.data.values,
+        field: `values.${colKey}`,
+        cellStyle: (params: any) => {
+          if (params.data?.errors?.[colKey]) {
+            return { backgroundColor: getCellBackgroundColor(params.data.errors[colKey][0].severity, theme) };
+          }
+          return { backgroundColor: "" };
+        },
+        cellRenderer: (params: ICellRendererParams) => cellRenderer(params, colKey),
+        sortable: false,
+        filter: false,
+        suppressMovable: true,
+        width: orderedColumns.length < MAX_COLUMN_SCROLL ? (TABLE_WIDTH - INDEX_ROW_WIDTH) / orderedColumns.length : undefined,
+      } as ColDef;
+    });
+    // Add index column to the beginning of the columns
+    generatedColumnDefs.unshift({
+      headerName: "",
+      // Set the index cell value to the node ID + 1
+      valueGetter: (params: ValueGetterParams) => {
+        return params.data && params.data.values ? Number(params.node?.id ?? 0) + 1 : "";
+      },
+      field: "index",
+      width: INDEX_ROW_WIDTH,
+      pinned: orderedColumns.length > MAX_COLUMN_SCROLL ? "left" : undefined,
+    });
+    setColumnDefs(generatedColumnDefs);
   }, [JSON.stringify(paginatedData?.rows), JSON.stringify(template), JSON.stringify(columnsOrder)]);
 
   const onCellMouseDown = (params: any) => {
