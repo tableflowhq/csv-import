@@ -1,0 +1,410 @@
+// Base
+
+$base-white: #ffffff; // 0, 0, 100
+$base-black: #000000; // 0, 0, 0
+
+// Gray
+
+$gray-25: #fcfcfd; // 67, 20, 99
+$gray-50: #f9fafb; // 58, 20, 98
+$gray-100: #f2f4f7; // 60, 24, 96
+$gray-200: #eaecf0; // 61, 17, 93
+$gray-300: #d0d5dd; // 60, 16, 84
+$gray-400: #98a2b3; // 60, 15, 65
+$gray-500: #667085; // 61, 13, 46
+$gray-600: #475467; // 60, 18, 34
+$gray-700: #344054; // 60, 24, 27
+$gray-800: #1d2939; // 60, 33, 17
+$gray-900: #101828; // 61, 43, 11
+
+// Primary
+
+$primary-25: #fcfaff; // 73, 100, 99
+$primary-50: #f9f5ff; // 73, 100, 98
+$primary-100: #e4dffe; // 69, 94, 94
+$primary-200: #d3c9fd; // 70, 93, 89
+$primary-300: #bcaefb; // 70, 91, 83
+$primary-400: #a694fa; // 70, 91, 78
+$primary-500: #9079f9; // 70, 91, 73
+$primary-600: #7a5ef8; // 70, 92, 67
+$primary-700: #664ecf; // 70, 57, 56
+$primary-800: #513fa5; // 70, 45, 45
+$primary-900: #3d2f7c; // 70, 45, 34
+
+// Error
+
+$error-25: #fffbfa; // 3, 100, 99
+$error-50: #fef3f2; // 1, 86, 97
+$error-100: #fee4e2; // 1, 93, 94
+$error-200: #fecdca; // 1, 96, 89
+$error-300: #fda29b; // 1, 96, 80
+$error-400: #f97066; // 1, 92, 69
+$error-500: #f04438; // 1, 86, 58
+$error-600: #d92d20; // 1, 74, 49
+$error-700: #b42318; // 1, 76, 40
+$error-800: #912018; // 1, 72, 33
+$error-900: #7a271a; // 2, 65, 29
+
+// Warning
+
+$warning-25: #fffcf5; // 12, 100, 98
+$warning-50: #fffaeb; // 12, 100, 96
+$warning-100: #fef0c7; // 12, 96, 89
+$warning-200: #fedf89; // 12, 98, 77
+$warning-300: #fec84b; // 12, 99, 65
+$warning-400: #fdb022; // 11, 98, 56
+$warning-500: #f79009; // 9, 94, 50
+$warning-600: #dc6803; // 8, 97, 44
+$warning-700: #b54708; // 6, 92, 37
+$warning-800: #93370d; // 5, 84, 31
+$warning-900: #7a2e0e; // 5, 79, 27
+
+// Success
+
+$success-25: #f6fef9; // 40, 80, 98
+$success-50: #ecfdf3; // 40, 81, 96
+$success-100: #d1fadf; // 39, 80, 90
+$success-200: #a6f4c5; // 40, 78, 80
+$success-300: #6ce9a6; // 41, 74, 67
+$success-400: #32d583; // 42, 66, 52
+$success-500: #12b76a; // 42, 82, 39
+$success-600: #039855; // 43, 96, 30
+$success-700: #027a48; // 43, 97, 24
+$success-800: #05603a; // 43, 90, 20
+$success-900: #054f31; // 43, 88, 16
+
+// Gray blue
+
+$gray-blue-25: #fcfcfd; // 67, 20, 99
+$gray-blue-50: #f8f9fc; // 63, 40, 98
+$gray-blue-100: #eaecf5; // 64, 35, 94
+$gray-blue-200: #d5d9eb; // 64, 35, 88
+$gray-blue-300: #b3b8db; // 65, 36, 78
+$gray-blue-400: #717bbc; // 64, 36, 59
+$gray-blue-500: #4e5ba6; // 64, 36, 48
+$gray-blue-600: #3e4784; // 65, 36, 38
+$gray-blue-700: #363f72; // 64, 36, 33
+$gray-blue-800: #293056; // 64, 35, 25
+$gray-blue-900: #101323; // 64, 37, 10
+
+// Gray cool
+
+$gray-cool-25: #fcfcfd; // 67, 20, 99
+$gray-cool-50: #f9f9fb; // 67, 20, 98
+$gray-cool-100: #eff1f5; // 61, 23, 95
+$gray-cool-200: #dcdfea; // 63, 25, 89
+$gray-cool-300: #b9c0d4; // 62, 24, 78
+$gray-cool-400: #7d89b0; // 63, 24, 59
+$gray-cool-500: #5d6b98; // 63, 24, 48
+$gray-cool-600: #4a5578; // 63, 24, 38
+$gray-cool-700: #404968; // 63, 24, 33
+$gray-cool-800: #30374f; // 63, 24, 25
+$gray-cool-900: #111322; // 65, 33, 10
+
+// Gray modern
+
+$gray-modern-25: #fcfcfd; // 67, 20, 99
+$gray-modern-50: #f8fafc; // 58, 40, 98
+$gray-modern-100: #eef2f6; // 58, 31, 95
+$gray-modern-200: #e3e8ef; // 60, 27, 91
+$gray-modern-300: #cdd5df; // 59, 22, 84
+$gray-modern-400: #9aa4b2; // 60, 13, 65
+$gray-modern-500: #697586; // 60, 12, 47
+$gray-modern-600: #4b5565; // 60, 15, 35
+$gray-modern-700: #364152; // 60, 21, 27
+$gray-modern-800: #202939; // 61, 28, 17
+$gray-modern-900: #121926; // 61, 36, 11
+
+// Gray neutral
+
+$gray-neutral-25: #fcfcfd; // 67, 20, 99
+$gray-neutral-50: #f9fafb; // 58, 20, 98
+$gray-neutral-100: #f3f4f6; // 61, 14, 96
+$gray-neutral-200: #e5e7eb; // 61, 13, 91
+$gray-neutral-300: #d2d6db; // 59, 11, 84
+$gray-neutral-400: #9da4ae; // 60, 9, 65
+$gray-neutral-500: #6c737f; // 61, 8, 46
+$gray-neutral-600: #4d5761; // 58, 11, 34
+$gray-neutral-700: #384250; // 60, 18, 27
+$gray-neutral-800: #1f2a37; // 59, 28, 17
+$gray-neutral-900: #111927; // 61, 39, 11
+
+// Gray iron
+
+$gray-iron-25: #fcfcfc; // 0, 0, 99
+$gray-iron-50: #fafafa; // 0, 0, 98
+$gray-iron-100: #f4f4f5; // 67, 5, 96
+$gray-iron-200: #e4e4e7; // 67, 6, 90
+$gray-iron-300: #d1d1d6; // 67, 6, 83
+$gray-iron-400: #a0a0ab; // 67, 6, 65
+$gray-iron-500: #70707b; // 67, 5, 46
+$gray-iron-600: #51525c; // 65, 6, 34
+$gray-iron-700: #3f3f46; // 67, 5, 26
+$gray-iron-800: #26272b; // 63, 6, 16
+$gray-iron-900: #18181b; // 67, 6, 10
+
+// Gray true
+
+$gray-true-25: #fcfcfc; // 0, 0, 99
+$gray-true-50: #fafafa; // 0, 0, 98
+$gray-true-100: #f5f5f5; // 0, 0, 96
+$gray-true-200: #e5e5e5; // 0, 0, 90
+$gray-true-300: #d6d6d6; // 0, 0, 84
+$gray-true-400: #a3a3a3; // 0, 0, 64
+$gray-true-500: #737373; // 0, 0, 45
+$gray-true-600: #525252; // 0, 0, 32
+$gray-true-700: #424242; // 0, 0, 26
+$gray-true-800: #292929; // 0, 0, 16
+$gray-true-900: #141414; // 0, 0, 8
+
+// Gray warm
+
+$gray-warm-25: #fdfdfc; // 17, 20, 99
+$gray-warm-50: #fafaf9; // 17, 9, 98
+$gray-warm-100: #f5f5f4; // 17, 5, 96
+$gray-warm-200: #e7e5e4; // 6, 6, 90
+$gray-warm-300: #d7d3d0; // 7, 8, 83
+$gray-warm-400: #a9a29d; // 7, 7, 64
+$gray-warm-500: #79716b; // 7, 6, 45
+$gray-warm-600: #57534e; // 9, 5, 32
+$gray-warm-700: #44403c; // 8, 6, 25
+$gray-warm-800: #292524; // 3, 6, 15
+$gray-warm-900: #1c1917; // 7, 10, 10
+
+// Moss
+
+$moss-25: #fafdf7; // 25, 60, 98
+$moss-50: #f5fbee; // 24, 62, 96
+$moss-100: #e6f4d7; // 25, 57, 90
+$moss-200: #ceeab0; // 25, 58, 80
+$moss-300: #acdc79; // 25, 59, 67
+$moss-400: #86cb3c; // 25, 58, 52
+$moss-500: #669f2a; // 25, 58, 39
+$moss-600: #4f7a21; // 25, 57, 30
+$moss-700: #3f621a; // 25, 58, 24
+$moss-800: #335015; // 25, 58, 20
+$moss-900: #2b4212; // 25, 57, 16
+
+// Green light
+
+$green-light-25: #fafef5; // 24, 82, 98
+$green-light-50: #f3fee7; // 25, 92, 95
+$green-light-100: #e4fbcc; // 25, 85, 89
+$green-light-200: #d0f8ab; // 25, 85, 82
+$green-light-300: #a6ef67; // 26, 81, 67
+$green-light-400: #85e13a; // 26, 74, 55
+$green-light-500: #66c61c; // 26, 75, 44
+$green-light-600: #4ca30d; // 26, 85, 35
+$green-light-700: #3b7c0f; // 27, 78, 27
+$green-light-800: #326212; // 27, 69, 23
+$green-light-900: #2b5314; // 27, 61, 20
+
+// Green
+
+$green-25: #f6fef9; // 40, 80, 98
+$green-50: #edfcf2; // 39, 71, 96
+$green-100: #d3f8df; // 39, 73, 90
+$green-200: #aaf0c4; // 40, 70, 80
+$green-300: #73e2a3; // 41, 66, 67
+$green-400: #3ccb7f; // 41, 58, 52
+$green-500: #16b364; // 42, 78, 39
+$green-600: #099250; // 42, 88, 30
+$green-700: #087443; // 42, 87, 24
+$green-800: #095c37; // 43, 82, 20
+$green-900: #084c2e; // 43, 81, 16
+
+// Teal
+
+$teal-25: #f6fefc; // 46, 80, 98
+$teal-50: #f0fdf9; // 45, 76, 97
+$teal-100: #ccfbef; // 46, 85, 89
+$teal-200: #99f6e0; // 46, 84, 78
+$teal-300: #5fe9d0; // 47, 76, 64
+$teal-400: #2ed3b7; // 47, 65, 50
+$teal-500: #15b79e; // 47, 79, 40
+$teal-600: #0e9384; // 48, 83, 32
+$teal-700: #107569; // 48, 76, 26
+$teal-800: #125d56; // 48, 68, 22
+$teal-900: #134e48; // 48, 61, 19
+
+// Cyan
+
+$cyan-25: #f5feff; // 52, 100, 98
+$cyan-50: #ecfdff; // 52, 100, 96
+$cyan-100: #cff9fe; // 52, 96, 90
+$cyan-200: #a5f0fc; // 52, 94, 82
+$cyan-300: #67e3f9; // 53, 92, 69
+$cyan-400: #22ccee; // 53, 86, 53
+$cyan-500: #06aed4; // 53, 94, 43
+$cyan-600: #088ab2; // 54, 91, 36
+$cyan-700: #0e7090; // 54, 82, 31
+$cyan-800: #155b75; // 55, 70, 27
+$cyan-900: #164c63; // 55, 64, 24
+
+// Blue light
+
+$blue-light-25: #f5fbff; // 57, 100, 98
+$blue-light-50: #f0f9ff; // 57, 100, 97
+$blue-light-100: #e0f2fe; // 57, 94, 94
+$blue-light-200: #b9e6fe; // 56, 97, 86
+$blue-light-300: #7cd4fd; // 55, 97, 74
+$blue-light-400: #36bffa; // 55, 95, 60
+$blue-light-500: #0ba5ec; // 55, 91, 48
+$blue-light-600: #0086c9; // 56, 100, 39
+$blue-light-700: #026aa2; // 56, 98, 32
+$blue-light-800: #065986; // 56, 91, 27
+$blue-light-900: #0b4a6f; // 56, 82, 24
+
+// Blue
+
+$blue-25: #f5faff; // 58, 100, 98
+$blue-50: #eff8ff; // 57, 100, 97
+$blue-100: #d1e9ff; // 58, 100, 91
+$blue-200: #b2ddff; // 57, 100, 85
+$blue-300: #84caff; // 57, 100, 76
+$blue-400: #53b1fd; // 57, 98, 66
+$blue-500: #2e90fa; // 59, 95, 58
+$blue-600: #1570ef; // 60, 87, 51
+$blue-700: #175cd3; // 61, 80, 46
+$blue-800: #1849a9; // 61, 75, 38
+$blue-900: #194185; // 60, 68, 31
+
+// Blue dark
+
+$blue-dark-25: #f5f8ff; // 62, 100, 98
+$blue-dark-50: #eff4ff; // 61, 100, 97
+$blue-dark-100: #d1e0ff; // 61, 100, 91
+$blue-dark-200: #b2ccff; // 61, 100, 85
+$blue-dark-300: #84adff; // 61, 100, 76
+$blue-dark-400: #528bff; // 61, 100, 66
+$blue-dark-500: #2970ff; // 61, 100, 58
+$blue-dark-600: #155eef; // 61, 87, 51
+$blue-dark-700: #004eeb; // 61, 100, 46
+$blue-dark-800: #0040c1; // 61, 100, 38
+$blue-dark-900: #00359e; // 61, 100, 31
+
+// Indigo
+
+$indigo-25: #f5f8ff; // 62, 100, 98
+$indigo-50: #eef4ff; // 61, 100, 97
+$indigo-100: #e0eaff; // 61, 100, 94
+$indigo-200: #c7d7fe; // 62, 96, 89
+$indigo-300: #a4bcfd; // 62, 96, 82
+$indigo-400: #8098f9; // 63, 91, 74
+$indigo-500: #6172f3; // 65, 86, 67
+$indigo-600: #444ce7; // 66, 77, 59
+$indigo-700: #3538cd; // 66, 60, 51
+$indigo-800: #2d31a6; // 66, 57, 41
+$indigo-900: #2d3282; // 66, 49, 34
+
+// Violet
+
+$violet-25: #fbfaff; // 70, 100, 99
+$violet-50: #f5f3ff; // 69, 100, 98
+$violet-100: #ece9fe; // 69, 91, 95
+$violet-200: #ddd6fe; // 70, 95, 92
+$violet-300: #c3b5fd; // 70, 95, 85
+$violet-400: #a48afb; // 71, 93, 76
+$violet-500: #875bf7; // 71, 91, 66
+$violet-600: #7839ee; // 72, 84, 58
+$violet-700: #6927da; // 73, 71, 50
+$violet-800: #5720b7; // 73, 70, 42
+$violet-900: #491c96; // 73, 69, 35
+
+// Purple
+
+$purple-25: #fafaff; // 67, 100, 99
+$purple-50: #f4f3ff; // 68, 100, 98
+$purple-100: #ebe9fe; // 68, 91, 95
+$purple-200: #d9d6fe; // 68, 95, 92
+$purple-300: #bdb4fe; // 69, 97, 85
+$purple-400: #9b8afb; // 69, 93, 76
+$purple-500: #7a5af8; // 70, 92, 66
+$purple-600: #6938ef; // 71, 85, 58
+$purple-700: #5925dc; // 71, 72, 50
+$purple-800: #4a1fb8; // 71, 71, 42
+$purple-900: #3e1c96; // 71, 69, 35
+
+// Fuchsia
+
+$fuchsia-25: #fefaff; // 80, 100, 99
+$fuchsia-50: #fdf4ff; // 80, 100, 98
+$fuchsia-100: #fbe8ff; // 80, 100, 95
+$fuchsia-200: #f6d0fe; // 80, 96, 91
+$fuchsia-300: #eeaafd; // 80, 95, 83
+$fuchsia-400: #e478fa; // 81, 93, 73
+$fuchsia-500: #d444f1; // 81, 86, 61
+$fuchsia-600: #ba24d5; // 81, 71, 49
+$fuchsia-700: #9f1ab1; // 81, 74, 40
+$fuchsia-800: #821890; // 81, 71, 33
+$fuchsia-900: #6f1877; // 82, 66, 28
+
+// Pink
+
+$pink-25: #fef6fb; // 90, 80, 98
+$pink-50: #fdf2fa; // 88, 73, 97
+$pink-100: #fce7f6; // 88, 78, 95
+$pink-200: #fcceee; // 88, 88, 90
+$pink-300: #faa7e0; // 89, 89, 82
+$pink-400: #f670c7; // 89, 88, 70
+$pink-500: #ee46bc; // 88, 83, 60
+$pink-600: #dd2590; // 90, 73, 51
+$pink-700: #c11574; // 91, 80, 42
+$pink-800: #9e165f; // 91, 76, 35
+$pink-900: #851651; // 91, 72, 30
+
+// Rosé
+
+$rose-25: #fff5f6; // 98, 100, 98
+$rose-50: #fff1f3; // 98, 100, 97
+$rose-100: #ffe4e8; // 98, 100, 95
+$rose-200: #fecdd6; // 97, 96, 90
+$rose-300: #fea3b4; // 97, 98, 82
+$rose-400: #fd6f8e; // 96, 97, 71
+$rose-500: #f63d68; // 96, 91, 60
+$rose-600: #e31b54; // 95, 79, 50
+$rose-700: #c01048; // 95, 85, 41
+$rose-800: #a11043; // 94, 82, 35
+$rose-900: #89123e; // 94, 77, 30
+
+// Orange dark
+
+$orange-dark-25: #fff9f5; // 7, 100, 98
+$orange-dark-50: #fff4ed; // 6, 100, 96
+$orange-dark-100: #ffe6d5; // 7, 100, 92
+$orange-dark-200: #ffd6ae; // 8, 100, 84
+$orange-dark-300: #ff9c66; // 6, 100, 70
+$orange-dark-400: #ff692e; // 5, 100, 59
+$orange-dark-500: #ff4405; // 4, 100, 51
+$orange-dark-600: #e62e05; // 3, 96, 46
+$orange-dark-700: #bc1b06; // 2, 94, 38
+$orange-dark-800: #97180c; // 1, 85, 32
+$orange-dark-900: #771a0d; // 2, 80, 26
+
+// Orange
+
+$orange-25: #fefaf5; // 9, 82, 98
+$orange-50: #fef6ee; // 8, 89, 96
+$orange-100: #fdead7; // 8, 90, 92
+$orange-200: #f9dbaf; // 10, 86, 83
+$orange-300: #f7b27a; // 7, 89, 72
+$orange-400: #f38744; // 6, 88, 61
+$orange-500: #ef6820; // 6, 87, 53
+$orange-600: #e04f16; // 5, 82, 48
+$orange-700: #b93815; // 4, 80, 40
+$orange-800: #932f19; // 3, 71, 34
+$orange-900: #772917; // 3, 68, 28
+
+// Yellow
+
+$yellow-25: #fefdf0; // 15, 88, 97
+$yellow-50: #fefbe8; // 14, 92, 95
+$yellow-100: #fef7c3; // 15, 97, 88
+$yellow-200: #feee95; // 14, 98, 79
+$yellow-300: #fde272; // 13, 97, 72
+$yellow-400: #fac515; // 13, 96, 53
+$yellow-500: #eaaa08; // 12, 93, 47
+$yellow-600: #ca8504; // 11, 96, 40
+$yellow-700: #a15c07; // 9, 92, 33
+$yellow-800: #854a0e; // 8, 81, 29
+$yellow-900: #713b12; // 7, 73, 26
