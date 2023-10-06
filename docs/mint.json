@@ -53,7 +53,7 @@
       "group": "Get Started",
       "pages": [
         "introduction",
-        "quick-start",
+        "self-host",
         "how-it-works",
         "embed",
         "retrieve-data"
