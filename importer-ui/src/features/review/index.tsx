@@ -42,8 +42,6 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
   const submittedOk = dataSubmitted?.ok || {};
   const hasValidations = template.columns.some((tc) => tc.validations && tc.validations.length > 0);
 
-  console.log(columnsOrder);
-
   const cellValueChangeSet = useRef(new Set<string>());
   const onCellValueChanged = useCallback((event: CellValueChangedEvent) => {
     const { rowIndex, column, data, newValue, oldValue, api } = event;
