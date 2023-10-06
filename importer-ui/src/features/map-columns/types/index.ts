@@ -12,7 +12,7 @@ export interface FormValues {
 export type MapColumnsProps = {
   upload?: Upload;
   template: Template;
-  onSuccess: (uploadId: string, columnsValues: any) => void;
+  onSuccess: (uploadId: string) => void;
   onCancel: () => void;
   showImportLoadingStatus?: boolean;
   skipHeaderRowSelection?: boolean;
