@@ -634,7 +634,7 @@ func importerSetColumnMapping(c *gin.Context) {
 			}
 			for _, v := range importColumn.Validations {
 				validation, err := model.ParseValidation(v.ValidationID, importColumn.ID.String(), v.Validate, v.Options, v.Message, v.Severity, templateColumn.DataType)
-				if err != nil {
+				if err == nil {
 					templateColumn.Validations = append(templateColumn.Validations, validation)
 				}
 			}
@@ -818,7 +818,7 @@ func importerGetImportRows(c *gin.Context) {
 		return
 	}
 
-	imp, err := db.GetImportByUploadID(id)
+	imp, err := db.GetImportByUploadIDWithUpload(id)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusOK, gin.H{})
 		return
@@ -935,9 +935,12 @@ func importerEditImportCell(c *gin.Context) {
 			return
 		}
 		for _, templateColumn := range template.TemplateColumns {
+			if templateColumn.Key != cellKey {
+				continue
+			}
 			for _, v := range templateColumn.Validations {
 				validation, err := model.ParseValidation(v.ValidationID, templateColumn.ID.String(), v.Validate, v.Options, v.Message, v.Severity, model.TemplateColumnDataType(templateColumn.DataType))
-				if err != nil {
+				if err == nil {
 					validations = append(validations, validation)
 				}
 			}
@@ -1111,7 +1114,7 @@ func importerSubmitImport(c *gin.Context, importCompleteHandler func(types.Impor
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No upload ID provided"})
 		return
 	}
-	imp, err := db.GetImportByUploadID(id)
+	imp, err := db.GetImportByUploadIDWithUpload(id)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusOK, gin.H{})
 		return

@@ -100,13 +100,27 @@ func RetrieveAllImportRows(imp *model.Import) []types.ImportRow {
 		return make([]types.ImportRow, 0)
 	}
 
-	var validations map[uint]model.Validation
+	validations := make(map[uint]model.Validation)
 	var err error
 
 	if imp.HasErrors() {
-		validations, err = db.GetValidationsMapForImporterUnscoped(imp.ImporterID.String())
-		if err != nil {
-			tf.Log.Errorw("Could not retrieve template by importer to get validations", "import_id", imp.ID, "error", err)
+		if imp.Upload.Template.Valid {
+			template, err := types.ConvertRawTemplate(imp.Upload.Template, false)
+			if err == nil {
+				for _, templateColumn := range template.TemplateColumns {
+					for _, v := range templateColumn.Validations {
+						validation, err := model.ParseValidation(v.ValidationID, templateColumn.ID.String(), v.Validate, v.Options, v.Message, v.Severity, model.TemplateColumnDataType(templateColumn.DataType))
+						if err == nil {
+							validations[v.ValidationID] = *validation
+						}
+					}
+				}
+			}
+		} else {
+			validations, err = db.GetValidationsMapForImporterUnscoped(imp.ImporterID.String())
+			if err != nil {
+				tf.Log.Errorw("Could not retrieve template by importer to get validations", "import_id", imp.ID, "error", err)
+			}
 		}
 	}
 
@@ -121,13 +135,27 @@ func RetrieveAllImportRows(imp *model.Import) []types.ImportRow {
 }
 
 func PaginateImportRows(imp *model.Import, offset, limit int, filter types.Filter) []types.ImportRow {
-	var validations map[uint]model.Validation
+	validations := make(map[uint]model.Validation)
 	var err error
 
 	if imp.HasErrors() {
-		validations, err = db.GetValidationsMapForImporterUnscoped(imp.ImporterID.String())
-		if err != nil {
-			tf.Log.Errorw("Could not retrieve template by importer to get validations", "import_id", imp.ID, "error", err)
+		if imp.Upload.Template.Valid {
+			template, err := types.ConvertRawTemplate(imp.Upload.Template, false)
+			if err == nil {
+				for _, templateColumn := range template.TemplateColumns {
+					for _, v := range templateColumn.Validations {
+						validation, err := model.ParseValidation(v.ValidationID, templateColumn.ID.String(), v.Validate, v.Options, v.Message, v.Severity, model.TemplateColumnDataType(templateColumn.DataType))
+						if err == nil {
+							validations[v.ValidationID] = *validation
+						}
+					}
+				}
+			}
+		} else {
+			validations, err = db.GetValidationsMapForImporterUnscoped(imp.ImporterID.String())
+			if err != nil {
+				tf.Log.Errorw("Could not retrieve template by importer to get validations", "import_id", imp.ID, "error", err)
+			}
 		}
 	}
 

@@ -209,6 +209,7 @@ func ConvertRawTemplate(rawTemplate jsonb.JSONB, isCreation bool) (*Template, er
 
 	seenKeys := make(map[string]bool)
 	seenSuggestedMappings := make(map[string]bool)
+	var generatedValidationID uint = 1
 
 	for _, item := range columnSlice {
 		columnMap, ok := item.(map[string]interface{})
@@ -275,7 +276,8 @@ func ConvertRawTemplate(rawTemplate jsonb.JSONB, isCreation bool) (*Template, er
 
 			if evaluator.IsDataTypeEvaluator(string(dataType)) {
 				// Add the default data type validation
-				validation, err := model.ParseValidation(0, id, string(dataType), jsonb.NewNull(), "", "", dataType)
+				validation, err := model.ParseValidation(generatedValidationID, id, string(dataType), jsonb.NewNull(), "", "", dataType)
+				generatedValidationID++
 				if err != nil {
 					return nil, err
 				}
@@ -300,8 +302,8 @@ func ConvertRawTemplate(rawTemplate jsonb.JSONB, isCreation bool) (*Template, er
 					validationSeverity, _ := validationMap["severity"].(string)
 
 					if isCreation {
-						// Note: Validations should not add an ID on creation since they are sequenced. If they need to
-						// be saved to the DB (i.e. API creation) we don't want IDs to be set here
+						validationID = float64(generatedValidationID)
+						generatedValidationID++
 
 						// Don't allow the user to add a data type validator (these are added automatically based on the data type)
 						if evaluator.IsDataTypeEvaluator(validationValidate) {
@@ -343,6 +345,7 @@ func ConvertRawTemplate(rawTemplate jsonb.JSONB, isCreation bool) (*Template, er
 			DataType:          string(dataType),
 			Description:       description,
 			SuggestedMappings: suggestedMappings,
+			Validations:       validations,
 		})
 	}
 

@@ -329,7 +329,7 @@ func createImporterForExternalAPI(c *gin.Context) {
 		}
 
 		for _, v := range tc.Validations {
-			validation, err := model.ParseValidation(v.ValidationID, tc.ID.String(), v.Validate, v.Options, v.Message, v.Severity, model.TemplateColumnDataType(tc.DataType))
+			validation, err := model.ParseValidation(0, tc.ID.String(), v.Validate, v.Options, v.Message, v.Severity, model.TemplateColumnDataType(tc.DataType))
 			if err != nil {
 				c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 				return
