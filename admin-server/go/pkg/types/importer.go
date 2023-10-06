@@ -5,6 +5,7 @@ import (
 	"github.com/guregu/null"
 	"github.com/lib/pq"
 	"strings"
+	"tableflow/go/pkg/evaluator"
 	"tableflow/go/pkg/model"
 	"tableflow/go/pkg/model/jsonb"
 	"tableflow/go/pkg/tf"
@@ -36,16 +37,17 @@ type TemplateColumn struct {
 	Name              string        `json:"name" example:"First Name"`
 	Key               string        `json:"key" example:"email"`
 	Required          bool          `json:"required" example:"false"`
+	DataType          string        `json:"data_type" example:"string"`
 	Description       string        `json:"description" example:"The first name"`
 	Validations       []*Validation `json:"validations,omitempty"`
 	SuggestedMappings []string      `json:"suggested_mappings" swaggertype:"array,string" example:"first_name"`
 }
 
 type Validation struct {
-	ValidationID uint        `json:"id" swaggertype:"integer" example:"4581"`
-	Type         string      `json:"type" example:"filled"`
-	Value        jsonb.JSONB `json:"value" swaggertype:"string" example:"true"`
-	Message      string      `json:"message" example:"This column must contain a value"`
+	ValidationID uint        `json:"id,omitempty" swaggertype:"integer" example:"4581"`
+	Validate     string      `json:"validate" example:"not_blank"`
+	Options      jsonb.JSONB `json:"options" swaggertype:"string" example:"true"`
+	Message      string      `json:"message" example:"The cell must contain a value"`
 	Severity     string      `json:"severity" example:"error"`
 }
 
@@ -70,10 +72,11 @@ type Upload struct {
 }
 
 type UploadColumn struct {
-	ID         model.ID       `json:"id" swaggertype:"string" example:"3c79e7fd-1018-4a27-8b86-9cee84221cd8"`
-	Name       string         `json:"name" example:"Work Email"`
-	Index      int            `json:"index" example:"0"`
-	SampleData pq.StringArray `json:"sample_data" gorm:"type:text[]" swaggertype:"array,string" example:"test@example.com"`
+	ID                        model.ID       `json:"id" swaggertype:"string" example:"3c79e7fd-1018-4a27-8b86-9cee84221cd8"`
+	Name                      string         `json:"name" example:"Work Email"`
+	Index                     int            `json:"index" example:"0"`
+	SampleData                pq.StringArray `json:"sample_data" gorm:"type:text[]" swaggertype:"array,string" example:"test@example.com"`
+	SuggestedTemplateColumnID model.ID       `json:"suggested_template_column_id" swaggertype:"string" example:"a1ed136d-33ce-4b7e-a7a4-8a5ccfe54cd5"`
 }
 
 type UploadHeaderRowSelection struct {
@@ -88,20 +91,20 @@ type UploadRow struct {
 /* ---------------------------  Import types  --------------------------- */
 
 type Import struct {
-	ID                 model.ID       `json:"id" swaggertype:"string" example:"da5554e3-6c87-41b2-9366-5449a2f15b53"`
-	UploadID           model.ID       `json:"upload_id" swaggertype:"string" example:"50ca61e1-f683-4b03-9ec4-4b3adb592bf1"`
-	ImporterID         model.ID       `json:"importer_id" swaggertype:"string" example:"6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353"`
-	NumRows            null.Int       `json:"num_rows" swaggertype:"integer" example:"256"`
-	NumColumns         null.Int       `json:"num_columns" swaggertype:"integer" example:"8"`
-	NumProcessedValues null.Int       `json:"num_processed_values" swaggertype:"integer" example:"128"`
-	Metadata           jsonb.JSONB    `json:"metadata"`
-	IsStored           bool           `json:"is_stored" example:"false"`
-	HasErrors          bool           `json:"has_errors" example:"false"`
-	NumErrorRows       null.Int       `json:"num_error_rows" swaggertype:"integer" example:"32"`
-	NumValidRows       null.Int       `json:"num_valid_rows" swaggertype:"integer" example:"224"`
-	CreatedAt          model.NullTime `json:"created_at" swaggertype:"integer" example:"1682366228"`
-	Error              null.String    `json:"error,omitempty" swaggerignore:"true"`
-	Rows               []ImportRow    `json:"rows,omitempty"` // Used for the final step in the onComplete
+	ID                 model.ID            `json:"id" swaggertype:"string" example:"da5554e3-6c87-41b2-9366-5449a2f15b53"`
+	UploadID           model.ID            `json:"upload_id" swaggertype:"string" example:"50ca61e1-f683-4b03-9ec4-4b3adb592bf1"`
+	ImporterID         model.ID            `json:"importer_id" swaggertype:"string" example:"6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353"`
+	NumRows            null.Int            `json:"num_rows" swaggertype:"integer" example:"256"`
+	NumColumns         null.Int            `json:"num_columns" swaggertype:"integer" example:"8"`
+	NumProcessedValues null.Int            `json:"num_processed_values" swaggertype:"integer" example:"128"`
+	Metadata           jsonb.JSONB         `json:"metadata"`
+	IsStored           bool                `json:"is_stored" example:"false"`
+	HasErrors          bool                `json:"has_errors" example:"false"`
+	NumErrorRows       null.Int            `json:"num_error_rows" swaggertype:"integer" example:"32"`
+	NumValidRows       null.Int            `json:"num_valid_rows" swaggertype:"integer" example:"224"`
+	CreatedAt          model.NullTime      `json:"created_at" swaggertype:"integer" example:"1682366228"`
+	Error              null.String         `json:"error,omitempty" swaggerignore:"true"`
+	Rows               []ImportRowResponse `json:"rows,omitempty"` // Used for the final step in the onComplete
 }
 
 type ImportData struct {
@@ -116,9 +119,16 @@ type ImportRow struct {
 	Errors map[string][]ImportRowError `json:"errors,omitempty"`
 }
 
+// ImportRowResponse used to return values externally in the data type expected
+type ImportRowResponse struct {
+	Index  int                         `json:"index" example:"0"`
+	Values map[string]interface{}      `json:"values"`
+	Errors map[string][]ImportRowError `json:"errors,omitempty"`
+}
+
 type ImportRowError struct {
 	ValidationID uint   `json:"-"`
-	Type         string `json:"type"`
+	Validate     string `json:"validate"`
 	Severity     string `json:"severity"`
 	Message      string `json:"message"`
 }
@@ -144,10 +154,11 @@ func ConvertUpload(upload *model.Upload, uploadRows []UploadRow) (*Upload, error
 	importerUploadColumns := make([]*UploadColumn, len(upload.UploadColumns))
 	for n, uc := range upload.UploadColumns {
 		importerUploadColumns[n] = &UploadColumn{
-			ID:         uc.ID,
-			Name:       uc.Name,
-			Index:      uc.Index,
-			SampleData: uc.SampleData,
+			ID:                        uc.ID,
+			Name:                      uc.Name,
+			Index:                     uc.Index,
+			SampleData:                uc.SampleData,
+			SuggestedTemplateColumnID: uc.TemplateColumnID,
 		}
 	}
 	uploadTemplate, err := ConvertRawTemplate(upload.Template, false)
@@ -174,7 +185,7 @@ func ConvertUpload(upload *model.Upload, uploadRows []UploadRow) (*Upload, error
 	return importerUpload, nil
 }
 
-func ConvertRawTemplate(rawTemplate jsonb.JSONB, generateIDs bool) (*Template, error) {
+func ConvertRawTemplate(rawTemplate jsonb.JSONB, isCreation bool) (*Template, error) {
 	if !rawTemplate.Valid {
 		// No template provided, this means the template from the importer will be used
 		return nil, nil
@@ -210,12 +221,18 @@ func ConvertRawTemplate(rawTemplate jsonb.JSONB, generateIDs bool) (*Template, e
 		name, _ := columnMap["name"].(string)
 		key, _ := columnMap["key"].(string)
 		required, _ := columnMap["required"].(bool)
+		dataTypeStr, _ := columnMap["data_type"].(string)
 		description, _ := columnMap["description"].(string)
 		suggestedMappings := make([]string, 0)
 		validations := make([]*Validation, 0)
 
 		if name == "" {
 			return nil, fmt.Errorf("Invalid template: The paramter 'name' is required for each column")
+		}
+
+		dataType, err := model.ParseTemplateColumnDataType(dataTypeStr)
+		if err != nil {
+			return nil, fmt.Errorf("Invalid template: %s", err.Error())
 		}
 
 		generatedKey := false
@@ -254,39 +271,65 @@ func ConvertRawTemplate(rawTemplate jsonb.JSONB, generateIDs bool) (*Template, e
 			}
 		}
 
+		if isCreation {
+			id = model.NewID().String()
+
+			if evaluator.IsDataTypeEvaluator(string(dataType)) {
+				// Add the default data type validation
+				validation, err := model.ParseValidation(generatedValidationID, id, string(dataType), jsonb.NewNull(), "", "", dataType)
+				generatedValidationID++
+				if err != nil {
+					return nil, err
+				}
+				validations = append(validations, &Validation{
+					ValidationID: validation.ID,
+					Validate:     validation.Validate,
+					Options:      validation.Options,
+					Message:      validation.Message,
+					Severity:     string(validation.Severity),
+				})
+			}
+		}
+
 		// Validations
 		if validationsInterface, ok := columnMap["validations"].([]interface{}); ok {
 			for _, v := range validationsInterface {
 				if validationMap, ok := v.(map[string]interface{}); ok {
 					validationID, _ := validationMap["id"].(float64)
-					validationType, _ := validationMap["type"].(string)
-					validationValue, _ := validationMap["value"]
+					validationValidate, _ := validationMap["validate"].(string)
+					validationOptions, _ := validationMap["options"]
 					validationMessage, _ := validationMap["message"].(string)
 					validationSeverity, _ := validationMap["severity"].(string)
 
-					if generateIDs {
+					if isCreation {
 						validationID = float64(generatedValidationID)
 						generatedValidationID++
+
+						// Don't allow the user to add a data type validator (these are added automatically based on the data type)
+						if evaluator.IsDataTypeEvaluator(validationValidate) {
+							return nil, fmt.Errorf("Invalid template: the validate type %v cannot be added directly and is automatically added when setting a data type", validationValidate)
+						}
 					}
-					validationValueJSON, err := jsonb.FromInterface(validationValue)
+					validationValueJSON, err := jsonb.FromInterface(validationOptions)
 					if err != nil {
-						return nil, fmt.Errorf("Invalid template: invalid validation value json")
+						return nil, fmt.Errorf("Invalid template: invalid validation options json")
 					}
 					validation, err := model.ParseValidation(
 						uint(validationID),
+						id,
+						validationValidate,
 						validationValueJSON,
-						validationType,
 						validationMessage,
 						validationSeverity,
-						"",
+						dataType,
 					)
 					if err != nil {
 						return nil, err
 					}
 					validations = append(validations, &Validation{
 						ValidationID: validation.ID,
-						Type:         validation.Type.Name,
-						Value:        validation.Value,
+						Validate:     validation.Validate,
+						Options:      validation.Options,
 						Message:      validation.Message,
 						Severity:     string(validation.Severity),
 					})
@@ -294,16 +337,15 @@ func ConvertRawTemplate(rawTemplate jsonb.JSONB, generateIDs bool) (*Template, e
 			}
 		}
 
-		if generateIDs {
-			id = model.NewID().String()
-		}
 		columns = append(columns, &TemplateColumn{
 			ID:                model.ParseID(id),
 			Name:              name,
 			Key:               key,
 			Required:          required,
+			DataType:          string(dataType),
 			Description:       description,
 			SuggestedMappings: suggestedMappings,
+			Validations:       validations,
 		})
 	}
 
@@ -312,7 +354,7 @@ func ConvertRawTemplate(rawTemplate jsonb.JSONB, generateIDs bool) (*Template, e
 	}
 
 	templateID := model.ID{}
-	if generateIDs {
+	if isCreation {
 		templateID = model.NewID()
 	} else {
 		id, ok := template["id"].(string)
@@ -325,4 +367,65 @@ func ConvertRawTemplate(rawTemplate jsonb.JSONB, generateIDs bool) (*Template, e
 		ID:              templateID,
 		TemplateColumns: columns,
 	}, nil
+}
+
+// ConvertImportRowsResponse converts []ImportRow to []ImportRowResponse to the response will have the values in the correct data type
+func ConvertImportRowsResponse(rows []ImportRow, imp *model.Import) []ImportRowResponse {
+	dataTypesRaw, ok := imp.DataTypes.AsMap()
+	if !ok {
+		tf.Log.Errorw("Failed to parse import data types", "import_id", imp.ID)
+		return make([]ImportRowResponse, 0)
+	}
+
+	dataTypes := make(map[string]model.TemplateColumnDataType, len(dataTypesRaw))
+	for k, v := range dataTypesRaw {
+		dataTypeStr, ok := dataTypesRaw[k].(string)
+		if !ok {
+			tf.Log.Errorw("Import row data type value not string", "import_id", imp.ID, "key", k, "value", v, "data_type", dataTypeStr)
+			continue
+		}
+		dataType, err := model.ParseTemplateColumnDataType(dataTypeStr)
+		if err != nil {
+			tf.Log.Errorw("Failed to parse import row data type", "import_id", imp.ID, "key", k, "value", v, "data_type", dataTypeStr)
+			continue
+		}
+		dataTypes[k] = dataType
+	}
+
+	rowsResponse := make([]ImportRowResponse, len(rows), len(rows))
+	for i, row := range rows {
+		rowsResponse[i] = convertImportRow(row, dataTypes)
+	}
+	return rowsResponse
+}
+
+func convertImportRow(row ImportRow, dataTypes map[string]model.TemplateColumnDataType) ImportRowResponse {
+	response := ImportRowResponse{
+		Index:  row.Index,
+		Values: make(map[string]interface{}, len(row.Values)),
+		Errors: row.Errors,
+	}
+	for k, v := range row.Values {
+		dataType := dataTypes[k]
+		switch dataType {
+		case model.TemplateColumnDataTypeString:
+			response.Values[k] = v
+		case model.TemplateColumnDataTypeNumber:
+			val, err := util.StringToNumberOrNil(v)
+			if err != nil {
+				tf.Log.Warnw("Failed to convert import row value from data type", "index", row.Index, "value", v, "data_type", dataType)
+			}
+			response.Values[k] = val
+		case model.TemplateColumnDataTypeBoolean:
+			val, err := util.StringToBoolOrNil(v)
+			if err != nil {
+				tf.Log.Warnw("Failed to convert import row value from data type", "index", row.Index, "value", v, "data_type", dataType)
+			}
+			response.Values[k] = val
+		case model.TemplateColumnDataTypeDate:
+			// TODO: Date support!
+			response.Values[k] = v
+		}
+	}
+	return response
 }

@@ -41,8 +41,8 @@ export type TemplateColumn = {
 
 export type Validation = {
   id?: number;
-  type: string;
-  value?: any;
+  validate: string;
+  options?: any;
   message?: string;
   severity?: string;
 };
@@ -68,6 +68,7 @@ export type UploadColumn = {
   index: number;
   name: string;
   sample_data: string[];
+  suggested_template_column_id: string;
 };
 
 export type UploadRow = {
@@ -110,10 +111,10 @@ type Row = {
   index: number;
   values: {
     email: string;
-    filled: string;
+    not_blank: string;
   };
   errors: {
-    filled: ErrorDetail[];
+    not_blank: ErrorDetail[];
   };
 };
 

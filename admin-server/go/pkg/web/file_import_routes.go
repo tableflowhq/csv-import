@@ -198,12 +198,13 @@ func importerGetImporter(c *gin.Context) {
 			Name:        tc.Name,
 			Key:         tc.Key,
 			Required:    tc.Required,
+			DataType:    string(tc.DataType),
 			Description: tc.Description.String,
 			Validations: lo.Map(tc.Validations, func(v *model.Validation, _ int) *types.Validation {
 				return &types.Validation{
 					ValidationID: v.ID,
-					Type:         v.Type.Name,
-					Value:        v.Value,
+					Validate:     v.Validate,
+					Options:      v.Options,
 					Severity:     string(v.Severity),
 					Message:      v.Message,
 				}
@@ -267,6 +268,35 @@ func importerGetUpload(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return
 	}
+
+	// Add suggested template column mappings if the HeaderRowIndex has been set
+	if upload.HeaderRowIndex.Valid {
+		templateColumns := make([]*model.TemplateColumn, 0)
+		if importerUpload.Template != nil {
+			// If the template exists on the upload, use those template columns for the mapping
+			for _, tc := range importerUpload.Template.TemplateColumns {
+				templateColumns = append(templateColumns, &model.TemplateColumn{
+					ID:                tc.ID,
+					Name:              tc.Name,
+					Key:               tc.Key,
+					Required:          tc.Required,
+					DataType:          model.TemplateColumnDataType(tc.DataType),
+					Description:       null.NewString(tc.Description, len(tc.Description) != 0),
+					SuggestedMappings: tc.SuggestedMappings,
+					//Validations:       nil,
+				})
+			}
+		} else {
+			template, err := db.GetTemplateByImporter(importerUpload.ImporterID.String())
+			if err != nil {
+				c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+				return
+			}
+			templateColumns = template.TemplateColumns
+		}
+		file.AddColumnMappingSuggestions(importerUpload, templateColumns)
+	}
+
 	c.JSON(http.StatusOK, importerUpload)
 }
 
@@ -339,6 +369,32 @@ func importerSetHeaderRow(c *gin.Context) {
 			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 			return
 		}
+		// Add suggested template column mappings
+		templateColumns := make([]*model.TemplateColumn, 0)
+		if importerUpload.Template != nil {
+			// If the template exists on the upload, use those template columns for the mapping
+			for _, tc := range importerUpload.Template.TemplateColumns {
+				templateColumns = append(templateColumns, &model.TemplateColumn{
+					ID:                tc.ID,
+					Name:              tc.Name,
+					Key:               tc.Key,
+					Required:          tc.Required,
+					DataType:          model.TemplateColumnDataType(tc.DataType),
+					Description:       null.NewString(tc.Description, len(tc.Description) != 0),
+					SuggestedMappings: tc.SuggestedMappings,
+					//Validations:       nil,
+				})
+			}
+		} else {
+			template, err := db.GetTemplateByImporter(importerUpload.ImporterID.String())
+			if err != nil {
+				c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+				return
+			}
+			templateColumns = template.TemplateColumns
+		}
+		file.AddColumnMappingSuggestions(importerUpload, templateColumns)
+
 		c.JSON(http.StatusOK, importerUpload)
 		return
 	}
@@ -391,6 +447,33 @@ func importerSetHeaderRow(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return
 	}
+
+	// Add suggested template column mappings
+	templateColumns := make([]*model.TemplateColumn, 0)
+	if importerUpload.Template != nil {
+		// If the template exists on the upload, use those template columns for the mapping
+		for _, tc := range importerUpload.Template.TemplateColumns {
+			templateColumns = append(templateColumns, &model.TemplateColumn{
+				ID:                tc.ID,
+				Name:              tc.Name,
+				Key:               tc.Key,
+				Required:          tc.Required,
+				DataType:          model.TemplateColumnDataType(tc.DataType),
+				Description:       null.NewString(tc.Description, len(tc.Description) != 0),
+				SuggestedMappings: tc.SuggestedMappings,
+				//Validations:       nil,
+			})
+		}
+	} else {
+		template, err := db.GetTemplateByImporter(importerUpload.ImporterID.String())
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+			return
+		}
+		templateColumns = template.TemplateColumns
+	}
+	file.AddColumnMappingSuggestions(importerUpload, templateColumns)
+
 	c.JSON(http.StatusOK, importerUpload)
 }
 
@@ -420,7 +503,7 @@ func importerSetColumnMapping(c *gin.Context) {
 		return
 	}
 	if len(columnMapping) == 0 {
-		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No column mapping provided"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Please select at least one destination column"})
 		return
 	}
 	// Validate all keys and values are not empty
@@ -520,11 +603,9 @@ func importerSetColumnMapping(c *gin.Context) {
 		}
 		for _, importColumn := range importServiceTemplate.TemplateColumns {
 			templateColumn := &model.TemplateColumn{
-				ID:          importColumn.ID,
-				Name:        importColumn.Name,
-				Key:         importColumn.Key,
-				Required:    importColumn.Required,
-				Description: null.NewString(importColumn.Description, len(importColumn.Description) != 0),
+				ID:   importColumn.ID,
+				Name: importColumn.Name,
+				Key:  importColumn.Key,
 			}
 			template.TemplateColumns = append(template.TemplateColumns, templateColumn)
 		}
@@ -547,19 +628,13 @@ func importerSetColumnMapping(c *gin.Context) {
 				Name:              importColumn.Name,
 				Key:               importColumn.Key,
 				Required:          importColumn.Required,
+				DataType:          model.TemplateColumnDataType(importColumn.DataType),
 				Description:       null.NewString(importColumn.Description, len(importColumn.Description) != 0),
 				SuggestedMappings: importColumn.SuggestedMappings,
 			}
 			for _, v := range importColumn.Validations {
-				validation, err := model.ParseValidation(
-					v.ValidationID,
-					v.Value,
-					v.Type,
-					v.Message,
-					v.Severity,
-					importColumn.ID.String(),
-				)
-				if err != nil {
+				validation, err := model.ParseValidation(v.ValidationID, importColumn.ID.String(), v.Validate, v.Options, v.Message, v.Severity, templateColumn.DataType)
+				if err == nil {
 					templateColumn.Validations = append(templateColumn.Validations, validation)
 				}
 			}
@@ -743,7 +818,7 @@ func importerGetImportRows(c *gin.Context) {
 		return
 	}
 
-	imp, err := db.GetImportByUploadID(id)
+	imp, err := db.GetImportByUploadIDWithUpload(id)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusOK, gin.H{})
 		return
@@ -853,23 +928,19 @@ func importerEditImportCell(c *gin.Context) {
 
 	if imp.Upload.Template.Valid {
 		// If the upload uses an SDK-defined template, retrieve any validations from the template on the upload
-		template, err := types.ConvertRawTemplate(imp.Upload.Template, true)
+		template, err := types.ConvertRawTemplate(imp.Upload.Template, false)
 		if err != nil {
 			tf.Log.Errorw("Upload template invalid retrieving validations for cell edit", "upload_id", imp.Upload.ID, "error", err)
 			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "The SDK-defined template is invalid"})
 			return
 		}
 		for _, templateColumn := range template.TemplateColumns {
+			if templateColumn.Key != cellKey {
+				continue
+			}
 			for _, v := range templateColumn.Validations {
-				validation, err := model.ParseValidation(
-					v.ValidationID,
-					v.Value,
-					v.Type,
-					v.Message,
-					v.Severity,
-					templateColumn.ID.String(),
-				)
-				if err != nil {
+				validation, err := model.ParseValidation(v.ValidationID, templateColumn.ID.String(), v.Validate, v.Options, v.Message, v.Severity, model.TemplateColumnDataType(templateColumn.DataType))
+				if err == nil {
 					validations = append(validations, validation)
 				}
 			}
@@ -886,7 +957,7 @@ func importerEditImportCell(c *gin.Context) {
 
 	failedValidations := make([]model.Validation, 0)
 	for _, validation := range validations {
-		res, passed := validation.ValidateWithResult(cellValue)
+		res, passed := validation.EvaluateWithResult(cellValue)
 		if !passed {
 			switch res.Severity {
 			case model.ValidationSeverityError:
@@ -926,7 +997,7 @@ func importerEditImportCell(c *gin.Context) {
 		row.Errors[cellKey] = lo.Map(failedValidations, func(v model.Validation, _ int) types.ImportRowError {
 			return types.ImportRowError{
 				ValidationID: v.ID,
-				Type:         v.Type.Name,
+				Validate:     v.Validate,
 				Severity:     string(v.Severity),
 				Message:      v.Message,
 			}
@@ -1043,7 +1114,7 @@ func importerSubmitImport(c *gin.Context, importCompleteHandler func(types.Impor
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No upload ID provided"})
 		return
 	}
-	imp, err := db.GetImportByUploadID(id)
+	imp, err := db.GetImportByUploadIDWithUpload(id)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusOK, gin.H{})
 		return
@@ -1082,10 +1153,12 @@ func importerSubmitImport(c *gin.Context, importCompleteHandler func(types.Impor
 		NumErrorRows:       imp.NumErrorRows,
 		NumValidRows:       imp.NumValidRows,
 		CreatedAt:          imp.CreatedAt,
-		Rows:               []types.ImportRow{},
+		Rows:               []types.ImportRowResponse{},
 	}
 	if int(imp.NumRows.Int64) <= maxNumRowsForFrontendPassThrough {
-		importServiceImport.Rows = scylla.RetrieveAllImportRows(imp)
+		rows := scylla.RetrieveAllImportRows(imp)
+		importServiceImport.Rows = types.ConvertImportRowsResponse(rows, imp)
+
 	} else {
 		importServiceImport.Error = null.StringFrom(fmt.Sprintf("This import has %v rows which exceeds the max "+
 			"allowed number of rows to receive in one response (%v). Please use the API to retrieve the data.",
