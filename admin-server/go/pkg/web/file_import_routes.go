@@ -503,7 +503,7 @@ func importerSetColumnMapping(c *gin.Context) {
 		return
 	}
 	if len(columnMapping) == 0 {
-		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No column mapping provided"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Please select at least one destination column"})
 		return
 	}
 	// Validate all keys and values are not empty
