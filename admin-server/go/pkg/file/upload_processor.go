@@ -56,9 +56,11 @@ func UploadCompleteHandler(event handler.HookEvent, uploadAdditionalStorageHandl
 	}
 
 	// If a template is provided from the SDK, use that instead of the template on the importer
+	uploadError := "" // TODO: Refactor this so the upload object is created higher up and other fatal errors can exist
 	uploadTemplate, err := generateUploadTemplate(event.HTTPRequest.Header.Get("X-Import-Template"))
 	if err != nil {
 		tf.Log.Warnw("Could not generate upload template", "error", err, "tus_id", event.Upload.ID, "importer_id", importerID)
+		uploadError = fmt.Sprintf("Invalid template: %s", err.Error())
 	}
 
 	// Determine if the header row selection step should be skipped, setting the header row to the first row of the file
@@ -87,11 +89,15 @@ func UploadCompleteHandler(event handler.HookEvent, uploadAdditionalStorageHandl
 		Metadata:      importMetadata,
 		Template:      uploadTemplate,
 		Schemaless:    schemaless,
+		Error:         null.NewString(uploadError, len(uploadError) != 0),
 	}
 	fileName := fmt.Sprintf("%s/%s", TempUploadsDirectory, upload.TusID)
 	err = tf.DB.Create(upload).Error
 	if err != nil {
 		tf.Log.Errorw("Could not create upload in database", "error", err, "upload_id", upload.ID, "tus_id", upload.TusID)
+		return
+	}
+	if upload.Error.Valid {
 		return
 	}
 
@@ -439,6 +445,14 @@ func AddColumnMappingSuggestions(upload *types.Upload, templateColumns []*model.
 			templateColumnName := strings.ToLower(strings.TrimSpace(templateColumn.Name))
 			if len(uploadColumnName) == 0 || len(templateColumnName) == 0 {
 				continue
+			}
+
+			// Suggested mappings
+			for _, suggestedMapping := range templateColumn.SuggestedMappings {
+				if uploadColumnName == strings.ToLower(suggestedMapping) {
+					bestMatchColumnID = templateColumn.ID
+					continue
+				}
 			}
 
 			// Exact match
