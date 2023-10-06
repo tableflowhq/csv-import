@@ -1,7 +1,7 @@
-import { useThemeStore } from "@tableflow/ui-library";
 import Button from "../../components/Button";
 import Table from "../../components/Table";
 import UppyWrapper from "../../components/UppyWrapper";
+import useThemeStore from "../../stores/theme";
 import useTemplateTable from "./hooks/useTemplateTable";
 import { UploaderProps } from "./types";
 import style from "./style/Uploader.module.scss";
