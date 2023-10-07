@@ -25,6 +25,7 @@ type ImporterEditRequest struct {
 	AllowedDomains         *[]string `json:"allowed_domains" example:"example.com"`
 	WebhooksEnabled        *bool     `json:"webhooks_enabled" example:"true"`
 	SkipHeaderRowSelection *bool     `json:"skip_header_row_selection" example:"false"`
+	EnableAiColumnMapping  *bool     `json:"enable_ai_column_mapping" example:"false"`
 }
 
 // createImporter

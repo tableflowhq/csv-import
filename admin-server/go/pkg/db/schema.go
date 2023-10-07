@@ -406,5 +406,7 @@ func GetDatabaseSchemaInitSQL() string {
 		$$;
 		alter table validations
 		    alter column options drop not null;
+		alter table importers
+			add column if not exists enable_ai_column_mapping bool not null default false;
 	`
 }

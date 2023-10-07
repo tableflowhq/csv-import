@@ -13,7 +13,7 @@ export default function Settings({ importer }: { importer: Importer }) {
 
   return (
     <div className={style.container}>
-      {renderedSettings?.type() !== null && <div className={style.column}>{renderedSettings}</div>}
+      {renderedSettings?.type() !== null && renderedSettings}
       <div className={style.column}>
         <SkipHeaderRowSelection />
       </div>
