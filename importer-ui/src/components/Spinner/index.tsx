@@ -1,4 +1,4 @@
-import { classes } from "@tableflow/ui-library";
+import classes from "../../utils/classes";
 import { SpinnerProps } from "./types";
 import style from "./style/Spinner.module.scss";
 import { ReactComponent as Pulse } from "../../assets/spinners/pulse.svg";

@@ -91,14 +91,14 @@ export type TemplateColumnFormFields = {
   name: string;
   description?: string;
   required: boolean;
-  validations?: ValidationsFormField[];
+  validations?: Validation[];
   suggested_mappings?: string[];
 };
 
-export type ValidationsFormField = {
+export type Validation = {
   id?: number;
-  type: string;
-  value?: any;
+  validate: string;
+  options?: any;
   message?: string;
   severity?: string;
 };

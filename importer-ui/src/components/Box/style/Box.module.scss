@@ -1,0 +1,31 @@
+.box {
+    display: block;
+    margin: 0 auto;
+    padding: var(--m);
+    background-color: var(--color-background-modal);
+    border-radius: var(--border-radius-5);
+    box-shadow: 0 0 20px var(--color-background-modal-shadow);
+    max-width: 100%;
+
+    &.fluid {
+        max-width: none;
+    }
+    &.mid {
+        max-width: 440px;
+    }
+    &.wide {
+        max-width: 660px;
+    }
+    &.space-l {
+        padding: var(--m-l);
+    }
+    &.space-mid {
+        padding: var(--m);
+    }
+    &.space-none {
+        padding: 0;
+    }
+    &.bg-shade {
+        background-color: var(--color-background-modal-shade);
+    }
+}

@@ -12,7 +12,10 @@ services:
       service: scylla
 
   backend:
-    image: tableflow/admin-server
+    build: "./admin-server"
+    extends:
+      file: docker-compose.base.yml
+      service: backend
     depends_on:
       postgres:
         condition: service_healthy
@@ -23,7 +26,7 @@ services:
     depends_on:
       backend:
         condition: service_healthy
-    image: tableflow/admin-ui
+    build: "./admin-ui"
     platform: linux/amd64
     # Un-comment if using Apple silicon
     #platform: linux/arm64
@@ -37,7 +40,7 @@ services:
     depends_on:
       backend:
         condition: service_healthy
-    image: tableflow/importer-ui
+    build: "./importer-ui"
     platform: linux/amd64
     # Un-comment if using Apple silicon
     #platform: linux/arm64

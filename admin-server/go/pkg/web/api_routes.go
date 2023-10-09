@@ -58,7 +58,7 @@ func getImportForExternalAPI(c *gin.Context) {
 //	@Summary		Get import rows
 //	@Description	Paginate the rows of an import
 //	@Tags			External API
-//	@Success		200	{array}		types.ImportRow
+//	@Success		200	{array}		types.ImportRowResponse
 //	@Failure		400	{object}	types.Res
 //	@Router			/v1/import/{id}/rows [get]
 //	@Param			id		path	string	true	"Import ID"
@@ -95,7 +95,9 @@ func getImportRowsForExternalAPI(c *gin.Context) {
 	}
 
 	rows := scylla.PaginateImportRows(imp, pagination.Offset, pagination.Limit, types.ImportRowFilterAll)
-	c.JSON(http.StatusOK, rows)
+	rowsResponse := types.ConvertImportRowsResponse(rows, imp)
+
+	c.JSON(http.StatusOK, rowsResponse)
 }
 
 // downloadImportForExternalAPI
@@ -294,7 +296,7 @@ func createImporterForExternalAPI(c *gin.Context) {
 	err = tf.DB.Create(&importer).Error
 	if err != nil {
 		tf.Log.Errorw("Could not create importer", "error", err, "workspace_id", workspaceID)
-		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("Could not create importer: %v", err.Error())})
 		return
 	}
 	template := model.Template{
@@ -308,29 +310,40 @@ func createImporterForExternalAPI(c *gin.Context) {
 	err = tf.DB.Create(&template).Error
 	if err != nil {
 		tf.Log.Errorw("Could not create template for importer", "error", err, "workspace_id", workspaceID)
-		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("Could not create template: %v", err.Error())})
 		return
 	}
 
-	// TODO: After validations is released, migrate this to a types function that includes validations
 	for _, tc := range templateType.TemplateColumns {
-		template.TemplateColumns = append(template.TemplateColumns, &model.TemplateColumn{
+		templateColumn := &model.TemplateColumn{
 			ID:                tc.ID,
 			TemplateID:        templateType.ID,
 			Name:              tc.Name,
 			Key:               tc.Key,
 			Required:          tc.Required,
+			DataType:          model.TemplateColumnDataType(tc.DataType),
 			Description:       null.NewString(tc.Description, len(tc.Description) != 0),
 			SuggestedMappings: tc.SuggestedMappings,
 			CreatedBy:         user.ID,
 			UpdatedBy:         user.ID,
-			//Validations:       nil,
-		})
+		}
+
+		for _, v := range tc.Validations {
+			v.ValidationID = 0
+			validation, err := model.ParseValidation(v.ValidationID, tc.ID.String(), v.Validate, v.Options, v.Message, v.Severity, model.TemplateColumnDataType(tc.DataType))
+			if err != nil {
+				c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+				return
+			}
+			templateColumn.Validations = append(templateColumn.Validations, validation)
+		}
+		template.TemplateColumns = append(template.TemplateColumns, templateColumn)
 	}
+
 	err = tf.DB.Create(template.TemplateColumns).Error
 	if err != nil {
 		tf.Log.Errorw("Could not create template columns", "error", err, "workspace_id", workspaceID)
-		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("Could not create template columns: %v", err.Error())})
 		return
 	}
 	importer.Template = &template
