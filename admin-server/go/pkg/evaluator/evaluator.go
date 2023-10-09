@@ -20,7 +20,7 @@ var dataTypesWithEvaluators = []string{
 
 type Evaluator interface {
 	Initialize(options interface{}) error
-	Evaluate(cell string) (bool, error)
+	Evaluate(cell string) (passed bool, value string, err error)
 	DefaultMessage() string
 	AllowedDataTypes() []string
 }

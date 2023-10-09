@@ -6,9 +6,9 @@ func (e *DateEvaluator) Initialize(_ interface{}) error {
 	return nil
 }
 
-func (e DateEvaluator) Evaluate(cell string) (bool, error) {
+func (e DateEvaluator) Evaluate(cell string) (bool, string, error) {
 	// TODO: *******
-	return true, nil
+	return true, cell, nil
 }
 
 func (e DateEvaluator) DefaultMessage() string {

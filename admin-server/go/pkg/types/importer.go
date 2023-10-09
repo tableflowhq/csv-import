@@ -411,13 +411,13 @@ func convertImportRow(row ImportRow, dataTypes map[string]model.TemplateColumnDa
 		case model.TemplateColumnDataTypeString:
 			response.Values[k] = v
 		case model.TemplateColumnDataTypeNumber:
-			val, err := util.StringToNumberOrNil(v)
+			val, _, err := util.StringToNumberOrNil(v)
 			if err != nil {
 				tf.Log.Warnw("Failed to convert import row value from data type", "index", row.Index, "value", v, "data_type", dataType)
 			}
 			response.Values[k] = val
 		case model.TemplateColumnDataTypeBoolean:
-			val, err := util.StringToBoolOrNil(v)
+			val, _, err := util.StringToBoolOrNil(v)
 			if err != nil {
 				tf.Log.Warnw("Failed to convert import row value from data type", "index", row.Index, "value", v, "data_type", dataType)
 			}

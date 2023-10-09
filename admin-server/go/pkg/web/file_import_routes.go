@@ -957,9 +957,9 @@ func importerEditImportCell(c *gin.Context) {
 
 	failedValidations := make([]model.Validation, 0)
 	for _, validation := range validations {
-		res, passed := validation.EvaluateWithResult(cellValue)
+		passed, value := validation.Evaluate(cellValue)
 		if !passed {
-			switch res.Severity {
+			switch validation.Severity {
 			case model.ValidationSeverityError:
 				failedValidations = append(failedValidations, *validation)
 				continue
@@ -970,6 +970,8 @@ func importerEditImportCell(c *gin.Context) {
 				c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Unsupported validation severity"})
 				return
 			}
+		} else {
+			cellValue = value
 		}
 	}
 
