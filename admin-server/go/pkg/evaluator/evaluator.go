@@ -20,7 +20,7 @@ var dataTypesWithEvaluators = []string{
 
 type Evaluator interface {
 	Initialize(options interface{}) error
-	Evaluate(cell string) (bool, error)
+	Evaluate(cell string) (passed bool, value string, err error)
 	DefaultMessage() string
 	AllowedDataTypes() []string
 }
@@ -40,6 +40,8 @@ func Parse(validate string, options jsonb.JSONB) (Evaluator, error) {
 		e = &NotBlankEvaluator{}
 	case "regex":
 		e = &RegexEvaluator{}
+	case "email":
+		e = &EmailEvaluator{}
 	default:
 		return nil, fmt.Errorf("The validate type %s is invalid", validate)
 	}

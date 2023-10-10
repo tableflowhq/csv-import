@@ -95,6 +95,12 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
         }
       }
 
+      // If the data returned is different from the edit value, update the cell data (can happen with data type conversions)
+      if (res.data?.row?.values && res.data.row.values[cellKey] !== newValue) {
+        cellValueChangeSet.current.add(cellId);
+        rowNode.setDataValue(columnId, res.data.row.values[cellKey]);
+      }
+
       // Refresh the row to update the styling
       api?.refreshCells({ rowNodes: [rowNode], columns: [columnId], force: true });
 

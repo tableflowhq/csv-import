@@ -9,11 +9,11 @@ import (
 	"github.com/hbollon/go-edlib"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
+	"math/big"
 	"net/mail"
 	"reflect"
 	"runtime/debug"
 	"sort"
-	"strconv"
 	"strings"
 	"sync"
 	"tableflow/go/pkg/tf"
@@ -236,51 +236,77 @@ func StringSimilarity(str1 string, str2 string) float32 {
 	}
 }
 
-func StringToNumberOrNil(s string) (interface{}, error) {
+func StringToNumberOrNil(s string) (interface{}, string, error) {
 	if IsBlankUnicode(s) {
-		return nil, nil
+		return nil, "", nil
 	}
 	s = strings.TrimSpace(s)
 	s = strings.Replace(s, ",", "", -1) // Remove commas
 	lower := strings.ToLower(s)
 
 	if lower == "null" || lower == "nil" {
-		return nil, nil
+		return nil, "", nil
 	}
 
-	// Attempt to convert the string to an int
-	if i, err := strconv.Atoi(s); err == nil {
-		return i, nil
+	// Attempt to convert the string to a big.Int
+	if bi, ok := new(big.Int).SetString(s, 10); ok {
+		return BigInt{bi}, bi.String(), nil
 	}
 
-	// Attempt to convert the string to a float64
-	if f, err := strconv.ParseFloat(s, 64); err == nil {
-		return f, nil
+	// Attempt to convert the string to a big.Float
+	f := new(big.Float).SetPrec(256)
+	if _, ok := f.SetString(s); ok {
+		// Round the number to fit within 256 bits of precision
+		f.SetMode(big.ToNearestEven)
+		f.SetPrec(256)
+		return BigFloat{f}, f.Text('f', -1), nil // Use -1 for maximum precision up to the limit
 	}
 
 	// Return an error if the string couldn't be converted to any number type
-	return nil, fmt.Errorf("failed to convert string to number: %s", s)
+	return nil, "", fmt.Errorf("failed to convert string to number: %s", s)
 }
 
-func StringToBoolOrNil(s string) (*bool, error) {
+func StringToBoolOrNil(s string) (*bool, string, error) {
 	if IsBlankUnicode(s) {
-		return nil, nil
+		return nil, "", nil
 	}
 	s = strings.TrimSpace(s)
 	lower := strings.ToLower(s)
 
 	if lower == "null" || lower == "nil" {
-		return nil, nil
+		return nil, "", nil
 	}
 
 	res := false
 	switch lower {
 	case "1", "t", "true":
 		res = true
-		return &res, nil
+		return &res, "true", nil
 	case "0", "f", "false":
-		return &res, nil
+		return &res, "false", nil
 	}
 
-	return nil, fmt.Errorf("failed to convert string to boolean: %s", s)
+	return nil, "", fmt.Errorf("failed to convert string to boolean: %s", s)
+}
+
+type BigInt struct {
+	*big.Int
+}
+
+type BigFloat struct {
+	*big.Float
+}
+
+func (i BigInt) MarshalJSON() ([]byte, error) {
+	if i.Int == nil {
+		return json.Marshal(nil)
+	}
+	return []byte(i.Int.String()), nil
+}
+
+func (f BigFloat) MarshalJSON() ([]byte, error) {
+	if f.Float == nil {
+		return json.Marshal(nil)
+	}
+	return []byte(f.Text('f', -1)), nil
 }

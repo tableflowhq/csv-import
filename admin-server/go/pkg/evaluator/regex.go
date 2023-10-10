@@ -26,11 +26,11 @@ func (e *RegexEvaluator) Initialize(options interface{}) error {
 	return nil
 }
 
-func (e RegexEvaluator) Evaluate(cell string) (bool, error) {
+func (e RegexEvaluator) Evaluate(cell string) (bool, string, error) {
 	if e.Regexp == nil {
-		return false, errors.New("uninitialized regex evaluator")
+		return false, cell, errors.New("uninitialized regex evaluator")
 	}
-	return e.Regexp.MatchString(cell), nil
+	return e.Regexp.MatchString(cell), cell, nil
 }
 
 func (e RegexEvaluator) DefaultMessage() string {

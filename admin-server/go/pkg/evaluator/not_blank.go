@@ -10,8 +10,8 @@ func (e *NotBlankEvaluator) Initialize(_ interface{}) error {
 	return nil
 }
 
-func (e NotBlankEvaluator) Evaluate(cell string) (bool, error) {
-	return !util.IsBlankUnicode(cell), nil
+func (e NotBlankEvaluator) Evaluate(cell string) (bool, string, error) {
+	return !util.IsBlankUnicode(cell), cell, nil
 }
 
 func (e NotBlankEvaluator) DefaultMessage() string {
