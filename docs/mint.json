@@ -84,11 +84,11 @@
     {
       "group": "API",
       "pages": [
-        "api/get-import-rows",
-        "api/get-import",
-        "api/download-import",
-        "api/create-importer",
-        "api/delete-importer"
+        "api-reference/get-import-rows",
+        "api-reference/get-import",
+        "api-reference/download-import",
+        "api-reference/create-importer",
+        "api-reference/delete-importer"
       ]
     }
   ],
