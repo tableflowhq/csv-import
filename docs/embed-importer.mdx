@@ -11,66 +11,67 @@ TableFlow is designed to be added to your frontend with ease. The [React SDK](/s
 
 <CodeGroup>
 
-    ```javascript React
-    import { useState } from "react";
-    import { TableFlowImporter } from "@tableflow/react";
+```javascript React
+import {useState} from "react";
+import {TableFlowImporter} from "@tableflow/react";
 
-    function MyComponent() {
-        const [isOpen, setIsOpen] = useState(false);
+function MyComponent() {
+  const [isOpen, setIsOpen] = useState(false);
 
-        return (
-            <>
-                <button onClick={() => setIsOpen(true)}>Open TableFlow Importer</button>
+  return (
+    <>
+      <button onClick={() => setIsOpen(true)}>Open TableFlow Importer</button>
 
-                <TableFlowImporter
-                    importerId={"b0fadb1d-9888-4fcb-b185-21b984bcb227"} // Use your importer ID
-                    modalIsOpen={isOpen}
-                    modalOnCloseTriggered={() => setIsOpen(false)}
-                    darkMode={true}
-                    onComplete={(data) => console.log(data)}
-                />
-            </>
-        );
-    }
-    ```
+      <TableFlowImporter
+        importerId={"b0fadb1d-9888-4fcb-b185-21b984bcb227"} // Use your importer ID
+        modalIsOpen={isOpen}
+        modalOnCloseTriggered={() => setIsOpen(false)}
+        darkMode={true}
+        onComplete={(data) => console.log(data)}
+      />
+    </>
+  );
+}
+```
 
-    ```javascript Javascript
-    import createTableFlowImporter from "@tableflow/js";
+```javascript Javascript
+import createTableFlowImporter from "@tableflow/js";
 
-    const importer = createTableFlowImporter({
-    importerId: "6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353", // Use your importer ID from https://app.tableflow.com/importers
-        modalOnCloseTriggered: () => importer.close(),
-    onComplete: (data) => console.log(data),
-        darkMode: true,
-    });
+const importer = createTableFlowImporter({
+  importerId: "6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353", // Use your importer ID from https://app.tableflow.com/importers
+  modalOnCloseTriggered: () => importer.close(),
+  onComplete: (data) => console.log(data),
+  darkMode: true,
+});
 
-    const uploadButton = document.getElementById("uploadButton");
-    uploadButton.addEventListener("click", () => {
-        importer?.showModal();
-    });
-    ```
+const uploadButton = document.getElementById("uploadButton");
+uploadButton.addEventListener("click", () => {
+  importer?.showModal();
+});
+```
 
-    ```html HTML
-    <head>
-        <script src="https://unpkg.com/@tableflow/js@latest/build/index.js"></script>
-    </head>
-    <body>
-    <button id="uploadButton">Open TableFlow Importer</button>
-    <script>
-        const importer = createTableFlowImporter({
-        importerId: "6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353", // Use your importer ID from https://app.tableflow.com/importers
-        modalOnCloseTriggered: () => importer.close(),
-        onComplete: (data) => console.log(data),
-        darkMode: true,
-    });
+```html HTML
+<head>
+  <script src="https://unpkg.com/@tableflow/js@latest/build/index.js"></script>
+</head>
+<body>
+<button id="uploadButton">Open TableFlow Importer</button>
+<script>
+  const importer = createTableFlowImporter({
+  importerId: "6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353", // Use your importer ID from https://app.tableflow.com/importers
+  modalOnCloseTriggered: () => importer.close(),
+  onComplete: (data) => console.log(data),
+  darkMode: true,
+});
 
-        const uploadButton = document.getElementById("uploadButton");
-        uploadButton.addEventListener("click", () => {
-        importer?.showModal();
-    });
-    </script>
-    </body>
-    ```
+  const uploadButton = document.getElementById("uploadButton");
+  uploadButton.addEventListener("click", () => {
+  importer?.showModal();
+});
+</script>
+</body>
+```
+
 </CodeGroup>
 
 If you want to add additional metadata to your import, such as wanting to know which user ID in your application uploaded a file, you can set the “metadata” property with any data as JSON.
