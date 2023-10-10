@@ -1,66 +1,31 @@
 ---
 title: Retrieve Data
-description: Consume imported data into your application
+icon: circle-3
 ---
 
-After a user completes a CSV or Excel file import, you have a few options for how to retrieve the cleaned and mapped data.
+After a user completes a CSV or Excel file import, you have three options for how to retrieve the cleaned and mapped data.
 
-# 1. Frontend Callback
+### Option 1: Admin UI
 
-The [React](https://www.npmjs.com/package/@tableflow/react) and [JavaScript](https://www.npmjs.com/package/@tableflow/js) SDKs have an `onComplete` event that is triggered when an import is completed.
+The easiest way to access imported data is right within admin UI under the “Data” tab. Here you can download the files directly as a CSV. While this is useful for testing, you’ll likely want to use the one of the other options for production systems.
+
+<Frame>
+    ![Retrieve Data](assets/retrieve-data.jpg)
+</Frame>
+
+### Option 2: SDK
+The SDKs have an `onComplete` event that is triggered when an import is completed. The `data` object contains the actual row data along with information about the completed import such as the number of rows imported. It's important to note that there is a 10,000 row limit when using frontend callbacks.
+
 ```javascript
 onComplete: (data) => console.log(data)
 ```
 
-The `data` object contains the actual row data along with information about the completed import such as the number of rows imported:
-```javascript
-{
-  "id": "f7ecdlb4-bfd6-460e-b524-7f23d70d9500",
-  "importer_id": "b0fldb1d-9888-4fcb-b185-22b984bcb227",
-  "num_rows": 5,
-  "num_columns": 3,
-  "num_processed_values": 13,
-  "metadata": {
-    "userEmail": "test@example.com",
-    "userId": 1234
-  },
-  "created_at": 1690565037,
-  "rows": [
-    {
-      "index": 0,
-      "values": {
-        "email": "laura@example.com",
-        "first_name": "Laura",
-        "last_name": "Jenkins"
-      }
-    },
-    {
-      "index": 1,
-      "values": {
-        "email": "craig@example.com",
-        "first_name": "Craig",
-        "last_name": "Johnson"
-      }
-    }
-  ],
-  "error": "Example error"
-}
-```
-
-The field `error` is a string that will be non-empty if an error occurs during an import:
-```javascript
-"This import has 12000 rows which exceeds the max allowed number of rows for frontend callback (10000). Use the API to retrieve the data."
-```
-
-It's important to note that there is a 10,000 row limit when using frontend callbacks. `error` will be set if the number of rows imported exceeds this and the row data will be empty to prevent using an incomplete dataset. For large imports that exceed this limit, we recommend using the API directly.
-
-
-# 2. Data API
+### Option 3: API & Webhooks
 
 TableFlow provides an API to paginate the row data of an import, view metadata about an import, or download an import directly as a CSV.
 
-- [Get Import Rows](https://tableflow.com/docs/api-reference/get-import-rows)
-- [Get Import Metadata](https://tableflow.com/docs/api-reference/get-import)
-- [Download Import CSV](https://tableflow.com/docs/api-reference/download-import)
+- [Get Import Rows](/api/get-import-rows)
+- [Get Import Metadata](/api/get-import)
+- [Download Import CSV](/api/download-import)
 
-You can also use [Webhooks](https://tableflow.com/docs/webhooks) to get notified when an import has been completed. This allows your backend application to load the imported data as soon as an import has completed.
+You can also use [Webhooks](/webhooks) to get notified when an import has been completed. This allows your backend application to load the imported data as soon as an import has completed.

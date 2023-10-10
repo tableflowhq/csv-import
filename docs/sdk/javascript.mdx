@@ -1,44 +1,59 @@
 ---
-title: React
-description: SDK reference
+title: JavaScript
+icon: js
 ---
 
 ## Installation
 
-Use NPM or Yarn to install the [SDK package](https://www.npmjs.com/package/@tableflow/react).
+Use NPM or Yarn to install the [SDK package](https://www.npmjs.com/package/@tableflow/js).
 
 **NPM**
 ```bash
-npm install @tableflow/react
+npm install @tableflow/js
 ```
 **Yarn**
 ```bash
-yarn add @tableflow/react
+yarn add @tableflow/js
 ```
-
 ## Example
 
 ```javascript
-import { useState } from "react";
-import { TableFlowImporter } from "@tableflow/react";
+import createTableFlowImporter from "@tableflow/js";
 
-function MyComponent() {
-  const [isOpen, setIsOpen] = useState(false);
+const importer = createTableFlowImporter({
+  importerId: "6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353", // Use your importer ID from https://app.tableflow.com/importers
+  modalOnCloseTriggered: () => importer.close(),
+  onComplete: (data) => console.log(data),
+  darkMode: true,
+});
 
-  return (
-    <>
-      <button onClick={() => setIsOpen(true)}>Open TableFlow Importer</button>
+const uploadButton = document.getElementById("uploadButton");
+uploadButton.addEventListener("click", () => {
+  importer?.showModal();
+});
+```
 
-      <TableFlowImporter
-        importerId={"b0fadb1d-9888-4fcb-b185-21b984bcb227"} // Use your importer ID from https://app.tableflow.com/importers
-        modalIsOpen={isOpen}
-        modalOnCloseTriggered={() => setIsOpen(false)}
-        darkMode={true}
-        onComplete={(data) => console.log(data)}
-      />
-    </>
-  );
-}
+Or directly in HTML
+```html
+<head>
+  <script src="https://unpkg.com/@tableflow/js@latest/build/index.js"></script>
+</head>
+<body>
+  <button id="uploadButton">Open TableFlow Importer</button>
+  <script>
+    const importer = createTableFlowImporter({
+      importerId: "6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353", // Use your importer ID from https://app.tableflow.com/importers
+      modalOnCloseTriggered: () => importer.close(),
+      onComplete: (data) => console.log(data),
+      darkMode: true,
+    });
+
+    const uploadButton = document.getElementById("uploadButton");
+    uploadButton.addEventListener("click", () => {
+      importer?.showModal();
+    });
+  </script>
+</body>
 ```
 
 ## Properties
@@ -49,27 +64,14 @@ function MyComponent() {
 
 <ResponseField name="isModal" type="boolean" default={true}>
   When set to `true` (default value), the importer will behave as a modal with its open state controlled by
-  `modalIsOpen`. When set to `false`, the importer will be embedded directly in your page.
-</ResponseField>
-
-<ResponseField name="modalIsOpen" type="boolean" default={false}>
-  Only used when `isModal` is `true`: Controls the importer modal being open or closed.
+  `.showModal()` and `.close()`. When set to `false`, the importer will be embedded directly in your page.
 </ResponseField>
 
 <ResponseField name="modalOnCloseTriggered" type="function">
   Only used when `isModal` is `true`: A function called when the user clicks the close button or clicks outside of (when
-  used with `modalCloseOnOutsideClick`) the importer. `useState` can be used to control the importer modal opening and
-  closing.
+  used with `modalCloseOnOutsideClick`) the importer, used to control closing the importer modal.
   ```javascript
-  const [isOpen, setIsOpen] = useState(false);
-  ```
-  ```jsx
-  <button onClick={() => setIsOpen(true)}>Open TableFlow Importer</button>
-  <TableFlowImporter
-    modalIsOpen={isOpen}
-    modalOnCloseTriggered={() => setIsOpen(false)}
-    ...
-  />
+  modalOnCloseTriggered: () => importer.close(),
   ```
 </ResponseField>
 
@@ -92,8 +94,8 @@ function MyComponent() {
   `suggested_mappings` (optional): An array of column header names that the importer will use to auto-select the mapping
   for the user if the column header in their file matches one of these values (case-insensitive). Note that these must
   be unique across all columns.
-  ```jsx
-  template={{
+  ```javascript
+  template: {
     columns: [
       {
         name: "First Name",
@@ -103,15 +105,15 @@ function MyComponent() {
         suggested_mappings: ["First Name", "Name"]
       },
       {
-        name: "Last Name"
+        name: "Last Name",
       },
       {
         name: "Email",
         required: true,
-        description: "The email of the user"
-      }
-    ]
-  }}
+        description: "The email of the user",
+      },
+    ],
+  }
   ```
 </ResponseField>
 
@@ -131,8 +133,8 @@ function MyComponent() {
 
 <ResponseField name="primaryColor" type="string">
   Specifies the primary color for the importer in hex format. Use `customStyles` to customize the UI in more detail.
-  ```jsx
-  primaryColor="#7A5EF8"
+  ```javascript
+  primaryColor: "#7A5EF8"
   ```
 </ResponseField>
 
@@ -142,11 +144,10 @@ function MyComponent() {
 
 <ResponseField name="customStyles" type="object">
   Apply custom styles to the importer with an object containing CSS properties and values. Note that custom style
-  properties
-  will override `primaryColor` and any default styles from `darkMode`.
+  properties will override `primaryColor` and any default styles from `darkMode`.
   Available options:
-  ```jsx
-  customStyles={{
+  ```javascript
+  customStyles: {
     "font-family": "cursive",
     "font-size": "15px",
     "base-spacing": "2rem",
@@ -169,7 +170,7 @@ function MyComponent() {
     "color-background-menu-hover": "bisque",
     "color-importer-link": "indigo",
     "color-progress-bar": "darkGreen"
-}}
+}
   ```
 </ResponseField>
 
@@ -177,13 +178,13 @@ function MyComponent() {
   Completely customize every aspect of the importer by passing in CSS overrides. Currently only available to [TableFlow
   Cloud Pro users](https://tableflow.com/pricing).
   ```jsx
-  cssOverrides={{
+  cssOverrides: {
     ".uppy-Dashboard-AddFiles": "border: none",
     "Main_header": "margin-bottom: var(--m-xxs)",
     "Stepper-module_stepper": "gap: var(--m-l)",
     "Stepper-module_step": "flex-direction: column",
     "Stepper-module_step:before, Uploader_box": "display: none",
-}}
+}
   ```
 </ResponseField>
 
@@ -191,8 +192,8 @@ function MyComponent() {
   Pass metadata as a JSON object or string. This metadata will be available when retrieving imported data via the API.
   An example use case is associating a user ID in your application to an import so when the data is retrieved, you'll
   know which user the data belongs to.
-  ```jsx
-  metadata={{userId: 1234, userEmail: "test@example.com"}}
+  ```javascript
+  metadata: {userId: 1234, userEmail: "test@example.com"}
   ```
 </ResponseField>
 
@@ -200,8 +201,8 @@ function MyComponent() {
   Callback function that fires when a user completes an import. It received two parameters: `data` is an object that
   contains the importer row data and information about the import such as the number of rows and `error` contains any
   errors that occurred during the import.
-  ```jsx
-  onComplete={(data) => console.log(data)}
+  ```javascript
+  onComplete: (data) => console.log(data)
   ```
 </ResponseField>
 

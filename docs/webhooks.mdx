@@ -1,13 +1,12 @@
 ---
 title: Webhooks
-description: Notify your application about import events
 ---
 
 TableFlow uses webhooks to push real-time notifications about your data imports. For example, you can use webhooks on TableFlow to get notified when a user completes a file import:
 
 1. Your user imports a CSV or Excel file using the embedded TableFlow importer on your web app
 2. TableFlow notifies your system, via a webhook, that a data import has been completed
-3. Your system can use the API to [paginate through the imported data](https://tableflow.com/docs/api-reference/get-import-rows), or [download the data directly as a CSV file](https://tableflow.com/docs/api-reference/download-import).
+3. Your system can use the API to [paginate through the imported data](/api/get-import-rows), or [download the data directly as a CSV file](/api/download-import).
 
 ## Configure your application to receive webhooks
 
