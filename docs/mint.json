@@ -50,43 +50,46 @@
   ],
   "navigation": [
     {
-      "group": "Get Started",
+      "group": "Welcome",
       "pages": [
-        "introduction",
-        "quick-start",
-        "how-it-works",
-        "embed",
+        "introduction"
+      ]
+    },
+    {
+      "group": "Implementation Steps",
+      "pages": [
+        "configure-importer",
+        "embed-importer",
         "retrieve-data"
       ]
     },
     {
-      "group": "Guides",
+      "group": "Reference",
       "pages": [
-        "guides/webhooks",
-        "guides/slack-notifications"
+        "templates",
+        "data-types",
+        "validations",
+        "webhooks",
+        "slack-notifications",
+        "self-host",
+        "shareable-links"
       ]
     },
     {
-      "group": "SDK Reference",
+      "group": "SDK",
       "pages": [
-        "sdk-reference/react",
-        "sdk-reference/javascript"
+        "sdk/react",
+        "sdk/javascript"
       ]
     },
     {
-      "group": "API Reference",
+      "group": "API",
       "pages": [
         "api-reference/get-import-rows",
         "api-reference/get-import",
         "api-reference/download-import",
         "api-reference/create-importer",
         "api-reference/delete-importer"
-      ]
-    },
-    {
-      "group": "Support",
-      "pages": [
-        "get-help"
       ]
     }
   ],
