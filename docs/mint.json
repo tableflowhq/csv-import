@@ -67,6 +67,7 @@
       "group": "Reference",
       "pages": [
         "templates",
+        "data-types",
         "validations",
         "webhooks",
         "slack-notifications",

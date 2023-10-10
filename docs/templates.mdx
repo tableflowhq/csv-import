@@ -2,48 +2,65 @@
 title: Templates
 ---
 
-Templates define the columns expected during import. The `template` object is used in the front-end SDKs ([React](/sdk/react) | [Javascript](/sdk/javascript)) and the [API](/api-reference/create-importer).
+A template holds an array of columns that you expect from the user during an import. You can use the template directly
+in the front-end SDKs ([React](/sdk/react) or [Javascript](/sdk/javascript)) or create it with the [API](/api-reference/create-importer).
+
 <RequestExample>
 ```javascript Template Example
 {
-  columns: [
+  "columns": [
     {
-      name: "First Name",
-      key: "first_name",
-      required: true,
-      description: "The first name of the user",
-      suggested_mappings: ["First Name", "Name"]
+      "name": "First Name",
+      "key": "first_name",
+      "required": true,
+      "description": "The first name of the user",
+      "suggested_mappings": ["First", "Name"]
     },
     {
-      name: "Last Name"
+      "name": "Last Name"
     },
     {
-      name: "Email",
-      required: true,
-      description: "The email of the user"
+      "name": "Email",
+      "required": true,
+      "description": "The email of the user"
     }
   ]
 }
 ```
 </RequestExample>
 
+## Template Columns
 
 <ResponseField name="name" type="string" required>
-    The name of the column.
+  The name of the column.
 </ResponseField>
 
 <ResponseField name="key" type="string">
-    The key of the column which is used when retrieving data. Note this must be unique and only contain letters, numbers, and underscores. If not provided, a key will be generated from the `name`.
+  The key of the column which is used when retrieving data. Note this must be unique (case-insensitive) and only contain
+  letters, numbers, and underscores. If not provided, a key will be generated from the `name` by converting to lower
+  case, replacing all spaces with underscores, and removing any non-alphanumeric characters.
 </ResponseField>
 
 <ResponseField name="required" type="boolean" default="false">
-    Users must map a column from their file to this column to proceed with the import.
+  During the "Map Columns" step of the import, users must map a column from their file to this column to proceed.
 </ResponseField>
 
 <ResponseField name="description" type="string">
-    Set a description displayed as a tooltip in the importer.
+  Set a description displayed as a tooltip in the importer.
 </ResponseField>
 
 <ResponseField name="suggested_mappings" type="string">
-    An array of column header names that the importer will use to auto-select the mapping for the user if the column header in their file matches one of these values (case-insensitive). Note that these must be unique across all columns.
+  An array of column header names that the importer will use to auto-select the mapping for the user if the column
+  header in their file matches one of these values (case-insensitive). Note that these must be unique across all
+  columns.
+</ResponseField>
+
+<ResponseField name="data_type" type="string">
+  Define the output format of your data as well as add basic data validations. See all available options on [Data
+  Types](/data-types).
+</ResponseField>
+
+<ResponseField name="validations" type="array">
+  Add validations to enforce the cell values not being blank, matching a regex pattern, and more. See all available
+  options on [Validations](/validations).
 </ResponseField>
