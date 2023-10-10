@@ -423,7 +423,7 @@ func convertImportRow(row ImportRow, dataTypes map[string]model.TemplateColumnDa
 			}
 			response.Values[k] = val
 		case model.TemplateColumnDataTypeDate:
-			// TODO: Date support!
+			// Dates are already converted at this point to the correct format
 			response.Values[k] = v
 		}
 	}
