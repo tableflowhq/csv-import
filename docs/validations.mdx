@@ -2,4 +2,117 @@
 title: Validations
 ---
 
-Validations define the data requirements for a template. They are defined in the `validations` array within a template column.
+Validations allow you to enforce cell values of a column to meet specified conditions before the data is submitted.
+Any validations that fail for a cell will be shown to the user on the Review screen of the import where they'll be able
+to edit the cell values.
+
+<Frame><img src="https://tableflow-public-cdn.s3.amazonaws.com/2023-10-03-data-review"/>
+</Frame>
+
+<RequestExample>
+```javascript Template Example
+{
+  "columns": [
+    {
+      "name": "First Name",
+      "key": "first_name",
+      "required": true,
+      "description": "The first name of the user",
+      "suggested_mappings": ["First", "Name"],
+      "data_type": "string",
+      "validations": [
+        {
+          "validate": "not_blank",
+          "message": "Cell must contain a value"
+        }
+      ]
+    },
+    {
+      "name": "User ID",
+      "data_type": "string",
+      "validations": [
+        {
+          "validate": "regex",
+          "options": "^[a-zA-Z0-9]*$",
+          "message": "Cell can only contain letter or numbers"
+        }
+      ]
+    },
+    {
+      "name": "Joined On",
+      "data_type": "date"
+    },
+    {
+      "name": "Active",
+      "data_type": "boolean"
+    }
+  ]
+}
+```
+</RequestExample>
+
+Validations are defined as an array on a template column:
+
+```json
+"validations": [
+  {
+    "validate": "regex",
+    "options": "^[a-zA-Z0-9]*$",
+    "message": "Cell can only contain letter or numbers"
+  }
+]
+```
+
+<ResponseField name="validate" type="string" required>
+  The type of validation ([see all options](#validate-options)).
+</ResponseField>
+
+<ResponseField name="options" type="any">
+  If the validation accepts additional options they can be configured here. The schema of `options` is dependent on the
+  specific validation. For example, the `regex` validation expects this as a string which is the pattern to match.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  The message to display to the user as a tooltip in the cell on the Review screen if the validation fails. If not
+  provided, a default message will be generated depending on the validation.
+</ResponseField>
+
+<br/>
+
+# Validate Options
+
+Validations can either be allowed for all data types (universal) or only compatible with specific data types.
+
+## Universal
+
+<ResponseField name="not_blank">
+  The cell must contain a non-blank value. Blank is defined as either being empty or containing all unicode
+  whitespace characters (`' ', '\n', '\t', '\v', '\f', '\r', U+0085 (NEL), U+00A0 (NBSP)`).
+  ```json
+  {
+    "validate": "not_blank"
+  }
+  ```
+</ResponseField>
+
+
+## String
+
+<ResponseField name="regex">
+  The cell must match the regex pattern provided.
+  ```json
+  {
+    "validate": "regex",
+    "options": "^[a-zA-Z0-9]*$"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="email">
+  The cell must be a valid email address.
+  ```json
+  {
+    "validate": "email"
+  }
+  ```
+</ResponseField>
