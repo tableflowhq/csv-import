@@ -1,5 +1,4 @@
 import { ButtonHTMLAttributes } from "react";
-import { IconType } from "../../Icon/types";
 
 export type buttonVariant =
   | "primary"

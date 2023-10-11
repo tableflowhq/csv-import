@@ -1,8 +1,7 @@
 /* eslint-disable */
 import { ColDef, GridApi, GridReadyEvent, ICellRendererParams, IDatasource, ISizeColumnsToFitParams, ValueGetterParams } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { IconType } from "../../../components/Icon/types";
+import { ReactElement, useCallback, useEffect, useRef, useState } from "react";
 import Tooltip from "../../../components/Tooltip";
 import { fetchRows } from "../../../api/useGetRows";
 import classes from "../../../utils/classes";
@@ -11,6 +10,7 @@ import style from "../style/Review.module.scss";
 import "./TableStyle.scss";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
+import { FaExclamation, FaInfo, FaQuestion } from "react-icons/fa6";
 
 const TABLE_WIDTH = 1000;
 const INDEX_ROW_WIDTH = 70;
@@ -181,14 +181,14 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
 
 type IconKeyType = "error" | "warning" | "info";
 
-const iconTypeMap: Record<IconKeyType, IconType> = {
-  error: "error",
-  warning: "help",
-  info: "info",
+const iconTypeMap: Record<IconKeyType, ReactElement> = {
+  error: <FaExclamation />,
+  warning: <FaQuestion />,
+  info: <FaInfo />,
 };
 
-const getIconType = (type: string): IconType => {
-  return iconTypeMap[type as IconKeyType] || "info";
+const getIconType = (type: string): ReactElement => {
+  return iconTypeMap[type as IconKeyType] || <FaInfo />;
 };
 
 const getCellBackgroundColor = (severity: IconKeyType, theme: string): string | null => {
