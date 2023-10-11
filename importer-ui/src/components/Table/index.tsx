@@ -1,8 +1,8 @@
 import React, { createContext, useContext } from "react";
-import Tooltip from "../../components/Tooltip";
 import classes from "../../utils/classes";
 import { CellProps, RowProps, TableProps } from "./types";
 import themeDefault from "./style/Default.module.scss";
+import Tooltip from "../Tooltip";
 
 const TableContext = createContext<any>({});
 

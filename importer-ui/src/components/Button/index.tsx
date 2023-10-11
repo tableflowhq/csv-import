@@ -1,4 +1,5 @@
 import classes from "../../utils/classes";
+import { IconType } from "../Icon/types";
 import { ButtonProps, buttonVariant } from "./types";
 import style from "./style/Button.module.scss";
 import Icon from "../Icon";
@@ -11,11 +12,7 @@ export default function Button({ children, icon, className, variants = [], iconP
 
   const iconSize = variants.includes("fullWidth") ? "m" : "s";
 
-  const iconElement = (
-    <span className={style.icon}>
-      <Icon icon={iconId} size={iconSize} />
-    </span>
-  );
+  const iconElement = <span className={style.icon}>{typeof icon === "string" ? <Icon icon={iconId as IconType} size={iconSize} /> : icon}</span>;
 
   return (
     <button {...props} className={containerClassName}>

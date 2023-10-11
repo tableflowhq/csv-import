@@ -50,7 +50,6 @@ export default function Main() {
   const {
     tusId,
     setTusId,
-    tusWasStored,
     importer,
     importerIsLoading,
     importerError,

@@ -7,6 +7,7 @@ import Portal from "../Portal/index";
 import { InputProps } from "./types";
 import style from "./style/Input.module.scss";
 import Icon from "../Icon";
+import { FaAngleDown, FaExclamation } from "react-icons/fa";
 
 export default function Input({ as = "input", label, icon, iconAfter, error, options, className, variants = [], children, ...props }: InputProps) {
   const Element = as;
@@ -26,14 +27,14 @@ export default function Input({ as = "input", label, icon, iconAfter, error, opt
   ) : (
     error && (
       <span className={style.icon}>
-        <Icon icon="error" />
+        <FaExclamation />
       </span>
     )
   );
 
   const iconSelect = options && (
     <span className={classes([style.icon, style.dropdownIcon])}>
-      <Icon icon="arrowHeadDown" />
+      <FaAngleDown />
     </span>
   );
 

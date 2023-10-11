@@ -2,11 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
 import classes from "../../utils/classes";
 import getStringLengthOfChildren from "../../utils/getStringLengthOfChildren";
+import { IconType } from "../Icon/types";
 import { AsMap, TooltipProps } from "./types";
 import style from "./style/Tooltip.module.scss";
 import Icon from "../Icon";
+import { FaInfoCircle } from "react-icons/fa";
 
-export default function Tooltip<T extends keyof AsMap>({ as, className, title, children, icon = "info", ...props }: TooltipProps<T>) {
+export default function Tooltip<T extends keyof AsMap>({ as, className, title, children, icon = <FaInfoCircle />, ...props }: TooltipProps<T>) {
   const Tag: any = as || "span";
 
   const length = getStringLengthOfChildren(title);
@@ -50,11 +52,13 @@ export default function Tooltip<T extends keyof AsMap>({ as, className, title, c
     </span>
   );
 
+  const iconElement = typeof icon === "string" ? <Icon icon={icon as IconType} /> : icon;
+
   return (
     <Tag {...props} className={wrapperClasses}>
       {children}
       <span className={style.icon} onMouseEnter={showTooltip} onMouseLeave={hideTooltip} ref={targetRef}>
-        <Icon icon={icon} />
+        {iconElement}
         {ReactDOM.createPortal(tooltipMessage, tooltipContainer.current)}
       </span>
     </Tag>
