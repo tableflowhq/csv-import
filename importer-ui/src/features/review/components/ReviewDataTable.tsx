@@ -124,7 +124,7 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
         sortable: false,
         filter: false,
         suppressMovable: true,
-        width: orderedColumns.length < MAX_COLUMN_SCROLL ? (TABLE_WIDTH - INDEX_ROW_WIDTH) / orderedColumns.length : undefined,
+        resizable: true,
       } as ColDef;
     });
     // Add index column to the beginning of the columns
@@ -207,10 +207,22 @@ const getCellBackgroundColor = (severity: IconKeyType, theme: string): string | 
   return colorMap[severity] || null;
 };
 
-const cellRenderer = (params: any, header: string) => {
+const cellRenderer = (params: ICellRendererParams, header: string) => {
   if (params.data) {
     const errors = params.data?.errors?.[header];
 
+    if (params.column) {
+      // column resize logic, to only reset if it has not been resized manually
+      const actual = params.column.getActualWidth();
+      const totalCols = params.columnApi.getAllGridColumns()?.length - 1;
+      const width = totalCols < MAX_COLUMN_SCROLL ? (TABLE_WIDTH - INDEX_ROW_WIDTH) / totalCols : -1;
+
+      if (actual < width) {
+        params.column?.setActualWidth(width);
+      } else {
+        params.columnApi?.resetColumnState();
+      }
+    }
     const cellContent = (
       <span
         style={{
