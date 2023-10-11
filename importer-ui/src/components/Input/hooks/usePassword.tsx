@@ -1,6 +1,6 @@
 import { useState } from "react";
-import Icon from "../../Icon";
 import { inputTypes } from "../types";
+import { FaEye, FaEyeSlash } from "react-icons/fa6";
 
 export default function usePassword() {
   const [show, setShow] = useState(false);
@@ -9,7 +9,7 @@ export default function usePassword() {
     type: (show ? "text" : "password") as inputTypes,
     iconAfter: (
       <button type="button" onClick={() => setShow((s) => !s)} tabIndex={0}>
-        <Icon icon={show ? "eyesOpen" : "eyesClosed"} />
+        {show ? <FaEye /> : <FaEyeSlash />}
       </button>
     ),
     placeholder: show ? "A.#Kj8*/" : "••••••••",

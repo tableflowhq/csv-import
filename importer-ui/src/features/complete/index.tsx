@@ -4,7 +4,7 @@ import Spinner from "../../components/Spinner";
 import useEmbedStore from "../../stores/embed";
 import { CompleteProps } from "./types";
 import style from "./style/Complete.module.scss";
-import { FaCheck } from "react-icons/fa";
+import { FaArrowsRotate, FaCheck, FaCross } from "react-icons/fa6";
 
 export default function Complete({ reload, close, showImportLoadingStatus }: CompleteProps) {
   const { isModal } = useEmbedStore((state) => state.embedParams);
@@ -23,11 +23,11 @@ export default function Complete({ reload, close, showImportLoadingStatus }: Com
           <div>Import Successful</div>
           <div className={style.actions}>
             {isEmbeddedInIframe && isModal && (
-              <Button type="button" variants={["tertiary"]} icon="cross" onClick={close}>
+              <Button type="button" variants={["tertiary"]} icon={<FaCross />} onClick={close}>
                 Close
               </Button>
             )}
-            <Button type="button" variants={["primary"]} icon="update" onClick={reload}>
+            <Button type="button" variants={["primary"]} icon={<FaArrowsRotate />} onClick={reload}>
               Upload another file
             </Button>
           </div>

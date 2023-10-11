@@ -6,8 +6,7 @@ import classes from "../../utils/classes";
 import Portal from "../Portal/index";
 import { InputProps } from "./types";
 import style from "./style/Input.module.scss";
-import Icon from "../Icon";
-import { FaAngleDown, FaExclamation } from "react-icons/fa";
+import { FaAngleDown, FaExclamation } from "react-icons/fa6";
 
 export default function Input({ as = "input", label, icon, iconAfter, error, options, className, variants = [], children, ...props }: InputProps) {
   const Element = as;
@@ -16,14 +15,10 @@ export default function Input({ as = "input", label, icon, iconAfter, error, opt
 
   const containerClassName = classes([style.container, variantStyles, className]);
 
-  const icon1 = icon && (
-    <span className={style.icon}>
-      <Icon icon={icon} />
-    </span>
-  );
+  const icon1 = icon && <span className={style.icon}>{icon}</span>;
 
   const icon2 = iconAfter ? (
-    <span className={style.icon}>{typeof iconAfter === "string" ? <Icon icon={iconAfter} /> : iconAfter}</span>
+    <span className={style.icon}>{iconAfter}</span>
   ) : (
     error && (
       <span className={style.icon}>
