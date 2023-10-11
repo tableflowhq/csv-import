@@ -8,8 +8,6 @@ export default function Button({ children, icon, className, variants = [], iconP
 
   const iconId = (["sort", "sortUp", "sortDown"] as buttonVariant[]).some((i) => variants.includes(i)) ? "sort" : icon;
 
-  const iconSize = variants.includes("fullWidth") ? "m" : "s";
-
   const iconElement = <span className={style.icon}>{icon}</span>;
 
   return (
