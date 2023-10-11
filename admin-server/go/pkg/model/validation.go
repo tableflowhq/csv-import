@@ -37,43 +37,16 @@ type Validation struct {
 	Evaluator evaluator.Evaluator `json:"-" gorm:"-"`
 }
 
-type ValidationResult struct {
-	Message  string             `json:"message"`
-	Severity ValidationSeverity `json:"severity"`
-}
-
-func (v Validation) Evaluate(cell string) bool {
-	if v.Evaluator == nil {
-		tf.Log.Errorw("Attempted to call Evaluate with nil evaluator", "validation_id", v.ID, "cell", cell, "options", v.Options.ToString())
-		return true
-	}
-	passed, err := v.Evaluator.Evaluate(cell)
-	if err != nil {
-		tf.Log.Warnw("Cell validation error", "validation_id", v.ID, "cell", cell, "options", v.Options.ToString(), "error", err)
-	}
-	return passed
-}
-
-func (v Validation) EvaluateWithResult(cell string) (ValidationResult, bool) {
+func (v Validation) Evaluate(cell string) (bool, string) {
 	if v.Evaluator == nil {
 		tf.Log.Errorw("Attempted to call EvaluateWithResult with nil evaluator", "validation_id", v.ID, "cell", cell, "options", v.Options.ToString())
-		return ValidationResult{}, true
+		return true, cell
 	}
-	passed, err := v.Evaluator.Evaluate(cell)
+	passed, value, err := v.Evaluator.Evaluate(cell)
 	if err != nil {
 		tf.Log.Warnw("Cell validation error", "validation_id", v.ID, "cell", cell, "options", v.Options.ToString(), "error", err)
-		return ValidationResult{
-			Message:  fmt.Sprintf("Unexpected error: %v", err.Error()),
-			Severity: ValidationSeverityError,
-		}, false
 	}
-	if passed {
-		return ValidationResult{}, true
-	}
-	return ValidationResult{
-		Message:  v.Message,
-		Severity: v.Severity,
-	}, false
+	return passed, value
 }
 
 func ParseValidation(id uint, templateColumnID, validateStr string, options jsonb.JSONB, message, severity string, dataType TemplateColumnDataType) (*Validation, error) {

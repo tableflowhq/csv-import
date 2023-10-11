@@ -8,9 +8,9 @@ func (e *NumberEvaluator) Initialize(_ interface{}) error {
 	return nil
 }
 
-func (e NumberEvaluator) Evaluate(cell string) (bool, error) {
-	_, err := util.StringToNumberOrNil(cell)
-	return err == nil, nil
+func (e NumberEvaluator) Evaluate(cell string) (bool, string, error) {
+	_, str, err := util.StringToNumberOrNil(cell)
+	return err == nil, str, nil
 }
 
 func (e NumberEvaluator) DefaultMessage() string {
