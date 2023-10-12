@@ -227,19 +227,21 @@ const cellRenderer = (params: ICellRendererParams, header: string, theme: string
       }
     }
     const cellContent = (
-      <span
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          width: "100%",
-        }}>
-        <span>{params.value}</span>
-        {errors && (
-          <div className={style.tooltipWrapper} style={{ backgroundColor: getCellBackgroundColor(errors[0].type, theme) || "" }}>
-            <Tooltip className={style.iconButton} title={errors[0].message} icon={getIconType(errors[0].type)} />
-          </div>
-        )}
-      </span>
+      <div className={style.cellWrapper}>
+        <span
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            width: "100%",
+          }}>
+          <span>{params.value}</span>
+          {errors && (
+            <div className={style.tooltipWrapper} style={{ backgroundColor: getCellBackgroundColor(errors[0].type, theme) || "" }}>
+              <Tooltip className={style.iconButton} title={errors[0].message} icon={getIconType(errors[0].type)} />
+            </div>
+          )}
+        </span>
+      </div>
     );
 
     return cellContent;

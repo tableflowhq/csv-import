@@ -48,3 +48,11 @@
   right: 0px;
   padding: 0 12px 0 6px;
 }
+
+.cellWrapper {
+  span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
