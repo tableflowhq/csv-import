@@ -101,7 +101,13 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
     const orderedIds = Object.values(columnsOrder);
 
     // Map over orderedIds to get the corresponding columns from templateCols
-    const orderedColumns = orderedIds.map((id) => template?.columns?.find((col) => col.id === id)).filter(Boolean) || [];
+    let orderedColumns = [];
+    if (template?.columns.length !== 0) {
+      orderedColumns = orderedIds.map((id) => template?.columns?.find((col) => col.id === id)).filter(Boolean) || [];
+    } else {
+      // If no columns exist, the upload is schemaless
+      orderedColumns = orderedIds.map((id) => ({ name: id, key: id }));
+    }
 
     const generatedColumnDefs = orderedColumns.map(({ name: colName, key: colKey }: any) => {
       const displayDescription = template?.columns?.find((c) => c.key === colKey)?.description;
