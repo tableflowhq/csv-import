@@ -4,9 +4,9 @@ import classes from "../../utils/classes";
 import getStringLengthOfChildren from "../../utils/getStringLengthOfChildren";
 import { AsMap, TooltipProps } from "./types";
 import style from "./style/Tooltip.module.scss";
-import { FaInfoCircle } from "react-icons/fa";
+import { PiInfo } from "react-icons/pi";
 
-export default function Tooltip<T extends keyof AsMap>({ as, className, title, children, icon = <FaInfoCircle />, ...props }: TooltipProps<T>) {
+export default function Tooltip<T extends keyof AsMap>({ as, className, title, children, icon = <PiInfo />, ...props }: TooltipProps<T>) {
   const Tag: any = as || "span";
 
   const length = getStringLengthOfChildren(title);
