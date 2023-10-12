@@ -116,15 +116,18 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
         field: `values.${colKey}`,
         cellStyle: (params: any) => {
           if (params.data?.errors?.[colKey]) {
-            return { backgroundColor: getCellBackgroundColor(params.data.errors[colKey][0].severity, theme) };
+            return {
+              backgroundColor: getCellBackgroundColor(params.data.errors[colKey][0].severity, theme),
+            };
           }
           return { backgroundColor: "" };
         },
-        cellRenderer: (params: ICellRendererParams) => cellRenderer(params, colKey),
+        cellRenderer: (params: ICellRendererParams) => cellRenderer(params, colKey, theme),
         sortable: false,
         filter: false,
         suppressMovable: true,
         resizable: true,
+        minWidth: (TABLE_WIDTH - INDEX_ROW_WIDTH) / orderedColumns.length,
       } as ColDef;
     });
     // Add index column to the beginning of the columns
@@ -207,7 +210,7 @@ const getCellBackgroundColor = (severity: IconKeyType, theme: string): string | 
   return colorMap[severity] || null;
 };
 
-const cellRenderer = (params: ICellRendererParams, header: string) => {
+const cellRenderer = (params: ICellRendererParams, header: string, theme: string) => {
   if (params.data) {
     const errors = params.data?.errors?.[header];
 
@@ -218,7 +221,7 @@ const cellRenderer = (params: ICellRendererParams, header: string) => {
       const width = totalCols < MAX_COLUMN_SCROLL ? (TABLE_WIDTH - INDEX_ROW_WIDTH) / totalCols : -1;
 
       if (actual < width) {
-        params.column?.setActualWidth(width);
+        params.column.setActualWidth(width);
       } else {
         params.columnApi?.resetColumnState();
       }
@@ -232,9 +235,9 @@ const cellRenderer = (params: ICellRendererParams, header: string) => {
         }}>
         <span>{params.value}</span>
         {errors && (
-          <button>
+          <div className={style.tooltipWrapper} style={{ backgroundColor: getCellBackgroundColor(errors[0].type, theme) || "" }}>
             <Tooltip className={style.iconButton} title={errors[0].message} icon={getIconType(errors[0].type)} />
-          </button>
+          </div>
         )}
       </span>
     );
