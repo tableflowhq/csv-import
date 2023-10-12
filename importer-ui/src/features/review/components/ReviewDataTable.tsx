@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { ColDef, GridApi, GridReadyEvent, ICellRendererParams, IDatasource, ISizeColumnsToFitParams, ValueGetterParams } from "ag-grid-community";
+import { ColDef, GridApi, GridReadyEvent, ICellRendererParams, IDatasource, ValueGetterParams } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
 import { ReactElement, useCallback, useEffect, useRef, useState } from "react";
 import Tooltip from "../../../components/Tooltip";
@@ -10,7 +10,8 @@ import style from "../style/Review.module.scss";
 import "./TableStyle.scss";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
-import { FaExclamation, FaInfo, FaQuestion } from "react-icons/fa6";
+import { FaInfo } from "react-icons/fa6";
+import { PiInfo } from "react-icons/pi";
 
 const TABLE_WIDTH = 1000;
 const INDEX_ROW_WIDTH = 70;
@@ -182,8 +183,8 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
 type IconKeyType = "error" | "warning" | "info";
 
 const iconTypeMap: Record<IconKeyType, ReactElement> = {
-  error: <FaExclamation />,
-  warning: <FaQuestion />,
+  error: <PiInfo />,
+  warning: <PiInfo />,
   info: <FaInfo />,
 };
 
@@ -221,7 +222,7 @@ const cellRenderer = (params: any, header: string) => {
         <span>{params.value}</span>
         {errors && (
           <button>
-            <Tooltip className={style.iconButton} title={errors[0].message} icon={getIconType(errors[0].type)} />
+            <Tooltip className={style.iconButton} title={errors[0].message} icon={getIconType(errors[0].severity)} />
           </button>
         )}
       </span>
