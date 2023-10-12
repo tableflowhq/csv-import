@@ -10,7 +10,6 @@ import style from "../style/Review.module.scss";
 import "./TableStyle.scss";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
-import { FaInfo } from "react-icons/fa6";
 import { PiInfo } from "react-icons/pi";
 
 const TABLE_WIDTH = 1000;
@@ -185,11 +184,11 @@ type IconKeyType = "error" | "warning" | "info";
 const iconTypeMap: Record<IconKeyType, ReactElement> = {
   error: <PiInfo />,
   warning: <PiInfo />,
-  info: <FaInfo />,
+  info: <PiInfo />,
 };
 
 const getIconType = (type: string): ReactElement => {
-  return iconTypeMap[type as IconKeyType] || <FaInfo />;
+  return iconTypeMap[type as IconKeyType] || <PiInfo />;
 };
 
 const getCellBackgroundColor = (severity: IconKeyType, theme: string): string | null => {
