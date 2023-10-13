@@ -8,8 +8,6 @@ export default function ThemeToggle() {
   const theme = useThemeStore((state) => state.theme);
   const { colorMode, toggleColorMode } = useColorMode();
 
-  console.log("ThemeToggle", theme, colorMode);
-
   useEffect(() => {
     setTheme(theme);
     if (theme === "dark" && colorMode === "light") toggleColorMode();
