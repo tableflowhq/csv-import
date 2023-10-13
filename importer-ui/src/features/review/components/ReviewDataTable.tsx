@@ -233,15 +233,13 @@ const cellRenderer = (params: ICellRendererParams, header: string, theme: string
       }
     }
     const cellContent = (
-      <div className={style.cellWrapper}>
-        <span className={style.cellContent}>
-          <span>{params.value}</span>
-          {errors && (
-            <div className={style.tooltipWrapper} style={{ backgroundColor: getCellBackgroundColor(errors[0].type, theme) || "" }}>
-              <Tooltip className={style.iconButton} title={errors[0].message} icon={getIconType(errors[0].type)} />
-            </div>
-          )}
-        </span>
+      <div className={style.cellContent}>
+        <span>{params.value}</span>
+        {errors && (
+          <div className={style.tooltipWrapper} style={{ backgroundColor: getCellBackgroundColor(errors[0].type, theme) || "" }}>
+            <Tooltip className={style.iconButton} title={errors[0].message} icon={getIconType(errors[0].type)} />
+          </div>
+        )}
       </div>
     );
 
