@@ -6,8 +6,7 @@ import classes from "../../utils/classes";
 import Portal from "../Portal/index";
 import { InputProps } from "./types";
 import style from "./style/Input.module.scss";
-import { FaAngleDown } from "react-icons/fa6";
-import { PiInfo } from "react-icons/pi";
+import { PiCaretDown, PiInfo } from "react-icons/pi";
 
 export default function Input({ as = "input", label, icon, iconAfter, error, options, className, variants = [], children, ...props }: InputProps) {
   const Element = as;
@@ -30,7 +29,7 @@ export default function Input({ as = "input", label, icon, iconAfter, error, opt
 
   const iconSelect = options && (
     <span className={classes([style.icon, style.dropdownIcon])}>
-      <FaAngleDown />
+      <PiCaretDown />
     </span>
   );
 

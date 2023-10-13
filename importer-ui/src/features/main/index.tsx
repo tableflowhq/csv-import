@@ -19,7 +19,7 @@ import MapColumns from "../map-columns";
 import Review from "../review";
 import RowSelection from "../row-selection";
 import Uploader from "../uploader";
-import { FaArrowsRotate, FaCross } from "react-icons/fa6";
+import { PiArrowsClockwise, PiX } from "react-icons/pi";
 
 const TUS_ENDPOINT = getAPIBaseURL("v1") + "files";
 
@@ -285,14 +285,14 @@ export default function Main() {
       {!!uploadError && (
         <div className={style.status}>
           <Errors error={uploadError.toString()} />
-          <Button onClick={reload} variants={["primary"]} type="button" icon={<FaArrowsRotate />}>
+          <Button onClick={reload} variants={["primary"]} type="button" icon={<PiArrowsClockwise />}>
             Reload
           </Button>
         </div>
       )}
 
       {isEmbeddedInIframe && isModal && (
-        <Button className={style.close} variants={["square", "secondary", "small"]} onClick={() => requestClose()} icon={<FaCross />} />
+        <Button className={style.close} variants={["square", "secondary", "small"]} onClick={() => requestClose()} icon={<PiX />} />
       )}
     </div>
   );
