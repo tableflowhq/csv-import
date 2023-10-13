@@ -1,11 +1,11 @@
 import style from "./style/Errors.module.scss";
-import { FaExclamation } from "react-icons/fa";
+import { PiInfo } from "react-icons/pi";
 
 export default function Errors({ error }: { error?: unknown }) {
   return error ? (
     <div className={style.errors}>
       <p>
-        <FaExclamation />
+        <PiInfo />
         {error.toString()}
       </p>
     </div>

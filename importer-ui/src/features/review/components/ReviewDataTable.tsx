@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { ColDef, GridApi, GridReadyEvent, ICellRendererParams, IDatasource, ISizeColumnsToFitParams, ValueGetterParams } from "ag-grid-community";
+import { ColDef, GridApi, GridReadyEvent, ICellRendererParams, IDatasource, ValueGetterParams } from "ag-grid-community";
 import { AgGridReact } from "ag-grid-react";
 import { ReactElement, useCallback, useEffect, useRef, useState } from "react";
 import Tooltip from "../../../components/Tooltip";
@@ -10,7 +10,7 @@ import style from "../style/Review.module.scss";
 import "./TableStyle.scss";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
-import { FaExclamation, FaInfo, FaQuestion } from "react-icons/fa6";
+import { PiInfo } from "react-icons/pi";
 
 const TABLE_WIDTH = 1000;
 const INDEX_ROW_WIDTH = 70;
@@ -101,7 +101,13 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
     const orderedIds = Object.values(columnsOrder);
 
     // Map over orderedIds to get the corresponding columns from templateCols
-    const orderedColumns = orderedIds.map((id) => template?.columns?.find((col) => col.id === id)).filter(Boolean) || [];
+    let orderedColumns = [];
+    if (template?.columns.length !== 0) {
+      orderedColumns = orderedIds.map((id) => template?.columns?.find((col) => col.id === id)).filter(Boolean) || [];
+    } else {
+      // If no columns exist, the upload is schemaless
+      orderedColumns = orderedIds.map((id) => ({ name: id, key: id }));
+    }
 
     const generatedColumnDefs = orderedColumns.map(({ name: colName, key: colKey }: any) => {
       const displayDescription = template?.columns?.find((c) => c.key === colKey)?.description;
@@ -116,15 +122,18 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
         field: `values.${colKey}`,
         cellStyle: (params: any) => {
           if (params.data?.errors?.[colKey]) {
-            return { backgroundColor: getCellBackgroundColor(params.data.errors[colKey][0].severity, theme) };
+            return {
+              backgroundColor: getCellBackgroundColor(params.data.errors[colKey][0].severity, theme),
+            };
           }
           return { backgroundColor: "" };
         },
-        cellRenderer: (params: ICellRendererParams) => cellRenderer(params, colKey),
+        cellRenderer: (params: ICellRendererParams) => cellRenderer(params, colKey, theme),
         sortable: false,
         filter: false,
         suppressMovable: true,
-        width: orderedColumns.length < MAX_COLUMN_SCROLL ? (TABLE_WIDTH - INDEX_ROW_WIDTH) / orderedColumns.length : undefined,
+        resizable: true,
+        minWidth: (TABLE_WIDTH - INDEX_ROW_WIDTH) / orderedColumns.length,
       } as ColDef;
     });
     // Add index column to the beginning of the columns
@@ -182,13 +191,13 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
 type IconKeyType = "error" | "warning" | "info";
 
 const iconTypeMap: Record<IconKeyType, ReactElement> = {
-  error: <FaExclamation />,
-  warning: <FaQuestion />,
-  info: <FaInfo />,
+  error: <PiInfo />,
+  warning: <PiInfo />,
+  info: <PiInfo />,
 };
 
 const getIconType = (type: string): ReactElement => {
-  return iconTypeMap[type as IconKeyType] || <FaInfo />;
+  return iconTypeMap[type as IconKeyType] || <PiInfo />;
 };
 
 const getCellBackgroundColor = (severity: IconKeyType, theme: string): string | null => {
@@ -207,24 +216,31 @@ const getCellBackgroundColor = (severity: IconKeyType, theme: string): string | 
   return colorMap[severity] || null;
 };
 
-const cellRenderer = (params: any, header: string) => {
+const cellRenderer = (params: ICellRendererParams, header: string, theme: string) => {
   if (params.data) {
     const errors = params.data?.errors?.[header];
 
+    if (params.column) {
+      // column resize logic, to only reset if it has not been resized manually
+      const actual = params.column.getActualWidth();
+      const totalCols = params.columnApi.getAllGridColumns()?.length - 1;
+      const width = totalCols < MAX_COLUMN_SCROLL ? (TABLE_WIDTH - INDEX_ROW_WIDTH) / totalCols : -1;
+
+      if (actual < width) {
+        params.column.setActualWidth(width);
+      } else {
+        params.columnApi?.resetColumnState();
+      }
+    }
     const cellContent = (
-      <span
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          width: "100%",
-        }}>
+      <div className={style.cellContent}>
         <span>{params.value}</span>
         {errors && (
-          <button>
+          <div className={style.tooltipWrapper} style={{ backgroundColor: getCellBackgroundColor(errors[0].type, theme) || "" }}>
             <Tooltip className={style.iconButton} title={errors[0].message} icon={getIconType(errors[0].type)} />
-          </button>
+          </div>
         )}
-      </span>
+      </div>
     );
 
     return cellContent;
