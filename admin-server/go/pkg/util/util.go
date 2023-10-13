@@ -310,3 +310,7 @@ func (f BigFloat) MarshalJSON() ([]byte, error) {
 	}
 	return []byte(f.Text('f', -1)), nil
 }
+
+func Ptr[T any](v T) *T {
+	return &v
+}

@@ -22,38 +22,6 @@
   }
 }
 
-.pagination {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: 16px;
-  /* Adjust the margin as needed */
-}
-
-.pagination button {
-  padding: 8px 16px;
-  margin: 0 4px;
-  /* Adjust the margin as needed */
-  font-size: 14px;
-  cursor: pointer;
-  border: 1px solid #ccc;
-  background-color: #f5f5f5;
-  color: #333;
-  border-radius: 4px;
-}
-
-.pagination button:disabled {
-  cursor: not-allowed;
-  background-color: #ddd;
-  color: #999;
-}
-
-.pagination span {
-  margin: 0 8px;
-  font-size: 14px;
-  font-weight: bold;
-}
-
 .filters {
   width: fit-content;
 }
@@ -84,5 +52,19 @@
 
   & > button {
     display: flex;
+  }
+}
+
+.tooltipWrapper {
+  position: absolute;
+  right: 0px;
+  padding: 0 12px 0 6px;
+}
+
+.cellWrapper {
+  span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
