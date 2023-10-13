@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import classes from "../../utils/classes";
 import { Option, ToggleFilterProps } from "./types";
 import style from "./style/ToggleFilter.module.scss";
@@ -28,7 +28,7 @@ function ToggleFilter({ options, onChange, className }: ToggleFilterProps) {
 
   return (
     <div className={toggleFilterClassName}>
-      {options.map((option, index) => (
+      {options.map((option) => (
         <button
           key={option.label}
           className={classes([style.toggleOption, selectedOption === option.label && style.selected, option.color && style[option.color]])}

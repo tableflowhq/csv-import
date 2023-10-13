@@ -1,7 +1,7 @@
 import classes from "../../utils/classes";
 import { StepperProps } from "./types";
 import style from "./style/Stepper.module.scss";
-import Icon from "../Icon";
+import { FaCheck } from "react-icons/fa";
 
 export default function Stepper({ steps, current, clickable, setCurrent }: StepperProps) {
   return (
@@ -23,7 +23,7 @@ export default function Stepper({ steps, current, clickable, setCurrent }: Stepp
             key={i}
             className={classes([style.step, i === current ? style.active : done && style.done, steps.length < 4 && style.stepWide])}
             {...buttonProps}>
-            <div className={style.badge}>{done ? <Icon icon="check" /> : i + 1}</div>
+            <div className={style.badge}>{done ? <FaCheck /> : i + 1}</div>
             <div className={style.label}>{step.label}</div>
           </Element>
         );
