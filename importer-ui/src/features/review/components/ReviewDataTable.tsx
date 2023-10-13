@@ -212,12 +212,7 @@ const cellRenderer = (params: any, header: string) => {
     const errors = params.data?.errors?.[header];
 
     const cellContent = (
-      <span
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          width: "100%",
-        }}>
+      <span className={style.cellContent}>
         <span>{params.value}</span>
         {errors && (
           <button>
