@@ -17,7 +17,7 @@ const defaults: TableFlowImporterProps = {
   // schemaless: false,
   // schemalessReadOnly: true,
   darkMode: true,
-  onComplete: ({ data, error }) => console.log("onComplete", data, error),
+  onComplete: (data) => console.log("onComplete", data),
   // customStyles: {
   //   "font-family": "cursive",
   //   "font-size": "15px",

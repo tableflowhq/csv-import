@@ -1,11 +1,14 @@
 import { CellValueChangedEvent } from "ag-grid-community";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Button, Errors, ToggleFilter, useThemeStore } from "@tableflow/ui-library";
-import { Option } from "@tableflow/ui-library/build/ToggleFilter/types";
+import Button from "../../components/Button";
+import Errors from "../../components/Errors";
+import ToggleFilter from "../../components/ToggleFilter";
+import { Option } from "../../components/ToggleFilter/types";
 import { post } from "../../api/api";
 import { QueryFilter } from "../../api/types";
 import useReview from "../../api/useReview";
 import useSubmitReview from "../../api/useSubmitReview";
+import useThemeStore from "../../stores/theme";
 import LoadingSpinner from "./components/LoadingSpinner";
 import ReviewDataTable from "./components/ReviewDataTable";
 import { ReviewProps } from "./types";
@@ -24,7 +27,7 @@ type FilterOptionCounts = {
   NumErrorRows: number;
 };
 
-export default function Review({ onCancel, onComplete, upload, template, reload, close }: ReviewProps) {
+export default function Review({ onCancel, onComplete, upload, template, reload, close, columnsOrder }: ReviewProps) {
   const uploadId = upload?.id;
   const filter = useRef<QueryFilter>("all");
   const [filterOptions, setFilterOptions] = useState<Option[]>(defaultOptions);
@@ -41,66 +44,81 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
 
   const cellValueChangeSet = useRef(new Set<string>());
   const onCellValueChanged = useCallback((event: CellValueChangedEvent) => {
-    const columnId = event.column.getColId();
-    const cellId = `${event.rowIndex}-${columnId}`;
+    const { rowIndex, column, data, newValue, oldValue, api } = event;
+    const columnId = column.getColId();
+    const cellId = `${rowIndex}-${columnId}`;
+
     // Check if the change was done programmatically to not cause an infinite loop when reverting changes to cell edits
     if (cellValueChangeSet.current.has(cellId)) {
       cellValueChangeSet.current.delete(cellId);
       return;
     }
-    let cellKey = "";
+
+    // Extract the cell key from column ID
     const parts = columnId.split(".");
+    let cellKey = "";
     if (parts.length > 1 && parts[0] === "values") {
       cellKey = parts[1];
     } else {
       console.error("Unexpected column ID format", columnId);
       return;
     }
+
     const endpoint = `import/${uploadId}/cell/edit`;
     const body = {
-      row_index: event.data?.index,
-      is_error_row: !!event.data?.errors ?? false,
+      row_index: data?.index,
       cell_key: cellKey,
-      cell_value: event.newValue,
+      cell_value: newValue ?? "",
     };
     post(endpoint, body).then((res) => {
-      const rowNode = event.api?.getRowNode(String(event.rowIndex));
+      const rowNode = api?.getRowNode(String(rowIndex));
       if (!rowNode) {
-        console.error("Unable to retrieve row node from event API", event.rowIndex);
+        console.error("Unable to retrieve row node from event API", rowIndex);
         return;
       }
       if (!res.ok) {
         cellValueChangeSet.current.add(cellId);
-        rowNode.setDataValue(columnId, event.oldValue);
+        rowNode.setDataValue(columnId, oldValue);
         alert(res.error);
-      } else {
-        // Clear the errors on the cell
-        if (!!event.data?.errors && rowNode.data?.errors[cellKey]) {
-          delete rowNode.data.errors[cellKey];
-          // Remove the errors object if no more errors exist
-          if (Object.keys(rowNode.data.errors).length === 0) {
-            rowNode.data.errors = undefined;
-          }
-        }
-        // Refresh the row to update the styling
-        event.api?.refreshCells({ rowNodes: [rowNode], columns: [columnId], force: true });
-
-        // Update the has data errors state
-        setHasDataErrors(res.data?.num_error_rows > 0);
-
-        // Update the counts on the filter options
-        updateFilterOptions(
-          filter.current,
-          res.data ? { NumRows: res.data?.num_rows, NumValidRows: res.data?.num_valid_rows, NumErrorRows: res.data?.num_error_rows } : undefined
-        );
+        return;
       }
+
+      if (res.data?.row?.errors && res.data.row.errors[cellKey]) {
+        // The edit caused a validation error, update the row node errors
+        rowNode.data.errors = rowNode.data.errors || {};
+        rowNode.data.errors[cellKey] = res.data.row.errors[cellKey];
+      } else if (data?.errors && rowNode.data?.errors[cellKey]) {
+        // The edit passed validations, remove the error from the row node
+        delete rowNode.data.errors[cellKey];
+        if (Object.keys(rowNode.data.errors).length === 0) {
+          rowNode.data.errors = undefined;
+        }
+      }
+
+      // If the data returned is different from the edit value, update the cell data (can happen with data type conversions)
+      if (res.data?.row?.values && res.data.row.values[cellKey] !== newValue) {
+        cellValueChangeSet.current.add(cellId);
+        rowNode.setDataValue(columnId, res.data.row.values[cellKey]);
+      }
+
+      // Refresh the row to update the styling
+      api?.refreshCells({ rowNodes: [rowNode], columns: [columnId], force: true });
+
+      // Update the has data errors state
+      setHasDataErrors(res.data?.num_error_rows > 0);
+
+      // Update the counts on the filter options
+      updateFilterOptions(
+        filter.current,
+        res.data ? { NumRows: res.data.num_rows, NumValidRows: res.data.num_valid_rows, NumErrorRows: res.data.num_error_rows } : undefined
+      );
     });
   }, []);
 
   useEffect(() => {
     if (isSuccess || submitError) {
       setShowLoading(false);
-      onComplete(dataSubmitted, dataSubmitted?.error || submitError?.toString() || null);
+      onComplete(dataSubmitted?.data);
     }
   }, [isSuccess, submitError]);
 
@@ -166,7 +184,14 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
         )}
         <div className={style.tableWrapper}>
           {!isLoading && (
-            <ReviewDataTable onCellValueChanged={onCellValueChanged} template={template} theme={theme} uploadId={uploadId} filter={filter.current} />
+            <ReviewDataTable
+              onCellValueChanged={onCellValueChanged}
+              template={template}
+              columnsOrder={columnsOrder}
+              theme={theme}
+              uploadId={uploadId}
+              filter={filter.current}
+            />
           )}
         </div>
         <div className={style.actions}>

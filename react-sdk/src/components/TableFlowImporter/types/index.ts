@@ -9,9 +9,6 @@ type ModalParams =
     }
   | {
       isModal: false;
-      modalIsOpen: never;
-      modalOnCloseTriggered: never;
-      modalCloseOnOutsideClick: never;
     };
 
 export type TableFlowImporterProps = (HTMLAttributes<HTMLDialogElement> & HTMLAttributes<HTMLDivElement>) & {
@@ -21,7 +18,7 @@ export type TableFlowImporterProps = (HTMLAttributes<HTMLDialogElement> & HTMLAt
   darkMode?: boolean;
   primaryColor?: string;
   metadata?: Record<string, unknown> | string;
-  onComplete?: (data: { data: any; error: any }) => void;
+  onComplete?: (data: any) => void;
   customStyles?: Record<string, string>;
   showImportLoadingStatus?: boolean;
   showDownloadTemplateButton?: boolean;

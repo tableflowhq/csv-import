@@ -15,6 +15,7 @@ type Import struct {
 	NumColumns         null.Int       `json:"num_columns" swaggertype:"integer" example:"8"`
 	NumProcessedValues null.Int       `json:"num_processed_values" swaggertype:"integer" example:"128"`
 	Metadata           jsonb.JSONB    `json:"metadata"`
+	DataTypes          jsonb.JSONB    `json:"data_types"`
 	IsStored           bool           `json:"is_stored" example:"false"`
 	IsComplete         bool           `json:"is_complete" example:"false"`
 	NumErrorRows       null.Int       `json:"num_error_rows" swaggertype:"integer" example:"32"`

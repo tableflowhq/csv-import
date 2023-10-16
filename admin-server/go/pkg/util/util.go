@@ -5,8 +5,11 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
+	"github.com/hbollon/go-edlib"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
+	"math/big"
 	"net/mail"
 	"reflect"
 	"runtime/debug"
@@ -42,6 +45,9 @@ func IsEmailValid(email string) bool {
 }
 
 func IsBlankUnicode(s string) bool {
+	if s == "" {
+		return true
+	}
 	for _, r := range s {
 		if !unicode.IsSpace(r) {
 			return false
@@ -51,6 +57,9 @@ func IsBlankUnicode(s string) bool {
 }
 
 func IsBlankASCII(s string) bool {
+	if s == "" {
+		return true
+	}
 	for i := 0; i < len(s); i++ {
 		c := s[i]
 		if c != ' ' && c != '\t' && c != '\n' && c != '\r' {
@@ -216,4 +225,92 @@ func ValidateKey(input string) bool {
 		}
 	}
 	return true
+}
+
+func StringSimilarity(str1 string, str2 string) float32 {
+	res, err := edlib.StringsSimilarity(str1, str2, edlib.Levenshtein)
+	if err != nil {
+		return 0
+	} else {
+		return res
+	}
+}
+
+func StringToNumberOrNil(s string) (interface{}, string, error) {
+	if IsBlankUnicode(s) {
+		return nil, "", nil
+	}
+	s = strings.TrimSpace(s)
+	s = strings.Replace(s, ",", "", -1) // Remove commas
+	lower := strings.ToLower(s)
+
+	if lower == "null" || lower == "nil" {
+		return nil, "", nil
+	}
+
+	// Attempt to convert the string to a big.Int
+	if bi, ok := new(big.Int).SetString(s, 10); ok {
+		return BigInt{bi}, bi.String(), nil
+	}
+
+	// Attempt to convert the string to a big.Float
+	f := new(big.Float).SetPrec(256)
+	if _, ok := f.SetString(s); ok {
+		// Round the number to fit within 256 bits of precision
+		f.SetMode(big.ToNearestEven)
+		f.SetPrec(256)
+		return BigFloat{f}, f.Text('f', -1), nil // Use -1 for maximum precision up to the limit
+	}
+
+	// Return an error if the string couldn't be converted to any number type
+	return nil, "", fmt.Errorf("failed to convert string to number: %s", s)
+}
+
+func StringToBoolOrNil(s string) (*bool, string, error) {
+	if IsBlankUnicode(s) {
+		return nil, "", nil
+	}
+	s = strings.TrimSpace(s)
+	lower := strings.ToLower(s)
+
+	if lower == "null" || lower == "nil" {
+		return nil, "", nil
+	}
+
+	res := false
+	switch lower {
+	case "1", "t", "true":
+		res = true
+		return &res, "true", nil
+	case "0", "f", "false":
+		return &res, "false", nil
+	}
+
+	return nil, "", fmt.Errorf("failed to convert string to boolean: %s", s)
+}
+
+type BigInt struct {
+	*big.Int
+}
+
+type BigFloat struct {
+	*big.Float
+}
+
+func (i BigInt) MarshalJSON() ([]byte, error) {
+	if i.Int == nil {
+		return json.Marshal(nil)
+	}
+	return []byte(i.Int.String()), nil
+}
+
+func (f BigFloat) MarshalJSON() ([]byte, error) {
+	if f.Float == nil {
+		return json.Marshal(nil)
+	}
+	return []byte(f.Text('f', -1)), nil
+}
+
+func Ptr[T any](v T) *T {
+	return &v
 }

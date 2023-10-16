@@ -50,7 +50,7 @@ function MyComponent() {
         modalIsOpen={isOpen}
         modalOnCloseTriggered={() => setIsOpen(false)}
         darkMode={true}
-        onComplete={(data, error) => console.log(data)}
+        onComplete={(data) => console.log(data)}
       />
     </>
   );

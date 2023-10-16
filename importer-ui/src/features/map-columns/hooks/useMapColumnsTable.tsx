@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { Checkbox, Input } from "@tableflow/ui-library";
-import { InputOption } from "@tableflow/ui-library/build/Input/types";
+import Checkbox from "../../../components/Checkbox";
+import Input from "../../../components/Input";
+import { InputOption } from "../../../components/Input/types";
 import { TemplateColumn, UploadColumn } from "../../../api/types";
-import stringsSimilarity from "../../../utils/stringSimilarity";
 import style from "../style/MapColumns.module.scss";
 import useTransformValue from "./useNameChange";
 
@@ -34,35 +34,10 @@ export default function useMapColumnsTable(
   }, []);
 
   const [values, setValues] = useState<{ [key: string]: Include }>(() => {
-    const usedTemplateColumns = new Set<string>();
-    return items.reduce((acc, uc) => {
-      const matchedSuggestedTemplateColumn = templateColumns?.find((tc) => {
-        if (!tc?.suggested_mappings) {
-          return false;
-        }
-        for (const suggestion of tc.suggested_mappings) {
-          if (suggestion.toLowerCase() === uc?.name?.toLowerCase()) {
-            return true;
-          }
-        }
-        return false;
-      });
-      if (matchedSuggestedTemplateColumn) {
-        usedTemplateColumns.add(matchedSuggestedTemplateColumn.id);
-        return { ...acc, [uc.id]: { template: matchedSuggestedTemplateColumn.id || "", use: !!matchedSuggestedTemplateColumn.id } };
-      }
-      const similarTemplateColumn = templateColumns?.find((tc) => {
-        if (usedTemplateColumns.has(tc.id)) {
-          return false;
-        }
-        if (stringsSimilarity(tc.name, uc.name) > 0.9) {
-          usedTemplateColumns.add(tc.id);
-          return true;
-        }
-        return false;
-      });
-      return { ...acc, [uc.id]: { template: similarTemplateColumn?.id || "", use: !!similarTemplateColumn?.id } };
-    }, {});
+    return items.reduce(
+      (acc, uc) => ({ ...acc, [uc.id]: { template: uc?.suggested_template_column_id || "", use: !!uc?.suggested_template_column_id } }),
+      {}
+    );
   });
   const [selectedTemplates, setSelectedTemplates] = useState<string[]>([]);
   const templateFields: { [key: string]: InputOption } = useMemo(

@@ -5,12 +5,15 @@ go 1.20
 replace github.com/gocql/gocql => github.com/scylladb/gocql v1.11.1
 
 require (
+	github.com/araddon/dateparse v0.0.0-20210429162001-6b43995a97de
+	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2
 	github.com/gin-contrib/cors v1.4.0
 	github.com/gin-contrib/zap v0.1.0
 	github.com/gin-gonic/gin v1.9.1
 	github.com/gocql/gocql v1.6.0
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/guregu/null v4.0.0+incompatible
+	github.com/hbollon/go-edlib v1.6.0
 	github.com/joho/godotenv v1.5.1
 	github.com/lib/pq v1.10.9
 	github.com/samber/lo v1.38.1

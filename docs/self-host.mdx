@@ -1,0 +1,43 @@
+---
+title: Self-host
+---
+
+<Info>This page covers our open source deployment, which is available under a MIT license, without guarantee. For most use cases, we recommend using [TableFlow Cloud](https://app.tableflow.com/signup).</Info>
+
+## 👩‍💻 Deploy locally
+
+You can run TableFlow locally with Docker:
+
+```bash
+git clone https://github.com/tableflowhq/tableflow.git
+cd tableflow
+cp .env.example .env
+docker-compose up -d
+```
+
+Then open [http://localhost:3000](http://localhost:3000) to access TableFlow.
+
+## 🤖 Deploy to AWS EC2
+
+**Important notes:**
+
+1. Make sure the server you use is only accessible within your VPC
+2. Make sure your local machine is able to connect to the server on ports 3000 (the web server)
+3. Update your network settings to allow port 3001 (the importer iframe) and 3003 (the API server) to be accessible from where your users will import data, most likely public
+4. Update `TABLEFLOW_WEB_APP_URL` and `TABLEFLOW_WEB_IMPORTER_URL` in your .env.example file with the correct URLs where you'll access the web applications from
+
+One-line install script (for Amazon Linux):
+
+```bash
+sudo yum update -y && \
+sudo yum install -y docker git && \
+sudo service docker start && \
+sudo usermod -a -G docker $USER && \
+sudo wget -O /usr/local/bin/docker-compose https://github.com/docker/compose/releases/download/v2.19.1/docker-compose-$(uname -s)-$(uname -m) && \
+sudo mv /usr/local/bin/docker-compose /usr/bin/docker-compose && \
+sudo chmod +x /usr/bin/docker-compose && \
+mkdir tableflow && cd tableflow && \
+wget https://raw.githubusercontent.com/tableflowhq/tableflow/main/{.env.example,docker-compose.yml,docker-compose.base.yml} && \
+mv .env.example .env && \
+sg docker -c 'docker-compose up -d'
+```

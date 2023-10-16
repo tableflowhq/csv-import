@@ -1,7 +1,8 @@
 import { useEffect } from "react";
-import { useThemeStore } from "@tableflow/ui-library";
+import { useColorMode } from "@chakra-ui/react";
 import useSearchParams from "../hooks/useSearchParams";
 import useEmbedStore from "../stores/embed";
+import useThemeStore from "../stores/theme";
 import { EmbedProps } from "./types";
 
 export default function Embed({ children }: EmbedProps) {
@@ -29,7 +30,7 @@ export default function Embed({ children }: EmbedProps) {
   const strToBoolean = (str: string) => !!str && (str.toLowerCase() === "true" || str === "1");
   const strToOptionalBoolean = (str: string) => (str ? str.toLowerCase() === "true" || str === "1" : undefined);
   const strToDefaultBoolean = (str: string, defaultValue: boolean) => (str ? str.toLowerCase() === "true" || str === "1" : defaultValue);
-  const validateJSON = (str: string) => {
+  const validateJSON = (str: string, paramName: string) => {
     if (!str) {
       return "";
     }
@@ -37,6 +38,7 @@ export default function Embed({ children }: EmbedProps) {
       const obj = JSON.parse(str);
       return JSON.stringify(obj);
     } catch (e) {
+      console.error(`The parameter ${paramName} could not be parsed as JSON`, e);
       return "";
     }
   };
@@ -44,8 +46,8 @@ export default function Embed({ children }: EmbedProps) {
   useEffect(() => {
     setEmbedParams({
       importerId,
-      metadata: validateJSON(metadata),
-      template: validateJSON(template),
+      metadata: validateJSON(metadata, "metadata"),
+      template: validateJSON(template, "template"),
       // If only the deprecated isOpen is provided, use that. Else, use modalIsOpen
       modalIsOpen: strToBoolean(modalIsOpen === "" && isOpen !== "" ? isOpen : modalIsOpen),
       onComplete: strToBoolean(onComplete),
@@ -55,16 +57,19 @@ export default function Embed({ children }: EmbedProps) {
       schemaless: strToOptionalBoolean(schemaless),
       schemalessReadOnly: strToOptionalBoolean(schemalessReadOnly),
       showDownloadTemplateButton: strToDefaultBoolean(showDownloadTemplateButton, true),
-      cssOverrides: validateJSON(cssOverrides),
+      cssOverrides: validateJSON(cssOverrides, "cssOverrides"),
     });
   }, [importerId, metadata]);
 
   // Set Light/Dark mode
   const darkMode = strToBoolean(darkModeString);
   const setTheme = useThemeStore((state) => state.setTheme);
+  const { colorMode, toggleColorMode } = useColorMode();
 
   useEffect(() => {
     setTheme(darkMode ? "dark" : "light");
+    if (darkMode && colorMode === "light") toggleColorMode();
+    if (!darkMode && colorMode === "dark") toggleColorMode();
   }, [darkMode]);
 
   // Apply primary color

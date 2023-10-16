@@ -1,12 +1,16 @@
 import { useEffect, useState } from "react";
-import { Button, Errors, Stepper, useStepper } from "@tableflow/ui-library";
+import Button from "../../components/Button";
+import Errors from "../../components/Errors";
 import Spinner from "../../components/Spinner";
+import Stepper from "../../components/Stepper";
+import useStepper from "../../components/Stepper/hooks/useStepper";
 import { defaultImporterHost, getAPIBaseURL } from "../../api/api";
 import useCssOverrides from "../../hooks/useCssOverrides";
 import useDelayedLoader from "../../hooks/useDelayLoader";
 import useEmbedStore from "../../stores/embed";
 import { providedCssOverrides } from "../../utils/cssInterpreter";
 import postMessage from "../../utils/postMessage";
+import { ColumnsOrder } from "../review/types";
 import useApi from "./hooks/useApi";
 import useModifiedSteps from "./hooks/useModifiedSteps";
 import { Steps } from "./types";
@@ -15,6 +19,7 @@ import MapColumns from "../map-columns";
 import Review from "../review";
 import RowSelection from "../row-selection";
 import Uploader from "../uploader";
+import { PiArrowsClockwise, PiX } from "react-icons/pi";
 
 const TUS_ENDPOINT = getAPIBaseURL("v1") + "files";
 
@@ -46,7 +51,6 @@ export default function Main() {
   const {
     tusId,
     setTusId,
-    tusWasStored,
     importer,
     importerIsLoading,
     importerError,
@@ -76,6 +80,7 @@ export default function Main() {
   // Header row selection state
   const [selectedHeaderRow, setSelectedHeaderRow] = useState<number>(0);
   const [uploadFromHeaderRowSelection, setUploadFromHeaderRowSelection] = useState<any | null>(null);
+  const [columnsOrder, setColumnsOrder] = useState<ColumnsOrder>();
 
   // Stepper handler
   const steps = useModifiedSteps(stepsConfig, skipHeader);
@@ -164,11 +169,10 @@ export default function Main() {
     postMessage(message);
   };
 
-  const handleComplete = (data: any, error: string | null) => {
+  const handleComplete = (data: any) => {
     if (isEmbeddedInIframe && onComplete) {
       const message = {
         data,
-        error,
         type: "complete",
         importerId,
       };
@@ -240,7 +244,8 @@ export default function Main() {
           <MapColumns
             template={template}
             upload={skipHeader ? upload : uploadFromHeaderRowSelection}
-            onSuccess={() => {
+            onSuccess={(_, columnsValues) => {
+              setColumnsOrder(columnsValues);
               skipHeader ? stepper.setCurrent(2) : stepper.setCurrent(3);
             }}
             skipHeaderRowSelection={skipHeader}
@@ -261,6 +266,7 @@ export default function Main() {
             upload={upload}
             reload={reload}
             showImportLoadingStatus={showImportLoadingStatus}
+            columnsOrder={columnsOrder}
           />
         );
       default:
@@ -279,14 +285,14 @@ export default function Main() {
       {!!uploadError && (
         <div className={style.status}>
           <Errors error={uploadError.toString()} />
-          <Button onClick={reload} variants={["primary"]} type="button" icon="update">
+          <Button onClick={reload} variants={["primary"]} type="button" icon={<PiArrowsClockwise />}>
             Reload
           </Button>
         </div>
       )}
 
       {isEmbeddedInIframe && isModal && (
-        <Button className={style.close} variants={["square", "secondary", "small"]} onClick={() => requestClose()} icon="cross" />
+        <Button className={style.close} variants={["square", "secondary", "small"]} onClick={() => requestClose()} icon={<PiX />} />
       )}
     </div>
   );

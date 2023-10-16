@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"strings"
 	"tableflow/go/pkg/db"
+	"tableflow/go/pkg/evaluator"
 	"tableflow/go/pkg/model"
 	"tableflow/go/pkg/model/jsonb"
 	"tableflow/go/pkg/tf"
@@ -22,6 +23,7 @@ type TemplateColumnCreateRequest struct {
 	Name              string                            `json:"name" example:"First Name"`
 	Key               string                            `json:"key" example:"first_name"`
 	Required          bool                              `json:"required" example:"false"`
+	DataType          string                            `json:"data_type" example:"string"`
 	Description       string                            `json:"description" example:"The first name"`
 	Validations       []TemplateColumnValidationRequest `json:"validations"`
 	SuggestedMappings *[]string                         `json:"suggested_mappings"`
@@ -38,9 +40,9 @@ type TemplateColumnEditRequest struct {
 
 type TemplateColumnValidationRequest struct {
 	ID       int         `json:"id" example:"1"`
-	Type     string      `json:"type" example:"filled"`
-	Value    jsonb.JSONB `json:"value" swaggertype:"string" example:"true"`
-	Message  string      `json:"message" example:"This column must contain a value"`
+	Validate string      `json:"validate" example:"not_blank"`
+	Options  jsonb.JSONB `json:"options" swaggertype:"string" example:"true"`
+	Message  string      `json:"message" example:"The cell must contain a value"`
 	Severity string      `json:"severity" example:"error"`
 }
 
@@ -126,12 +128,19 @@ func createTemplateColumn(c *gin.Context, getWorkspaceUser func(*gin.Context, st
 		}
 	}
 
+	dataType, err := model.ParseTemplateColumnDataType(req.DataType)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("The data type '%s' is invalid", req.DataType)})
+		return
+	}
+
 	templateColumn := model.TemplateColumn{
 		ID:                model.NewID(),
 		TemplateID:        template.ID,
 		Name:              req.Name,
 		Key:               req.Key,
 		Required:          req.Required,
+		DataType:          dataType,
 		Description:       null.NewString(req.Description, len(req.Description) != 0),
 		SuggestedMappings: suggestedMappings,
 		CreatedBy:         user.ID,
@@ -141,14 +150,22 @@ func createTemplateColumn(c *gin.Context, getWorkspaceUser func(*gin.Context, st
 	// Validations
 	var validations []*model.Validation
 	for _, v := range req.Validations {
-		validation, err := model.ParseValidation(
-			uint(v.ID),
-			v.Value,
-			v.Type,
-			v.Message,
-			v.Severity,
-			templateColumn.ID.String(),
-		)
+		// Don't allow the user to add a data type validator (these are added automatically based on the data type)
+		if evaluator.IsDataTypeEvaluator(v.Validate) {
+			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("Invalid template: the validate type %v cannot be added directly and is automatically added when setting a data type", v.Validate)})
+			return
+		}
+		validation, err := model.ParseValidation(uint(v.ID), templateColumn.ID.String(), v.Validate, v.Options, v.Message, v.Severity, templateColumn.DataType)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+			return
+		}
+		validations = append(validations, validation)
+	}
+
+	if evaluator.IsDataTypeEvaluator(string(dataType)) {
+		// Add the default data type validation
+		validation, err := model.ParseValidation(0, templateColumn.ID.String(), string(dataType), jsonb.NewNull(), "", "", dataType)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 			return
@@ -267,14 +284,7 @@ func editTemplateColumn(c *gin.Context, getWorkspaceUser func(*gin.Context, stri
 		// Delete: If a validation does not exist on the request but does exist in the database, delete it
 		var validationsToCreateOrEdit []*model.Validation
 		for _, v := range *req.Validations {
-			validation, err := model.ParseValidation(
-				uint(v.ID),
-				v.Value,
-				v.Type,
-				v.Message,
-				v.Severity,
-				templateColumn.ID.String(),
-			)
+			validation, err := model.ParseValidation(uint(v.ID), templateColumn.ID.String(), v.Validate, v.Options, v.Message, v.Severity, templateColumn.DataType)
 			if err != nil {
 				c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 				return
@@ -293,12 +303,18 @@ func editTemplateColumn(c *gin.Context, getWorkspaceUser func(*gin.Context, stri
 			}
 		}
 
+		// TODO: When adding support for data types in the UI, make sure the validations are added/ removed based on the data type change
+
 		// Delete any validations that exist already on the template column and don't exist in the request with an ID
 		existingValidationsProvided := lo.Filter(validationsToCreateOrEdit, func(v *model.Validation, _ int) bool {
 			return v.ID != 0
 		})
 		validationsToDelete := util.DifferenceBy(templateColumn.Validations, existingValidationsProvided, func(v1 *model.Validation, v2 *model.Validation) bool {
 			return v1.ID == v2.ID
+		})
+		// Don't delete any default data type validations
+		validationsToDelete = lo.Filter(validationsToDelete, func(v *model.Validation, _ int) bool {
+			return !evaluator.IsDataTypeEvaluator(v.Validate)
 		})
 		if len(validationsToDelete) != 0 {
 			err = tf.DB.Delete(&validationsToDelete).Error

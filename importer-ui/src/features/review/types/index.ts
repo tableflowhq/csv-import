@@ -5,10 +5,11 @@ export type ReviewProps = {
   upload: Upload;
   onCancel: () => void;
   close: () => void;
-  onComplete: (data: any, error: string | null) => void;
+  onComplete: (data: any) => void;
   showImportLoadingStatus?: boolean;
   template: Template;
   reload: () => void;
+  columnsOrder?: ColumnsOrder;
 };
 
 export type TableProps = {
@@ -17,4 +18,9 @@ export type TableProps = {
   filter: QueryFilter;
   template: Template;
   onCellValueChanged: (event: CellValueChangedEvent) => void;
+  columnsOrder?: ColumnsOrder;
 };
+
+export interface ColumnsOrder {
+  [key: string]: string;
+}

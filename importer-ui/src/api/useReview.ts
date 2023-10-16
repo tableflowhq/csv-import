@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery, UseQueryOptions, UseQueryResult } from "react-query";
+import { useQuery, UseQueryResult } from "react-query";
 import useIsStored from "./hooks/useIsStored";
 import { ApiResponse, Import } from "./types";
 import { get } from "./api";
