@@ -8,6 +8,7 @@ import { defaultImporterHost, getAPIBaseURL } from "../../api/api";
 import useCssOverrides from "../../hooks/useCssOverrides";
 import useDelayedLoader from "../../hooks/useDelayLoader";
 import useEmbedStore from "../../stores/embed";
+import classes from "../../utils/classes";
 import { providedCssOverrides } from "../../utils/cssInterpreter";
 import postMessage from "../../utils/postMessage";
 import { ColumnsOrder } from "../review/types";
@@ -195,14 +196,14 @@ export default function Main() {
 
   if (!importerId)
     return (
-      <div className={style.wrapper}>
+      <div className={isEmbeddedInIframe ? style.wrapper : classes([style.wrapper, style.wrapperLink])}>
         <Errors error={"The parameter 'importerId' is required"} />
       </div>
     );
 
   if (importerError)
     return (
-      <div className={style.wrapper}>
+      <div className={isEmbeddedInIframe ? style.wrapper : classes([style.wrapper, style.wrapperLink])}>
         <Errors error={importerError.toString()} />
       </div>
     );
@@ -275,7 +276,7 @@ export default function Main() {
   };
 
   return (
-    <div className={style.wrapper}>
+    <div className={isEmbeddedInIframe ? style.wrapper : classes([style.wrapper, style.wrapperLink])}>
       <div className={style.header}>
         <Stepper {...stepper} />
       </div>

@@ -4,12 +4,16 @@
   height: 100%;
 }
 
+.wrapperLink {
+  padding: 20px 40px 40px 40px;
+}
+
 .header {
-  border-bottom: 1px solid var(--color-border);
+  padding-top: 20px;
 }
 
 .content {
-  padding: 20px;
+  padding: 20px 40px 40px 40px;
   flex: 1;
   overflow: hidden;
 }
