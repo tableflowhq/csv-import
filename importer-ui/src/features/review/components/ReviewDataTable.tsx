@@ -5,7 +5,6 @@ import { ReactElement, useCallback, useEffect, useRef, useState } from "react";
 import Tooltip from "../../../components/Tooltip";
 import { fetchRows } from "../../../api/useGetRows";
 import classes from "../../../utils/classes";
-import debounce from "../../../utils/debounce";
 import { TableProps } from "../types";
 import style from "../style/Review.module.scss";
 import "./TableStyle.scss";
