@@ -165,10 +165,10 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
   };
 
   useEffect(() => {
-    const handleResize = debounce(() => {
+    const handleResize = () => {
       setTableWidth((tableRef?.current?.offsetWidth || 1000) - 2);
       setMaxRows(Math.floor((tableRef?.current?.offsetHeight || 1000) / 41) - 2);
-    }, 150);
+    };
 
     window.addEventListener("resize", handleResize);
     handleResize();
