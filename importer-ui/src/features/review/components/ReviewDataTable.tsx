@@ -5,6 +5,7 @@ import { ReactElement, useCallback, useEffect, useRef, useState } from "react";
 import Tooltip from "../../../components/Tooltip";
 import { fetchRows } from "../../../api/useGetRows";
 import classes from "../../../utils/classes";
+import debounce from "../../../utils/debounce";
 import { TableProps } from "../types";
 import style from "../style/Review.module.scss";
 import "./TableStyle.scss";
@@ -129,12 +130,12 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
           }
           return { backgroundColor: "" };
         },
-        cellRenderer: (params: ICellRendererParams) => cellRenderer(params, colKey, theme),
+        cellRenderer: (params: ICellRendererParams) => cellRenderer(params, colKey, theme, tableWidth),
         sortable: false,
         filter: false,
         suppressMovable: true,
         resizable: true,
-        minWidth: (TABLE_WIDTH - INDEX_ROW_WIDTH) / orderedColumns.length,
+        minWidth: (tableWidth - INDEX_ROW_WIDTH) / orderedColumns.length,
       } as ColDef;
     });
     // Add index column to the beginning of the columns
@@ -149,7 +150,7 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
       pinned: orderedColumns.length > MAX_COLUMN_SCROLL ? "left" : undefined,
     });
     setColumnDefs(generatedColumnDefs);
-  }, [JSON.stringify(paginatedData?.rows), JSON.stringify(template), JSON.stringify(columnsOrder)]);
+  }, [JSON.stringify(paginatedData?.rows), JSON.stringify(template), JSON.stringify(columnsOrder), tableWidth]);
 
   const onCellMouseDown = (params: any) => {
     if (params.colDef.field !== "index") {
@@ -164,10 +165,10 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
   };
 
   useEffect(() => {
-    const handleResize = () => {
+    const handleResize = debounce(() => {
       setTableWidth((tableRef?.current?.offsetWidth || 1000) - 2);
       setMaxRows(Math.floor((tableRef?.current?.offsetHeight || 1000) / 41) - 2);
-    };
+    }, 150);
 
     window.addEventListener("resize", handleResize);
     handleResize();
@@ -227,7 +228,7 @@ const getCellBackgroundColor = (severity: IconKeyType, theme: string): string | 
   return colorMap[severity] || null;
 };
 
-const cellRenderer = (params: ICellRendererParams, header: string, theme: string) => {
+const cellRenderer = (params: ICellRendererParams, header: string, theme: string, tableWidth: number) => {
   if (params.data) {
     const errors = params.data?.errors?.[header];
 
@@ -235,7 +236,7 @@ const cellRenderer = (params: ICellRendererParams, header: string, theme: string
       // column resize logic, to only reset if it has not been resized manually
       const actual = params.column.getActualWidth();
       const totalCols = params.columnApi.getAllGridColumns()?.length - 1;
-      const width = totalCols < MAX_COLUMN_SCROLL ? (TABLE_WIDTH - INDEX_ROW_WIDTH) / totalCols : -1;
+      const width = totalCols < MAX_COLUMN_SCROLL ? (tableWidth - INDEX_ROW_WIDTH) / totalCols : -1;
 
       if (actual < width) {
         params.column.setActualWidth(width);
