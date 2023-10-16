@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import Checkbox from "../../../components/Checkbox";
 import Input from "../../../components/Input";
 import { InputOption } from "../../../components/Input/types";
+import DropdownFields from "../components/DropDownFields";
 import { TemplateColumn, UploadColumn } from "../../../api/types";
 import style from "../style/MapColumns.module.scss";
 import useTransformValue from "./useNameChange";
@@ -9,6 +10,7 @@ import useTransformValue from "./useNameChange";
 type Include = {
   template: string;
   use: boolean;
+  selected?: boolean;
 };
 
 export default function useMapColumnsTable(
@@ -18,14 +20,6 @@ export default function useMapColumnsTable(
   schemalessReadOnly?: boolean,
   columnsValues: { [key: string]: Include } = {}
 ) {
-  const [selectedFieldsSet, setSelectedFieldsSet] = useState(() => {
-    const selectedFields = Object.values(columnsValues).map((value) => ({
-      template: value.template,
-      use: value.use,
-    }));
-    return new Set(selectedFields);
-  });
-
   useEffect(() => {
     Object.keys(columnsValues).map((mapColData) => {
       const template = columnsValues[mapColData].template;
@@ -35,11 +29,22 @@ export default function useMapColumnsTable(
 
   const [values, setValues] = useState<{ [key: string]: Include }>(() => {
     return items.reduce(
-      (acc, uc) => ({ ...acc, [uc.id]: { template: uc?.suggested_template_column_id || "", use: !!uc?.suggested_template_column_id } }),
+      (acc, uc) => ({
+        ...acc,
+        [uc.id]: {
+          template: uc?.suggested_template_column_id || "",
+          use: !!uc?.suggested_template_column_id,
+          selected: !!uc?.suggested_template_column_id,
+        },
+      }),
       {}
     );
   });
-  const [selectedTemplates, setSelectedTemplates] = useState<string[]>([]);
+
+  const [selectedValues, setSelectedValues] = useState<{ template: string; selected: boolean | undefined }[]>(
+    Object.values(values).map(({ template, selected }) => ({ template, selected }))
+  );
+
   const templateFields: { [key: string]: InputOption } = useMemo(
     () => templateColumns.reduce((acc, field) => ({ ...acc, [field.name]: { value: field.id, required: field.required } }), {}),
     [JSON.stringify(templateColumns)]
@@ -47,27 +52,10 @@ export default function useMapColumnsTable(
 
   const handleTemplateChange = (id: string, template: string) => {
     setValues((prev) => {
-      const oldTemplate = prev[id]?.template;
-      setSelectedTemplates((currentSelected) => {
-        if (currentSelected.includes(oldTemplate)) {
-          return currentSelected.filter((t) => t !== oldTemplate);
-        }
-        if (template && !currentSelected.includes(template)) {
-          return [...currentSelected, template];
-        }
-        return currentSelected;
-      });
-      const idTemplate = oldTemplate || template;
-      const updatedFieldsSet = new Set(
-        [...selectedFieldsSet].map((field) => {
-          if (field.template === idTemplate) {
-            return { ...field, use: !!template };
-          }
-          return field;
-        })
-      );
-      setSelectedFieldsSet(updatedFieldsSet);
-      return { ...prev, [id]: { ...prev[id], template, use: !!template } };
+      const templatesFields = { ...prev, [id]: { ...prev[id], template, use: !!template, selected: !!template } };
+      const templateFieldsObj = Object.values(templatesFields).map(({ template, selected }) => ({ template, selected }));
+      setSelectedValues(templateFieldsObj);
+      return templatesFields;
     });
   };
 
@@ -88,45 +76,6 @@ export default function useMapColumnsTable(
         .replace(/\s/g, "_")
         .replace(/[^a-zA-Z0-9_]/g, "")
         .toLowerCase();
-
-      const filteredUsedValues = Object.entries(values).reduce((acc, [key, value]) => {
-        if (value.use && key !== id) {
-          acc[key] = value;
-        }
-        return acc;
-      }, {} as { [key: string]: Include });
-
-      let currentOptions;
-
-      if (selectedTemplates && selectedTemplates.length > 0) {
-        currentOptions = Object.keys(templateFields).filter((key) => {
-          const isTemplateSelected = selectedTemplates.includes(templateFields[key].value as string);
-          const isSuggestionTemplate = templateFields[key].value === suggestion.template;
-          return !isTemplateSelected || isSuggestionTemplate;
-        });
-      } else {
-        if (suggestion.use) {
-          setSelectedTemplates((prevTemplates) => [...prevTemplates, suggestion.template]);
-        }
-        currentOptions = Object.keys(templateFields).filter((key) => {
-          const isSuggestionTemplate = templateFields[key].value === suggestion.template;
-          const isTemplateUsed = Object.values(filteredUsedValues).some((val) => val.template === templateFields[key].value);
-          return !isTemplateUsed || isSuggestionTemplate;
-        });
-      }
-      if (selectedFieldsSet.size > 0) {
-        currentOptions = Object.keys(templateFields).filter((key) => {
-          const isSuggestionTemplate = templateFields[key].value === suggestion.template;
-          const isTemplateUsed = Array.from(selectedFieldsSet).some((val) => val.template === templateFields[key].value && val.use);
-          return !isTemplateUsed || isSuggestionTemplate;
-        });
-      }
-
-      currentOptions = currentOptions?.reduce((acc, key) => {
-        acc[key] = templateFields[key];
-        return acc;
-      }, {} as { [key: string]: InputOption });
-      const isCurrentOptions = currentOptions && Object.keys(currentOptions).length > 0;
 
       return {
         "Your File Column": {
@@ -154,13 +103,13 @@ export default function useMapColumnsTable(
               readOnly={!!schemalessReadOnly}
             />
           ) : (
-            <Input
-              options={currentOptions}
+            <DropdownFields
+              options={templateFields}
               value={suggestion.template}
               placeholder="- Select one -"
-              variants={["small"]}
-              onChange={(template: any) => handleTemplateChange(id, template)}
-              disabled={!isCurrentOptions}
+              onChange={(template: string) => handleTemplateChange(id, template)}
+              selectedValues={selectedValues}
+              updateSelectedValues={setSelectedValues}
             />
           ),
         },
