@@ -8,8 +8,8 @@ import (
 )
 
 type ListEvaluator struct {
-	Options        []string
-	DefaultMessage string
+	Options []string
+	Message string
 }
 
 func (e *ListEvaluator) Initialize(options interface{}) error {
@@ -42,7 +42,7 @@ func (e *ListEvaluator) Initialize(options interface{}) error {
 	}
 
 	e.Options = parsedOptions
-	e.DefaultMessage = parseDefaultMessage(parsedOptions)
+	e.Message = parseDefaultMessage(parsedOptions)
 	return nil
 }
 
@@ -61,7 +61,7 @@ func (e ListEvaluator) Evaluate(cell string) (bool, string, error) {
 }
 
 func (e ListEvaluator) DefaultMessage() string {
-	return e.DefaultMessage
+	return e.Message
 }
 
 func (e ListEvaluator) AllowedDataTypes() []string {
