@@ -1,3 +1,4 @@
+import { Button } from "./components";
 import { foundations } from "./foundations";
 import { semanticTokens } from "./semantic-tokens";
 import { styles } from "./styles";
@@ -17,6 +18,9 @@ const theme = {
   ...foundations,
   styles,
   config,
+  components: {
+    Button,
+  },
 };
 
 export default theme;

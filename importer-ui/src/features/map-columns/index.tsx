@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useState } from "react";
-import Button from "../../components/Button";
+import { Button } from "@chakra-ui/button";
 import Errors from "../../components/Errors";
 import Table from "../../components/Table";
 import usePostUpload from "../../api/usePostUpload";
@@ -17,9 +17,11 @@ export default function MapColumns({
   schemalessReadOnly,
   seColumnsValues,
   columnsValues,
+  isLoading,
+  onLoad,
 }: MapColumnsProps) {
   const { rows, formValues } = useMapColumnsTable(upload?.upload_columns, template?.columns, schemaless, schemalessReadOnly, columnsValues);
-  const { mutate, error, isSuccess, isLoading } = usePostUpload(upload?.id || "");
+  const { mutate, error, isSuccess, isLoading: isLoadingPost } = usePostUpload(upload?.id || "");
   const [selectedColumns, setSelectedColumns] = useState<any>([]);
 
   const onSubmit = (e: FormEvent<HTMLFormElement>) => {
@@ -36,10 +38,14 @@ export default function MapColumns({
   };
 
   useEffect(() => {
-    if (isSuccess && !error && !isLoading && upload) {
+    onLoad && onLoad();
+  }, [JSON.stringify(formValues)]);
+
+  useEffect(() => {
+    if (isSuccess && !error && !isLoadingPost && upload) {
       onSuccess(upload.id, selectedColumns);
     }
-  }, [isSuccess, error, isLoading]);
+  }, [isSuccess, error, isLoading, isLoadingPost]);
 
   if (!rows || !rows?.length) return null;
 
@@ -55,21 +61,19 @@ export default function MapColumns({
         )}
 
         <div className={style.actions}>
-          <Button type="button" variants={["secondary"]} onClick={onCancel}>
+          <Button type="button" colorScheme="secondary" onClick={onCancel}>
             {skipHeaderRowSelection ? "Cancel" : "Back"}
           </Button>
-          <Button variants={["primary"]} disabled={isLoading}>
+          <Button colorScheme="primary" isLoading={isLoading || isLoadingPost} type="submit">
             Continue
           </Button>
         </div>
 
-        {!isLoading && !!error && (
+        {!isLoading && !isLoadingPost && !!error && (
           <div className={style.errorContainer}>
             <Errors error={error} />
           </div>
         )}
-
-        {isSuccess && <p>Success!</p>}
       </form>
     </div>
   );

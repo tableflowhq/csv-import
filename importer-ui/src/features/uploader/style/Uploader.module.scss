@@ -19,7 +19,12 @@
 .box {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--m-s);
+
+  svg {
+    height: var(--font-size-xl);
+    width: var(--font-size-xl);
+  }
 }
 
 .tableContainer {
@@ -28,9 +33,4 @@
   max-height: 496px;
   outline: 1px solid var(--color-border);
   border-radius: var(--border-radius-2);
-}
-
-svg {
-    height: 18px;
-    width: 18px;
 }

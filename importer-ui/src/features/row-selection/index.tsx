@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import Button from "../../components/Button";
+import { Button } from "@chakra-ui/button";
 import Errors from "../../components/Errors";
 import Table from "../../components/Table";
 import Tooltip from "../../components/Tooltip";
@@ -83,10 +83,10 @@ export default function RowSelection({ upload, onSuccess, onCancel, selectedHead
         )}
 
         <div className={style.actions}>
-          <Button type="button" variants={["secondary"]} onClick={onCancel}>
+          <Button type="button" colorScheme="secondary" onClick={onCancel}>
             Cancel
           </Button>
-          <Button variants={["primary"]} onClick={handleNextClick}>
+          <Button colorScheme="primary" onClick={handleNextClick} isLoading={isLoading} type="submit">
             Continue
           </Button>
         </div>

@@ -1,12 +1,12 @@
 const radii = {
   none: "0",
-  sm: "0.125rem",
-  base: "0.25rem",
-  md: "0.375rem",
-  lg: "0.5rem",
-  xl: "0.75rem",
-  "2xl": "1rem",
-  "3xl": "1.5rem",
+  sm: "var(--border-radius)",
+  base: "var(--border-radius-2)",
+  md: "var(--border-radius-3)",
+  lg: "var(--border-radius-4)",
+  xl: "var(--border-radius-5)",
+  "2xl": "calc(var(--border-radius-5) * 1.5)",
+  "3xl": "calc(var(--border-radius-5) * 2)",
   full: "9999px",
 };
 

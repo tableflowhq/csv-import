@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import Button from "../../components/Button";
+import { Button, IconButton } from "@chakra-ui/button";
 import Errors from "../../components/Errors";
-import Spinner from "../../components/Spinner";
 import Stepper from "../../components/Stepper";
 import useStepper from "../../components/Stepper/hooks/useStepper";
+import TableLoading from "../../components/TableLoading";
 import { defaultImporterHost, getAPIBaseURL } from "../../api/api";
 import useCssOverrides from "../../hooks/useCssOverrides";
 import useDelayedLoader from "../../hooks/useDelayLoader";
@@ -61,6 +61,11 @@ export default function Main() {
     uploadIsLoading,
     uploadError,
     uploadIsStored,
+    review,
+    reviewIsLoading,
+    reviewIsStored,
+    enabledReview,
+    setEnabledReview,
   } = useApi(
     importerId,
     schemaless ? "" : sdkDefinedTemplate, // Don't pass in a template if schemaless is enabled
@@ -133,6 +138,13 @@ export default function Main() {
     }
   }, [tusId, uploadIsStored, uploadError, step]);
 
+  useEffect(() => {
+    if (review && !reviewIsLoading && reviewIsStored && enabledReview) {
+      if (skipHeader) stepper.setCurrent(2);
+      else stepper.setCurrent(3);
+    }
+  }, [review, reviewIsLoading, reviewIsStored, skipHeader, enabledReview]);
+
   // Reload on close modal if completed
   useEffect(() => {
     // TODO: ****************************** Update this to actually check if completed ********************************
@@ -190,7 +202,13 @@ export default function Main() {
   };
 
   if (!initialPageLoaded) {
-    return null;
+    return (
+      <div className={style.wrapper}>
+        <div className={style.content}>
+          <TableLoading hideBorder />
+        </div>
+      </div>
+    );
   }
 
   if (!importerId)
@@ -200,16 +218,11 @@ export default function Main() {
       </div>
     );
 
-  if (importerError)
-    return (
-      <div className={style.wrapper}>
-        <Errors error={importerError.toString()} />
-      </div>
-    );
+  if (importerError) return <div className={style.wrapper}></div>;
 
   const renderContent = () => {
     if (displayUploadSpinner) {
-      return <Spinner className={style.spinner}>Processing your file...</Spinner>;
+      return <TableLoading hideBorder>Processing your file...</TableLoading>;
     }
 
     switch (step) {
@@ -245,8 +258,8 @@ export default function Main() {
             template={template}
             upload={skipHeader ? upload : uploadFromHeaderRowSelection}
             onSuccess={(_, columnsValues) => {
+              setEnabledReview(true);
               setColumnsOrder(columnsValues);
-              skipHeader ? stepper.setCurrent(2) : stepper.setCurrent(3);
             }}
             skipHeaderRowSelection={skipHeader}
             onCancel={skipHeader ? reload : () => stepper.setCurrent(1)}
@@ -254,6 +267,8 @@ export default function Main() {
             schemalessReadOnly={schemalessReadOnly}
             seColumnsValues={seColumnsValues}
             columnsValues={columnsValues}
+            isLoading={reviewIsLoading || (!reviewIsStored && enabledReview)}
+            onLoad={() => setEnabledReview(false)}
           />
         );
       case Steps.Review:
@@ -267,6 +282,7 @@ export default function Main() {
             reload={reload}
             showImportLoadingStatus={showImportLoadingStatus}
             columnsOrder={columnsOrder}
+            review={review}
           />
         );
       default:
@@ -284,15 +300,14 @@ export default function Main() {
 
       {!!uploadError && (
         <div className={style.status}>
-          <Errors error={uploadError.toString()} />
-          <Button onClick={reload} variants={["primary"]} type="button" icon={<PiArrowsClockwise />}>
+          <Button onClick={reload} colorScheme="primary" leftIcon={<PiArrowsClockwise />}>
             Reload
           </Button>
         </div>
       )}
 
       {isEmbeddedInIframe && isModal && (
-        <Button className={style.close} variants={["square", "secondary", "small"]} onClick={() => requestClose()} icon={<PiX />} />
+        <IconButton isRound className={style.close} colorScheme="secondary" aria-label="Close" icon={<PiX />} onClick={() => requestClose()} />
       )}
     </div>
   );

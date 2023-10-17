@@ -36,18 +36,21 @@
   border-radius: var(--border-radius-1);
 }
 
+$closeSide: calc(var(--m-xl) * 36 / 48);
+
 .close.close {
   position: absolute;
   right: var(--m);
   top: var(--m);
   border-radius: 50%;
-  padding: var(--m-xs);
-  width: 2em;
-  height: 2em;
+  min-width: $closeSide;
+  height: $closeSide;
   aspect-ratio: 1;
+  font-size: var(--font-size-xl);
+  padding: 0;
 
   svg {
-    width: var(--m-xs);
-    height: var(--m-xs);
+    width: var(--m-s);
+    height: var(--m-s);
   }
 }

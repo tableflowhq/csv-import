@@ -10,6 +10,7 @@ export type ReviewProps = {
   template: Template;
   reload: () => void;
   columnsOrder?: ColumnsOrder;
+  review: any;
 };
 
 export type TableProps = {
