@@ -2,6 +2,8 @@ package evaluator
 
 import (
 	"github.com/asaskevich/govalidator"
+	"github.com/samber/lo"
+	"strings"
 	"tableflow/go/pkg/util"
 )
 
@@ -15,8 +17,9 @@ func (e EmailEvaluator) Evaluate(cell string) (bool, string, error) {
 	if util.IsBlankUnicode(cell) {
 		return false, "", nil
 	}
-	isEmail := govalidator.IsEmail(cell)
-	return isEmail, cell, nil
+	trimmed := strings.TrimSpace(cell)
+	isEmail := govalidator.IsEmail(trimmed)
+	return isEmail, lo.Ternary(isEmail, trimmed, cell), nil
 }
 
 func (e EmailEvaluator) DefaultMessage() string {
