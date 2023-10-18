@@ -56,7 +56,7 @@ $cellHeight: 44px;
   }
 
   &.fixHeader {
-    border-radius: 0 0 $radius $radius;
+    // border-radius: 0 0 $radius $radius;
     .thead,
     .caption {
       position: sticky;
