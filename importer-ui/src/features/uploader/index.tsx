@@ -46,7 +46,7 @@ export default function Uploader({
     />
   );
   if (schemaless) {
-    return uppyWrapper;
+    return <div className={style.content}>{uppyWrapper}</div>;
   }
 
   function downloadTemplate() {
