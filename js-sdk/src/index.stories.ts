@@ -28,6 +28,7 @@ const meta = {
     showDownloadTemplateButton: { control: "boolean" },
     schemaless: { control: "boolean" },
     schemalessReadOnly: { control: "boolean" },
+    waitOnComplete: { control: "boolean" },
   },
 } satisfies Meta<TableFlowImporterProps>;
 

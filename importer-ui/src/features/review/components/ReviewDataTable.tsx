@@ -18,7 +18,6 @@ const MAX_COLUMN_SCROLL = 7;
 const MAX_ROWS = 9;
 
 function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged, columnsOrder, disabled }: TableProps) {
-  console.log(disabled);
   const customSelectClass = "ag-theme-alpine-dark-custom-select";
   const paginatedDataRef: any = useRef();
   const filterRef: any = useRef(filter);

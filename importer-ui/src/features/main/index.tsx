@@ -213,19 +213,21 @@ export default function Main() {
     );
   }
 
-  if (!importerId)
+  if (!importerId) {
     return (
       <div className={style.wrapper}>
         <Errors error={"The parameter 'importerId' is required"} />
       </div>
     );
+  }
 
-  if (importerError)
+  if (importerError) {
     return (
       <div className={style.wrapper}>
         <Errors error={importerError.toString()} />
       </div>
     );
+  }
 
   const renderContent = () => {
     if (displayUploadSpinner) {
