@@ -52,9 +52,13 @@
       }
 
       &-Item {
+        max-width: inherit;
         &-previewInnerWrap {
-          background-color: var(--color-background-modal) !important;
+          background-color: var(--color-background) !important;
           border-radius: var(--border-radius-1);
+          &::after {
+            background-color: transparent;
+          }
         }
         &-status {
           color: inherit;
