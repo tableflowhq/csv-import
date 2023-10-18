@@ -70,21 +70,19 @@ func IsDataTypeEvaluator(validate string) bool {
 	return false
 }
 
-const minMaxLimit = 1000000
-
 type MinMaxEvaluatorOptions struct {
 	Min *int `json:"min"`
 	Max *int `json:"max"`
 }
 
-func parseMinMaxOptions(options interface{}) (*MinMaxEvaluatorOptions, error) {
+func parseMinMaxOptions(options interface{}, limit int) (*MinMaxEvaluatorOptions, error) {
 	if options == nil {
 		return nil, errors.New("not provided")
 	}
 
 	optionsMap, ok := options.(map[string]interface{})
 	if !ok {
-		return nil, errors.New("invalid options object")
+		return nil, errors.New("invalid object")
 	}
 
 	var minMaxOptions MinMaxEvaluatorOptions
@@ -99,7 +97,6 @@ func parseMinMaxOptions(options interface{}) (*MinMaxEvaluatorOptions, error) {
 		default:
 			continue
 		}
-
 		if key == "min" {
 			minMaxOptions.Min = &intValue
 		} else if key == "max" {
@@ -108,22 +105,24 @@ func parseMinMaxOptions(options interface{}) (*MinMaxEvaluatorOptions, error) {
 	}
 
 	if minMaxOptions.Min == nil && minMaxOptions.Max == nil {
-		return nil, errors.New("the options min and/or max are required")
+		return nil, errors.New("min and/or max are required")
 	}
 	if *minMaxOptions.Min < 0 {
-		return nil, errors.New("the min option must be positive")
-	}
-	if *minMaxOptions.Min > minMaxLimit {
-		return nil, fmt.Errorf("the min option cannot be greater than %v", minMaxLimit)
+		return nil, errors.New("min must be positive")
 	}
 	if *minMaxOptions.Max < 0 {
-		return nil, errors.New("the max option must be positive")
+		return nil, errors.New("max must be positive")
 	}
-	if *minMaxOptions.Max > minMaxLimit {
-		return nil, fmt.Errorf("the max option cannot be greater than %v", minMaxLimit)
+	if limit > 0 {
+		if *minMaxOptions.Min > limit {
+			return nil, fmt.Errorf("min cannot be greater than %v", limit)
+		}
+		if *minMaxOptions.Max > limit {
+			return nil, fmt.Errorf("max cannot be greater than %v", limit)
+		}
 	}
 	if *minMaxOptions.Min > *minMaxOptions.Max {
-		return nil, errors.New("the min option cannot be greater than the max")
+		return nil, errors.New("min cannot be greater than the max")
 	}
 
 	return &minMaxOptions, nil

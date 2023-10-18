@@ -3,14 +3,17 @@ package evaluator
 import (
 	"errors"
 	"fmt"
+	"github.com/samber/lo"
 )
 
 type LengthEvaluator struct {
 	Options *MinMaxEvaluatorOptions
 }
 
+const lengthMinMaxLimit = 1000000
+
 func (e *LengthEvaluator) Initialize(options interface{}) error {
-	minMaxOptions, err := parseMinMaxOptions(options)
+	minMaxOptions, err := parseMinMaxOptions(options, lengthMinMaxLimit)
 	if err != nil {
 		return err
 	}
@@ -34,6 +37,10 @@ func (e *LengthEvaluator) Evaluate(cell string) (bool, string, error) {
 
 func (e LengthEvaluator) DefaultMessage() string {
 	minMsg, maxMsg := "", ""
+
+	if e.Options.Min != nil && e.Options.Max != nil && *e.Options.Min == *e.Options.Max {
+		return fmt.Sprintf("The cell must be %d character%s long", *e.Options.Min, lo.Ternary(*e.Options.Min == 1, "", "s"))
+	}
 	if e.Options.Min != nil {
 		minMsg = fmt.Sprintf("minimum length of %d", *e.Options.Min)
 	}

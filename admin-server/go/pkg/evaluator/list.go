@@ -17,8 +17,19 @@ func (e *ListEvaluator) Initialize(options interface{}) error {
 		return errors.New("not provided")
 	}
 
-	opts, ok := options.([]string)
-	if !ok {
+	var opts []string
+	switch v := options.(type) {
+	case []string:
+		opts = v
+	case []interface{}:
+		for _, opt := range v {
+			str, ok := opt.(string)
+			if !ok {
+				return errors.New("all elements in the array must be strings")
+			}
+			opts = append(opts, str)
+		}
+	default:
 		return errors.New("must be an array of strings")
 	}
 
@@ -30,10 +41,11 @@ func (e *ListEvaluator) Initialize(options interface{}) error {
 	parsedOptions := make([]string, 0, len(opts))
 	keys := make(map[string]bool)
 	for _, entry := range opts {
-		if _, contains := keys[entry]; !contains && !util.IsBlankUnicode(entry) {
-			parsed := strings.ToLower(strings.TrimSpace(entry))
-			keys[parsed] = true
-			parsedOptions = append(parsedOptions, parsed)
+		trimmed := strings.TrimSpace(entry)
+		lower := strings.ToLower(trimmed)
+		if _, contains := keys[lower]; !contains && !util.IsBlankUnicode(trimmed) {
+			keys[lower] = true
+			parsedOptions = append(parsedOptions, trimmed)
 		}
 	}
 
@@ -53,8 +65,8 @@ func (e ListEvaluator) Evaluate(cell string) (bool, string, error) {
 	trimmed := strings.TrimSpace(cell)
 	lower := strings.ToLower(trimmed)
 	for _, option := range e.Options {
-		if lower == option {
-			return true, trimmed, nil
+		if lower == strings.ToLower(option) {
+			return true, option, nil
 		}
 	}
 	return false, cell, nil
