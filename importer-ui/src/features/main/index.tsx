@@ -300,6 +300,7 @@ export default function Main() {
 
       {!!uploadError && (
         <div className={style.status}>
+          <Errors error={uploadError.toString()} />
           <Button onClick={reload} colorScheme="primary" leftIcon={<PiArrowsClockwise />}>
             Reload
           </Button>

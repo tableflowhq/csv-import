@@ -1,5 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
-import { useQueryClient } from "react-query";
+import { useMemo, useState } from "react";
 import { Importer, Organization, Template, Upload } from "../../../api/types";
 import useGetImporter from "../../../api/useGetImporter";
 import useGetOrganization from "../../../api/useGetOrganization";
