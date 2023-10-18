@@ -43,10 +43,16 @@ func (e *ListEvaluator) Initialize(options interface{}) error {
 	for _, entry := range opts {
 		trimmed := strings.TrimSpace(entry)
 		lower := strings.ToLower(trimmed)
-		if _, contains := keys[lower]; !contains && !util.IsBlankUnicode(trimmed) {
-			keys[lower] = true
-			parsedOptions = append(parsedOptions, trimmed)
+		_, contains := keys[lower]
+
+		if contains {
+			return fmt.Errorf("cannot contain duplicate values (case-insensitive): %s", entry)
 		}
+		if util.IsBlankUnicode(trimmed) {
+			continue
+		}
+		keys[lower] = true
+		parsedOptions = append(parsedOptions, trimmed)
 	}
 
 	if len(parsedOptions) == 0 {
