@@ -13,7 +13,7 @@
 }
 
 .content {
-  padding: 20px 40px 40px 40px;
+  padding: 20px;
   flex: 1;
   overflow: hidden;
 }
@@ -23,7 +23,7 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--m);
-  padding: 0 var(--m-l);
+  padding: 0 var(--m-s) var(--m-s) var(--m-s);
 }
 
 .spinner {
