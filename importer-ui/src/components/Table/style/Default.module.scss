@@ -56,13 +56,14 @@ $cellHeight: 44px;
   }
 
   &.fixHeader {
-    // border-radius: 0 0 $radius $radius;
     .thead,
     .caption {
       position: sticky;
       top: 0;
       z-index: 1;
       outline: 1px solid var(--color-border);
+      border-top-left-radius: var(--border-radius-2);
+      border-top-right-radius: var(--border-radius-2);
 
       .tr {
         margin-bottom: var(--m-s);
