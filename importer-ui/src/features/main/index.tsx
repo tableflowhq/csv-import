@@ -218,7 +218,12 @@ export default function Main() {
       </div>
     );
 
-  if (importerError) return <div className={style.wrapper}></div>;
+  if (importerError)
+    return (
+      <div className={style.wrapper}>
+        <Errors error={importerError.toString()} />
+      </div>
+    );
 
   const renderContent = () => {
     if (displayUploadSpinner) {
