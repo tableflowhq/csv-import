@@ -197,14 +197,14 @@ export default function Main() {
   if (!importerId)
     return (
       <div className={isEmbeddedInIframe ? style.wrapper : classes([style.wrapper, style.wrapperLink])}>
-        <Errors error={"The parameter 'importerId' is required"} />
+        <Errors error={"The parameter 'importerId' is required"} centered />
       </div>
     );
 
   if (importerError)
     return (
       <div className={isEmbeddedInIframe ? style.wrapper : classes([style.wrapper, style.wrapperLink])}>
-        <Errors error={importerError.toString()} />
+        <Errors error={importerError.toString()} centered />
       </div>
     );
 
