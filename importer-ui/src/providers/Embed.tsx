@@ -16,6 +16,7 @@ export default function Embed({ children }: EmbedProps) {
     isOpen, // Deprecated: use modalIsOpen
     modalIsOpen,
     onComplete,
+    waitOnComplete,
     customStyles,
     showImportLoadingStatus,
     skipHeaderRowSelection,
@@ -51,6 +52,7 @@ export default function Embed({ children }: EmbedProps) {
       // If only the deprecated isOpen is provided, use that. Else, use modalIsOpen
       modalIsOpen: strToBoolean(modalIsOpen === "" && isOpen !== "" ? isOpen : modalIsOpen),
       onComplete: strToBoolean(onComplete),
+      waitOnComplete: strToBoolean(waitOnComplete),
       showImportLoadingStatus: strToBoolean(showImportLoadingStatus),
       skipHeaderRowSelection: strToOptionalBoolean(skipHeaderRowSelection),
       isModal: strToDefaultBoolean(isModal, true),

@@ -25,7 +25,7 @@ type FilterOptionCounts = {
   NumErrorRows: number;
 };
 
-export default function Review({ onCancel, onComplete, upload, template, review, reload, close, columnsOrder }: ReviewProps) {
+export default function Review({ onCancel, onComplete, waitOnComplete, upload, template, review, reload, close, columnsOrder }: ReviewProps) {
   const uploadId = upload?.id;
   const filter = useRef<QueryFilter>("all");
   const [filterOptions, setFilterOptions] = useState<Option[]>(defaultOptions);
@@ -35,8 +35,8 @@ export default function Review({ onCancel, onComplete, upload, template, review,
   // });
   const [hasDataErrors, setHasDataErrors] = useState(false);
   const { mutate, error: submitError, isSuccess, isLoading: isSubmitting, data: dataSubmitted } = useSubmitReview(uploadId || "");
+  const [waitOnCompleteLoading, setWaitOnCompleteLoading] = useState(false);
   const theme = useThemeStore((state) => state.theme);
-  const [showLoading, setShowLoading] = useState(true);
   const hasValidations = template.columns.some((tc) => tc.validations && tc.validations.length > 0);
 
   const cellValueChangeSet = useRef(new Set<string>());
@@ -127,9 +127,6 @@ export default function Review({ onCancel, onComplete, upload, template, review,
     );
     if (review) {
       setHasDataErrors(review?.num_error_rows > 0);
-      if (review?.is_stored) {
-        setShowLoading(false);
-      }
     }
   }, [JSON.stringify(review)]);
 
@@ -157,11 +154,14 @@ export default function Review({ onCancel, onComplete, upload, template, review,
   }, []);
 
   const handleSubmitClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (waitOnComplete) {
+      setWaitOnCompleteLoading(true);
+    }
     e.preventDefault();
     mutate({ uploadId: uploadId });
   };
 
-  if (isSubmitCompleted) {
+  if (isSubmitCompleted && !waitOnComplete) {
     return <Complete reload={reload} close={close} upload={upload} showImportLoadingStatus={false} />;
   }
 
@@ -179,18 +179,19 @@ export default function Review({ onCancel, onComplete, upload, template, review,
             theme={theme}
             uploadId={uploadId}
             filter={filter.current}
+            disabled={isSubmitting || waitOnCompleteLoading}
           />
         </div>
         <div className={style.actions}>
-          <Button type="button" colorScheme="secondary" onClick={onCancel}>
+          <Button type="button" colorScheme="secondary" onClick={onCancel} isDisabled={isSubmitting || waitOnCompleteLoading}>
             Back
           </Button>
           <Button
             title={hasDataErrors ? "Please resolve all errors before submitting" : ""}
             colorScheme="primary"
-            disabled={hasDataErrors}
+            isDisabled={hasDataErrors}
             onClick={handleSubmitClick}
-            isLoading={showLoading || isSubmitting}>
+            isLoading={isSubmitting || waitOnCompleteLoading}>
             Submit
           </Button>
         </div>

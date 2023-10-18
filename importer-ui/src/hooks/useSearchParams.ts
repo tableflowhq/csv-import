@@ -8,6 +8,7 @@ type SearchParams = Record<
   | "isOpen" // Deprecated: use modalIsOpen
   | "modalIsOpen"
   | "onComplete"
+  | "waitOnComplete"
   | "customStyles"
   | "showImportLoadingStatus"
   | "skipHeaderRowSelection"

@@ -83,7 +83,7 @@ export default function RowSelection({ upload, onSuccess, onCancel, selectedHead
         )}
 
         <div className={style.actions}>
-          <Button type="button" colorScheme="secondary" onClick={onCancel}>
+          <Button type="button" colorScheme="secondary" onClick={onCancel} isDisabled={isLoading}>
             Cancel
           </Button>
           <Button colorScheme="primary" onClick={handleNextClick} isLoading={isLoading} type="submit">

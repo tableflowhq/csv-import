@@ -17,7 +17,8 @@ const INDEX_ROW_WIDTH = 70;
 const MAX_COLUMN_SCROLL = 7;
 const MAX_ROWS = 9;
 
-function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged, columnsOrder }: TableProps) {
+function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged, columnsOrder, disabled }: TableProps) {
+  console.log(disabled);
   const customSelectClass = "ag-theme-alpine-dark-custom-select";
   const paginatedDataRef: any = useRef();
   const filterRef: any = useRef(filter);
@@ -118,7 +119,7 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
         headerComponentParams: {
           displayDescription: displayDescription,
         },
-        editable: (params) => params.data && params.data.values,
+        editable: (params) => !disabled && params.data && params.data.values,
         field: `values.${colKey}`,
         cellStyle: (params: any) => {
           if (params.data?.errors?.[colKey]) {
@@ -148,7 +149,7 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
       pinned: orderedColumns.length > MAX_COLUMN_SCROLL ? "left" : undefined,
     });
     setColumnDefs(generatedColumnDefs);
-  }, [JSON.stringify(paginatedData?.rows), JSON.stringify(template), JSON.stringify(columnsOrder)]);
+  }, [JSON.stringify(paginatedData?.rows), JSON.stringify(template), JSON.stringify(columnsOrder), disabled]);
 
   const onCellMouseDown = (params: any) => {
     if (params.colDef.field !== "index") {

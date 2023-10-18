@@ -57,9 +57,8 @@ export default function UppyWrapper({
         },
       });
       instance?.on("complete", (result) => {
-        onSuccess(result as any);
-
         setTimeout(() => {
+          onSuccess(result as any);
           // Close Uppy instance to reset its state
           instance.close({ reason: "unmount" });
           // Re-initialize a fresh Uppy instance so if the user navigates back, the state is reset

@@ -61,7 +61,7 @@ export default function MapColumns({
         )}
 
         <div className={style.actions}>
-          <Button type="button" colorScheme="secondary" onClick={onCancel}>
+          <Button type="button" colorScheme="secondary" onClick={onCancel} isDisabled={isLoading || isLoadingPost}>
             {skipHeaderRowSelection ? "Cancel" : "Back"}
           </Button>
           <Button colorScheme="primary" isLoading={isLoading || isLoadingPost} type="submit">

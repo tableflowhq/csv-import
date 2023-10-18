@@ -7,6 +7,7 @@ type EmbedParams = {
   isModal?: boolean;
   modalIsOpen: boolean;
   onComplete: boolean;
+  waitOnComplete: boolean;
   showImportLoadingStatus: boolean;
   skipHeaderRowSelection?: boolean;
   schemaless?: boolean;
@@ -26,6 +27,7 @@ const useEmbedStore = create<ParamsStore>()((set) => ({
     metadata: "",
     modalIsOpen: false,
     onComplete: false,
+    waitOnComplete: false,
     showImportLoadingStatus: false,
     template: "",
     showDownloadTemplateButton: true,

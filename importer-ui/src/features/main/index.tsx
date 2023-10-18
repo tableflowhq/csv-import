@@ -38,6 +38,7 @@ export default function Main() {
     modalIsOpen,
     metadata,
     onComplete,
+    waitOnComplete,
     showImportLoadingStatus,
     skipHeaderRowSelection,
     template: sdkDefinedTemplate,
@@ -179,6 +180,7 @@ export default function Main() {
       importerId,
     };
     postMessage(message);
+    // TODO: If waitOnComplete and in the last stage of the import, should we setTusId("") to reset the importer here?
   };
 
   const handleComplete = (data: any) => {
@@ -278,6 +280,7 @@ export default function Main() {
             onCancel={handleCancelReview}
             close={requestClose}
             onComplete={handleComplete}
+            waitOnComplete={waitOnComplete}
             upload={upload}
             reload={reload}
             showImportLoadingStatus={showImportLoadingStatus}
