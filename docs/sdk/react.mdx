@@ -203,6 +203,11 @@ function MyComponent() {
   ```
 </ResponseField>
 
+<ResponseField name="waitOnComplete" type="boolean" default={false}>
+  When set to `true`, the importer will not display the final completion screen after the import is submitted. Instead,
+  it will stay in a loading state until it is closed programmatically.
+</ResponseField>
+
 <ResponseField name="showDownloadTemplateButton" type="boolean" default={true}>
   When set to `false`, hide the Download Template button on the first screen of the importer.
   <Frame>
