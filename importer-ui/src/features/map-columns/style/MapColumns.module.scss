@@ -8,11 +8,10 @@
     gap: var(--m);
 
     .tableWrapper {
+      display: flex;
       height: 100%;
       overflow-y: auto;
       padding: 1px;
-      margin-right: -20px;
-      padding-right: 21px;
     }
 
     .actions {

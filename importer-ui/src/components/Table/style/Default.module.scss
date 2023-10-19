@@ -18,16 +18,18 @@ $cellHeight: 44px;
   }
 
   .tbody {
-    display: table-row-group;
+    display: block;
     overflow: auto;
+    margin-right: -20px;
+    padding-right: 21px;
   }
   .tr {
-    display: table-row;
+    display: block;
+    width: 100%;
   }
   .td {
-    display: table-cell;
-    vertical-align: middle;
-    max-width: 300px;
+    display: inline-flex;
+    align-items: center;
     height: $cellHeight;
   }
   .caption {
@@ -40,7 +42,6 @@ $cellHeight: 44px;
 
   .thead {
     .tr {
-      margin-bottom: var(--m-s);
 
       .td {
         font-weight: 400;
@@ -70,7 +71,6 @@ $cellHeight: 44px;
       border-top-right-radius: var(--border-radius-2);
 
       .tr {
-        margin-bottom: var(--m-s);
         .td {
           background-color: var(--color-background-modal);
 
