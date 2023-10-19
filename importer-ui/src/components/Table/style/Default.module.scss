@@ -2,13 +2,16 @@ $radius: var(--border-radius-2);
 $cellHeight: 44px;
 
 .table {
-  display: table;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
   width: 100%;
   border-collapse: collapse;
   border-spacing: 0;
   border-radius: $radius;
   outline: 1px solid var(--color-border);
   table-layout: fixed;
+  overflow: hidden;
 
   .thead {
     display: table-header-group;
@@ -16,6 +19,7 @@ $cellHeight: 44px;
 
   .tbody {
     display: table-row-group;
+    overflow: auto;
   }
   .tr {
     display: table-row;
@@ -60,7 +64,7 @@ $cellHeight: 44px;
     .caption {
       position: sticky;
       top: 0;
-      z-index: 1;
+      z-index: 2;
       outline: 1px solid var(--color-border);
       border-top-left-radius: var(--border-radius-2);
       border-top-right-radius: var(--border-radius-2);

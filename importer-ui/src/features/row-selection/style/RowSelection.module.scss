@@ -9,6 +9,7 @@
     gap: var(--m);
 
     .tableWrapper {
+      display: flex;
       overflow-y: auto;
       padding: 1px;
       margin-right: -20px;
