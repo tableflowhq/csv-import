@@ -20,16 +20,23 @@ $cellHeight: 44px;
   .tbody {
     display: block;
     overflow: auto;
-  }
-  .tr {
-    display: block;
     width: 100%;
   }
+
+  .tr {
+    display: flex;
+    width: 100%;
+    overflow: hidden;
+    flex-wrap: nowrap;
+  }
+
   .td {
     display: inline-flex;
     align-items: center;
     height: $cellHeight;
+    flex-shrink: 0;
   }
+
   .caption {
     display: table-caption;
     border-bottom: 1px solid var(--color-border);
@@ -51,31 +58,9 @@ $cellHeight: 44px;
         &:first-of-type {
           border-radius: $radius 0 0 0;
         }
+
         &:last-child {
           border-radius: 0 $radius 0 0;
-        }
-      }
-    }
-  }
-
-  &.fixHeader {
-    .thead,
-    .caption {
-      position: sticky;
-      top: 0;
-      z-index: 2;
-      outline: 1px solid var(--color-border);
-      border-top-left-radius: var(--border-radius-2);
-      border-top-right-radius: var(--border-radius-2);
-
-      .tr {
-        .td {
-          background-color: var(--color-background-modal);
-
-          &:first-of-type,
-          &:last-child {
-            border-radius: 0;
-          }
         }
       }
     }
@@ -88,8 +73,8 @@ $cellHeight: 44px;
         padding: var(--m-xxxs) var(--m-s);
         font-weight: 400;
 
-        & > span,
-        & > small {
+        &>span,
+        &>small {
           text-overflow: ellipsis;
           white-space: nowrap;
           display: block;
@@ -119,6 +104,7 @@ $cellHeight: 44px;
           &:first-of-type {
             border-radius: 0 0 0 $radius;
           }
+
           &:last-child {
             border-radius: 0 0 $radius 0;
           }
@@ -129,6 +115,7 @@ $cellHeight: 44px;
 
   &.zebra {
     background-color: var(--color-background-modal);
+
     .tbody {
       .tr {
         &:nth-child(odd) {
@@ -142,6 +129,7 @@ $cellHeight: 44px;
 
   &.dark {
     background-color: var(--color-background);
+
     .thead .tr .td {
       background-color: var(--color-background-modal);
     }
@@ -159,12 +147,14 @@ $cellHeight: 44px;
           box-shadow: none;
           position: static;
         }
-        .td {
-        }
+
+        .td {}
+
         &:first-of-type .td {
           padding-top: var(--m-s);
           height: calc(#{$cellHeight} + var(--m-s) - var(--m-xxxs));
         }
+
         &:last-of-type .td {
           padding-bottom: var(--m-s);
           height: calc(#{$cellHeight} + var(--m-s) - var(--m-xxxs));
