@@ -45,6 +45,7 @@ You can run TableFlow locally with Docker:
 ```bash
 git clone https://github.com/tableflowhq/tableflow.git
 cd tableflow
+cp .env.example .env
 docker-compose up -d
 ```
 

@@ -107,21 +107,23 @@ func parseMinMaxOptions(options interface{}, limit int) (*MinMaxEvaluatorOptions
 	if minMaxOptions.Min == nil && minMaxOptions.Max == nil {
 		return nil, errors.New("min and/or max are required")
 	}
-	if *minMaxOptions.Min < 0 {
-		return nil, errors.New("min must be positive")
-	}
-	if *minMaxOptions.Max < 0 {
-		return nil, errors.New("max must be positive")
-	}
-	if limit > 0 {
-		if *minMaxOptions.Min > limit {
+	if minMaxOptions.Min != nil {
+		if *minMaxOptions.Min < 0 {
+			return nil, errors.New("min must be positive")
+		}
+		if limit > 0 && *minMaxOptions.Min > limit {
 			return nil, fmt.Errorf("min cannot be greater than %v", limit)
 		}
-		if *minMaxOptions.Max > limit {
+	}
+	if minMaxOptions.Max != nil {
+		if *minMaxOptions.Max < 0 {
+			return nil, errors.New("max must be positive")
+		}
+		if limit > 0 && *minMaxOptions.Max > limit {
 			return nil, fmt.Errorf("max cannot be greater than %v", limit)
 		}
 	}
-	if *minMaxOptions.Min > *minMaxOptions.Max {
+	if minMaxOptions.Min != nil && minMaxOptions.Max != nil && *minMaxOptions.Min > *minMaxOptions.Max {
 		return nil, errors.New("min cannot be greater than the max")
 	}
 
