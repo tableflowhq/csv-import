@@ -30,9 +30,6 @@ export default function Review({ onCancel, onComplete, waitOnComplete, upload, t
   const filter = useRef<QueryFilter>("all");
   const [filterOptions, setFilterOptions] = useState<Option[]>(defaultOptions);
   const [isSubmitCompleted, setIsSubmitCompleted] = useState(false);
-  // const { data, isLoading }: any = useReview(uploadId, {
-  //   staleTime: 0,
-  // });
   const [hasDataErrors, setHasDataErrors] = useState(false);
   const { mutate, error: submitError, isSuccess, isLoading: isSubmitting, data: dataSubmitted } = useSubmitReview(uploadId || "");
   const [waitOnCompleteLoading, setWaitOnCompleteLoading] = useState(false);
