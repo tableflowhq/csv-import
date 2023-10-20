@@ -4,19 +4,22 @@ import useIsStored from "./hooks/useIsStored";
 import { ApiResponse, Import } from "./types";
 import { get } from "./api";
 
-export default function useReview(uploadId: string, config?: any): UseQueryResult<Import> {
+export default function useReview(uploadId: string, enabled: boolean, config?: any): UseQueryResult<Import> {
   const [configOverrides, setConfigOverrides] = useState({});
+
+  const queryConfig = { ...configOverrides, ...config, ...(!enabled ? { enabled } : { enabled }) };
 
   const query: UseQueryResult<Import> = useQuery(
     ["review", uploadId],
     () => {
       setRefetchCount((count) => count + 1);
-      if (!uploadId) {
-        throw new Error("uploadId is required");
+      if (!enabled) {
+        return {} as any;
+        // throw new Error("uploadId is required");
       }
       return getReview(uploadId);
     },
-    { keepPreviousData: true, ...configOverrides, ...config }
+    { keepPreviousData: true, ...queryConfig }
   );
 
   const { customError, setRefetchCount } = useIsStored(uploadId, setConfigOverrides, query?.data, query?.error);

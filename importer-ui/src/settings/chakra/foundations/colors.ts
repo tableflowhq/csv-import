@@ -4,6 +4,32 @@ const colors = {
   black: "#000000",
   white: "#FFFFFF",
 
+  primary: {
+    50: "var(--color-primary)",
+    100: "var(--color-primary)",
+    200: "var(--color-primary)",
+    300: "var(--color-primary-hover)",
+    400: "var(--color-primary)",
+    500: "var(--color-primary)",
+    600: "var(--color-primary)",
+    700: "var(--color-primary)",
+    800: "var(--color-primary)",
+    900: "var(--color-primary)",
+  },
+
+  secondary: {
+    50: "var(--color-secondary)",
+    100: "var(--color-secondary)",
+    200: "var(--color-secondary)",
+    300: "var(--color-secondary-hover)",
+    400: "var(--color-secondary)",
+    500: "var(--color-secondary)",
+    600: "var(--color-secondary)",
+    700: "var(--color-secondary)",
+    800: "var(--color-secondary)",
+    900: "var(--color-secondary)",
+  },
+
   whiteAlpha: {
     50: "rgba(255, 255, 255, 0.04)",
     100: "rgba(255, 255, 255, 0.06)",

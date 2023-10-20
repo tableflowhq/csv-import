@@ -1,15 +1,13 @@
 import { CellValueChangedEvent } from "ag-grid-community";
 import { useCallback, useEffect, useRef, useState } from "react";
-import Button from "../../components/Button";
+import { Button } from "@chakra-ui/button";
 import Errors from "../../components/Errors";
 import ToggleFilter from "../../components/ToggleFilter";
 import { Option } from "../../components/ToggleFilter/types";
 import { post } from "../../api/api";
 import { QueryFilter } from "../../api/types";
-import useReview from "../../api/useReview";
 import useSubmitReview from "../../api/useSubmitReview";
 import useThemeStore from "../../stores/theme";
-import LoadingSpinner from "./components/LoadingSpinner";
 import ReviewDataTable from "./components/ReviewDataTable";
 import { ReviewProps } from "./types";
 import style from "./style/Review.module.scss";
@@ -27,19 +25,15 @@ type FilterOptionCounts = {
   NumErrorRows: number;
 };
 
-export default function Review({ onCancel, onComplete, upload, template, reload, close, columnsOrder }: ReviewProps) {
+export default function Review({ onCancel, onComplete, waitOnComplete, upload, template, review, reload, close, columnsOrder }: ReviewProps) {
   const uploadId = upload?.id;
   const filter = useRef<QueryFilter>("all");
   const [filterOptions, setFilterOptions] = useState<Option[]>(defaultOptions);
   const [isSubmitCompleted, setIsSubmitCompleted] = useState(false);
-  const { data, isLoading }: any = useReview(uploadId, {
-    staleTime: 0,
-  });
   const [hasDataErrors, setHasDataErrors] = useState(false);
   const { mutate, error: submitError, isSuccess, isLoading: isSubmitting, data: dataSubmitted } = useSubmitReview(uploadId || "");
+  const [waitOnCompleteLoading, setWaitOnCompleteLoading] = useState(false);
   const theme = useThemeStore((state) => state.theme);
-  const [showLoading, setShowLoading] = useState(true);
-  const submittedOk = dataSubmitted?.ok || {};
   const hasValidations = template.columns.some((tc) => tc.validations && tc.validations.length > 0);
 
   const cellValueChangeSet = useRef(new Set<string>());
@@ -116,8 +110,8 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
   }, []);
 
   useEffect(() => {
-    if (isSuccess || submitError) {
-      setShowLoading(false);
+    if (isSuccess) {
+      setIsSubmitCompleted(true);
       onComplete(dataSubmitted?.data);
     }
   }, [isSuccess, submitError]);
@@ -126,15 +120,12 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
   useEffect(() => {
     updateFilterOptions(
       filter.current,
-      data ? { NumRows: data?.num_rows, NumValidRows: data?.num_valid_rows, NumErrorRows: data?.num_error_rows } : undefined
+      review ? { NumRows: review?.num_rows, NumValidRows: review?.num_valid_rows, NumErrorRows: review?.num_error_rows } : undefined
     );
-    if (data) {
-      setHasDataErrors(data?.num_error_rows > 0);
-      if (data?.is_stored) {
-        setShowLoading(false);
-      }
+    if (review) {
+      setHasDataErrors(review?.num_error_rows > 0);
     }
-  }, [JSON.stringify(data)]);
+  }, [JSON.stringify(review)]);
 
   const updateFilterOptions = useCallback((option: string, counts?: FilterOptionCounts) => {
     filter.current = option as QueryFilter;
@@ -160,20 +151,15 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
   }, []);
 
   const handleSubmitClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-
-    mutate({ uploadId: uploadId });
-    if (submittedOk && !submitError && !isSubmitting) {
-      setIsSubmitCompleted(true);
+    if (waitOnComplete) {
+      setWaitOnCompleteLoading(true);
     }
+    e.preventDefault();
+    mutate({ uploadId: uploadId });
   };
 
-  if (isSubmitCompleted) {
+  if (isSubmitCompleted && !waitOnComplete) {
     return <Complete reload={reload} close={close} upload={upload} showImportLoadingStatus={false} />;
-  }
-
-  if (showLoading || isSubmitting) {
-    return <LoadingSpinner style={style} />;
   }
 
   return (
@@ -183,31 +169,31 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
           <ToggleFilter options={filterOptions} className={style.filters} onChange={(option: string) => updateFilterOptions(option)} />
         )}
         <div className={style.tableWrapper}>
-          {!isLoading && (
-            <ReviewDataTable
-              onCellValueChanged={onCellValueChanged}
-              template={template}
-              columnsOrder={columnsOrder}
-              theme={theme}
-              uploadId={uploadId}
-              filter={filter.current}
-            />
-          )}
+          <ReviewDataTable
+            onCellValueChanged={onCellValueChanged}
+            template={template}
+            columnsOrder={columnsOrder}
+            theme={theme}
+            uploadId={uploadId}
+            filter={filter.current}
+            disabled={isSubmitting || waitOnCompleteLoading}
+          />
         </div>
         <div className={style.actions}>
-          <Button type="button" variants={["secondary"]} onClick={onCancel}>
+          <Button type="button" colorScheme="secondary" onClick={onCancel} isDisabled={isSubmitting || waitOnCompleteLoading}>
             Back
           </Button>
           <Button
             title={hasDataErrors ? "Please resolve all errors before submitting" : ""}
-            variants={["primary"]}
-            disabled={hasDataErrors}
-            onClick={handleSubmitClick}>
+            colorScheme="primary"
+            isDisabled={hasDataErrors}
+            onClick={handleSubmitClick}
+            isLoading={isSubmitting || waitOnCompleteLoading}>
             Submit
           </Button>
         </div>
       </div>
-      {!isLoading && !!submitError && (
+      {!!submitError && (
         <div className={style.errorContainer}>
           <Errors error={submitError} />
         </div>

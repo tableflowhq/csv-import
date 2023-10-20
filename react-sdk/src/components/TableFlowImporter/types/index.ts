@@ -15,6 +15,7 @@ export type TableFlowImporterProps = (HTMLAttributes<HTMLDialogElement> & HTMLAt
   primaryColor?: string;
   metadata?: Record<string, unknown> | string;
   onComplete?: (data: any) => void;
+  waitOnComplete?: boolean;
   customStyles?: Record<string, string>;
   showImportLoadingStatus?: boolean;
   showDownloadTemplateButton?: boolean;

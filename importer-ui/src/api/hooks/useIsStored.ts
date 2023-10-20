@@ -4,7 +4,7 @@ export default function useIsStored(queryId: string, setConfigOverrides: React.D
   const [refetchCount, setRefetchCount] = useState(0);
   const [customError, setCustomError] = useState("");
 
-  const isStored = data?.is_stored;
+  const isStored = data?.is_stored || false;
 
   // TODO: Make this smarter based on file size
   const maxRefetchCount = 120;

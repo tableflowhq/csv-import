@@ -46,13 +46,13 @@
 
   .actions {
     display: flex;
-    gap: var(--m-xl);
+    gap: var(--m-l);
     align-items: center;
     justify-content: center;
     margin-top: var(--m-xxl);
 
     & > * {
-      flex: 1 0 170px;
+      flex: 1 0 190px;
     }
 
     button {

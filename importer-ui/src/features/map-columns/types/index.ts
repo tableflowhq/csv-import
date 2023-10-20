@@ -20,4 +20,6 @@ export type MapColumnsProps = {
   schemalessReadOnly?: boolean;
   seColumnsValues: Dispatch<SetStateAction<FormValues>>;
   columnsValues: FormValues;
+  isLoading?: boolean;
+  onLoad?: () => void;
 };

@@ -1,3 +1,5 @@
+$transition: all 0.3s ease-out;
+
 .stepper {
   display: flex;
   gap: var(--m);
@@ -8,6 +10,7 @@
     display: flex;
     gap: var(--m-xxs);
     align-items: center;
+    transition: $transition;
 
     .badge {
       border-radius: 50%;
@@ -17,6 +20,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      transition: $transition;
 
       svg {
         width: 12px;

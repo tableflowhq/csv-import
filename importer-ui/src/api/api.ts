@@ -3,6 +3,8 @@ import notification from "../utils/notification";
 import { Notification } from "../utils/notification/types";
 import { ApiResponse } from "./types";
 
+const forcedDelay = 0;
+
 // TODO: Load these from the env
 const env = {
   API_BASE_URL: "",
@@ -89,6 +91,8 @@ const headers = {
 };
 
 export async function get(path: string, handleError = true): Promise<ApiResponse<any>> {
+  if (forcedDelay) await new Promise((resolve) => setTimeout(resolve, forcedDelay));
+
   const url = `${baseURL}${path}`;
   return axios
     .get(url, {
@@ -100,6 +104,8 @@ export async function get(path: string, handleError = true): Promise<ApiResponse
 }
 
 export async function post(path: string, body?: any): Promise<ApiResponse<any>> {
+  if (forcedDelay) await new Promise((resolve) => setTimeout(resolve, forcedDelay));
+
   const url = `${baseURL}${path}`;
   return axios
     .post(url, body, {

@@ -1,5 +1,5 @@
+import { Button } from "@chakra-ui/button";
 import Box from "../../components/Box";
-import Button from "../../components/Button";
 import Spinner from "../../components/Spinner";
 import useEmbedStore from "../../stores/embed";
 import { CompleteProps } from "./types";
@@ -12,27 +12,27 @@ export default function Complete({ reload, close, showImportLoadingStatus }: Com
   const isEmbeddedInIframe = window?.top !== window?.self;
 
   return (
-    <>
+    <Box className={style.content}>
       {showImportLoadingStatus ? (
         <Spinner className={style.spinner}>Importing your data...</Spinner>
       ) : (
-        <Box className={style.content} variants={[]}>
+        <>
           <span className={style.icon}>
             <PiCheckBold />
           </span>
           <div>Import Successful</div>
           <div className={style.actions}>
-            <Button type="button" variants={["tertiary"]} icon={<PiArrowsClockwise />} onClick={reload}>
+            <Button type="button" colorScheme="secondary" leftIcon={<PiArrowsClockwise />} onClick={reload}>
               Upload another file
             </Button>
             {isEmbeddedInIframe && isModal && (
-              <Button type="button" variants={["primary"]} icon={<PiCheckBold />} onClick={close}>
+              <Button type="button" colorScheme="primary" leftIcon={<PiCheckBold />} onClick={close}>
                 Done
               </Button>
             )}
           </div>
-        </Box>
+        </>
       )}
-    </>
+    </Box>
   );
 }

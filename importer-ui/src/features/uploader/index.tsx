@@ -1,4 +1,4 @@
-import Button from "../../components/Button";
+import { Button } from "@chakra-ui/button";
 import Table from "../../components/Table";
 import UppyWrapper from "../../components/UppyWrapper";
 import useThemeStore from "../../stores/theme";
@@ -60,7 +60,12 @@ export default function Uploader({
   }
 
   const downloadTemplateButton = showDownloadTemplateButton ? (
-    <Button icon={<PiDownload />} onClick={downloadTemplate} variants={theme === "light" ? [] : ["secondary"]}>
+    <Button
+      width="100%"
+      leftIcon={<PiDownload />}
+      onClick={downloadTemplate}
+      colorScheme={"secondary"}
+      variant={theme === "light" ? "outline" : "solid"}>
       Download Template
     </Button>
   ) : null;
