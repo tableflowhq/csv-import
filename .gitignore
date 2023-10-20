@@ -21,6 +21,7 @@ vendor/
 build/
 .yarn/
 .pnp*
+/yarn.lock
 
 .DS_Store
 .idea
