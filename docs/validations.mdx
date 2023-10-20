@@ -108,11 +108,82 @@ Validations can either be allowed for all data types (universal) or only compati
   ```
 </ResponseField>
 
+<ResponseField name="list">
+  The cell must equal one of the values in the provided list. Comparisons are case-insensitive but the cell values will
+  be formatted in the case of the list value.
+  ```json
+  {
+    "validate": "list",
+    "options": [
+      "Small",
+      "Medium",
+      "Large"
+    ]
+  }
+  ```
+</ResponseField>
+
 <ResponseField name="email">
   The cell must be a valid email address.
   ```json
   {
     "validate": "email"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="phone">
+  The cell must be a valid phone number.
+  ```json
+  {
+    "validate": "phone"
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="length">
+  The length of the cell must be within the provided min and/or max options.
+  ```json
+  {
+    "validate": "length",
+    "options": {
+      "min": 4,
+      "max": 16
+    }
+  }
+  ```
+  Only one min or max option is required:
+  ```json
+  {
+    "validate": "length",
+    "options": {
+      "min": 0
+    }
+  }
+  ```
+</ResponseField>
+
+
+## Number
+
+<ResponseField name="range">
+  The value of the cell must be greater than or equal to the min and less than or equal to the max.
+  ```json
+  {
+    "validate": "range",
+    "options": {
+      "min": 1900,
+      "max": 2030
+    }
+  }
+  ```
+  Only one min or max option is required:
+  ```json
+  {
+    "validate": "range",
+    "options": {
+      "min": 0
+    }
   }
   ```
 </ResponseField>

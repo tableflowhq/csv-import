@@ -140,6 +140,7 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
     // Add index column to the beginning of the columns
     generatedColumnDefs.unshift({
       headerName: "",
+      headerClass: "empty-header",
       // Set the index cell value to the node ID + 1
       valueGetter: (params: ValueGetterParams) => {
         return params.data && params.data.values ? Number(params.node?.id ?? 0) + 1 : "";
