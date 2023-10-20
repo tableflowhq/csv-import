@@ -285,7 +285,8 @@ export default function Main() {
 
       {!!uploadError && (
         <div className={style.status}>
-          <Errors error={uploadError.toString()} />
+          <div></div>
+          <Errors error={uploadError.toString()} centered />
           <Button onClick={reload} variants={["primary"]} type="button" icon={<PiArrowsClockwise />}>
             Reload
           </Button>
