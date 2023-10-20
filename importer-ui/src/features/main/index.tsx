@@ -73,7 +73,7 @@ export default function Main() {
   const [columnsValues, seColumnsValues] = useState({});
 
   // Apply CSS overrides
-  useCssOverrides(cssOverrides, organizationStatus);
+  useCssOverrides(cssOverrides, window.location.hostname === "localhost" ? true : organizationStatus);
 
   // If the skipHeaderRowSelection is not set as a URL param, check the option on the importer
   const skipHeader = skipHeaderRowSelection != null ? !!skipHeaderRowSelection : importer.skip_header_row_selection;
