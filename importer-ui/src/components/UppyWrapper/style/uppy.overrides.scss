@@ -56,6 +56,7 @@
         &-previewInnerWrap {
           background-color: var(--color-background) !important;
           border-radius: var(--border-radius-1);
+          height: 100% !important;
           &::after {
             background-color: transparent;
           }

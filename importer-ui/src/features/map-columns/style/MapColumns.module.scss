@@ -8,6 +8,7 @@
     gap: var(--m);
 
     .tableWrapper {
+      display: flex;
       height: 100%;
       overflow-y: auto;
       padding: 1px;
@@ -52,4 +53,5 @@
 .errorContainer {
   display: flex;
   justify-content: center;
+  max-width: 60vw;
 }
