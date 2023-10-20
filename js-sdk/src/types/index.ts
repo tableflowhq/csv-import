@@ -1,14 +1,10 @@
 import { CSSProperties } from "react";
 
-type ModalParams =
-  | {
-      isModal?: true;
-      modalOnCloseTriggered?: () => void;
-      modalCloseOnOutsideClick?: boolean;
-    }
-  | {
-      isModal: false;
-    };
+type ModalParams = {
+  isModal?: boolean;
+  modalOnCloseTriggered?: () => void;
+  modalCloseOnOutsideClick?: boolean;
+};
 
 export type TableFlowImporterProps = HTMLDialogElement & {
   elementId?: string;
