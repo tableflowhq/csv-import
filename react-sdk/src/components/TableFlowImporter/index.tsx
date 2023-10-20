@@ -76,7 +76,7 @@ export default function TableFlowImporter({
     </dialog>
   ) : (
     <div {...elementProps}>
-      <iframe src={uploaderUrl} />
+      <iframe allowTransparency src={uploaderUrl} />
     </div>
   );
 }
