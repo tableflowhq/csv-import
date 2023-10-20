@@ -1,6 +1,6 @@
 .ag-theme-alpine,
 .ag-theme-alpine-dark {
-  font-family: var(--font-family) !important;;
+  font-family: var(--font-family) !important;
   --ag-borders: none;
   --ag-header-height: 44px;
   --ag-header-foreground-color: var(--color-text);
@@ -32,7 +32,8 @@
   border-bottom: solid 1px var(--color-border) !important;
 }
 
-.ag-header, .ag-row {
+.ag-header,
+.ag-row {
   border-bottom: none !important;
 }
 
@@ -40,7 +41,8 @@
   border-right: solid 1px var(--color-border) !important;
 }
 
-.ag-header-container, .ag-header-cell {
+.ag-header-container,
+.ag-header-cell {
   background-color: var(--color-background-modal);
   font-size: var(--font-size);
 }
@@ -49,7 +51,7 @@
   color: var(--color-text);
 }
 
-.ag-cell:not(.ag-cell-focus)  {
+.ag-cell:not(.ag-cell-focus) {
   border-right: solid 0.5px var(--color-border) !important;
 }
 
@@ -66,7 +68,8 @@
   color: var(--color-text) !important;
 }
 
-.ag-body .ag-body-viewport, .ag-input-field-input {
+.ag-body .ag-body-viewport,
+.ag-input-field-input {
   background-color: var(--color-background) !important;
 
   &::selection {
