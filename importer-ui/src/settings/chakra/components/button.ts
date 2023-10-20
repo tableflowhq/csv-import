@@ -24,8 +24,15 @@ const Button = defineStyleConfig({
   },
 
   variants: {
-    solid: {
-      color: "var(--color-text-on-primary)",
+    solid: (props) => {
+      if (props.colorScheme === "secondary") {
+        return {
+          color: "var(--color-text-on-secondary)",
+        };
+      }
+      return {
+        color: "var(--color-text-on-primary)",
+      };
     },
   },
 

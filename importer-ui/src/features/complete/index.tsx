@@ -22,11 +22,11 @@ export default function Complete({ reload, close, showImportLoadingStatus }: Com
           </span>
           <div>Import Successful</div>
           <div className={style.actions}>
-            <Button type="button" colorScheme="primary" leftIcon={<PiArrowsClockwise />} onClick={reload}>
+            <Button type="button" colorScheme="secondary" leftIcon={<PiArrowsClockwise />} onClick={reload}>
               Upload another file
             </Button>
             {isEmbeddedInIframe && isModal && (
-              <Button type="button" colorScheme="tertiary" variant="outline" leftIcon={<PiCheckBold />} onClick={close}>
+              <Button type="button" colorScheme="primary" leftIcon={<PiCheckBold />} onClick={close}>
                 Done
               </Button>
             )}
