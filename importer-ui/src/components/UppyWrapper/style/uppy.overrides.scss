@@ -4,9 +4,11 @@
   .uppy {
     &-Root {
       font-family: var(--font-family-1);
+      height: 100%;
     }
 
     &-Dashboard {
+      height: 100%;
       &-inner {
         background-color: var(--color-background);
         border-radius: var(--border-radius-4);
@@ -14,7 +16,7 @@
         color: var(--color-text-soft);
         width: auto !important;
         min-width: 200px;
-        max-width: 1000px;
+        height: 100% !important;
       }
 
       &-AddFiles,
@@ -50,9 +52,14 @@
       }
 
       &-Item {
+        max-width: inherit;
         &-previewInnerWrap {
-          background-color: var(--color-background-modal) !important;
+          background-color: var(--color-background) !important;
           border-radius: var(--border-radius-1);
+          height: 100% !important;
+          &::after {
+            background-color: transparent;
+          }
         }
         &-status {
           color: inherit;

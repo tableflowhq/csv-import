@@ -1,12 +1,11 @@
 .reviewContainer {
-  width: 1000px;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  height: 100%;
-  gap: var(--m-s);
 
   .tableWrapper {
     overflow: hidden;
+    flex: 1;
   }
 
   .actions {
@@ -24,6 +23,7 @@
 
 .filters {
   width: fit-content;
+  margin-bottom: var(--m-xs);
 }
 
 .spinner {
@@ -31,6 +31,10 @@
   margin-top: var(--m);
   padding: var(--m);
   border-radius: var(--border-radius-1);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .errorContainer {

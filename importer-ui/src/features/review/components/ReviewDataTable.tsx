@@ -12,10 +12,8 @@ import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import { PiInfo } from "react-icons/pi";
 
-const TABLE_WIDTH = 1000;
 const INDEX_ROW_WIDTH = 70;
 const MAX_COLUMN_SCROLL = 7;
-const MAX_ROWS = 9;
 
 function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged, columnsOrder, disabled }: TableProps) {
   const customSelectClass = "ag-theme-alpine-dark-custom-select";
@@ -23,9 +21,12 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
   const filterRef: any = useRef(filter);
 
   const [columnDefs, setColumnDefs] = useState<any>([]);
+  const [tableWidth, setTableWidth] = useState(1000);
+  const [maxRows, setMaxRows] = useState(100);
 
   const [paginatedData, setPaginatedData] = useState<any>();
   const gridRef = useRef<GridApi | null>(null);
+  const tableRef = useRef<HTMLDivElement>(null);
   const [selectedClass, setSelectedClass] = useState(customSelectClass);
 
   useEffect(() => {
@@ -37,18 +38,18 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
     setPaginatedData(null);
     paginatedDataRef.current = null;
     gridRef.current && setDataSource();
-  }, [filter]);
+  }, [filter, maxRows]);
 
   const addEmptyRows = (newData: any) => {
-    if (!!Object.keys(newData).length && newData.rows.length < MAX_ROWS) {
-      const missingRows = MAX_ROWS - newData.rows.length;
+    if (!!Object.keys(newData).length && newData.rows.length < maxRows) {
+      const missingRows = maxRows - newData.rows.length;
       const rows = [...newData.rows, ...Array(missingRows).fill({})];
 
       return {
         ...newData,
         pagination: {
           ...newData.pagination,
-          total: MAX_ROWS,
+          total: maxRows,
         },
         rows,
       };
@@ -128,12 +129,12 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
           }
           return { backgroundColor: "" };
         },
-        cellRenderer: (params: ICellRendererParams) => cellRenderer(params, colKey, theme),
+        cellRenderer: (params: ICellRendererParams) => cellRenderer(params, colKey, theme, tableWidth),
         sortable: false,
         filter: false,
         suppressMovable: true,
         resizable: true,
-        minWidth: (TABLE_WIDTH - INDEX_ROW_WIDTH) / orderedColumns.length,
+        minWidth: (tableWidth - INDEX_ROW_WIDTH) / orderedColumns.length,
       } as ColDef;
     });
     // Add index column to the beginning of the columns
@@ -149,7 +150,7 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
       pinned: orderedColumns.length > MAX_COLUMN_SCROLL ? "left" : undefined,
     });
     setColumnDefs(generatedColumnDefs);
-  }, [JSON.stringify(paginatedData?.rows), JSON.stringify(template), JSON.stringify(columnsOrder), disabled]);
+  }, [JSON.stringify(paginatedData?.rows), JSON.stringify(template), JSON.stringify(columnsOrder), disabled, tableWidth]);
 
   const onCellMouseDown = (params: any) => {
     if (params.colDef.field !== "index") {
@@ -163,12 +164,22 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
     }
   };
 
+  useEffect(() => {
+    const handleResize = () => {
+      setTableWidth((tableRef?.current?.offsetWidth || 1000) - 2);
+      setMaxRows(Math.floor((tableRef?.current?.offsetHeight || 1000) / 41) - 2);
+    };
+
+    window.addEventListener("resize", handleResize);
+    handleResize();
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
   return (
-    <div
-      className={classes([theme === "dark" ? "ag-theme-alpine-dark" : "ag-theme-alpine", selectedClass])}
-      style={{
-        height: 450,
-      }}>
+    <div ref={tableRef} className={classes(["grid-wrapper", theme === "dark" ? "ag-theme-alpine-dark" : "ag-theme-alpine", selectedClass])}>
       <AgGridReact
         columnDefs={columnDefs}
         defaultColDef={{}}
@@ -217,7 +228,7 @@ const getCellBackgroundColor = (severity: IconKeyType, theme: string): string | 
   return colorMap[severity] || null;
 };
 
-const cellRenderer = (params: ICellRendererParams, header: string, theme: string) => {
+const cellRenderer = (params: ICellRendererParams, header: string, theme: string, tableWidth: number) => {
   if (params.data) {
     const errors = params.data?.errors?.[header];
 
@@ -225,7 +236,7 @@ const cellRenderer = (params: ICellRendererParams, header: string, theme: string
       // column resize logic, to only reset if it has not been resized manually
       const actual = params.column.getActualWidth();
       const totalCols = params.columnApi.getAllGridColumns()?.length - 1;
-      const width = totalCols < MAX_COLUMN_SCROLL ? (TABLE_WIDTH - INDEX_ROW_WIDTH) / totalCols : -1;
+      const width = totalCols < MAX_COLUMN_SCROLL ? (tableWidth - INDEX_ROW_WIDTH) / totalCols : -1;
 
       if (actual < width) {
         params.column.setActualWidth(width);

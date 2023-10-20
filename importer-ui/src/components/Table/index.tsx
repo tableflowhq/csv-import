@@ -71,7 +71,6 @@ export default function Table({
     <TableContext.Provider value={context}>
       <div className={tableStyle} role="table">
         {headingContent}
-
         <div className={style.tbody} role="rowgroup">
           {data.map((d, i) => {
             const key = keyAsId && d?.[keyAsId] ? d[keyAsId] : i;

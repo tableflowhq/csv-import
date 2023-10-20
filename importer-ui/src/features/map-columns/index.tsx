@@ -54,7 +54,7 @@ export default function MapColumns({
       <form onSubmit={onSubmit}>
         {upload ? (
           <div className={style.tableWrapper}>
-            <Table data={rows} background="dark" columnWidths={["20%", "30%", "30%", "20%"]} columnAlignments={["", "", "", "center"]} />
+            <Table data={rows} background="dark" fixHeader columnWidths={["20%", "30%", "30%", "20%"]} columnAlignments={["", "", "", "center"]} />
           </div>
         ) : (
           <>Loading...</>
@@ -64,16 +64,15 @@ export default function MapColumns({
           <Button type="button" colorScheme="secondary" onClick={onCancel} isDisabled={isLoading || isLoadingPost}>
             {skipHeaderRowSelection ? "Cancel" : "Back"}
           </Button>
+          {!isLoading && !isLoadingPost && !!error && (
+            <div className={style.errorContainer}>
+              <Errors error={error} />
+            </div>
+          )}
           <Button colorScheme="primary" isLoading={isLoading || isLoadingPost} type="submit">
             Continue
           </Button>
         </div>
-
-        {!isLoading && !isLoadingPost && !!error && (
-          <div className={style.errorContainer}>
-            <Errors error={error} />
-          </div>
-        )}
       </form>
     </div>
   );
