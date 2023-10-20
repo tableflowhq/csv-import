@@ -48,7 +48,7 @@ export default function MapColumns({
       <form onSubmit={onSubmit}>
         {upload ? (
           <div className={style.tableWrapper}>
-            <Table data={rows} background="dark" columnWidths={["20%", "30%", "30%", "20%"]} columnAlignments={["", "", "", "center"]} />
+            <Table data={rows} background="dark" fixHeader columnWidths={["20%", "30%", "30%", "20%"]} columnAlignments={["", "", "", "center"]} />
           </div>
         ) : (
           <>Loading...</>
@@ -58,16 +58,15 @@ export default function MapColumns({
           <Button type="button" variants={["secondary"]} onClick={onCancel}>
             {skipHeaderRowSelection ? "Cancel" : "Back"}
           </Button>
+          {!isLoading && !!error && (
+            <div className={style.errorContainer}>
+              <Errors error={error} />
+            </div>
+          )}
           <Button variants={["primary"]} disabled={isLoading}>
             Continue
           </Button>
         </div>
-
-        {!isLoading && !!error && (
-          <div className={style.errorContainer}>
-            <Errors error={error} />
-          </div>
-        )}
 
         {isSuccess && <p>Success!</p>}
       </form>

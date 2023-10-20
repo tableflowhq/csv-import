@@ -4,7 +4,7 @@ import Spinner from "../../components/Spinner";
 import useEmbedStore from "../../stores/embed";
 import { CompleteProps } from "./types";
 import style from "./style/Complete.module.scss";
-import { PiArrowsClockwise, PiCheckBold, PiX } from "react-icons/pi";
+import { PiArrowsClockwise, PiCheckBold } from "react-icons/pi";
 
 export default function Complete({ reload, close, showImportLoadingStatus }: CompleteProps) {
   const { isModal } = useEmbedStore((state) => state.embedParams);
@@ -22,14 +22,14 @@ export default function Complete({ reload, close, showImportLoadingStatus }: Com
           </span>
           <div>Import Successful</div>
           <div className={style.actions}>
-            {isEmbeddedInIframe && isModal && (
-              <Button type="button" variants={["tertiary"]} icon={<PiX />} onClick={close}>
-                Close
-              </Button>
-            )}
-            <Button type="button" variants={["primary"]} icon={<PiArrowsClockwise />} onClick={reload}>
+            <Button type="button" variants={["tertiary"]} icon={<PiArrowsClockwise />} onClick={reload}>
               Upload another file
             </Button>
+            {isEmbeddedInIframe && isModal && (
+              <Button type="button" variants={["primary"]} icon={<PiCheckBold />} onClick={close}>
+                Done
+              </Button>
+            )}
           </div>
         </Box>
       )}

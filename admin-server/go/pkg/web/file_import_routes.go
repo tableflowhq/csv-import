@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/gofrs/uuid"
 	"github.com/guregu/null"
 	"github.com/samber/lo"
 	"github.com/tus/tusd/pkg/handler"
@@ -95,6 +96,11 @@ func importerGetImporter(c *gin.Context) {
 	id := c.Param("id")
 	if len(id) == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No importer ID provided"})
+		return
+	}
+	_, err := uuid.FromString(id)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Invalid importer ID"})
 		return
 	}
 

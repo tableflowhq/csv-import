@@ -8,6 +8,7 @@ import { defaultImporterHost, getAPIBaseURL } from "../../api/api";
 import useCssOverrides from "../../hooks/useCssOverrides";
 import useDelayedLoader from "../../hooks/useDelayLoader";
 import useEmbedStore from "../../stores/embed";
+import classes from "../../utils/classes";
 import { providedCssOverrides } from "../../utils/cssInterpreter";
 import postMessage from "../../utils/postMessage";
 import { ColumnsOrder } from "../review/types";
@@ -72,7 +73,7 @@ export default function Main() {
   const [columnsValues, seColumnsValues] = useState({});
 
   // Apply CSS overrides
-  useCssOverrides(cssOverrides, organizationStatus);
+  useCssOverrides(cssOverrides, window.location.hostname === "localhost" ? true : organizationStatus);
 
   // If the skipHeaderRowSelection is not set as a URL param, check the option on the importer
   const skipHeader = skipHeaderRowSelection != null ? !!skipHeaderRowSelection : importer.skip_header_row_selection;
@@ -195,15 +196,15 @@ export default function Main() {
 
   if (!importerId)
     return (
-      <div className={style.wrapper}>
-        <Errors error={"The parameter 'importerId' is required"} />
+      <div className={isEmbeddedInIframe ? style.wrapper : classes([style.wrapper, style.wrapperLink])}>
+        <Errors error={"The parameter 'importerId' is required"} centered />
       </div>
     );
 
   if (importerError)
     return (
-      <div className={style.wrapper}>
-        <Errors error={importerError.toString()} />
+      <div className={isEmbeddedInIframe ? style.wrapper : classes([style.wrapper, style.wrapperLink])}>
+        <Errors error={importerError.toString()} centered />
       </div>
     );
 
@@ -275,7 +276,7 @@ export default function Main() {
   };
 
   return (
-    <div className={style.wrapper}>
+    <div className={isEmbeddedInIframe ? style.wrapper : classes([style.wrapper, style.wrapperLink])}>
       <div className={style.header}>
         <Stepper {...stepper} />
       </div>
@@ -284,7 +285,8 @@ export default function Main() {
 
       {!!uploadError && (
         <div className={style.status}>
-          <Errors error={uploadError.toString()} />
+          <div></div>
+          <Errors error={uploadError.toString()} centered />
           <Button onClick={reload} variants={["primary"]} type="button" icon={<PiArrowsClockwise />}>
             Reload
           </Button>

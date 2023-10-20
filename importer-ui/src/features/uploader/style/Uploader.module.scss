@@ -1,9 +1,7 @@
 .content {
   display: flex;
   gap: var(--m);
-  align-items: flex-start;
-  align-self: center;
-  flex-grow: 1;
+  height: 100%;
 
   & > * {
     &:first-child {
@@ -20,14 +18,26 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
+  height: 100%;
 }
 
 .tableContainer {
   overflow: hidden;
-  overflow-y: auto;
-  max-height: 496px;
+  overflow-y: scroll;
+  height: 100%;
   outline: 1px solid var(--color-border);
   border-radius: var(--border-radius-2);
+  > div {
+    outline: none;
+  }
+  .tbody {
+    overflow: auto;
+  }
+}
+
+svg {
+    height: 18px;
+    width: 18px;
 }
 
 svg {

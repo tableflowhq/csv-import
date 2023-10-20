@@ -177,7 +177,7 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
   }
 
   return (
-    <div>
+    <>
       <div className={style.reviewContainer}>
         {hasValidations && (
           <ToggleFilter options={filterOptions} className={style.filters} onChange={(option: string) => updateFilterOptions(option)} />
@@ -212,6 +212,6 @@ export default function Review({ onCancel, onComplete, upload, template, reload,
           <Errors error={submitError} />
         </div>
       )}
-    </div>
+    </>
   );
 }

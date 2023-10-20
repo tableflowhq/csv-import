@@ -2,30 +2,41 @@ $radius: var(--border-radius-2);
 $cellHeight: 44px;
 
 .table {
-  display: table;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
   width: 100%;
   border-collapse: collapse;
   border-spacing: 0;
   border-radius: $radius;
   outline: 1px solid var(--color-border);
   table-layout: fixed;
+  overflow: hidden;
 
   .thead {
     display: table-header-group;
   }
 
   .tbody {
-    display: table-row-group;
+    display: block;
+    overflow: auto;
+    width: 100%;
   }
+
   .tr {
-    display: table-row;
+    display: flex;
+    width: 100%;
+    overflow: hidden;
+    flex-wrap: nowrap;
   }
+
   .td {
-    display: table-cell;
-    vertical-align: middle;
-    max-width: 300px;
+    display: inline-flex;
+    align-items: center;
     height: $cellHeight;
+    flex-shrink: 0;
   }
+
   .caption {
     display: table-caption;
     border-bottom: 1px solid var(--color-border);
@@ -36,7 +47,6 @@ $cellHeight: 44px;
 
   .thead {
     .tr {
-      margin-bottom: var(--m-s);
 
       .td {
         font-weight: 400;
@@ -48,31 +58,9 @@ $cellHeight: 44px;
         &:first-of-type {
           border-radius: $radius 0 0 0;
         }
+
         &:last-child {
           border-radius: 0 $radius 0 0;
-        }
-      }
-    }
-  }
-
-  &.fixHeader {
-    border-radius: 0 0 $radius $radius;
-    .thead,
-    .caption {
-      position: sticky;
-      top: 0;
-      z-index: 1;
-      outline: 1px solid var(--color-border);
-
-      .tr {
-        margin-bottom: var(--m-s);
-        .td {
-          background-color: var(--color-background-modal);
-
-          &:first-of-type,
-          &:last-child {
-            border-radius: 0;
-          }
         }
       }
     }
@@ -85,8 +73,8 @@ $cellHeight: 44px;
         padding: var(--m-xxxs) var(--m-s);
         font-weight: 400;
 
-        & > span,
-        & > small {
+        &>span,
+        &>small {
           text-overflow: ellipsis;
           white-space: nowrap;
           display: block;
@@ -116,6 +104,7 @@ $cellHeight: 44px;
           &:first-of-type {
             border-radius: 0 0 0 $radius;
           }
+
           &:last-child {
             border-radius: 0 0 $radius 0;
           }
@@ -126,6 +115,7 @@ $cellHeight: 44px;
 
   &.zebra {
     background-color: var(--color-background-modal);
+
     .tbody {
       .tr {
         &:nth-child(odd) {
@@ -139,6 +129,7 @@ $cellHeight: 44px;
 
   &.dark {
     background-color: var(--color-background);
+
     .thead .tr .td {
       background-color: var(--color-background-modal);
     }
@@ -156,12 +147,14 @@ $cellHeight: 44px;
           box-shadow: none;
           position: static;
         }
-        .td {
-        }
+
+        .td {}
+
         &:first-of-type .td {
           padding-top: var(--m-s);
           height: calc(#{$cellHeight} + var(--m-s) - var(--m-xxxs));
         }
+
         &:last-of-type .td {
           padding-bottom: var(--m-s);
           height: calc(#{$cellHeight} + var(--m-s) - var(--m-xxxs));
