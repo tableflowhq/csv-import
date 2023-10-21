@@ -7,6 +7,7 @@ import TableLoading from "../../components/TableLoading";
 import { defaultImporterHost, getAPIBaseURL } from "../../api/api";
 import useCssOverrides from "../../hooks/useCssOverrides";
 import useDelayedLoader from "../../hooks/useDelayLoader";
+import useRevealApp from "../../hooks/useRevealApp";
 import useEmbedStore from "../../stores/embed";
 import classes from "../../utils/classes";
 import { providedCssOverrides } from "../../utils/cssInterpreter";
@@ -32,6 +33,8 @@ const stepsConfig = [
 ];
 
 export default function Main() {
+  useRevealApp();
+
   // Get iframe URL params
   const {
     importerId,
@@ -103,9 +106,10 @@ export default function Main() {
   // Handle initial page loads using a small delay so the screen doesn't flash when loading different states
   const [initialPageLoaded, setInitialPageLoaded] = useState<boolean>(false);
   useEffect(() => {
-    setTimeout(() => {
+    const interval = setTimeout(() => {
       setInitialPageLoaded(!importerIsLoading && !statusIsLoading && !uploadIsLoading);
-    }, 50);
+    }, 500);
+    return () => clearInterval(interval);
   }, [importerIsLoading, statusIsLoading, uploadIsLoading]);
 
   // Handle the upload loading indicator
