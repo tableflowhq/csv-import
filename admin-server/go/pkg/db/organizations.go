@@ -23,3 +23,21 @@ func GetOrganizationOfUserWithWorkspaces(userID string) (*model.Organization, er
 	}
 	return &organization, nil
 }
+
+// GetOrganizationFromWorkspace TODO: Consider adding organization ID to other objects so it doesn't have to be retrieved
+func GetOrganizationFromWorkspace(workspaceID string) (*model.Organization, error) {
+	if len(workspaceID) == 0 {
+		return nil, errors.New("no workspace ID provided")
+	}
+	var organization model.Organization
+	err := tf.DB.Joins("join workspaces on organizations.id = workspaces.organization_id").
+		Where("workspaces.id = ?", model.ParseID(workspaceID)).
+		First(&organization).Error
+	if err != nil {
+		return nil, err
+	}
+	if !organization.ID.Valid {
+		return nil, gorm.ErrRecordNotFound
+	}
+	return &organization, nil
+}

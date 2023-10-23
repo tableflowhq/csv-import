@@ -6,13 +6,14 @@ import (
 	"tableflow/go/pkg/tf"
 )
 
-func CreateObjectsForNewUser(user *model.User) (workspaceID string, err error) {
+func CreateObjectsForNewUser(user *model.User) (workspaceID, organizationID string, err error) {
 	organization := &model.Organization{
 		ID:        model.NewID(),
 		Name:      "My Organization",
 		CreatedBy: user.ID,
 		UpdatedBy: user.ID,
 	}
+	organizationID = organization.ID.String()
 	workspace := &model.Workspace{
 		ID:             model.NewID(),
 		OrganizationID: organization.ID,
@@ -77,40 +78,40 @@ func CreateObjectsForNewUser(user *model.User) (workspaceID string, err error) {
 	err = tf.DB.Create(organization).Error
 	if err != nil {
 		tf.Log.Errorw("Error creating organization after sign up", "user_id", user.ID, "organization_id", organization.ID)
-		return "", err
+		return "", "", err
 	}
 	err = tf.DB.Create(workspace).Error
 	if err != nil {
 		tf.Log.Errorw("Error creating workspace after sign up", "user_id", user.ID, "workspace_id", workspace.ID)
-		return "", err
+		return "", "", err
 	}
 	err = tf.DB.Exec("insert into organization_users (organization_id, user_id) values (?, ?);", organization.ID, user.ID).Error
 	if err != nil {
 		tf.Log.Errorw("Error adding user to organization after sign up", "user_id", user.ID, "organization_id", organization.ID)
-		return "", err
+		return "", "", err
 	}
 	err = tf.DB.Exec("insert into workspace_users (workspace_id, user_id) values (?, ?);", workspace.ID, user.ID).Error
 	if err != nil {
 		tf.Log.Errorw("Error adding user to workspace after sign up", "user_id", user.ID, "workspace_id", workspace.ID)
-		return "", err
+		return "", "", err
 	}
 	err = tf.DB.Create(importer).Error
 	if err != nil {
 		tf.Log.Errorw("Error creating importer after sign up", "user_id", user.ID, "workspace_id", workspace.ID)
-		return "", err
+		return "", "", err
 	}
 	err = tf.DB.Create(template).Error
 	if err != nil {
 		tf.Log.Errorw("Error creating template after sign up", "user_id", user.ID, "workspace_id", workspace.ID)
-		return "", err
+		return "", "", err
 	}
 	err = tf.DB.Create(templateColumns).Error
 	if err != nil {
 		tf.Log.Errorw("Error creating template columns after sign up", "user_id", user.ID, "workspace_id", workspace.ID)
-		return "", err
+		return "", "", err
 	}
 
-	return workspaceID, nil
+	return workspaceID, organizationID, nil
 }
 
 func GetDatabaseSchemaInitSQL() string {

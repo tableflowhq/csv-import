@@ -184,7 +184,7 @@ func initDatabase() error {
 			return err
 		}
 		// Create the standard objects for that user
-		_, err = db.CreateObjectsForNewUser(user)
+		_, _, err = db.CreateObjectsForNewUser(user)
 		if err != nil {
 			tf.Log.Errorw("Error creating objects for new user", "error", err)
 			return err
