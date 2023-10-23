@@ -108,7 +108,7 @@ export default function Main() {
   useEffect(() => {
     const interval = setTimeout(() => {
       setInitialPageLoaded(!importerIsLoading && !statusIsLoading && !uploadIsLoading);
-    }, 500);
+    }, 250);
     return () => clearInterval(interval);
   }, [importerIsLoading, statusIsLoading, uploadIsLoading]);
 
