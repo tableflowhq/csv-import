@@ -2,8 +2,8 @@ import { useQuery, UseQueryResult } from "react-query";
 import { Organization } from "./types";
 import { get } from "./api";
 
-export default function useGetOrganization(): UseQueryResult<Organization> {
-  return useQuery("organization-workspaces", () => getOrganization());
+export default function useGetOrganization(disabled?: boolean): UseQueryResult<Organization> {
+  return useQuery("organization-workspaces", () => getOrganization(), { enabled: !disabled });
 }
 
 async function getOrganization(): Promise<Organization> {
