@@ -194,12 +194,70 @@ function MyComponent() {
   ```
 </ResponseField>
 
-<ResponseField name="onComplete" type="function" required>
-  Callback function that fires when a user completes an import. It received two parameters: `data` is an object that
-  contains the importer row data and information about the import such as the number of rows and `error` contains any
-  errors that occurred during the import.
+<ResponseField name="onComplete" type="function">
+  Callback function that fires when a user completes an import. It returns `data`, an object that contains the row data
+  and information about the import such as the number of rows.
   ```jsx
   onComplete={(data) => console.log(data)}
+  ```
+  Example `data`:
+  ```json
+  {
+    "id": "170f9ae1-c109-4e26-83a1-b31f2baa81b2",
+    "upload_id": "4f7ec0b5-16ef-4d0e-8b6a-0c182815a131",
+    "importer_id": "a0fadb1d-9888-4fcb-b185-25b984bcb227",
+    "num_rows": 4,
+    "num_columns": 4,
+    "num_processed_values": 16,
+    "metadata": {
+      "userEmail": "test@example.com",
+      "userId": 1234
+    },
+    "is_stored": true,
+    "has_errors": false,
+    "num_error_rows": 0,
+    "num_valid_rows": 4,
+    "created_at": 1698172312,
+    "error": null,
+    "rows": [
+      {
+        "index": 0,
+        "values": {
+          "age": "23",
+          "email": "maria@example.com",
+          "first_name": "Maria",
+          "last_name": "Martinez"
+        }
+      },
+      {
+        "index": 1,
+        "values": {
+          "age": "32",
+          "email": "robert@example.com",
+          "first_name": "Robert",
+          "last_name": "Jones"
+        }
+      },
+      {
+        "index": 2,
+        "values": {
+          "age": "30",
+          "email": "mary@example.com",
+          "first_name": "Mary",
+          "last_name": "Zhang"
+        }
+      },
+      {
+        "index": 3,
+        "values": {
+          "age": "24",
+          "email": "jamie@example.com",
+          "first_name": "Jamie",
+          "last_name": "Miller"
+        }
+      }
+    ]
+  }
   ```
 </ResponseField>
 
