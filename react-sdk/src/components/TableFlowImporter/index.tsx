@@ -83,10 +83,6 @@ export default function TableFlowImporter({
   );
 }
 
-function parseCssOverrides(inputObject: Record<string, string>): Record<string, any> {
-  return Object.fromEntries(Object.entries(inputObject).map(([key, value]) => [key, value.replace(/%/g, "%25")]));
-}
-
 // Allows for the user to pass in JSON as either an object or a string
 const parseObjectOrStringJSON = (name: string, param?: Record<string, unknown> | string): string => {
   if (typeof param === "undefined") {
