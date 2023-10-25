@@ -98,16 +98,6 @@ Validations can either be allowed for all data types (universal) or only compati
 
 ## String
 
-<ResponseField name="regex">
-  The cell must match the regex pattern provided.
-  ```json
-  {
-    "validate": "regex",
-    "options": "^[a-zA-Z0-9]*$"
-  }
-  ```
-</ResponseField>
-
 <ResponseField name="list">
   The cell must equal one of the values in the provided list. Comparisons are case-insensitive but the cell values will
   be formatted in the case of the list value.
@@ -159,6 +149,18 @@ Validations can either be allowed for all data types (universal) or only compati
     "options": {
       "min": 0
     }
+  }
+  ```
+</ResponseField>
+
+<ResponseField name="regex">
+  <Info>Feature available in <a href="https://tableflow.com/pricing" target="_blank">TableFlow Team</a>.</Info>
+
+  The cell must match the regex pattern provided.
+  ```json
+  {
+    "validate": "regex",
+    "options": "^[a-zA-Z0-9]*$"
   }
   ```
 </ResponseField>
