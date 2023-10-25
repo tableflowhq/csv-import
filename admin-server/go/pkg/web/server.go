@@ -45,7 +45,7 @@ type ServerConfig struct {
 	GetWorkspaceUser               func(c *gin.Context, workspaceID string) (string, error)
 	GetUserID                      func(c *gin.Context) string
 	GetAllowedValidateTypes        func(workspaceID string) map[string]bool
-	UploadLimitCheck               func(*model.Upload, *os.File) error
+	UploadLimitCheck               func(*model.Upload, *os.File) (int, error)
 	UploadAdditionalStorageHandler func(*model.Upload, *os.File) error
 	ImportCompleteHandler          func(imp types.Import, workspaceID string)
 	AdditionalCORSOrigins          []string

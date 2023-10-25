@@ -31,7 +31,7 @@ var maxColumnLimit = int(math.Min(500, math.MaxInt16))
 var maxRowLimit = 1000 * 1000 * 10       // TODO: Store and configure this on the workspace? But keep a max limit to prevent runaways?
 const UploadColumnSampleDataSize = 1 + 3 // 1 header row + 3 sample rows
 
-func UploadCompleteHandler(event handler.HookEvent, uploadAdditionalStorageHandler, uploadLimitCheck func(*model.Upload, *os.File) error, getAllowedValidateTypes func(string) map[string]bool) {
+func UploadCompleteHandler(event handler.HookEvent, uploadAdditionalStorageHandler, uploadLimitCheck func(*model.Upload, *os.File) (int, error), getAllowedValidateTypes func(string) map[string]bool) {
 	uploadFileName := event.Upload.MetaData["filename"]
 	uploadFileType := event.Upload.MetaData["filetype"]
 	uploadFileExtension := ""
@@ -110,9 +110,10 @@ func UploadCompleteHandler(event handler.HookEvent, uploadAdditionalStorageHandl
 		return
 	}
 
+	limit := 0
 	if uploadLimitCheck != nil {
 		// Check for upload limits on the workspace
-		err = uploadLimitCheck(upload, file)
+		limit, err = uploadLimitCheck(upload, file)
 		if err != nil {
 			saveUploadError(upload, err.Error())
 			removeUploadFileFromDisk(file, fileName, upload.ID.String())
@@ -120,7 +121,7 @@ func UploadCompleteHandler(event handler.HookEvent, uploadAdditionalStorageHandl
 		}
 	}
 
-	uploadResult, err := processAndStoreUpload(upload, file)
+	uploadResult, err := processAndStoreUpload(upload, file, limit)
 	if err != nil {
 		tf.Log.Errorw("Could not process upload", "error", err, "upload_id", upload.ID)
 		saveUploadError(upload, err.Error())
@@ -180,7 +181,7 @@ func UploadCompleteHandler(event handler.HookEvent, uploadAdditionalStorageHandl
 	}
 }
 
-func processAndStoreUpload(upload *model.Upload, file *os.File) (uploadProcessResult, error) {
+func processAndStoreUpload(upload *model.Upload, file *os.File, limit int) (uploadProcessResult, error) {
 	it, err := util.OpenDataFileIterator(file, upload.FileType.String)
 	defer it.Close()
 	if err != nil {
@@ -207,6 +208,12 @@ func processAndStoreUpload(upload *model.Upload, file *os.File) (uploadProcessRe
 	for i := 0; ; i++ {
 		if i >= maxRowLimit {
 			tf.Log.Warnw("Max rows reached while processing upload", "upload_id", upload.ID, "max_rows", maxRowLimit)
+			in <- b
+			break
+		}
+		if limit > 0 && i >= limit {
+			// Truncate the upload if a limit is provided and there are more rows than the limit
+			tf.Log.Infow("Upload limit reached while processing upload", "upload_id", upload.ID, "limit", limit)
 			in <- b
 			break
 		}
