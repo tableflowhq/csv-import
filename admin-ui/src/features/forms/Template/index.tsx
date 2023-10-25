@@ -5,6 +5,7 @@ import { TemplateColumn } from "../../../api/types";
 import usePostTemplateColumn from "../../../api/usePostTemplateColumn";
 import { TemplateColumnProps } from "../types";
 import style from "../style/Form.module.scss";
+import ValidationOptions from "./validationOptions";
 
 export default function TemplateColumnForm({
   title = "Template column form",
@@ -77,31 +78,6 @@ export default function TemplateColumnForm({
 
   const requiredFieldEmpty = form.getInputProps("name").value.length === 0 || form.getInputProps("key").value.length === 0;
 
-  //TODO: this should come from backend
-  const stringOptions = {
-    Regex: {
-      value: "regex",
-    },
-    Email: {
-      value: "email",
-    },
-    List: {
-      value: "list",
-    },
-    Phone: {
-      value: "phone",
-    },
-    Length: {
-      value: "length",
-    },
-  };
-
-  const numberOptions = {
-    Range: {
-      value: "range",
-    },
-  };
-
   const [dataType, setDataType] = useState("String");
   const [validationOption, setValidation] = useState("");
   const [validationOptions, setValidationOptions] = useState({});
@@ -109,6 +85,7 @@ export default function TemplateColumnForm({
   const handleDataTypeChange = (value: any) => {
     setDataType(value);
     setValidationOptions({});
+    setValidation('');
   };
 
   const handleValidationChange = (value: any) => {
@@ -182,56 +159,12 @@ export default function TemplateColumnForm({
             <div className={style.titleContainer}>
               <h2 className={style.subTitle}>Validation options</h2>
             </div>
-            <Input
-              placeholder="Select a type"
-              options={{
-                String: {
-                  value: "String",
-                },
-                Number: {
-                  value: "Number",
-                },
-              }}
-              label="Data Type"
-              name="data_type"
-              value={dataType}
-              // {...form.getInputProps("name")}
-              // autoFocus={!isEditForm}
-              onChange={handleDataTypeChange}
+            <ValidationOptions
+              dataType={dataType}
+              validationOption={validationOption}
+              handleDataTypeChange={handleDataTypeChange}
+              handleValidationChange={handleValidationChange}
             />
-            <Input
-              placeholder="Select"
-              options={dataType === "String" ? stringOptions : numberOptions}
-              label="Validation"
-              name="validation"
-              value={validationOption}
-              onChange={handleValidationChange}
-            />
-
-            <div>
-              {validationOption === "regex" ? (
-                <Input
-                  placeholder="Pattern"
-                  label="Pattern"
-                  name="pattern"
-                  required
-                />
-              ) : validationOption === "list" ? (
-                <label>
-                <PillInput
-                  label={"Options"}
-                  placeholder={"List"}
-                />
-              </label>
-              ): validationOption === "phone" ? (
-                <Input
-                  placeholder="Phone"
-                  label="Phone"
-                  name="phone"
-                  required
-                />
-              ) : null}
-            </div>
           </fieldset>
         </div>
 
