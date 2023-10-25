@@ -31,7 +31,7 @@ var maxColumnLimit = int(math.Min(500, math.MaxInt16))
 var maxRowLimit = 1000 * 1000 * 10       // TODO: Store and configure this on the workspace? But keep a max limit to prevent runaways?
 const UploadColumnSampleDataSize = 1 + 3 // 1 header row + 3 sample rows
 
-func UploadCompleteHandler(event handler.HookEvent, uploadAdditionalStorageHandler, uploadLimitCheck func(*model.Upload, *os.File) error) {
+func UploadCompleteHandler(event handler.HookEvent, uploadAdditionalStorageHandler, uploadLimitCheck func(*model.Upload, *os.File) error, getAllowedValidateTypes func(string) map[string]bool) {
 	uploadFileName := event.Upload.MetaData["filename"]
 	uploadFileType := event.Upload.MetaData["filetype"]
 	uploadFileExtension := ""
@@ -57,7 +57,8 @@ func UploadCompleteHandler(event handler.HookEvent, uploadAdditionalStorageHandl
 
 	// If a template is provided from the SDK, use that instead of the template on the importer
 	uploadError := "" // TODO: Refactor this so the upload object is created higher up and other fatal errors can exist
-	uploadTemplate, err := generateUploadTemplate(event.HTTPRequest.Header.Get("X-Import-Template"))
+	allowedValidateTypes := getAllowedValidateTypes(importer.WorkspaceID.String())
+	uploadTemplate, err := generateUploadTemplate(event.HTTPRequest.Header.Get("X-Import-Template"), allowedValidateTypes)
 	if err != nil {
 		tf.Log.Warnw("Could not generate upload template", "error", err, "tus_id", event.Upload.ID, "importer_id", importerID)
 		uploadError = fmt.Sprintf("Invalid template: %s", err.Error())
@@ -304,7 +305,7 @@ func getImportMetadata(importMetadataEncodedStr string) (jsonb.JSONB, error) {
 	return importMetadata, nil
 }
 
-func generateUploadTemplate(uploadTemplateEncodedStr string) (jsonb.JSONB, error) {
+func generateUploadTemplate(uploadTemplateEncodedStr string, allowedValidateTypes map[string]bool) (jsonb.JSONB, error) {
 	if len(uploadTemplateEncodedStr) == 0 {
 		return jsonb.JSONB{}, nil
 	}
@@ -320,7 +321,7 @@ func generateUploadTemplate(uploadTemplateEncodedStr string) (jsonb.JSONB, error
 	}
 
 	// Convert the JSON to an importer template object to validate it and generate template column IDs
-	template, err := types.ConvertRawTemplate(uploadTemplate, true)
+	template, err := types.ConvertRawTemplate(uploadTemplate, true, allowedValidateTypes, false)
 	if err != nil {
 		return jsonb.JSONB{}, fmt.Errorf("could not convert upload template: %v", err.Error())
 	}

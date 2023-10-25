@@ -19,5 +19,5 @@ func (e NotBlankEvaluator) DefaultMessage() string {
 }
 
 func (e NotBlankEvaluator) AllowedDataTypes() []string {
-	return allDataTypes
+	return AllDataTypes
 }

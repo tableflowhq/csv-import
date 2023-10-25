@@ -105,7 +105,7 @@ func RetrieveAllImportRows(imp *model.Import) []types.ImportRow {
 
 	if imp.HasErrors() {
 		if imp.Upload.Template.Valid {
-			template, err := types.ConvertRawTemplate(imp.Upload.Template, false)
+			template, err := types.ConvertRawTemplate(imp.Upload.Template, false, nil, false)
 			if err == nil {
 				for _, templateColumn := range template.TemplateColumns {
 					for _, v := range templateColumn.Validations {
@@ -140,7 +140,7 @@ func PaginateImportRows(imp *model.Import, offset, limit int, filter types.Filte
 
 	if imp.HasErrors() {
 		if imp.Upload.Template.Valid {
-			template, err := types.ConvertRawTemplate(imp.Upload.Template, false)
+			template, err := types.ConvertRawTemplate(imp.Upload.Template, false, nil, false)
 			if err == nil {
 				for _, templateColumn := range template.TemplateColumns {
 					for _, v := range templateColumn.Validations {

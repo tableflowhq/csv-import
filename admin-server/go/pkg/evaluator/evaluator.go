@@ -6,7 +6,7 @@ import (
 	"tableflow/go/pkg/model/jsonb"
 )
 
-var allDataTypes = []string{
+var AllDataTypes = []string{
 	"string",
 	"number",
 	"boolean",
@@ -17,6 +17,19 @@ var dataTypesWithEvaluators = []string{
 	"number",
 	"boolean",
 	"date",
+}
+
+var AllValidations = []string{
+	"number",
+	"boolean",
+	"date",
+	"not_blank",
+	"regex",
+	"email",
+	"phone",
+	"length",
+	"range",
+	"list",
 }
 
 type Evaluator interface {

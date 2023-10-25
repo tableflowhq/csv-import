@@ -328,6 +328,9 @@ func initWebServer(ctx context.Context, wg *sync.WaitGroup) error {
 		ExternalAPIAuthValidator: externalAPIAuthValidator,
 		GetWorkspaceUser:         getWorkspaceUser,
 		GetUserID:                getUserID,
+		GetAllowedValidateTypes: func(_ string) map[string]bool {
+			return nil
+		},
 	}
 	server := web.StartWebServer(config)
 
