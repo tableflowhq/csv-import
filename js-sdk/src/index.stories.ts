@@ -38,7 +38,7 @@ type Story = StoryObj<TableFlowImporterProps>;
 export const App: Story = {
   args: {
     elementId: "tableflow-importer",
-    importerId: "4b805f5f-ee9c-4248-bb9c-8afd77ea933f", // 7e83ef24-c8f8-479f-8825-046e7da368c4
+    importerId: "7e83ef24-c8f8-479f-8825-046e7da368c4",
     hostUrl: "http://localhost:3001",
     darkMode: true,
     primaryColor: "#7a5ef8",
@@ -79,11 +79,21 @@ export const App: Story = {
     //   "color-green-ui": "darkGreen",
     // },
     // cssOverrides: {
-    //   ".uppy-Dashboard-AddFiles": "border: none",
+    //   "MapColumns Default_td:nth-child(2)": "display: none",
+    //   "MapColumns Default_td:nth-child(1)": "width: 50% !important",
+    //   Main_content: "height: auto",
+    //   Main_wrapper: "justify-content: flex-start; padding-top: var(--m)",
     //   Main_header: "margin-bottom: var(--m-xxs)",
     //   "Stepper-module_stepper": "gap: var(--m-l)",
     //   "Stepper-module_step": "flex-direction: column",
-    //   "Stepper-module_step:before, Uploader_box": "display: none",
+    //   "Stepper-module_step:before": "display: none",
+    //   "Default-module_td span": "font-size: 0.875rem",
+    //   "Input-module_small Input-module_inputWrapper": "font-size: 0.875rem",
+    //   "Checkbox-module_container input[type=checkbox]": "width: var(--m-s); height: var(--m-s)",
+    //   "Checkbox-module_container input[type=checkbox]::before": "width: var(--m-xxs); height: var(--m-xxs)",
+    //   Uploader_box: "display: none",
+    //   ".uppy-Dashboard-AddFiles": "border: none",
+    //   ".uppy-Container .uppy-Dashboard-AddFiles-title": "font-size: 18px",
     // },
     isModal: true,
     modalCloseOnOutsideClick: true,
