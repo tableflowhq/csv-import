@@ -1,7 +1,7 @@
 function parseCssOverrides(cssOverrides?: string) {
   let cssAsObject = {};
 
-  if (!providedCssOverrides(cssOverrides)) {
+  if (!providedJSONString(cssOverrides)) {
     return "";
   }
   try {
@@ -43,8 +43,8 @@ function parseCssSelector(selector: string) {
     .join(":");
 }
 
-export function providedCssOverrides(cssOverrides?: string) {
-  return !!cssOverrides && cssOverrides !== "{}";
+export function providedJSONString(str?: string) {
+  return !!str && str !== "{}" && str !== "undefined";
 }
 
 export default parseCssOverrides;

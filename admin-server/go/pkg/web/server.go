@@ -44,6 +44,8 @@ type ServerConfig struct {
 	ExternalAPIAuthValidator       func(c *gin.Context, apiKey string) bool
 	GetWorkspaceUser               func(c *gin.Context, workspaceID string) (string, error)
 	GetUserID                      func(c *gin.Context) string
+	GetAllowedDataTypes            func(workspaceID string) map[string]bool
+	GetAllowedValidations          func(workspaceID string) map[string]bool
 	UploadLimitCheck               func(*model.Upload, *os.File) error
 	UploadAdditionalStorageHandler func(*model.Upload, *os.File) error
 	ImportCompleteHandler          func(imp types.Import, workspaceID string)
