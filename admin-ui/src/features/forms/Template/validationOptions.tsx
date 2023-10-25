@@ -47,8 +47,10 @@ const ValidationOptions = ({ dataType, validationOption, handleDataTypeChange, h
   const inputOptions = generateDataTypeOptions(validationOptions);
 
   const handleDataType = (value: any) => {
-    const options = getValidationOptions(validationOptions[value]);
-    setValidations(options);
+    if (value) {
+        const options = getValidationOptions(validationOptions[value]);
+        setValidations(options);
+    }
     handleDataTypeChange(value);
   };
 
