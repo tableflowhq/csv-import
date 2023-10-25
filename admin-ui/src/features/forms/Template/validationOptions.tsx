@@ -1,53 +1,70 @@
-import React from "react";
+import React, { useState } from "react";
 import { Input, PillInput } from "@tableflow/ui-library";
+import { InputOption } from "@tableflow/ui-library/build/Input/types";
 import style from "../style/Validation.module.scss";
 import ValidationOptionsEnum from "./ValidationOptionsEnum";
 
+type ValidationOptionsType = Record<string, string[]>;
+
 const ValidationOptions = ({ dataType, validationOption, handleDataTypeChange, handleValidationChange }: any) => {
-  const stringOptions = {
-    Regex: {
-      value: "regex",
-    },
-    Email: {
-      value: "email",
-    },
-    List: {
-      value: "list",
-    },
-    Phone: {
-      value: "phone",
-    },
-    Length: {
-      value: "length",
-    },
+  const [validations, setValidations] = useState({});
+
+  //TODO: this is a mock from backend
+  const validationOptions: ValidationOptionsType = {
+    string: ["regex", "email", "list", "phone", "length"],
+    number: ["range"],
   };
 
-  const numberOptions = {
-    Range: {
-      value: "range",
-    },
+  const capitalizeFirstLetter = (str: string) => {
+    return str?.charAt(0)?.toUpperCase() + str?.slice(1);
+  };
+
+  const generateDataTypeOptions = (validationOptions: any) => {
+    const inputOptions: { [key: string]: { value: string } } = {};
+    for (const key in validationOptions) {
+      const keyOption = capitalizeFirstLetter(key);
+      inputOptions[keyOption] = {
+        value: key,
+      };
+    }
+  
+    return inputOptions;
+  }
+
+  const getValidationOptions = (validationOptions: any) => {
+    const inputOptions = {} as any;
+  
+    for (const key of validationOptions) {
+    const keyOption = capitalizeFirstLetter(key);
+      inputOptions[keyOption] = {
+        value: key,
+      };
+    }
+  
+    return inputOptions;
+  }
+
+  const inputOptions = generateDataTypeOptions(validationOptions);
+
+  const handleDataType = (value: any) => {
+    const options = getValidationOptions(validationOptions[value]);
+    setValidations(options);
+    handleDataTypeChange(value);
   };
 
   return (
     <div>
       <Input
         placeholder="Select a type"
-        options={{
-          String: {
-            value: "String",
-          },
-          Number: {
-            value: "Number",
-          },
-        }}
+        options={inputOptions}
         label="Data Type"
         name="data_type"
         value={dataType}
-        onChange={handleDataTypeChange}
+        onChange={handleDataType}
       />
       <Input
         placeholder="Select"
-        options={dataType === "String" ? stringOptions : numberOptions}
+        options={validations}
         label="Validation"
         name="validation"
         value={validationOption}

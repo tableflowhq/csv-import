@@ -78,13 +78,11 @@ export default function TemplateColumnForm({
 
   const requiredFieldEmpty = form.getInputProps("name").value.length === 0 || form.getInputProps("key").value.length === 0;
 
-  const [dataType, setDataType] = useState("String");
+  const [dataType, setDataType] = useState("string");
   const [validationOption, setValidation] = useState("");
-  const [validationOptions, setValidationOptions] = useState({});
 
   const handleDataTypeChange = (value: any) => {
     setDataType(value);
-    setValidationOptions({});
     setValidation('');
   };
 
