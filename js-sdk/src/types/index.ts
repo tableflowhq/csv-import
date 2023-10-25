@@ -1,5 +1,3 @@
-import { CSSProperties } from "react";
-
 type ModalParams = {
   isModal?: boolean;
   modalOnCloseTriggered?: () => void;
@@ -16,11 +14,11 @@ export type TableFlowImporterProps = HTMLDialogElement & {
   metadata?: Record<string, unknown> | string;
   onComplete?: (data: any) => void;
   waitOnComplete?: boolean;
-  customStyles?: Record<string, string> | CSSProperties;
+  customStyles?: Record<string, string> | string;
+  cssOverrides?: Record<string, string> | string;
   showImportLoadingStatus?: boolean;
   showDownloadTemplateButton?: boolean;
   skipHeaderRowSelection?: boolean;
-  cssOverrides?: Record<string, string>;
   schemaless?: boolean;
   schemalessReadOnly?: boolean;
 } & ModalParams;

@@ -46,6 +46,7 @@
   height: 80vh;
   min-width: 907px;
   border: none;
+  color-scheme: none;
 }
 
 .TableFlowImporter-div iframe {
@@ -55,7 +56,7 @@
   min-height: 700px;
 }
 
-@media (max-width: 768px) { 
+@media (max-width: 768px) {
   .TableFlowImporter-dialog iframe {
     width: 90vw;
     min-width: 950px;
