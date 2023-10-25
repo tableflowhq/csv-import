@@ -57,11 +57,11 @@ export default function createTableFlowImporter({
     metadata: parseObjectOrStringJSON("metadata", metadata),
     onComplete: onComplete ? "true" : "false",
     waitOnComplete: parseOptionalBoolean(waitOnComplete),
-    customStyles: JSON.stringify(customStyles),
+    customStyles: parseObjectOrStringJSON("customStyles", customStyles),
+    cssOverrides: parseObjectOrStringJSON("cssOverrides", cssOverrides),
     showImportLoadingStatus: parseOptionalBoolean(showImportLoadingStatus),
     showDownloadTemplateButton: parseOptionalBoolean(showDownloadTemplateButton),
     skipHeaderRowSelection: parseOptionalBoolean(skipHeaderRowSelection),
-    ...(cssOverrides ? { cssOverrides: JSON.stringify(parseCssOverrides(cssOverrides)) } : {}),
     schemaless: parseOptionalBoolean(schemaless),
     schemalessReadOnly: parseOptionalBoolean(schemalessReadOnly),
   };
@@ -138,28 +138,35 @@ function getUploaderUrl(urlParams: any, hostUrl?: string) {
   return `${hostUrl ? hostUrl : defaultImporterUrl}?${searchParams}`;
 }
 
-function parseCssOverrides(inputObject: Record<string, string>): Record<string, any> {
-  return Object.fromEntries(Object.entries(inputObject).map(([key, value]) => [key, value.replace(/%/g, "%25")]));
-}
-
 // Allows for the user to pass in JSON as either an object or a string
 const parseObjectOrStringJSON = (name: string, param?: Record<string, unknown> | string): string => {
   if (typeof param === "undefined") {
     return "";
   }
+
+  let parsedObj: Record<string, unknown> = {};
+
   if (typeof param === "string") {
     try {
-      const obj = JSON.parse(param);
-      return JSON.stringify(obj);
+      parsedObj = JSON.parse(param);
     } catch (e) {
       console.error(
         `The '${name}' prop is not a valid JSON string. This prop can either be a JSON string or JSON object. Please check the documentation for more details.`
       );
+      return "";
     }
   } else {
-    return JSON.stringify(param);
+    parsedObj = param;
   }
-  return "";
+
+  // Replace % symbols with %25
+  for (const key in parsedObj) {
+    if (typeof parsedObj[key] === "string") {
+      parsedObj[key] = (parsedObj[key] as string).replace(/%(?!25)/g, "%25");
+    }
+  }
+
+  return JSON.stringify(parsedObj);
 };
 
 const parseOptionalBoolean = (val?: boolean) => {
