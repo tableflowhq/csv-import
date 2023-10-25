@@ -27,43 +27,34 @@ const ValidationOptions = ({ dataType, validationOption, handleDataTypeChange, h
         value: key,
       };
     }
-  
+
     return inputOptions;
-  }
+  };
 
   const getValidationOptions = (validationOptions: any) => {
     const inputOptions = {} as any;
-  
+
     for (const key of validationOptions) {
-    const keyOption = capitalizeFirstLetter(key);
+      const keyOption = capitalizeFirstLetter(key);
       inputOptions[keyOption] = {
         value: key,
       };
     }
-  
+
     return inputOptions;
-  }
+  };
 
   const inputOptions = generateDataTypeOptions(validationOptions);
 
   const handleDataType = (value: any) => {
-    if (value) {
-        const options = getValidationOptions(validationOptions[value]);
-        setValidations(options);
-    }
+    const options = value ? getValidationOptions(validationOptions[value]) : [];
+    setValidations(options);
     handleDataTypeChange(value);
   };
 
   return (
     <div>
-      <Input
-        placeholder="Select a type"
-        options={inputOptions}
-        label="Data Type"
-        name="data_type"
-        value={dataType}
-        onChange={handleDataType}
-      />
+      <Input placeholder="Select a type" options={inputOptions} label="Data Type" name="data_type" value={dataType} onChange={handleDataType} />
       <Input
         placeholder="Select"
         options={validations}
