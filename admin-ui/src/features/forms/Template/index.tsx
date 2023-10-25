@@ -77,6 +77,44 @@ export default function TemplateColumnForm({
 
   const requiredFieldEmpty = form.getInputProps("name").value.length === 0 || form.getInputProps("key").value.length === 0;
 
+  //TODO: this should come from backend
+  const stringOptions = {
+    Regex: {
+      value: "regex",
+    },
+    Email: {
+      value: "email",
+    },
+    List: {
+      value: "list",
+    },
+    Phone: {
+      value: "phone",
+    },
+    Length: {
+      value: "length",
+    },
+  };
+
+  const numberOptions = {
+    Range: {
+      value: "range",
+    },
+  };
+
+  const [dataType, setDataType] = useState("String");
+  const [validationOption, setValidation] = useState("");
+  const [validationOptions, setValidationOptions] = useState({});
+
+  const handleDataTypeChange = (value: any) => {
+    setDataType(value);
+    setValidationOptions({});
+  };
+
+  const handleValidationChange = (value: any) => {
+    setValidation(value);
+  };
+
   return (
     <div className={style.container}>
       {title && (
@@ -85,59 +123,117 @@ export default function TemplateColumnForm({
         </div>
       )}
       <form onSubmit={form.onSubmit(onSubmit)} aria-disabled={isLoading}>
-        <fieldset disabled={isLoading}>
-          <Input
-            placeholder={!isEditForm ? "Name" : `${column?.name}`}
-            label="Name *"
-            name="name"
-            {...form.getInputProps("name")}
-            autoFocus={!isEditForm}
-            onChange={onNameChange}
-            required
-          />
-          <Input
-            placeholder={!isEditForm ? "Key" : `${column?.key}`}
-            label="Key *"
-            name="key"
-            {...form.getInputProps("key")}
-            onChange={onKeyChange}
-            required
-          />
-          <Input as="textarea" placeholder="Description" label="Description" name="description" {...form.getInputProps("description")} />
-          <div className={style.pillInputContainer}>
-            <span>Suggested Mappings</span>
-            <Tooltip
-              className={style.checkboxLabel}
-              title={
-                "If a column header in the file matches one of these names (case-insensitive), it will be automatically selected during column mapping"
-              }
+        <div className={style.formControls}>
+          <fieldset disabled={isLoading} className={style.column}>
+            <Input
+              placeholder={!isEditForm ? "Name" : `${column?.name}`}
+              label="Name *"
+              name="name"
+              {...form.getInputProps("name")}
+              autoFocus={!isEditForm}
+              onChange={onNameChange}
+              required
             />
-            <label>
-              <PillInput
-                placeholder={"Column mappings"}
-                initialPills={form.getInputProps("suggested_mappings").value}
-                onChange={onSuggestedMappingChange}
+            <Input
+              placeholder={!isEditForm ? "Key" : `${column?.key}`}
+              label="Key *"
+              name="key"
+              {...form.getInputProps("key")}
+              onChange={onKeyChange}
+              required
+            />
+            <Input as="textarea" placeholder="Description" label="Description" name="description" {...form.getInputProps("description")} />
+            <div className={style.pillInputContainer}>
+              <span>Suggested Mappings</span>
+              <Tooltip
+                className={style.checkboxLabel}
+                title={
+                  "If a column header in the file matches one of these names (case-insensitive), it will be automatically selected during column mapping"
+                }
               />
-            </label>
-          </div>
-          <div className={style.checkboxInput}>
-            <label>
-              <Checkbox {...form.getInputProps("required", { type: "checkbox" })} />
-              <span className={style.checkboxLabel}>Column required</span>
-            </label>
-            <Tooltip className={style.checkboxLabel} title={"Users must map a column from their file to this column to proceed with the import"} />
-          </div>
-          <div className={style.checkboxInput}>
-            <label>
-              <Checkbox {...form.getInputProps("not_blank", { type: "checkbox" })} />
-              <span className={style.checkboxLabel}>Cells must contain a value</span>
-            </label>
-            <Tooltip
-              className={style.checkboxLabel}
-              title={"Every cell in this column must contain data. Empty cells will prevent users from completing the import"}
+              <label>
+                <PillInput
+                  placeholder={"Column mappings"}
+                  initialPills={form.getInputProps("suggested_mappings").value}
+                  onChange={onSuggestedMappingChange}
+                />
+              </label>
+            </div>
+            <div className={style.checkboxInput}>
+              <label>
+                <Checkbox {...form.getInputProps("required", { type: "checkbox" })} />
+                <span className={style.checkboxLabel}>Column required</span>
+              </label>
+              <Tooltip className={style.checkboxLabel} title={"Users must map a column from their file to this column to proceed with the import"} />
+            </div>
+            <div className={style.checkboxInput}>
+              <label>
+                <Checkbox {...form.getInputProps("not_blank", { type: "checkbox" })} />
+                <span className={style.checkboxLabel}>Cells must contain a value</span>
+              </label>
+              <Tooltip
+                className={style.checkboxLabel}
+                title={"Every cell in this column must contain data. Empty cells will prevent users from completing the import"}
+              />
+            </div>
+          </fieldset>
+
+          <fieldset disabled={isLoading} className={style.column}>
+            <div className={style.titleContainer}>
+              <h2 className={style.subTitle}>Validation options</h2>
+            </div>
+            <Input
+              placeholder="Select a type"
+              options={{
+                String: {
+                  value: "String",
+                },
+                Number: {
+                  value: "Number",
+                },
+              }}
+              label="Data Type"
+              name="data_type"
+              value={dataType}
+              // {...form.getInputProps("name")}
+              // autoFocus={!isEditForm}
+              onChange={handleDataTypeChange}
             />
-          </div>
-        </fieldset>
+            <Input
+              placeholder="Select"
+              options={dataType === "String" ? stringOptions : numberOptions}
+              label="Validation"
+              name="validation"
+              value={validationOption}
+              onChange={handleValidationChange}
+            />
+
+            <div>
+              {validationOption === "regex" ? (
+                <Input
+                  placeholder="Pattern"
+                  label="Pattern"
+                  name="pattern"
+                  required
+                />
+              ) : validationOption === "list" ? (
+                <label>
+                <PillInput
+                  label={"Options"}
+                  placeholder={"List"}
+                />
+              </label>
+              ): validationOption === "phone" ? (
+                <Input
+                  placeholder="Phone"
+                  label="Phone"
+                  name="phone"
+                  required
+                />
+              ) : null}
+            </div>
+          </fieldset>
+        </div>
 
         <div className={classes([style.actions, style.compact])}>
           <Button type="submit" variants={["primary", "noMargin"]} disabled={isLoading || !form.isDirty() || requiredFieldEmpty}>
