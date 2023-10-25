@@ -54,7 +54,7 @@ export default function TableFlowImporter({
     showImportLoadingStatus: parseOptionalBoolean(showImportLoadingStatus),
     showDownloadTemplateButton: parseOptionalBoolean(showDownloadTemplateButton),
     skipHeaderRowSelection: parseOptionalBoolean(skipHeaderRowSelection),
-    ...(cssOverrides ? { cssOverrides: JSON.stringify(cssOverrides) } : {}),
+    ...(cssOverrides ? { cssOverrides: JSON.stringify(parseCssOverrides(cssOverrides)) } : {}),
     schemaless: parseOptionalBoolean(schemaless),
     schemalessReadOnly: parseOptionalBoolean(schemalessReadOnly),
   };
@@ -81,6 +81,10 @@ export default function TableFlowImporter({
       <iframe src={uploaderUrl} />
     </div>
   );
+}
+
+function parseCssOverrides(inputObject: Record<string, string>): Record<string, any> {
+  return Object.fromEntries(Object.entries(inputObject).map(([key, value]) => [key, value.replace(/%/g, "%25")]));
 }
 
 // Allows for the user to pass in JSON as either an object or a string

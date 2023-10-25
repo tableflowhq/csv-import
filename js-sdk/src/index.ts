@@ -61,7 +61,7 @@ export default function createTableFlowImporter({
     showImportLoadingStatus: parseOptionalBoolean(showImportLoadingStatus),
     showDownloadTemplateButton: parseOptionalBoolean(showDownloadTemplateButton),
     skipHeaderRowSelection: parseOptionalBoolean(skipHeaderRowSelection),
-    ...(cssOverrides ? { cssOverrides: JSON.stringify(cssOverrides) } : {}),
+    ...(cssOverrides ? { cssOverrides: JSON.stringify(parseCssOverrides(cssOverrides)) } : {}),
     schemaless: parseOptionalBoolean(schemaless),
     schemalessReadOnly: parseOptionalBoolean(schemalessReadOnly),
   };
@@ -136,6 +136,10 @@ function getUploaderUrl(urlParams: any, hostUrl?: string) {
   const searchParams = new URLSearchParams(urlParams);
   const defaultImporterUrl = "https://importer.tableflow.com";
   return `${hostUrl ? hostUrl : defaultImporterUrl}?${searchParams}`;
+}
+
+function parseCssOverrides(inputObject: Record<string, string>): Record<string, any> {
+  return Object.fromEntries(Object.entries(inputObject).map(([key, value]) => [key, value.replace(/%/g, "%25")]));
 }
 
 // Allows for the user to pass in JSON as either an object or a string
