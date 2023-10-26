@@ -61,7 +61,7 @@ export default function TemplateColumnForm({
       values.validations = [validateOption];
     }
 
-    mutate(values);
+    mutate({...values, data_type: dataType});
   };
 
   const onNameChange = ({ target }: any) => {
