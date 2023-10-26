@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Input, PillInput } from "@tableflow/ui-library";
 import style from "../style/Validation.module.scss";
 import ValidationOptionsEnum from "./ValidationOptionsEnum";
@@ -37,6 +37,13 @@ const ValidationOptions = ({ dataType, validationOption, handleDataTypeChange, h
 
     return inputOptions;
   };
+
+  useEffect(() => {
+    if (dataType) {
+        const options = getOptionsFromObject(validationOptions[dataType]);
+        setValidationsOptions(options);
+    }
+  }, [])
 
   const inputOptions = getOptionsFromObject(Object.keys(validationOptions));
 
