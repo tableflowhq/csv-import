@@ -29,6 +29,10 @@ export default function TemplateColumnForm({
   });
   const { mutate, isLoading, error, isSuccess } = usePostTemplateColumn(context?.templateId, column?.id);
 
+  const [dataType, setDataType] = useState("string");
+  const [selectedValidation, setSelectedValidation] = useState("");
+  const [validateOptions, setValidateOptions] = useState("");
+
   useEffect(() => {
     if (isSuccess && !error && !isLoading && onSuccess) onSuccess();
   }, [isSuccess, error, isLoading]);
@@ -44,6 +48,16 @@ export default function TemplateColumnForm({
       // If not_blank is not selected and the validation exists, add an empty validation array so the backend will remove it
       values.validations = [];
     }
+
+    if (selectedValidation) {
+      values.validations = [
+        {
+          validate: selectedValidation,
+          options: validateOptions,
+        },
+      ];
+    }
+
     mutate(values);
   };
 
@@ -78,16 +92,17 @@ export default function TemplateColumnForm({
 
   const requiredFieldEmpty = form.getInputProps("name").value.length === 0 || form.getInputProps("key").value.length === 0;
 
-  const [dataType, setDataType] = useState("string");
-  const [validationOption, setValidation] = useState("");
-
   const handleDataTypeChange = (value: any) => {
     setDataType(value);
-    setValidation('');
+    setSelectedValidation("");
   };
 
   const handleValidationChange = (value: any) => {
-    setValidation(value);
+    setSelectedValidation(value);
+  };
+
+  const handleValidateOptionsChange = (value: any) => {
+    setValidateOptions(value);
   };
 
   return (
@@ -159,9 +174,11 @@ export default function TemplateColumnForm({
             </div>
             <ValidationOptions
               dataType={dataType}
-              validationOption={validationOption}
+              selectedValidation={selectedValidation}
+              validateOptions={validateOptions}
               handleDataTypeChange={handleDataTypeChange}
               handleValidationChange={handleValidationChange}
+              handleValidateOptionsChange={handleValidateOptionsChange}
             />
           </fieldset>
         </div>

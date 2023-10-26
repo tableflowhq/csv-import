@@ -7,13 +7,29 @@ type ValidationOptionsType = Record<string, string[]>;
 
 interface ValidationOptionsProps {
   dataType: string;
-  validationOption: string;
+  selectedValidation: string;
+  validateOptions: string;
   handleDataTypeChange: (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
   handleValidationChange: (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
+  handleValidateOptionsChange: (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
 }
 
-const ValidationOptions = ({ dataType, validationOption, handleDataTypeChange, handleValidationChange }: ValidationOptionsProps) => {
+interface LengthOptions {
+    min?: number;
+    max?: number;
+  }
+
+const ValidationOptions = ({
+  dataType,
+  selectedValidation,
+  validateOptions,
+  handleDataTypeChange,
+  handleValidationChange,
+  handleValidateOptionsChange,
+}: ValidationOptionsProps) => {
   const [validationsOptions, setValidationsOptions] = useState({});
+  const [minimumValue, setMinimumValue] = useState("");
+  const [maximumValue, setMaximumValue] = useState("");
 
   //TODO: this is a mock from backend
   const validationOptions: ValidationOptionsType = {
@@ -40,10 +56,14 @@ const ValidationOptions = ({ dataType, validationOption, handleDataTypeChange, h
 
   useEffect(() => {
     if (dataType) {
-        const options = getOptionsFromObject(validationOptions[dataType]);
-        setValidationsOptions(options);
+      const options = getOptionsFromObject(validationOptions[dataType]);
+      setValidationsOptions(options);
     }
-  }, [])
+  }, []);
+
+  useEffect(() => {
+    updateValidateOptions();
+  }, [minimumValue, maximumValue])
 
   const inputOptions = getOptionsFromObject(Object.keys(validationOptions));
 
@@ -53,22 +73,54 @@ const ValidationOptions = ({ dataType, validationOption, handleDataTypeChange, h
     handleDataTypeChange(value);
   };
 
-  const renderInputPattern = () => <Input placeholder="Pattern" label="Pattern" name="pattern" />;
+  const onValidationInputChange = (event: any) => {
+    const { value } = event.target;
+    handleValidateOptionsChange(value);
+  };
+
+  const onValidationPillChange = (value: any) => {
+    handleValidateOptionsChange(value);
+  };
+
+  const onMinimumChange = (event: any) => {
+    setMinimumValue(event.target.value);
+  };
+
+  const onMaximumChange = (event: any) => {
+    setMaximumValue(event.target.value);
+  };
+
+  const updateValidateOptions = () => {
+    let updatedOptions: LengthOptions = {};
+    if (selectedValidation === ValidationOptionsEnum.Length || selectedValidation === ValidationOptionsEnum.Range) {
+      if (minimumValue) {
+        updatedOptions["min"] = parseInt(minimumValue);
+      }
+      if (maximumValue) {
+        updatedOptions["max"] = parseInt(maximumValue);
+      }
+    }
+    handleValidateOptionsChange(updatedOptions as any);
+  };
+
+  const renderInputPattern = () => (
+    <Input placeholder="Pattern" label="Pattern" name="pattern" onChange={onValidationInputChange} value={validateOptions} />
+  );
 
   const renderInputList = () => (
     <label>
-      <PillInput label="Options" placeholder="List" />
+      <PillInput label="Options" placeholder="List" onChange={onValidationPillChange} />
     </label>
   );
 
   const renderRangeControl = () => (
     <div className={style.rangeControl}>
       <div className={style.inputWrapper}>
-        <Input placeholder="Minimum" label="Minimum" name="minimum" variants={["small"]} />
+        <Input placeholder="Minimum" label="Minimum" name="minimum" variants={["small"]} onChange={onMinimumChange} value={minimumValue} />
       </div>
       <div className={style.inputSeparator}>-</div>
       <div className={style.inputWrapper}>
-        <Input placeholder="Maximum" label="Maximum" name="maximum" variants={["small"]} />
+        <Input placeholder="Maximum" label="Maximum" name="maximum" variants={["small"]} onChange={onMaximumChange} value={maximumValue} />
       </div>
     </div>
   );
@@ -81,13 +133,13 @@ const ValidationOptions = ({ dataType, validationOption, handleDataTypeChange, h
         options={validationsOptions}
         label="Validation"
         name="validation"
-        value={validationOption}
+        value={selectedValidation}
         onChange={handleValidationChange}
       />
       <>
-        {validationOption === ValidationOptionsEnum.Regex && renderInputPattern()}
-        {validationOption === ValidationOptionsEnum.List && renderInputList()}
-        {(validationOption === ValidationOptionsEnum.Length || validationOption === ValidationOptionsEnum.Range) && renderRangeControl()}
+        {selectedValidation === ValidationOptionsEnum.Regex && renderInputPattern()}
+        {selectedValidation === ValidationOptionsEnum.List && renderInputList()}
+        {(selectedValidation === ValidationOptionsEnum.Length || selectedValidation === ValidationOptionsEnum.Range) && renderRangeControl()}
       </>
     </div>
   );
