@@ -103,6 +103,7 @@ export default function TemplateColumnForm({
 
   const handleValidationChange = (value: any) => {
     setSelectedValidation(value);
+    setValidateOptions("");
   };
 
   const handleValidateOptionsChange = (value: any) => {
