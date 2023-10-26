@@ -70,6 +70,8 @@ const ValidationOptions = ({
   const onDataTypeChange = (value: any) => {
     const options = value ? getOptionsFromObject(validationOptions[value]) : [];
     setValidationsOptions(options);
+    setMaximumValue("");
+    setMinimumValue("");
     handleDataTypeChange(value);
   };
 

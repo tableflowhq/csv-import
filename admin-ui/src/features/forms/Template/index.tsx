@@ -6,6 +6,7 @@ import usePostTemplateColumn from "../../../api/usePostTemplateColumn";
 import { TemplateColumnProps } from "../types";
 import style from "../style/Form.module.scss";
 import ValidationOptions from "./validationOptions";
+import ValidationOptionsEnum from "./ValidationOptionsEnum";
 
 export default function TemplateColumnForm({
   title = "Template column form",
@@ -50,12 +51,14 @@ export default function TemplateColumnForm({
     }
 
     if (selectedValidation) {
-      values.validations = [
-        {
-          validate: selectedValidation,
-          options: validateOptions,
-        },
-      ];
+      const validateOption: { validate: string; options?: string } = {
+        validate: selectedValidation,
+        options: validateOptions,
+      };
+      if (selectedValidation === ValidationOptionsEnum.Email || selectedValidation === ValidationOptionsEnum.Phone) {
+        delete validateOption.options;
+      }
+      values.validations = [validateOption];
     }
 
     mutate(values);
@@ -95,6 +98,7 @@ export default function TemplateColumnForm({
   const handleDataTypeChange = (value: any) => {
     setDataType(value);
     setSelectedValidation("");
+    setValidateOptions("");
   };
 
   const handleValidationChange = (value: any) => {
