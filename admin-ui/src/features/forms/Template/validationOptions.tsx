@@ -8,15 +8,15 @@ type ValidationOptionsType = Record<string, string[]>;
 interface ValidationOptionsProps {
   dataType: string;
   selectedValidation: string;
-  validateOptions: string;
+  validateOptions: string | string[] | { min?: number | string; max?: number | string };
   handleDataTypeChange: (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
   handleValidationChange: (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
   handleValidateOptionsChange: (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
 }
 
 interface LengthOptions {
-    min?: number;
-    max?: number;
+    min?: number | string;
+    max?: number | string;
   }
 
 const ValidationOptions = ({
@@ -30,6 +30,7 @@ const ValidationOptions = ({
   const [validationsOptions, setValidationsOptions] = useState({});
   const [minimumValue, setMinimumValue] = useState("");
   const [maximumValue, setMaximumValue] = useState("");
+  const [localRegex, setLocalRegex] = useState(typeof validateOptions !== 'object' ? validateOptions : '');
 
   //TODO: this is a mock from backend
   const validationOptions: ValidationOptionsType = {
@@ -63,7 +64,16 @@ const ValidationOptions = ({
 
   useEffect(() => {
     updateValidateOptions();
-  }, [minimumValue, maximumValue])
+  }, [minimumValue, maximumValue]);
+
+  useEffect(() => {
+    if (typeof validateOptions === 'object' && 'min' in validateOptions) {
+      setMinimumValue(validateOptions.min?.toString() || '');
+    }
+    if (typeof validateOptions === 'object' && 'max' in validateOptions) {
+      setMaximumValue(validateOptions.max?.toString() || '');
+    }
+  }, [validateOptions]);
 
   const inputOptions = getOptionsFromObject(Object.keys(validationOptions));
 
@@ -75,8 +85,9 @@ const ValidationOptions = ({
     handleDataTypeChange(value);
   };
 
-  const onValidationInputChange = (event: any) => {
-    const { value } = event.target;
+  const onValidationInputChange = ({ target }: any) => {
+    const { value } = target;
+    setLocalRegex(value);
     handleValidateOptionsChange(value);
   };
 
@@ -106,12 +117,12 @@ const ValidationOptions = ({
   };
 
   const renderInputPattern = () => (
-    <Input placeholder="Pattern" label="Pattern" name="pattern" onChange={onValidationInputChange} value={validateOptions} />
+    <Input placeholder="Pattern" label="Pattern" name="pattern" onChange={onValidationInputChange} value={localRegex}/>
   );
 
   const renderInputList = () => (
     <label>
-      <PillInput label="Options" placeholder="List" onChange={onValidationPillChange} />
+      <PillInput label="Options" placeholder="List" onChange={onValidationPillChange} initialPills={Array.isArray(validateOptions) ? validateOptions : []} />
     </label>
   );
 

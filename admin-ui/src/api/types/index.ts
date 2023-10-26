@@ -93,6 +93,7 @@ export type TemplateColumnFormFields = {
   required: boolean;
   validations?: Validation[];
   suggested_mappings?: string[];
+  data_type?: string;
 };
 
 export type Validation = {

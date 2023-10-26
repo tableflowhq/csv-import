@@ -16,6 +16,7 @@ export default function TemplateColumnForm({
 }: TemplateColumnProps) {
   const isEditForm = !!column?.id;
   const [userModifiedKey, setUserModifiedKey] = useState(false);
+
   const form = useForm({
     initialValues: {
       id: column?.id || "",
@@ -29,10 +30,31 @@ export default function TemplateColumnForm({
     },
   });
   const { mutate, isLoading, error, isSuccess } = usePostTemplateColumn(context?.templateId, column?.id);
+  const validationOptionsArray: string[] = Object.values(ValidationOptionsEnum);
+  const [dataType, setDataType] = useState(column?.data_type || "string");
+  const [selectedValidation, setSelectedValidation] = useState(() => {
+    if (column?.validations) {
+      for (const validation of column.validations) {
+        if (validationOptionsArray.includes(validation.validate)) {
+          return validation.validate;
+        }
+      }
+    }
+    return "";
+  });
+  const [validateOptions, setValidateOptions] = useState(() => {
+    if (column?.validations && selectedValidation) {
+      const matchingValidation = column.validations.find(
+        (validation) => validation.validate === selectedValidation
+      );
+      if (matchingValidation && matchingValidation.options) {
+        return matchingValidation.options;
+      }
+    }
+    return "";
+  });
+  
 
-  const [dataType, setDataType] = useState("string");
-  const [selectedValidation, setSelectedValidation] = useState("");
-  const [validateOptions, setValidateOptions] = useState("");
 
   useEffect(() => {
     if (isSuccess && !error && !isLoading && onSuccess) onSuccess();
