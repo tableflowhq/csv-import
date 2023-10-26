@@ -19,19 +19,19 @@ func APIKeyAuthMiddleware(isAuthorized func(c *gin.Context, apiKey string) bool)
 		authHeader := c.GetHeader("Authorization")
 		if len(authHeader) == 0 {
 			tf.Log.Infow("Missing authorization header in request", "host", c.Request.Host, "referer", c.Request.Referer(), "uri", c.Request.RequestURI, "user_agent", c.Request.UserAgent())
-			c.AbortWithStatusJSON(http.StatusUnauthorized, types.Res{Message: "unauthorized"})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, types.Res{Err: "unauthorized"})
 			return
 		}
 		authHeader = strings.ToLower(authHeader)
 		authHeaderParts := strings.SplitN(authHeader, " ", 2)
 		if len(authHeaderParts) != 2 || authHeaderParts[0] != "bearer" || len(authHeaderParts[1]) == 0 {
 			tf.Log.Infow("Malformed authorization header in request", "host", c.Request.Host, "referer", c.Request.Referer(), "uri", c.Request.RequestURI, "user_agent", c.Request.UserAgent())
-			c.AbortWithStatusJSON(http.StatusUnauthorized, types.Res{Message: "unauthorized"})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, types.Res{Err: "unauthorized"})
 			return
 		}
 		if !isAuthorized(c, authHeaderParts[1]) {
 			tf.Log.Infow("Unable to authorize API key", "host", c.Request.Host, "referer", c.Request.Referer(), "uri", c.Request.RequestURI, "user_agent", c.Request.UserAgent())
-			c.AbortWithStatusJSON(http.StatusUnauthorized, types.Res{Message: "unauthorized"})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, types.Res{Err: "unauthorized"})
 			return
 		}
 	}

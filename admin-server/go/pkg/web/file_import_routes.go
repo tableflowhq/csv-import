@@ -153,7 +153,7 @@ func importerGetImporter(c *gin.Context, getAllowedValidateTypes func(string) ma
 		}
 
 		var req map[string]interface{}
-		if err = c.BindJSON(&req); err != nil {
+		if err = c.ShouldBindJSON(&req); err != nil {
 			tf.Log.Warnw("Could not bind JSON", "error", err)
 			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("Invalid template provided: %v", err.Error())})
 			return
@@ -336,7 +336,7 @@ func importerSetHeaderRow(c *gin.Context) {
 
 	// Validate and set the header row index on the upload
 	req := types.UploadHeaderRowSelection{}
-	if err = c.BindJSON(&req); err != nil {
+	if err = c.ShouldBindJSON(&req); err != nil {
 		tf.Log.Warnw("Could not bind JSON", "error", err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return
@@ -505,7 +505,7 @@ func importerSetColumnMapping(c *gin.Context) {
 	// Non-schemaless: Upload column ID -> Template column ID
 	// Schemaless:     Upload column ID -> User-provided key (i.e. first_name) (only from the request, this will be updated to IDs after the template is generated)
 	columnMapping := make(map[string]string)
-	if err := c.BindJSON(&columnMapping); err != nil {
+	if err := c.ShouldBindJSON(&columnMapping); err != nil {
 		tf.Log.Warnw("Could not bind JSON", "error", err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return
@@ -901,7 +901,7 @@ func importerEditImportCell(c *gin.Context) {
 
 	// Validate the import cell
 	req := types.ImportCell{}
-	if err = c.BindJSON(&req); err != nil {
+	if err = c.ShouldBindJSON(&req); err != nil {
 		tf.Log.Warnw("Could not bind JSON", "error", err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return

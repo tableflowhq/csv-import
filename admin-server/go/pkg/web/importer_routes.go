@@ -38,7 +38,7 @@ type ImporterEditRequest struct {
 //	@Param			body	body	ImporterCreateRequest	true	"Request body"
 func createImporter(c *gin.Context, getWorkspaceUser func(*gin.Context, string) (string, error)) {
 	req := ImporterCreateRequest{}
-	if err := c.BindJSON(&req); err != nil {
+	if err := c.ShouldBindJSON(&req); err != nil {
 		tf.Log.Warnw("Could not bind JSON", "error", err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return
@@ -156,7 +156,7 @@ func editImporter(c *gin.Context, getWorkspaceUser func(*gin.Context, string) (s
 		return
 	}
 	req := ImporterEditRequest{}
-	if err := c.BindJSON(&req); err != nil {
+	if err := c.ShouldBindJSON(&req); err != nil {
 		tf.Log.Warnw("Could not bind JSON", "error", err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return
