@@ -38,7 +38,7 @@ func APIKeyAuthMiddleware(isAuthorized func(c *gin.Context, apiKey string) bool)
 }
 
 // tusFileHandler TODO: Break this out into its own service eventually
-func tusFileHandler(uploadAdditionalStorageHandler, uploadLimitCheck func(*model.Upload, *os.File) (int, error), getAllowedValidateTypes func(string) map[string]bool) *handler.UnroutedHandler {
+func tusFileHandler(uploadAdditionalStorageHandler func(*model.Upload, *os.File) error, uploadLimitCheck func(*model.Upload, *os.File) (int, error), getAllowedValidateTypes func(string) map[string]bool) *handler.UnroutedHandler {
 	store := filestore.FileStore{
 		Path: file.TempUploadsDirectory,
 	}

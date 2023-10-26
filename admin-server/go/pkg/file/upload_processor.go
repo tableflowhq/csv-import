@@ -31,7 +31,7 @@ var maxColumnLimit = int(math.Min(500, math.MaxInt16))
 var maxRowLimit = 1000 * 1000 * 10       // TODO: Store and configure this on the workspace? But keep a max limit to prevent runaways?
 const UploadColumnSampleDataSize = 1 + 3 // 1 header row + 3 sample rows
 
-func UploadCompleteHandler(event handler.HookEvent, uploadAdditionalStorageHandler, uploadLimitCheck func(*model.Upload, *os.File) (int, error), getAllowedValidateTypes func(string) map[string]bool) {
+func UploadCompleteHandler(event handler.HookEvent, uploadAdditionalStorageHandler func(*model.Upload, *os.File) error, uploadLimitCheck func(*model.Upload, *os.File) (int, error), getAllowedValidateTypes func(string) map[string]bool) {
 	uploadFileName := event.Upload.MetaData["filename"]
 	uploadFileType := event.Upload.MetaData["filetype"]
 	uploadFileExtension := ""
