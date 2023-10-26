@@ -22,6 +22,23 @@ func GetWorkspace(id string) (*model.Workspace, error) {
 	return &workspace, nil
 }
 
+func GetWorkspaceFromImporter(importerID string) (*model.Workspace, error) {
+	if len(importerID) == 0 {
+		return nil, errors.New("no importer ID provided")
+	}
+	var workspace model.Workspace
+	err := tf.DB.Joins("join importers on importers.workspace_id = workspaces.id").
+		Where("importers.id = ?", model.ParseID(importerID)).
+		First(&workspace).Error
+	if err != nil {
+		return nil, err
+	}
+	if !workspace.ID.Valid {
+		return nil, gorm.ErrRecordNotFound
+	}
+	return &workspace, nil
+}
+
 func GetAPIKey(workspaceID string) (string, error) {
 	if len(workspaceID) == 0 {
 		return "", errors.New("no workspace ID provided")

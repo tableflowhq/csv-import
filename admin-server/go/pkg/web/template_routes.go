@@ -34,6 +34,7 @@ type TemplateColumnEditRequest struct {
 	Key               *string                            `json:"key" example:"first_name"`
 	Required          *bool                              `json:"required" example:"false"`
 	Description       *string                            `json:"description" example:"The first name"`
+	DataType          *string                            `json:"data_type" example:"string"`
 	Validations       *[]TemplateColumnValidationRequest `json:"validations"`
 	SuggestedMappings *[]string                          `json:"suggested_mappings"`
 }
@@ -83,7 +84,7 @@ func getTemplate(c *gin.Context, getWorkspaceUser func(*gin.Context, string) (st
 //	@Failure		400	{object}	types.Res
 //	@Router			/admin/v1/template-column [post]
 //	@Param			body	body	TemplateColumnCreateRequest	true	"Request body"
-func createTemplateColumn(c *gin.Context, getWorkspaceUser func(*gin.Context, string) (string, error)) {
+func createTemplateColumn(c *gin.Context, getWorkspaceUser func(*gin.Context, string) (string, error), getAllowedValidateTypes func(string) map[string]bool) {
 	req := TemplateColumnCreateRequest{}
 	if err := c.BindJSON(&req); err != nil {
 		tf.Log.Warnw("Could not bind JSON", "error", err)
@@ -128,6 +129,7 @@ func createTemplateColumn(c *gin.Context, getWorkspaceUser func(*gin.Context, st
 		}
 	}
 
+	allowedValidateTypes := getAllowedValidateTypes(template.WorkspaceID.String())
 	dataType, err := model.ParseTemplateColumnDataType(req.DataType)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("The data type '%s' is invalid", req.DataType)})
@@ -153,6 +155,10 @@ func createTemplateColumn(c *gin.Context, getWorkspaceUser func(*gin.Context, st
 		// Don't allow the user to add a data type validator (these are added automatically based on the data type)
 		if evaluator.IsDataTypeEvaluator(v.Validate) {
 			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("Invalid template: the validate type %v cannot be added directly and is automatically added when setting a data type", v.Validate)})
+			return
+		}
+		if allowedValidateTypes != nil && !allowedValidateTypes[v.Validate] {
+			c.AbortWithStatusJSON(http.StatusForbidden, types.Res{Err: "Please upgrade your plan to use this validation"})
 			return
 		}
 		validation, err := model.ParseValidation(uint(v.ID), templateColumn.ID.String(), v.Validate, v.Options, v.Message, v.Severity, templateColumn.DataType)
@@ -205,7 +211,7 @@ func createTemplateColumn(c *gin.Context, getWorkspaceUser func(*gin.Context, st
 //	@Router			/admin/v1/template-column/{id} [post]
 //	@Param			id		path	string						true	"Template column ID"
 //	@Param			body	body	TemplateColumnEditRequest	true	"Request body"
-func editTemplateColumn(c *gin.Context, getWorkspaceUser func(*gin.Context, string) (string, error)) {
+func editTemplateColumn(c *gin.Context, getWorkspaceUser func(*gin.Context, string) (string, error), getAllowedValidateTypes func(string) map[string]bool) {
 	id := c.Param("id")
 	if len(id) == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No template column ID provided"})
@@ -276,17 +282,25 @@ func editTemplateColumn(c *gin.Context, getWorkspaceUser func(*gin.Context, stri
 		templateColumn.SuggestedMappings = suggestedMappings
 		save = true
 	}
+
+	var validationsToCreateOrEdit []*model.Validation
+	var validationsToDelete []*model.Validation
+	allowedValidateTypes := getAllowedValidateTypes(template.WorkspaceID.String())
+
 	if req.Validations != nil {
 		// If validations are passed in, use these to overwrite the validations in the database
 		//
 		// Create: If the validation does not have an ID, add it to the database
 		// Edit:   If the validation has an ID, do a lookup and perform an edit to the validation
 		// Delete: If a validation does not exist on the request but does exist in the database, delete it
-		var validationsToCreateOrEdit []*model.Validation
 		for _, v := range *req.Validations {
 			validation, err := model.ParseValidation(uint(v.ID), templateColumn.ID.String(), v.Validate, v.Options, v.Message, v.Severity, templateColumn.DataType)
 			if err != nil {
 				c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+				return
+			}
+			if allowedValidateTypes != nil && !allowedValidateTypes[v.Validate] {
+				c.AbortWithStatusJSON(http.StatusForbidden, types.Res{Err: "Please upgrade your plan to use this validation"})
 				return
 			}
 			if validation.ID != 0 {
@@ -302,43 +316,66 @@ func editTemplateColumn(c *gin.Context, getWorkspaceUser func(*gin.Context, stri
 				validationsToCreateOrEdit = append(validationsToCreateOrEdit, validation)
 			}
 		}
-
-		// TODO: When adding support for data types in the UI, make sure the validations are added/ removed based on the data type change
-
 		// Delete any validations that exist already on the template column and don't exist in the request with an ID
 		existingValidationsProvided := lo.Filter(validationsToCreateOrEdit, func(v *model.Validation, _ int) bool {
 			return v.ID != 0
 		})
-		validationsToDelete := util.DifferenceBy(templateColumn.Validations, existingValidationsProvided, func(v1 *model.Validation, v2 *model.Validation) bool {
+		validationsToDelete = util.DifferenceBy(templateColumn.Validations, existingValidationsProvided, func(v1 *model.Validation, v2 *model.Validation) bool {
 			return v1.ID == v2.ID
 		})
 		// Don't delete any default data type validations
+		// If the data type is changed, removing/adding the default data type validation will be handled next
 		validationsToDelete = lo.Filter(validationsToDelete, func(v *model.Validation, _ int) bool {
 			return !evaluator.IsDataTypeEvaluator(v.Validate)
 		})
-		if len(validationsToDelete) != 0 {
-			err = tf.DB.Delete(&validationsToDelete).Error
-			if err != nil {
-				c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("Could not delete validations: %v", err.Error())})
-				return
-			}
-		}
-
-		// Save validations to create or edit
-		if len(validationsToCreateOrEdit) != 0 {
-			err = tf.DB.Save(&validationsToCreateOrEdit).Error
-			if err != nil {
-				c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("Could not create or update validations: %v", err.Error())})
-				return
-			}
-		}
-
-		// Add the new validations to the template column to return
-		if validationsToCreateOrEdit == nil {
-			validationsToCreateOrEdit = make([]*model.Validation, 0)
-		}
-		templateColumn.Validations = validationsToCreateOrEdit
 	}
+
+	if req.DataType != nil && *req.DataType != string(templateColumn.DataType) {
+		dataType, err := model.ParseTemplateColumnDataType(*req.DataType)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("The data type '%s' is invalid", *req.DataType)})
+			return
+		}
+		// Remove any previous data type validators
+		validationsToDelete = append(validationsToDelete, lo.Filter(templateColumn.Validations, func(v *model.Validation, _ int) bool {
+			return evaluator.IsDataTypeEvaluator(v.Validate)
+		})...)
+
+		// Add a new data type validator
+		if evaluator.IsDataTypeEvaluator(string(dataType)) {
+			validation, err := model.ParseValidation(0, templateColumn.ID.String(), string(dataType), jsonb.NewNull(), "", "", dataType)
+			if err != nil {
+				c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
+				return
+			}
+			validationsToCreateOrEdit = append(validationsToCreateOrEdit, validation)
+		}
+
+		templateColumn.DataType = dataType
+		save = true
+	}
+
+	// Delete validations
+	if len(validationsToDelete) != 0 {
+		err = tf.DB.Delete(&validationsToDelete).Error
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("Could not delete validations: %v", err.Error())})
+			return
+		}
+	}
+	// Save validations to create or edit
+	if len(validationsToCreateOrEdit) != 0 {
+		err = tf.DB.Save(&validationsToCreateOrEdit).Error
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("Could not create or update validations: %v", err.Error())})
+			return
+		}
+	}
+	// Add the new validations to the template column to return
+	if validationsToCreateOrEdit == nil {
+		validationsToCreateOrEdit = make([]*model.Validation, 0)
+	}
+	templateColumn.Validations = validationsToCreateOrEdit
 
 	if save {
 		templateColumn.UpdatedBy = user.ID

@@ -11,8 +11,8 @@ export type ApiResponse<T> = {
 
 // Entities
 
-export type Organization = {
-  status?: boolean;
+export type OrganizationFeatures = {
+  [key: string]: boolean;
 };
 
 export type Importer = {

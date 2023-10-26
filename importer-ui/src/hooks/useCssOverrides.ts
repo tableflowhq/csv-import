@@ -1,9 +1,9 @@
 import { useEffect } from "react";
 import parseCssOverrides from "../utils/cssInterpreter";
 
-export default function useCssOverrides(cssOverrides?: string, organizationStatus?: boolean) {
+export default function useCssOverrides(cssOverrides?: string, enabled?: boolean) {
   useEffect(() => {
-    if (!organizationStatus) {
+    if (!enabled) {
       return;
     }
     const parsedCss = parseCssOverrides(cssOverrides);
@@ -16,5 +16,5 @@ export default function useCssOverrides(cssOverrides?: string, organizationStatu
       }
       style.textContent = decodeURIComponent(parsedCss);
     }
-  }, [cssOverrides, organizationStatus]);
+  }, [cssOverrides, enabled]);
 }

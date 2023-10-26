@@ -32,14 +32,14 @@ export default function Embed({ children }: EmbedProps) {
   const strToOptionalBoolean = (str: string) => (str ? str.toLowerCase() === "true" || str === "1" : undefined);
   const strToDefaultBoolean = (str: string, defaultValue: boolean) => (str ? str.toLowerCase() === "true" || str === "1" : defaultValue);
   const validateJSON = (str: string, paramName: string) => {
-    if (!str) {
+    if (!str || str === "undefined") {
       return "";
     }
     try {
       const obj = JSON.parse(str);
       return JSON.stringify(obj);
     } catch (e) {
-      console.error(`The parameter ${paramName} could not be parsed as JSON`, e);
+      console.error(`The parameter ${paramName} could not be parsed as JSON. Please check the documentation for more details.`, e);
       return "";
     }
   };
@@ -59,6 +59,7 @@ export default function Embed({ children }: EmbedProps) {
       schemaless: strToOptionalBoolean(schemaless),
       schemalessReadOnly: strToOptionalBoolean(schemalessReadOnly),
       showDownloadTemplateButton: strToDefaultBoolean(showDownloadTemplateButton, true),
+      customStyles: validateJSON(customStyles, "customStyles"),
       cssOverrides: validateJSON(cssOverrides, "cssOverrides"),
     });
   }, [importerId, metadata]);
@@ -81,25 +82,6 @@ export default function Embed({ children }: EmbedProps) {
       root.style.setProperty("--color-primary", primaryColor);
     }
   }, [primaryColor]);
-
-  // Apply custom CSS properties
-  useEffect(() => {
-    try {
-      if (customStyles && customStyles !== "undefined") {
-        const parsedStyles = JSON.parse(customStyles);
-
-        if (customStyles && parsedStyles) {
-          Object.keys(parsedStyles).forEach((key) => {
-            const root = document.documentElement;
-            const value = parsedStyles?.[key as any];
-            root.style.setProperty("--" + key, value);
-          });
-        }
-      }
-    } catch (e) {
-      console.error('The "customStyles" prop is not a valid JSON string. Please check the documentation for more details.');
-    }
-  }, [customStyles]);
 
   return <>{children}</>;
 }

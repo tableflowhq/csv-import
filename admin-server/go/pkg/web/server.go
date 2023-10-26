@@ -44,7 +44,8 @@ type ServerConfig struct {
 	ExternalAPIAuthValidator       func(c *gin.Context, apiKey string) bool
 	GetWorkspaceUser               func(c *gin.Context, workspaceID string) (string, error)
 	GetUserID                      func(c *gin.Context) string
-	UploadLimitCheck               func(*model.Upload, *os.File) error
+	GetAllowedValidateTypes        func(workspaceID string) map[string]bool
+	UploadLimitCheck               func(*model.Upload, *os.File) (int, error)
 	UploadAdditionalStorageHandler func(*model.Upload, *os.File) error
 	ImportCompleteHandler          func(imp types.Import, workspaceID string)
 	AdditionalCORSOrigins          []string
@@ -122,13 +123,13 @@ func StartWebServer(config ServerConfig) *http.Server {
 	/* --------------------------  Importer routes  -------------------------- */
 
 	importer := router.Group("/file-import/v1")
-	tusHandler := tusFileHandler(config.UploadAdditionalStorageHandler, config.UploadLimitCheck)
+	tusHandler := tusFileHandler(config.UploadAdditionalStorageHandler, config.UploadLimitCheck, config.GetAllowedValidateTypes)
 
 	importer.POST("/files", tusPostFile(tusHandler))
 	importer.HEAD("/files/:id", tusHeadFile(tusHandler))
 	importer.PATCH("/files/:id", tusPatchFile(tusHandler))
 
-	importer.POST("/importer/:id", importerGetImporter)
+	importer.POST("/importer/:id", func(c *gin.Context) { importerGetImporter(c, config.GetAllowedValidateTypes) })
 	importer.GET("/upload/:id", importerGetUpload)
 	importer.POST("/upload/:id/set-header-row", importerSetHeaderRow)
 	importer.POST("/upload/:id/set-column-mapping", importerSetColumnMapping)
@@ -163,8 +164,8 @@ func StartWebServer(config ServerConfig) *http.Server {
 
 	/* Template */
 	adm.GET("/template/:id", func(c *gin.Context) { getTemplate(c, config.GetWorkspaceUser) })
-	adm.POST("/template-column", func(c *gin.Context) { createTemplateColumn(c, config.GetWorkspaceUser) })
-	adm.POST("/template-column/:id", func(c *gin.Context) { editTemplateColumn(c, config.GetWorkspaceUser) })
+	adm.POST("/template-column", func(c *gin.Context) { createTemplateColumn(c, config.GetWorkspaceUser, config.GetAllowedValidateTypes) })
+	adm.POST("/template-column/:id", func(c *gin.Context) { editTemplateColumn(c, config.GetWorkspaceUser, config.GetAllowedValidateTypes) })
 	adm.DELETE("/template-column/:id", func(c *gin.Context) { deleteTemplateColumn(c, config.GetWorkspaceUser) })
 
 	/* Import */
@@ -188,7 +189,7 @@ func StartWebServer(config ServerConfig) *http.Server {
 	api.GET("/import/:id", getImportForExternalAPI)
 	api.GET("/import/:id/rows", getImportRowsForExternalAPI)
 	api.GET("/import/:id/download", downloadImportForExternalAPI)
-	api.POST("/importer", createImporterForExternalAPI)
+	api.POST("/importer", func(c *gin.Context) { createImporterForExternalAPI(c, config.GetAllowedValidateTypes) })
 	api.DELETE("/importer/:id", deleteImporterForExternalAPI)
 
 	// Initialize the server in a goroutine so that it won't block shutdown handling

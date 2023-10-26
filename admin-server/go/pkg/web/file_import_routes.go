@@ -92,7 +92,7 @@ func tusPatchFile(h *handler.UnroutedHandler) gin.HandlerFunc {
 //	@Router			/file-import/v1/importer/{id} [post]
 //	@Param			id		path	string					true	"Importer ID"
 //	@Param			body	body	map[string]interface{}	false	"Request body"
-func importerGetImporter(c *gin.Context) {
+func importerGetImporter(c *gin.Context, getAllowedValidateTypes func(string) map[string]bool) {
 	id := c.Param("id")
 	if len(id) == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No importer ID provided"})
@@ -158,7 +158,9 @@ func importerGetImporter(c *gin.Context) {
 			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("Invalid template provided: %v", err.Error())})
 			return
 		}
-		requestTemplate, err := types.ConvertRawTemplate(jsonb.FromMap(req), false)
+
+		allowedValidateTypes := getAllowedValidateTypes(importer.WorkspaceID.String())
+		requestTemplate, err := types.ConvertRawTemplate(jsonb.FromMap(req), false, allowedValidateTypes, false)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 			return
@@ -618,7 +620,7 @@ func importerSetColumnMapping(c *gin.Context) {
 
 	} else if upload.Template.Valid {
 		// A template was set on the upload (SDK-defined template), use that instead of the importer template
-		importServiceTemplate, err := types.ConvertRawTemplate(upload.Template, false)
+		importServiceTemplate, err := types.ConvertRawTemplate(upload.Template, false, nil, false)
 		if err != nil {
 			tf.Log.Warnw("Could not convert upload template to import service template during import", "error", err, "upload_id", upload.ID, "upload_template", upload.Template)
 			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
@@ -934,7 +936,7 @@ func importerEditImportCell(c *gin.Context) {
 
 	if imp.Upload.Template.Valid {
 		// If the upload uses an SDK-defined template, retrieve any validations from the template on the upload
-		template, err := types.ConvertRawTemplate(imp.Upload.Template, false)
+		template, err := types.ConvertRawTemplate(imp.Upload.Template, false, nil, false)
 		if err != nil {
 			tf.Log.Errorw("Upload template invalid retrieving validations for cell edit", "upload_id", imp.Upload.ID, "error", err)
 			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "The SDK-defined template is invalid"})

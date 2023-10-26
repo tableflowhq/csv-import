@@ -232,7 +232,7 @@ func getWorkspaceUser(workspaceID string) (string, error) {
 //	@Failure		400	{object}	types.Res
 //	@Router			/v1/importer [post]
 //	@Param			body	body	types.Importer	true	"Request body"
-func createImporterForExternalAPI(c *gin.Context) {
+func createImporterForExternalAPI(c *gin.Context, getAllowedValidateTypes func(string) map[string]bool) {
 	workspaceID := c.GetString("workspace_id")
 	userID, err := getWorkspaceUser(workspaceID)
 	if err != nil {
@@ -286,7 +286,9 @@ func createImporterForExternalAPI(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Invalid importer: The parameter 'template' is required"})
 		return
 	}
-	templateType, err := types.ConvertRawTemplate(templateJSON, true)
+
+	allowedValidateTypes := getAllowedValidateTypes(importer.WorkspaceID.String())
+	templateType, err := types.ConvertRawTemplate(templateJSON, true, allowedValidateTypes, true)
 	if err != nil {
 		tf.Log.Warnw("Invalid template JSON", "error", err, "workspace_id", workspaceID)
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})

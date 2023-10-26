@@ -161,7 +161,7 @@ func ConvertUpload(upload *model.Upload, uploadRows []UploadRow) (*Upload, error
 			SuggestedTemplateColumnID: uc.TemplateColumnID,
 		}
 	}
-	uploadTemplate, err := ConvertRawTemplate(upload.Template, false)
+	uploadTemplate, err := ConvertRawTemplate(upload.Template, false, nil, false)
 	if err != nil {
 		tf.Log.Warnw("Could not convert upload template to import service template", "error", err, "upload_id", upload.ID, "upload_template", upload.Template)
 		return nil, err
@@ -185,7 +185,7 @@ func ConvertUpload(upload *model.Upload, uploadRows []UploadRow) (*Upload, error
 	return importerUpload, nil
 }
 
-func ConvertRawTemplate(rawTemplate jsonb.JSONB, isCreation bool) (*Template, error) {
+func ConvertRawTemplate(rawTemplate jsonb.JSONB, isCreation bool, allowedValidateTypes map[string]bool, failOnNotAllowedType bool) (*Template, error) {
 	if !rawTemplate.Valid {
 		// No template provided, this means the template from the importer will be used
 		return nil, nil
@@ -301,6 +301,12 @@ func ConvertRawTemplate(rawTemplate jsonb.JSONB, isCreation bool) (*Template, er
 					validationMessage, _ := validationMap["message"].(string)
 					validationSeverity, _ := validationMap["severity"].(string)
 
+					if allowedValidateTypes != nil && !allowedValidateTypes[validationValidate] {
+						if failOnNotAllowedType {
+							return nil, fmt.Errorf("Invalid template: please upgrade your plan to use the %s validate type", validationValidate)
+						}
+						continue
+					}
 					if isCreation {
 						validationID = float64(generatedValidationID)
 						generatedValidationID++

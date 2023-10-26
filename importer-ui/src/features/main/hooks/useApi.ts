@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Importer, Organization, Template, Upload } from "../../../api/types";
+import { Importer, Template, Upload } from "../../../api/types";
 import useGetImporter from "../../../api/useGetImporter";
 import useGetOrganization from "../../../api/useGetOrganization";
 import useGetUpload from "../../../api/useGetUpload";
@@ -19,8 +19,7 @@ export default function useApi(importerId: string, sdkDefinedTemplate: string, c
   } = useGetImporter(importerId, sdkDefinedTemplate, schemaless);
   const { template = {} as Template } = importer;
 
-  const { data: organization, isLoading: statusIsLoading = {} as Organization } = useGetOrganization(importerId, checkOrganizationStatus);
-  const organizationStatus = organization?.status || false;
+  const { data: organizationStatus, isLoading: statusIsLoading = {} } = useGetOrganization(importerId, checkOrganizationStatus);
 
   // Load upload for the second step
   const { data: upload = {} as Upload, isLoading: uploadIsLoading, error: uploadError } = useGetUpload(tusId);

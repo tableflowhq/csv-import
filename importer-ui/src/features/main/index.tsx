@@ -6,11 +6,12 @@ import useStepper from "../../components/Stepper/hooks/useStepper";
 import TableLoading from "../../components/TableLoading";
 import { defaultImporterHost, getAPIBaseURL } from "../../api/api";
 import useCssOverrides from "../../hooks/useCssOverrides";
+import useCustomStyles from "../../hooks/useCustomStyles";
 import useDelayedLoader from "../../hooks/useDelayLoader";
 import useRevealApp from "../../hooks/useRevealApp";
 import useEmbedStore from "../../stores/embed";
 import classes from "../../utils/classes";
-import { providedCssOverrides } from "../../utils/cssInterpreter";
+import { providedJSONString } from "../../utils/cssInterpreter";
 import postMessage from "../../utils/postMessage";
 import { ColumnsOrder } from "../review/types";
 import useApi from "./hooks/useApi";
@@ -49,6 +50,7 @@ export default function Main() {
     schemaless,
     schemalessReadOnly,
     showDownloadTemplateButton,
+    customStyles,
     cssOverrides,
   } = useEmbedStore((state) => state.embedParams);
 
@@ -74,15 +76,19 @@ export default function Main() {
   } = useApi(
     importerId,
     schemaless ? "" : sdkDefinedTemplate, // Don't pass in a template if schemaless is enabled
-    window.location.host.indexOf(defaultImporterHost) === 0 && providedCssOverrides(cssOverrides),
+    window.location.host.indexOf(defaultImporterHost) === 0 && (providedJSONString(customStyles) || providedJSONString(cssOverrides)),
     schemaless
   );
 
+  const isDevelopment = window.location.hostname === "localhost";
   const isEmbeddedInIframe = window?.top !== window?.self;
   const [columnsValues, seColumnsValues] = useState({});
 
+  // Apply custom styles
+  useCustomStyles(customStyles, isDevelopment ? true : organizationStatus && organizationStatus["feature-custom-styles"]);
+
   // Apply CSS overrides
-  useCssOverrides(cssOverrides, window.location.hostname === "localhost" ? true : organizationStatus);
+  useCssOverrides(cssOverrides, isDevelopment ? true : organizationStatus && organizationStatus["feature-css-overrides"]);
 
   // If the skipHeaderRowSelection is not set as a URL param, check the option on the importer
   const skipHeader = skipHeaderRowSelection != null ? !!skipHeaderRowSelection : importer.skip_header_row_selection;
