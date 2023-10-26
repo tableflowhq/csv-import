@@ -76,12 +76,11 @@ export default function Main() {
   } = useApi(
     importerId,
     schemaless ? "" : sdkDefinedTemplate, // Don't pass in a template if schemaless is enabled
-    providedJSONString(customStyles) || providedJSONString(cssOverrides),
-    // window.location.host.indexOf(defaultImporterHost) === 0 && (providedJSONString(customStyles) || providedJSONString(cssOverrides)),
+    window.location.host.indexOf(defaultImporterHost) === 0 && (providedJSONString(customStyles) || providedJSONString(cssOverrides)),
     schemaless
   );
 
-  const isDevelopment = false; // window.location.hostname === "localhost";
+  const isDevelopment = window.location.hostname === "localhost";
   const isEmbeddedInIframe = window?.top !== window?.self;
   const [columnsValues, seColumnsValues] = useState({});
 
