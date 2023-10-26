@@ -50,6 +50,7 @@ type ServerConfig struct {
 	ImportCompleteHandler          func(imp types.Import, workspaceID string)
 	AdditionalCORSOrigins          []string
 	AdditionalCORSHeaders          []string
+	AdditionalPublicRoutes         func(group *gin.RouterGroup)
 	AdditionalImporterRoutes       func(group *gin.RouterGroup)
 	AdditionalAdminRoutes          func(group *gin.RouterGroup)
 	UseZapLogger                   bool
@@ -119,6 +120,11 @@ func StartWebServer(config ServerConfig) *http.Server {
 	public.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	// Used for external status health checks (i.e. AWS)
 	public.GET("/health", Health)
+
+	/* Additional Routes */
+	if config.AdditionalPublicRoutes != nil {
+		config.AdditionalPublicRoutes(public)
+	}
 
 	/* --------------------------  Importer routes  -------------------------- */
 
