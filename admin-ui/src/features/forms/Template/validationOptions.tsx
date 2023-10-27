@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Input, PillInput } from "@tableflow/ui-library";
 import style from "../style/Validation.module.scss";
 import ValidationOptionsEnum from "./ValidationOptionsEnum";
+import { useForm } from "@mantine/form";
 
 type ValidationOptionsType = Record<string, string[]>;
 
@@ -12,6 +13,7 @@ interface ValidationOptionsProps {
   handleDataTypeChange: (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
   handleValidationChange: (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
   handleValidateOptionsChange: (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
+  form: any
 }
 
 interface LengthOptions {
@@ -26,11 +28,13 @@ const ValidationOptions = ({
   handleDataTypeChange,
   handleValidationChange,
   handleValidateOptionsChange,
+  form
 }: ValidationOptionsProps) => {
   const [validationsOptions, setValidationsOptions] = useState({});
   const [minimumValue, setMinimumValue] = useState("");
   const [maximumValue, setMaximumValue] = useState("");
   const [localRegex, setLocalRegex] = useState(typeof validateOptions !== 'object' ? validateOptions : '');
+  const { values, setFieldValue, isDirty } = form;
 
   //TODO: this is a mock from backend
   const validationOptions: ValidationOptionsType = {
@@ -75,6 +79,12 @@ const ValidationOptions = ({
     }
   }, [validateOptions]);
 
+  // useEffect(() => {
+  //   if (isDirty) {
+  //     setFieldValue("validateOptions", { min: "45" });
+  //   }
+  // }, [isDirty, setFieldValue]);
+
   const inputOptions = getOptionsFromObject(Object.keys(validationOptions));
 
   const onDataTypeChange = (value: any) => {
@@ -88,6 +98,7 @@ const ValidationOptions = ({
   const onValidationInputChange = ({ target }: any) => {
     const { value } = target;
     setLocalRegex(value);
+    form.setFieldValue("data_type", value)
     handleValidateOptionsChange(value);
   };
 

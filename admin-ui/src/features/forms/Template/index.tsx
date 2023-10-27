@@ -203,6 +203,7 @@ export default function TemplateColumnForm({
               dataType={dataType}
               selectedValidation={selectedValidation}
               validateOptions={validateOptions}
+              form={form}
               handleDataTypeChange={handleDataTypeChange}
               handleValidationChange={handleValidationChange}
               handleValidateOptionsChange={handleValidateOptionsChange}
