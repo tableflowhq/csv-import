@@ -51,5 +51,5 @@ export default function useListenMessage(importerId: string, onComplete?: (data:
     return () => {
       window.removeEventListener("message", messageListener);
     };
-  }, []);
+  }, [importerId]);
 }
