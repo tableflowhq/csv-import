@@ -61,7 +61,7 @@ export default function TableFlowImporter({
   const searchParams = new URLSearchParams(urlParams);
   const defaultImporterUrl = "https://importer.tableflow.com";
   const uploaderUrl = `${hostUrl ? hostUrl : defaultImporterUrl}?${searchParams}`;
-  const backdropClick = (e: any) => modalCloseOnOutsideClick && modalOnCloseTriggered();
+  const backdropClick = () => modalCloseOnOutsideClick && modalOnCloseTriggered();
 
   useListenMessage(importerId, onComplete, modalOnCloseTriggered);
 
