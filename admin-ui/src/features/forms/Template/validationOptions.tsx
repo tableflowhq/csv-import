@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
+import { useForm } from "@mantine/form";
 import { Input, PillInput } from "@tableflow/ui-library";
 import style from "../style/Validation.module.scss";
 import ValidationOptionsEnum from "./ValidationOptionsEnum";
-import { useForm } from "@mantine/form";
 
 type ValidationOptionsType = Record<string, string[]>;
 
@@ -13,13 +13,13 @@ interface ValidationOptionsProps {
   handleDataTypeChange: (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
   handleValidationChange: (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
   handleValidateOptionsChange: (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
-  form: any
+  form: any;
 }
 
 interface LengthOptions {
-    min?: number | string;
-    max?: number | string;
-  }
+  min?: number | string;
+  max?: number | string;
+}
 
 const ValidationOptions = ({
   dataType,
@@ -28,13 +28,12 @@ const ValidationOptions = ({
   handleDataTypeChange,
   handleValidationChange,
   handleValidateOptionsChange,
-  form
+  form,
 }: ValidationOptionsProps) => {
   const [validationsOptions, setValidationsOptions] = useState({});
   const [minimumValue, setMinimumValue] = useState("");
   const [maximumValue, setMaximumValue] = useState("");
-  const [localRegex, setLocalRegex] = useState(typeof validateOptions !== 'object' ? validateOptions : '');
-  const { values, setFieldValue, isDirty } = form;
+  const [localRegex, setLocalRegex] = useState(typeof validateOptions !== "object" ? validateOptions : "");
 
   //TODO: this is a mock from backend
   const validationOptions: ValidationOptionsType = {
@@ -71,19 +70,13 @@ const ValidationOptions = ({
   }, [minimumValue, maximumValue]);
 
   useEffect(() => {
-    if (typeof validateOptions === 'object' && 'min' in validateOptions) {
-      setMinimumValue(validateOptions.min?.toString() || '');
+    if (typeof validateOptions === "object" && "min" in validateOptions) {
+      setMinimumValue(validateOptions.min?.toString() || "");
     }
-    if (typeof validateOptions === 'object' && 'max' in validateOptions) {
-      setMaximumValue(validateOptions.max?.toString() || '');
+    if (typeof validateOptions === "object" && "max" in validateOptions) {
+      setMaximumValue(validateOptions.max?.toString() || "");
     }
   }, [validateOptions]);
-
-  // useEffect(() => {
-  //   if (isDirty) {
-  //     setFieldValue("validateOptions", { min: "45" });
-  //   }
-  // }, [isDirty, setFieldValue]);
 
   const inputOptions = getOptionsFromObject(Object.keys(validationOptions));
 
@@ -92,13 +85,14 @@ const ValidationOptions = ({
     setValidationsOptions(options);
     setMaximumValue("");
     setMinimumValue("");
+    form.setFieldValue("data_type", value);
     handleDataTypeChange(value);
   };
 
   const onValidationInputChange = ({ target }: any) => {
     const { value } = target;
     setLocalRegex(value);
-    form.setFieldValue("data_type", value)
+    form.setFieldValue("pattern", value);
     handleValidateOptionsChange(value);
   };
 
@@ -107,10 +101,12 @@ const ValidationOptions = ({
   };
 
   const onMinimumChange = (event: any) => {
+    form.setFieldValue("minimum", event.target.value);
     setMinimumValue(event.target.value);
   };
 
   const onMaximumChange = (event: any) => {
+    form.setFieldValue("maximum", event.target.value);
     setMaximumValue(event.target.value);
   };
 
@@ -128,37 +124,70 @@ const ValidationOptions = ({
   };
 
   const renderInputPattern = () => (
-    <Input placeholder="Pattern" label="Pattern" name="pattern" onChange={onValidationInputChange} value={localRegex}/>
+    <Input
+      placeholder="Pattern"
+      label="Pattern"
+      name="pattern"
+      {...form.getInputProps("pattern")}
+      onChange={onValidationInputChange}
+      value={localRegex}
+    />
   );
 
   const renderInputList = () => (
     <label>
-      <PillInput label="Options" placeholder="List" onChange={onValidationPillChange} initialPills={Array.isArray(validateOptions) ? validateOptions : []} />
+      <PillInput
+        label="Options"
+        placeholder="List"
+        onChange={onValidationPillChange}
+        initialPills={Array.isArray(validateOptions) ? validateOptions : []}
+      />
     </label>
   );
 
   const renderRangeControl = () => (
     <div className={style.rangeControl}>
       <div className={style.inputWrapper}>
-        <Input placeholder="Minimum" label="Minimum" name="minimum" variants={["small"]} onChange={onMinimumChange} value={minimumValue} />
+        <Input
+          placeholder="Minimum"
+          label="Minimum"
+          name="minimum"
+          variants={["small"]}
+          onChange={onMinimumChange}
+          {...form.getInputProps("minimum")}
+          value={minimumValue}
+        />
       </div>
       <div className={style.inputSeparator}>-</div>
       <div className={style.inputWrapper}>
-        <Input placeholder="Maximum" label="Maximum" name="maximum" variants={["small"]} onChange={onMaximumChange} value={maximumValue} />
+        <Input
+          placeholder="Maximum"
+          label="Maximum"
+          name="maximum"
+          variants={["small"]}
+          onChange={onMaximumChange}
+          {...form.getInputProps("maximum")}
+          value={maximumValue}
+        />
       </div>
     </div>
   );
 
   return (
     <div>
-      <Input placeholder="Select a type" options={inputOptions} label="Data Type" name="data_type" value={dataType} onChange={onDataTypeChange} />
+      <Input placeholder="Select a type" options={inputOptions} label="Data Type" name="data_type" value={dataType}
+      {...form.getInputProps("data_type")} onChange={onDataTypeChange} />
       <Input
         placeholder="Select"
         options={validationsOptions}
         label="Validation"
         name="validation"
         value={selectedValidation}
-        onChange={handleValidationChange}
+        {...form.getInputProps("validation.validate")}
+        onChange={(value: any) => {
+          form.setFieldValue("validation.validate", value);
+          handleValidationChange(value)
+        }}
       />
       <>
         {selectedValidation === ValidationOptionsEnum.Regex && renderInputPattern()}

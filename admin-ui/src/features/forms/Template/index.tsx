@@ -16,6 +16,17 @@ export default function TemplateColumnForm({
 }: TemplateColumnProps) {
   const isEditForm = !!column?.id;
   const [userModifiedKey, setUserModifiedKey] = useState(false);
+  const validationOptionsArray: string[] = Object.values(ValidationOptionsEnum);
+  const [selectedValidation, setSelectedValidation] = useState(() => {
+    if (column?.validations) {
+      for (const validation of column.validations) {
+        if (validationOptionsArray.includes(validation.validate)) {
+          return validation.validate;
+        }
+      }
+    }
+    return "";
+  });
 
   const form = useForm({
     initialValues: {
@@ -27,21 +38,15 @@ export default function TemplateColumnForm({
       required: column?.required || false,
       not_blank: (column?.validations && column?.validations.some((v) => v.validate === "not_blank")) || false,
       suggested_mappings: column?.suggested_mappings || [],
+      data_type: column?.data_type || "string",
+      validation: {
+        validate: selectedValidation
+      }
     },
   });
   const { mutate, isLoading, error, isSuccess } = usePostTemplateColumn(context?.templateId, column?.id);
-  const validationOptionsArray: string[] = Object.values(ValidationOptionsEnum);
   const [dataType, setDataType] = useState(column?.data_type || "string");
-  const [selectedValidation, setSelectedValidation] = useState(() => {
-    if (column?.validations) {
-      for (const validation of column.validations) {
-        if (validationOptionsArray.includes(validation.validate)) {
-          return validation.validate;
-        }
-      }
-    }
-    return "";
-  });
+
   const [validateOptions, setValidateOptions] = useState(() => {
     if (column?.validations && selectedValidation) {
       const matchingValidation = column.validations.find(
