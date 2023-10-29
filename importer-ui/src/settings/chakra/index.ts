@@ -1,3 +1,4 @@
+import { Alert } from "./components/alert";
 import { Button } from "./components";
 import { foundations } from "./foundations";
 import { semanticTokens } from "./semantic-tokens";
@@ -20,6 +21,7 @@ const theme = {
   config,
   components: {
     Button,
+    Alert,
   },
 };
 

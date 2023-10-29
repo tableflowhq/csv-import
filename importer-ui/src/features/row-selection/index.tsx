@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { Alert } from "@chakra-ui/alert";
 import { Button } from "@chakra-ui/button";
 import Errors from "../../components/Errors";
 import Table from "../../components/Table";
@@ -6,6 +7,7 @@ import Tooltip from "../../components/Tooltip";
 import usePostSetHeader from "../../api/usePostSetHeader";
 import { RowSelectionProps } from "./types";
 import style from "./style/RowSelection.module.scss";
+import { PiWarningCircle } from "react-icons/pi";
 
 export default function RowSelection({ upload, onSuccess, onCancel, selectedHeaderRow, setSelectedHeaderRow }: RowSelectionProps) {
   const { mutate, error, isSuccess, isLoading, data } = usePostSetHeader(upload?.id || "");
@@ -46,6 +48,7 @@ export default function RowSelection({ upload, onSuccess, onCancel, selectedHead
   const numberOfColumns = Math.min(Object.keys(uploadRow.values).length, maxNumberOfColumns);
   const widthPercentage = 100 / numberOfColumns;
   const columnWidths = Array(numberOfColumns).fill(`${widthPercentage}%`);
+  const hasMultipleExcelSheets = (upload?.sheet_list?.length ?? 0) > 1;
 
   const handleNextClick = (e: any) => {
     e.preventDefault();
@@ -62,23 +65,31 @@ export default function RowSelection({ upload, onSuccess, onCancel, selectedHead
     <div className={style.content}>
       <form>
         {upload ? (
-          <div className={style.tableWrapper}>
-            <Table
-              fixHeader
-              mergeThemes={true}
-              data={dataWithRadios?.slice(0, maxNumberOfColumns) || []}
-              heading={
-                <div className={style.headingCaption}>
-                  <Tooltip title="Select the row which contains the column headers">Select Header Row</Tooltip>
-                </div>
-              }
-              keyAsId="index"
-              background="zebra"
-              columnWidths={columnWidths}
-              columnAlignments={Array(numberOfColumns).fill("left")}
-              onRowClick={(row) => setSelectedHeaderRow(dataWithRadios?.indexOf(row) || 0)}
-            />
-          </div>
+          <>
+            {hasMultipleExcelSheets ? (
+              <Alert status="info">
+                <PiWarningCircle className={style.warningIcon} />
+                The uploaded Excel file contains multiple sheets. Only the first sheet (&quot;{upload?.sheet_list?.[0]}&quot;) will be imported.
+              </Alert>
+            ) : null}
+            <div className={style.tableWrapper}>
+              <Table
+                fixHeader
+                mergeThemes={true}
+                data={dataWithRadios?.slice(0, maxNumberOfColumns) || []}
+                heading={
+                  <div className={style.headingCaption}>
+                    <Tooltip title="Select the row which contains the column headers">Select Header Row</Tooltip>
+                  </div>
+                }
+                keyAsId="index"
+                background="zebra"
+                columnWidths={columnWidths}
+                columnAlignments={Array(numberOfColumns).fill("left")}
+                onRowClick={(row) => setSelectedHeaderRow(dataWithRadios?.indexOf(row) || 0)}
+              />
+            </div>
+          </>
         ) : (
           <>Loading...</>
         )}

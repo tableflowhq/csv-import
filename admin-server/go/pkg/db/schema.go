@@ -407,5 +407,8 @@ func GetDatabaseSchemaInitSQL() string {
 		$$;
 		alter table validations
 		    alter column options drop not null;
+
+		alter table uploads
+		    add column if not exists sheet_list text[];
 	`
 }

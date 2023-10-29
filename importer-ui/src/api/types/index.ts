@@ -61,6 +61,7 @@ export type Upload = {
   tus_id: string;
   upload_columns: UploadColumn[];
   upload_rows: UploadRow[];
+  sheet_list?: string[];
 };
 
 export type UploadColumn = {

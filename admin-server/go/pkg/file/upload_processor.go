@@ -24,7 +24,8 @@ import (
 )
 
 type uploadProcessResult struct {
-	NumRows int
+	NumRows   int
+	SheetList []string
 }
 
 var maxColumnLimit = int(math.Min(500, math.MaxInt16))
@@ -161,6 +162,7 @@ func UploadCompleteHandler(event handler.HookEvent, uploadAdditionalStorageHandl
 	upload.FileSize = null.NewInt(fileSize, err == nil)
 	upload.NumRows = null.IntFrom(int64(uploadResult.NumRows))
 	upload.IsStored = true
+	upload.SheetList = uploadResult.SheetList
 
 	err = tf.DB.Save(upload).Error
 	if err != nil {
@@ -293,7 +295,7 @@ func processAndStoreUpload(upload *model.Upload, file *os.File, limit int) (uplo
 	wg.Wait()
 
 	tf.Log.Debugw("Upload processing and storage complete", "num_records", numRows, "time_taken", time.Since(startTime))
-	return uploadProcessResult{NumRows: numRows}, nil
+	return uploadProcessResult{NumRows: numRows, SheetList: it.SheetList}, nil
 }
 
 func getImportMetadata(importMetadataEncodedStr string) (jsonb.JSONB, error) {
