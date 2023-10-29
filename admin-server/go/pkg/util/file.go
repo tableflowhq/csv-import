@@ -10,9 +10,10 @@ import (
 )
 
 type DataFileIterator struct {
-	File   *os.File
-	GetRow func() ([]string, error)
-	Close  func()
+	File      *os.File
+	GetRow    func() ([]string, error)
+	SheetList []string
+	Close     func()
 }
 
 func GetFileSize(file *os.File) (int64, error) {
@@ -79,6 +80,7 @@ func OpenDataFileIterator(file *os.File, fileType string) (DataFileIterator, err
 		if len(sheets) == 0 {
 			return it, errors.New("no sheets found in file")
 		}
+		it.SheetList = sheets
 		rows, err := f.Rows(sheets[0])
 		if err != nil {
 			return it, err

@@ -65,6 +65,7 @@ type Upload struct {
 	Template       *Template      `json:"template"` // Set if the user passes in a template to the SDK, which overrides the template on the importer
 	IsStored       bool           `json:"is_stored" example:"false"`
 	HeaderRowIndex null.Int       `json:"header_row_index" swaggertype:"integer" example:"0"`
+	SheetList      []string       `json:"sheet_list" swaggertype:"array,string" example:"Sheet 1"`
 	CreatedAt      model.NullTime `json:"created_at" swaggertype:"integer" example:"1682366228"`
 
 	UploadRows    []UploadRow     `json:"upload_rows"`
@@ -178,6 +179,7 @@ func ConvertUpload(upload *model.Upload, uploadRows []UploadRow) (*Upload, error
 		Template:       uploadTemplate,
 		IsStored:       upload.IsStored,
 		HeaderRowIndex: upload.HeaderRowIndex,
+		SheetList:      upload.SheetList,
 		CreatedAt:      upload.CreatedAt,
 		UploadColumns:  importerUploadColumns,
 		UploadRows:     uploadRows,
