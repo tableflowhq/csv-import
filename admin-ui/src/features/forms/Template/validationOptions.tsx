@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { useForm } from "@mantine/form";
 import { Icon, Input, PillInput, Tooltip } from "@tableflow/ui-library";
 import style from "../style/Validation.module.scss";
 import ValidationOptionsEnum from "./ValidationOptionsEnum";
@@ -198,9 +197,9 @@ const ValidationOptions = ({
             <Tooltip className={style.formTooltip} title={"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, diam, quisque."} />
           </div>
         }
-        {...form.getInputProps("validation.validate")}
+        {...form.getInputProps("validations.validate")}
         onChange={(value: any) => {
-          form.setFieldValue("validation.validate", value);
+          form.setFieldValue("validations.validate", value);
           handleValidationChange(value);
         }}
       />

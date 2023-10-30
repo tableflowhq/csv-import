@@ -40,7 +40,7 @@ export default function TemplateColumnForm({
       suggested_mappings: column?.suggested_mappings || [],
       data_type: column?.data_type || "string",
       validation_option: false,
-      validation: {
+      validations: {
         validate: selectedValidation
       }
     },
