@@ -39,6 +39,7 @@ export default function TemplateColumnForm({
       not_blank: (column?.validations && column?.validations.some((v) => v.validate === "not_blank")) || false,
       suggested_mappings: column?.suggested_mappings || [],
       data_type: column?.data_type || "string",
+      validation_option: false,
       validation: {
         validate: selectedValidation
       }

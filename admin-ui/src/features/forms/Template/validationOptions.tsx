@@ -101,12 +101,12 @@ const ValidationOptions = ({
   };
 
   const onMinimumChange = (event: any) => {
-    form.setFieldValue("minimum", event.target.value);
+    form.setFieldValue("validation_option", event.target.value);
     setMinimumValue(event.target.value);
   };
 
   const onMaximumChange = (event: any) => {
-    form.setFieldValue("maximum", event.target.value);
+    form.setFieldValue("validation_option", event.target.value);
     setMaximumValue(event.target.value);
   };
 
@@ -154,7 +154,6 @@ const ValidationOptions = ({
           name="minimum"
           variants={["small"]}
           onChange={onMinimumChange}
-          {...form.getInputProps("minimum")}
           value={minimumValue}
         />
       </div>
@@ -166,7 +165,6 @@ const ValidationOptions = ({
           name="maximum"
           variants={["small"]}
           onChange={onMaximumChange}
-          {...form.getInputProps("maximum")}
           value={maximumValue}
         />
       </div>
