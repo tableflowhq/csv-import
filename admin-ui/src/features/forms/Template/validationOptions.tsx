@@ -197,7 +197,6 @@ const ValidationOptions = ({
             <Tooltip className={style.formTooltip} title={"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, diam, quisque."} />
           </div>
         }
-        {...form.getInputProps("validations.validate")}
         onChange={(value: any) => {
           form.setFieldValue("validations.validate", value);
           handleValidationChange(value);

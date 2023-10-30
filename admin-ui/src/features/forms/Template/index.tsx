@@ -21,7 +21,7 @@ export default function TemplateColumnForm({
     if (column?.validations) {
       for (const validation of column.validations) {
         if (validationOptionsArray.includes(validation.validate)) {
-          return validation.validate;
+          return validation?.validate;
         }
       }
     }
@@ -41,7 +41,7 @@ export default function TemplateColumnForm({
       data_type: column?.data_type || "string",
       validation_option: false,
       validations: {
-        validate: selectedValidation
+        validate: selectedValidation || ""
       }
     },
   });
@@ -51,7 +51,7 @@ export default function TemplateColumnForm({
   const [validateOptions, setValidateOptions] = useState(() => {
     if (column?.validations && selectedValidation) {
       const matchingValidation = column.validations.find(
-        (validation) => validation.validate === selectedValidation
+        (validation) => validation?.validate === selectedValidation
       );
       if (matchingValidation && matchingValidation.options) {
         return matchingValidation.options;
@@ -68,7 +68,7 @@ export default function TemplateColumnForm({
 
   const onSubmit = (values: any) => {
     // Note the validation logic here and "not_blank" in the form will be removed once we support multiple validations
-    const hasExistingValidation = column?.validations && column?.validations.some((v) => v.validate === "not_blank");
+    const hasExistingValidation = column?.validations && column?.validations.some((v) => v?.validate === "not_blank");
     values.validations = null;
     if (values.not_blank && !hasExistingValidation) {
       // If not_blank is selected and there is no existing validation, add the validation to the request
