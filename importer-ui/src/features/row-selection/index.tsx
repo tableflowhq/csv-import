@@ -69,7 +69,7 @@ export default function RowSelection({ upload, onSuccess, onCancel, selectedHead
             {hasMultipleExcelSheets ? (
               <Alert status="info">
                 <PiWarningCircle className={style.warningIcon} />
-                The uploaded Excel file contains multiple sheets. Only the first sheet (&quot;{upload?.sheet_list?.[0]}&quot;) will be imported.
+                Only the first sheet (&quot;{upload?.sheet_list?.[0]}&quot;) of the Excel file will be imported. To import multiple sheets, please upload each sheet individually.
               </Alert>
             ) : null}
             <div className={style.tableWrapper}>
