@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useForm } from "@mantine/form";
-import { Input, PillInput, Tooltip } from "@tableflow/ui-library";
+import { Icon, Input, PillInput, Tooltip } from "@tableflow/ui-library";
 import style from "../style/Validation.module.scss";
 import ValidationOptionsEnum from "./ValidationOptionsEnum";
 
@@ -207,7 +207,11 @@ const ValidationOptions = ({
         }}
       />
       <>
-        {!selectedValidation && <div className={style.validationPlaceholder}>Options will become visible once you select the column type.</div>}
+        {!selectedValidation && (
+          <div className={style.validationPlaceholder}>
+            <Icon icon="info" className={style.placeholderIcon} /> Options will become visible once you select the column type.
+          </div>
+        )}
         {selectedValidation === ValidationOptionsEnum.Regex && renderInputPattern()}
         {selectedValidation === ValidationOptionsEnum.List && renderInputList()}
         {(selectedValidation === ValidationOptionsEnum.Length || selectedValidation === ValidationOptionsEnum.Range) && renderRangeControl()}
