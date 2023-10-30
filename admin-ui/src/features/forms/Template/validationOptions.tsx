@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useForm } from "@mantine/form";
-import { Input, PillInput } from "@tableflow/ui-library";
+import { Input, PillInput, Tooltip } from "@tableflow/ui-library";
 import style from "../style/Validation.module.scss";
 import ValidationOptionsEnum from "./ValidationOptionsEnum";
 
@@ -158,7 +158,7 @@ const ValidationOptions = ({
           value={minimumValue}
         />
       </div>
-      <div className={style.inputSeparator}>-</div>
+      <div className={style.inputSeparator} />
       <div className={style.inputWrapper}>
         <Input
           placeholder="Maximum"
@@ -175,21 +175,39 @@ const ValidationOptions = ({
 
   return (
     <div>
-      <Input placeholder="Select a type" options={inputOptions} label="Data Type" name="data_type" value={dataType}
-      {...form.getInputProps("data_type")} onChange={onDataTypeChange} />
+      <Input
+        placeholder="Select a type"
+        options={inputOptions}
+        label={
+          <div className={style.formLabel}>
+            <span>Data Type</span>
+            <Tooltip className={style.formTooltip} title={"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, diam, quisque."} />
+          </div>
+        }
+        name="data_type"
+        value={dataType}
+        {...form.getInputProps("data_type")}
+        onChange={onDataTypeChange}
+      />
       <Input
         placeholder="Select"
         options={validationsOptions}
-        label="Validation"
         name="validation"
         value={selectedValidation}
+        label={
+          <div className={style.formLabel}>
+            <span>Validation</span>
+            <Tooltip className={style.formTooltip} title={"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, diam, quisque."} />
+          </div>
+        }
         {...form.getInputProps("validation.validate")}
         onChange={(value: any) => {
           form.setFieldValue("validation.validate", value);
-          handleValidationChange(value)
+          handleValidationChange(value);
         }}
       />
       <>
+        {!selectedValidation && <div className={style.validationPlaceholder}>Options will become visible once you select the column type.</div>}
         {selectedValidation === ValidationOptionsEnum.Regex && renderInputPattern()}
         {selectedValidation === ValidationOptionsEnum.List && renderInputList()}
         {(selectedValidation === ValidationOptionsEnum.Length || selectedValidation === ValidationOptionsEnum.Range) && renderRangeControl()}
