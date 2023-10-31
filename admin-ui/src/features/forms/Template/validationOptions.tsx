@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Icon, Input, PillInput, Tooltip } from "@tableflow/ui-library";
 import style from "../style/Validation.module.scss";
 import ValidationOptionsEnum from "./ValidationOptionsEnum";
+import useGetOrganization from "../../../api/useGetOrganization";
+import useGetDataTypeValidations from "../../../api/useDataTypeValidations";
 
 type ValidationOptionsType = Record<string, string[]>;
 
@@ -29,6 +31,10 @@ const ValidationOptions = ({
   handleValidateOptionsChange,
   form,
 }: ValidationOptionsProps) => {
+  const { data: organization } = useGetOrganization();
+  const workspaceId = organization?.workspaces?.[0]?.id || "";
+  const { isLoading, data: validationOptions1 } = useGetDataTypeValidations(workspaceId);
+
   const [validationsOptions, setValidationsOptions] = useState({});
   const [minimumValue, setMinimumValue] = useState("");
   const [maximumValue, setMaximumValue] = useState("");
