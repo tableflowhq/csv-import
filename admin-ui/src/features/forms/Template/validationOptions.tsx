@@ -180,7 +180,7 @@ const ValidationOptions = ({
         label={
           <div className={style.formLabel}>
             <span>Data Type</span>
-            <Tooltip className={style.formTooltip} title={"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, diam, quisque."} />
+            <Tooltip className={style.formTooltip} title={"Set the output format of your data and add basic constraints"} />
           </div>
         }
         name="data_type"
@@ -207,7 +207,7 @@ const ValidationOptions = ({
       <>
         {!selectedValidation && (
           <div className={style.validationPlaceholder}>
-            <Icon icon="info" className={style.placeholderIcon} /> Options will become visible once you select the column type.
+            <Icon icon="info" className={style.placeholderIcon} /> Select a validation to view additional options.
           </div>
         )}
         {selectedValidation === ValidationOptionsEnum.Regex && renderInputPattern()}

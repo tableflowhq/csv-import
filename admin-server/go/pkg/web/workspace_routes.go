@@ -91,7 +91,7 @@ func getWorkspaceDataTypeValidations(c *gin.Context, getWorkspaceUser func(*gin.
 	for dataType, validations := range evaluator.DataTypeValidations {
 		var newValidations []string
 		for _, validation := range validations {
-			if allowedValidateTypes[validation] {
+			if allowedValidateTypes == nil || allowedValidateTypes[validation] {
 				newValidations = append(newValidations, validation)
 			}
 		}
