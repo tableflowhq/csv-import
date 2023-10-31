@@ -196,7 +196,7 @@ const ValidationOptions = ({
         label={
           <div className={style.formLabel}>
             <span>Validation</span>
-            <Tooltip className={style.formTooltip} title={"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod, diam, quisque."} />
+            <Tooltip className={style.formTooltip} title={"Enforce cell values to meet specified conditions before the data is submitted"} />
           </div>
         }
         onChange={(value: any) => {
