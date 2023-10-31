@@ -28,6 +28,16 @@ export default function TemplateColumnForm({
     return "";
   });
 
+  const getSavedValidationOptions = () => {
+    if (column?.validations && selectedValidation) {
+      const matchingValidation = column.validations.find((validation) => validation?.validate === selectedValidation);
+      if (matchingValidation && matchingValidation.options) {
+        return matchingValidation.options;
+      }
+    }
+    return "";
+  };
+
   const form = useForm({
     initialValues: {
       id: column?.id || "",
@@ -48,41 +58,31 @@ export default function TemplateColumnForm({
   const { mutate, isLoading, error, isSuccess } = usePostTemplateColumn(context?.templateId, column?.id);
   const [dataType, setDataType] = useState(column?.data_type || "string");
 
-  const [validateOptions, setValidateOptions] = useState(() => {
-    if (column?.validations && selectedValidation) {
-      const matchingValidation = column.validations.find((validation) => validation?.validate === selectedValidation);
-      if (matchingValidation && matchingValidation.options) {
-        return matchingValidation.options;
-      }
-    }
-    return "";
-  });
+  const [validateOptions, setValidateOptions] = useState(() => getSavedValidationOptions());
 
   useEffect(() => {
     if (isSuccess && !error && !isLoading && onSuccess) onSuccess();
   }, [isSuccess, error, isLoading]);
 
   const onSubmit = (values: any) => {
-    // Note the validation logic here and "not_blank" in the form will be removed once we support multiple validations
-    const hasExistingValidation = column?.validations && column?.validations.some((v) => v?.validate === "not_blank");
+    const savedOptions = getSavedValidationOptions();
     values.validations = [];
-    if (values.not_blank && !hasExistingValidation) {
-      // If not_blank is selected and there is no existing validation, add the validation to the request
+
+    if (values.not_blank) {
       values.validations = [{ validate: "not_blank" }];
-    } else if (hasExistingValidation) {
-      // If not_blank is not selected and the validation exists, add an empty validation array so the backend will remove it
-      values.validations = [];
     }
 
     if (selectedValidation) {
       const validateOption: { validate: string; options?: string } = {
         validate: selectedValidation,
-        options: validateOptions,
+        options: Object.keys(validateOptions).length ? validateOptions : savedOptions,
       };
+
       if (selectedValidation === ValidationOptionsEnum.Email || selectedValidation === ValidationOptionsEnum.Phone) {
         delete validateOption.options;
       }
-      values.validations = [validateOption];
+
+      values.validations.push(validateOption);
     }
 
     mutate({ ...values, data_type: dataType });
