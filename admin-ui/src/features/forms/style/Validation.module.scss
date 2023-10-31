@@ -17,10 +17,11 @@
 
 .formTooltip {
   margin-left: 5px;
+  transform: translateY(1px);
 }
 
 .formLabel {
-  display: inline-flex;
+  display: inline;
 }
 
 .validationPlaceholder {
