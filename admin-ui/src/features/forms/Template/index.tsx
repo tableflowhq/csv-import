@@ -41,8 +41,8 @@ export default function TemplateColumnForm({
       data_type: column?.data_type || "string",
       validation_option: false,
       validations: {
-        validate: selectedValidation || ""
-      }
+        validate: selectedValidation || "",
+      },
     },
   });
   const { mutate, isLoading, error, isSuccess } = usePostTemplateColumn(context?.templateId, column?.id);
@@ -50,17 +50,13 @@ export default function TemplateColumnForm({
 
   const [validateOptions, setValidateOptions] = useState(() => {
     if (column?.validations && selectedValidation) {
-      const matchingValidation = column.validations.find(
-        (validation) => validation?.validate === selectedValidation
-      );
+      const matchingValidation = column.validations.find((validation) => validation?.validate === selectedValidation);
       if (matchingValidation && matchingValidation.options) {
         return matchingValidation.options;
       }
     }
     return "";
   });
-  
-
 
   useEffect(() => {
     if (isSuccess && !error && !isLoading && onSuccess) onSuccess();
@@ -89,7 +85,7 @@ export default function TemplateColumnForm({
       values.validations = [validateOption];
     }
 
-    mutate({...values, data_type: dataType});
+    mutate({ ...values, data_type: dataType });
   };
 
   const onNameChange = ({ target }: any) => {

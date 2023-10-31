@@ -32,6 +32,14 @@ var AllValidations = []string{
 	"list",
 }
 
+// TODO: Standardize this list so the slices for all data types, validations, and allowed types methods use this instead
+var DataTypeValidations = map[string][]string{
+	"string":  {"regex", "email", "phone", "length", "list"},
+	"number":  {"range"},
+	"boolean": {},
+	"date":    {},
+}
+
 type Evaluator interface {
 	Initialize(options interface{}) error
 	Evaluate(cell string) (passed bool, value string, err error)
