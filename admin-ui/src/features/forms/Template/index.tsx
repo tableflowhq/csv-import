@@ -65,7 +65,7 @@ export default function TemplateColumnForm({
   const onSubmit = (values: any) => {
     // Note the validation logic here and "not_blank" in the form will be removed once we support multiple validations
     const hasExistingValidation = column?.validations && column?.validations.some((v) => v?.validate === "not_blank");
-    values.validations = null;
+    values.validations = [];
     if (values.not_blank && !hasExistingValidation) {
       // If not_blank is selected and there is no existing validation, add the validation to the request
       values.validations = [{ validate: "not_blank" }];
