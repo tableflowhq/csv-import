@@ -160,6 +160,9 @@ func StartWebServer(config ServerConfig) *http.Server {
 	/* Workspace */
 	adm.GET("/workspace/:id/api-key", func(c *gin.Context) { getWorkspaceAPIKey(c, config.GetWorkspaceUser) })
 	adm.POST("/workspace/:id/api-key", func(c *gin.Context) { regenerateWorkspaceAPIKey(c, config.GetWorkspaceUser) })
+	adm.GET("/workspace/:id/datatype-validations", func(c *gin.Context) {
+		getWorkspaceDataTypeValidations(c, config.GetWorkspaceUser, config.GetAllowedValidateTypes)
+	})
 
 	/* Importer */
 	adm.POST("/importer", func(c *gin.Context) { createImporter(c, config.GetWorkspaceUser) })

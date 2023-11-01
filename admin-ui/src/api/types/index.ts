@@ -93,6 +93,7 @@ export type TemplateColumnFormFields = {
   required: boolean;
   validations?: Validation[];
   suggested_mappings?: string[];
+  data_type?: string;
 };
 
 export type Validation = {
@@ -139,3 +140,5 @@ export type Import = {
   workspace_id: string;
   importer?: Importer;
 };
+
+export type ValidationOptionsType = Record<string, string[]>

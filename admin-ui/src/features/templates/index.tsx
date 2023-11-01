@@ -26,7 +26,7 @@ export default function Templates({ importer }: TemplatesProps) {
   const modalContent = useMemo(
     () =>
       !entityId ? (
-        <Box variants={["wide", "space-mid"]}>
+        <Box variants={["wide", "space-mid"]} className={style.extraWide}>
           <TemplateColumnForm
             title="Add Column"
             buttonLabel="Save"
@@ -36,7 +36,7 @@ export default function Templates({ importer }: TemplatesProps) {
           />
         </Box>
       ) : action === "edit" ? (
-        <Box variants={["wide", "space-mid"]}>
+        <Box variants={["wide", "space-mid"]} className={style.extraWide}>
           <TemplateColumnForm
             title="Edit Column"
             buttonLabel="Save"

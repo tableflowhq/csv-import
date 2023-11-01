@@ -12,11 +12,14 @@ type RegexEvaluator struct {
 
 func (e *RegexEvaluator) Initialize(options interface{}) error {
 	if options == nil {
-		return errors.New("not provided")
+		return errors.New("no pattern provided")
 	}
 	pattern, ok := options.(string)
 	if !ok {
-		return errors.New("must be a string")
+		return errors.New("pattern must be a string")
+	}
+	if len(pattern) == 0 {
+		return errors.New("no pattern provided")
 	}
 	var err error
 	e.Regexp, err = regexp.Compile(pattern)

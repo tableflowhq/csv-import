@@ -10,7 +10,7 @@
 }
 
 .container {
-  width: 360px;
+  width: 820px;
 }
 
 .formTop {
@@ -231,4 +231,29 @@
 
 .pillInputContainer {
   margin-bottom: 20px;
+}
+
+.formControls {
+  display: flex;
+  margin-bottom: var(--m-xxs);
+
+  .column {
+    flex: 1;
+    padding: 15px;
+
+    .titleContainer {
+      margin: 0 0 var(--m);
+      .subTitle {
+        font-weight: 600;
+        margin: 0 0 var(--m-xs);
+        color: var(--color-text);
+        font-size: var(--font-size-l);
+      }
+
+      .customText {
+        font-weight: 400;
+        font-size: var(--font-size-xs);
+      }
+    }
+  }
 }

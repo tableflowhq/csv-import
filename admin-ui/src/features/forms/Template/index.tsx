@@ -5,6 +5,8 @@ import { TemplateColumn } from "../../../api/types";
 import usePostTemplateColumn from "../../../api/usePostTemplateColumn";
 import { TemplateColumnProps } from "../types";
 import style from "../style/Form.module.scss";
+import ValidationOptions from "./validationOptions";
+import ValidationOptionsEnum from "./ValidationOptionsEnum";
 
 export default function TemplateColumnForm({
   title = "Template column form",
@@ -14,6 +16,28 @@ export default function TemplateColumnForm({
 }: TemplateColumnProps) {
   const isEditForm = !!column?.id;
   const [userModifiedKey, setUserModifiedKey] = useState(false);
+  const validationOptionsArray: string[] = Object.values(ValidationOptionsEnum);
+  const [selectedValidation, setSelectedValidation] = useState(() => {
+    if (column?.validations) {
+      for (const validation of column.validations) {
+        if (validationOptionsArray.includes(validation.validate)) {
+          return validation?.validate;
+        }
+      }
+    }
+    return "";
+  });
+
+  const getSavedValidationOptions = () => {
+    if (column?.validations && selectedValidation) {
+      const matchingValidation = column.validations.find((validation) => validation?.validate === selectedValidation);
+      if (matchingValidation && matchingValidation.options) {
+        return matchingValidation.options;
+      }
+    }
+    return "";
+  };
+
   const form = useForm({
     initialValues: {
       id: column?.id || "",
@@ -24,26 +48,44 @@ export default function TemplateColumnForm({
       required: column?.required || false,
       not_blank: (column?.validations && column?.validations.some((v) => v.validate === "not_blank")) || false,
       suggested_mappings: column?.suggested_mappings || [],
+      data_type: column?.data_type || "string",
+      validation_option: false,
+      validations: {
+        validate: selectedValidation || "",
+      },
     },
   });
   const { mutate, isLoading, error, isSuccess } = usePostTemplateColumn(context?.templateId, column?.id);
+  const [dataType, setDataType] = useState(column?.data_type || "string");
+
+  const [validateOptions, setValidateOptions] = useState(() => getSavedValidationOptions());
 
   useEffect(() => {
     if (isSuccess && !error && !isLoading && onSuccess) onSuccess();
   }, [isSuccess, error, isLoading]);
 
   const onSubmit = (values: any) => {
-    // Note the validation logic here and "not_blank" in the form will be removed once we support multiple validations
-    const hasExistingValidation = column?.validations && column?.validations.some((v) => v.validate === "not_blank");
-    values.validations = null;
-    if (values.not_blank && !hasExistingValidation) {
-      // If not_blank is selected and there is no existing validation, add the validation to the request
+    const savedOptions = getSavedValidationOptions();
+    values.validations = [];
+
+    if (values.not_blank) {
       values.validations = [{ validate: "not_blank" }];
-    } else if (hasExistingValidation) {
-      // If not_blank is not selected and the validation exists, add an empty validation array so the backend will remove it
-      values.validations = [];
     }
-    mutate(values);
+
+    if (selectedValidation) {
+      const validateOption: { validate: string; options?: string } = {
+        validate: selectedValidation,
+        options: Object.keys(validateOptions).length ? validateOptions : savedOptions,
+      };
+
+      if (selectedValidation === ValidationOptionsEnum.Email || selectedValidation === ValidationOptionsEnum.Phone) {
+        delete validateOption.options;
+      }
+
+      values.validations.push(validateOption);
+    }
+
+    mutate({ ...values, data_type: dataType });
   };
 
   const onNameChange = ({ target }: any) => {
@@ -77,6 +119,21 @@ export default function TemplateColumnForm({
 
   const requiredFieldEmpty = form.getInputProps("name").value.length === 0 || form.getInputProps("key").value.length === 0;
 
+  const handleDataTypeChange = (value: any) => {
+    setDataType(value);
+    setSelectedValidation("");
+    setValidateOptions("");
+  };
+
+  const handleValidationChange = (value: any) => {
+    setSelectedValidation(value);
+    setValidateOptions("");
+  };
+
+  const handleValidateOptionsChange = (value: any) => {
+    setValidateOptions(value);
+  };
+
   return (
     <div className={style.container}>
       {title && (
@@ -85,59 +142,76 @@ export default function TemplateColumnForm({
         </div>
       )}
       <form onSubmit={form.onSubmit(onSubmit)} aria-disabled={isLoading}>
-        <fieldset disabled={isLoading}>
-          <Input
-            placeholder={!isEditForm ? "Name" : `${column?.name}`}
-            label="Name *"
-            name="name"
-            {...form.getInputProps("name")}
-            autoFocus={!isEditForm}
-            onChange={onNameChange}
-            required
-          />
-          <Input
-            placeholder={!isEditForm ? "Key" : `${column?.key}`}
-            label="Key *"
-            name="key"
-            {...form.getInputProps("key")}
-            onChange={onKeyChange}
-            required
-          />
-          <Input as="textarea" placeholder="Description" label="Description" name="description" {...form.getInputProps("description")} />
-          <div className={style.pillInputContainer}>
-            <span>Suggested Mappings</span>
-            <Tooltip
-              className={style.checkboxLabel}
-              title={
-                "If a column header in the file matches one of these names (case-insensitive), it will be automatically selected during column mapping"
-              }
+        <div className={style.formControls}>
+          <fieldset disabled={isLoading} className={style.column}>
+            <Input
+              placeholder={!isEditForm ? "Name" : `${column?.name}`}
+              label="Name *"
+              name="name"
+              {...form.getInputProps("name")}
+              autoFocus={!isEditForm}
+              onChange={onNameChange}
+              required
             />
-            <label>
-              <PillInput
-                placeholder={"Column mappings"}
-                initialPills={form.getInputProps("suggested_mappings").value}
-                onChange={onSuggestedMappingChange}
+            <Input
+              placeholder={!isEditForm ? "Key" : `${column?.key}`}
+              label="Key *"
+              name="key"
+              {...form.getInputProps("key")}
+              onChange={onKeyChange}
+              required
+            />
+            <Input as="textarea" placeholder="Description" label="Description" name="description" {...form.getInputProps("description")} />
+            <div className={style.pillInputContainer}>
+              <span>Suggested Mappings</span>
+              <Tooltip
+                className={style.checkboxLabel}
+                title={
+                  "If a column header in the file matches one of these names (case-insensitive), it will be automatically selected during column mapping"
+                }
               />
-            </label>
-          </div>
-          <div className={style.checkboxInput}>
-            <label>
-              <Checkbox {...form.getInputProps("required", { type: "checkbox" })} />
-              <span className={style.checkboxLabel}>Column required</span>
-            </label>
-            <Tooltip className={style.checkboxLabel} title={"Users must map a column from their file to this column to proceed with the import"} />
-          </div>
-          <div className={style.checkboxInput}>
-            <label>
-              <Checkbox {...form.getInputProps("not_blank", { type: "checkbox" })} />
-              <span className={style.checkboxLabel}>Cells must contain a value</span>
-            </label>
-            <Tooltip
-              className={style.checkboxLabel}
-              title={"Every cell in this column must contain data. Empty cells will prevent users from completing the import"}
+              <label>
+                <PillInput
+                  placeholder={"Column mappings"}
+                  initialPills={form.getInputProps("suggested_mappings").value}
+                  onChange={onSuggestedMappingChange}
+                />
+              </label>
+            </div>
+            <div className={style.checkboxInput}>
+              <label>
+                <Checkbox {...form.getInputProps("required", { type: "checkbox" })} />
+                <span className={style.checkboxLabel}>Column required</span>
+              </label>
+              <Tooltip className={style.checkboxLabel} title={"Users must map a column from their file to this column to proceed with the import"} />
+            </div>
+            <div className={style.checkboxInput}>
+              <label>
+                <Checkbox {...form.getInputProps("not_blank", { type: "checkbox" })} />
+                <span className={style.checkboxLabel}>Cells must contain a value</span>
+              </label>
+              <Tooltip
+                className={style.checkboxLabel}
+                title={"Every cell in this column must contain data. Empty cells will prevent users from completing the import"}
+              />
+            </div>
+          </fieldset>
+
+          <fieldset disabled={isLoading} className={style.column}>
+            <div className={style.titleContainer}>
+              <h2 className={style.subTitle}>Validation options</h2>
+            </div>
+            <ValidationOptions
+              dataType={dataType}
+              selectedValidation={selectedValidation}
+              validateOptions={validateOptions}
+              form={form}
+              handleDataTypeChange={handleDataTypeChange}
+              handleValidationChange={handleValidationChange}
+              handleValidateOptionsChange={handleValidateOptionsChange}
             />
-          </div>
-        </fieldset>
+          </fieldset>
+        </div>
 
         <div className={classes([style.actions, style.compact])}>
           <Button type="submit" variants={["primary", "noMargin"]} disabled={isLoading || !form.isDirty() || requiredFieldEmpty}>

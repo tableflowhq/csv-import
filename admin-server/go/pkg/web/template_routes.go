@@ -287,6 +287,18 @@ func editTemplateColumn(c *gin.Context, getWorkspaceUser func(*gin.Context, stri
 	var validationsToDelete []*model.Validation
 	allowedValidateTypes := getAllowedValidateTypes(template.WorkspaceID.String())
 
+	// Parse any data type changes first so these can be used to validate any new validations
+	hasNewDataType := false
+	if req.DataType != nil && *req.DataType != string(templateColumn.DataType) {
+		dataType, err := model.ParseTemplateColumnDataType(*req.DataType)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("The data type '%s' is invalid", *req.DataType)})
+			return
+		}
+		hasNewDataType = true
+		templateColumn.DataType = dataType
+	}
+
 	if req.Validations != nil {
 		// If validations are passed in, use these to overwrite the validations in the database
 		//
@@ -330,28 +342,21 @@ func editTemplateColumn(c *gin.Context, getWorkspaceUser func(*gin.Context, stri
 		})
 	}
 
-	if req.DataType != nil && *req.DataType != string(templateColumn.DataType) {
-		dataType, err := model.ParseTemplateColumnDataType(*req.DataType)
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("The data type '%s' is invalid", *req.DataType)})
-			return
-		}
-		// Remove any previous data type validators
+	if hasNewDataType {
+		// Remove any previous data type validators and any previous validations that are only allowed on another data type
 		validationsToDelete = append(validationsToDelete, lo.Filter(templateColumn.Validations, func(v *model.Validation, _ int) bool {
-			return evaluator.IsDataTypeEvaluator(v.Validate)
+			notAllowedDataType := !lo.Contains(v.Evaluator.AllowedDataTypes(), string(templateColumn.DataType))
+			return notAllowedDataType || evaluator.IsDataTypeEvaluator(v.Validate)
 		})...)
-
 		// Add a new data type validator
-		if evaluator.IsDataTypeEvaluator(string(dataType)) {
-			validation, err := model.ParseValidation(0, templateColumn.ID.String(), string(dataType), jsonb.NewNull(), "", "", dataType)
+		if evaluator.IsDataTypeEvaluator(string(templateColumn.DataType)) {
+			validation, err := model.ParseValidation(0, templateColumn.ID.String(), string(templateColumn.DataType), jsonb.NewNull(), "", "", templateColumn.DataType)
 			if err != nil {
 				c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 				return
 			}
 			validationsToCreateOrEdit = append(validationsToCreateOrEdit, validation)
 		}
-
-		templateColumn.DataType = dataType
 		save = true
 	}
 
