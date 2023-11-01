@@ -57,21 +57,21 @@ uploadButton.addEventListener("click", () => {
   <script src="https://unpkg.com/@tableflow/js@latest/build/index.js"></script>
 </head>
 <body>
-<button id="uploadButton">Open TableFlow Importer</button>
-<script>
-  const importer = createTableFlowImporter({
-    importerId: "6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353", // Use your importer ID
-    modalOnCloseTriggered: () => importer.close(),
-    darkMode: true, 
-    metadata: {"user_id": 1234}, // Pass through user or import info
-    onComplete: (data) => console.log(data),
-  });
-
-  const uploadButton = document.getElementById("uploadButton");
+  <button id="uploadButton">Open TableFlow Importer</button>
+  <script>
+    const importer = createTableFlowImporter({
+      importerId: "6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353", // Use your importer ID
+      modalOnCloseTriggered: () => importer.close(),
+      darkMode: true, 
+      metadata: {"user_id": 1234}, // Pass through user or import info
+      onComplete: (data) => console.log(data),
+    });
+  
+    const uploadButton = document.getElementById("uploadButton");
     uploadButton.addEventListener("click", () => {
-    importer?.showModal();
-  });
-</script>
+      importer?.showModal();
+    });
+  </script>
 </body>
 ```
 
