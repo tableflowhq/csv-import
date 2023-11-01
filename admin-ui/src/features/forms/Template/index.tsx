@@ -199,7 +199,7 @@ export default function TemplateColumnForm({
 
           <fieldset disabled={isLoading} className={style.column}>
             <div className={style.titleContainer}>
-              <h2 className={style.subTitle}>Validation options</h2>
+              <h2 className={style.subTitle}>Validation Options</h2>
             </div>
             <ValidationOptions
               dataType={dataType}
