@@ -38,16 +38,16 @@ export default function TopBar() {
           } as DialogItem,
         ]
       : []),
-    ...(sessionExists && showProfile
-      ? [
-          {
-            children: "Billing",
-            onClick: () => navigate("/billing"),
-            icon: "database",
-            iconPosition: "left",
-          } as DialogItem,
-        ]
-      : []),
+    // ...(sessionExists && showProfile
+    //   ? [
+    //       {
+    //         children: "Billing",
+    //         onClick: () => navigate("/billing"),
+    //         icon: "database",
+    //         iconPosition: "left",
+    //       } as DialogItem,
+    //     ]
+    //   : []),
     ...(sessionExists && showProfile
       ? [
           {
