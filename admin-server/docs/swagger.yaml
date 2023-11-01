@@ -12,6 +12,8 @@ definitions:
       created_at:
         example: 1682366228
         type: integer
+      data_types:
+        $ref: '#/definitions/jsonb.JSONB'
       id:
         example: da5554e3-6c87-41b2-9366-5449a2f15b53
         type: string
@@ -147,6 +149,9 @@ definitions:
         type: integer
       created_by:
         $ref: '#/definitions/model.User'
+      data_type:
+        example: string
+        type: string
       description:
         example: An email address
         type: string
@@ -222,6 +227,12 @@ definitions:
       schemaless:
         example: false
         type: boolean
+      sheet_list:
+        example:
+        - Sheet 1
+        items:
+          type: string
+        type: array
       template:
         description: Set if the user passes in a template to the SDK (which overrides
           the template on the importer) or if a schemaless import occurs
@@ -288,17 +299,17 @@ definitions:
       message:
         example: This column must contain a value
         type: string
+      options:
+        example: "true"
+        type: string
       severity:
         example: error
         type: string
       template_column_id:
         example: a1ed136d-33ce-4b7e-a7a4-8a5ccfe54cd5
         type: string
-      type:
-        example: filled
-        type: string
-      value:
-        example: "true"
+      validate:
+        example: not_blank
         type: string
     type: object
   model.Workspace:
@@ -361,7 +372,7 @@ definitions:
       rows:
         description: Used for the final step in the onComplete
         items:
-          $ref: '#/definitions/types.ImportRow'
+          $ref: '#/definitions/types.ImportRowResponse'
         type: array
       upload_id:
         example: 50ca61e1-f683-4b03-9ec4-4b3adb592bf1
@@ -429,8 +440,23 @@ definitions:
         type: string
       severity:
         type: string
-      type:
+      validate:
         type: string
+    type: object
+  types.ImportRowResponse:
+    properties:
+      errors:
+        additionalProperties:
+          items:
+            $ref: '#/definitions/types.ImportRowError'
+          type: array
+        type: object
+      index:
+        example: 0
+        type: integer
+      values:
+        additionalProperties: true
+        type: object
     type: object
   types.Importer:
     properties:
@@ -479,6 +505,9 @@ definitions:
     type: object
   types.TemplateColumn:
     properties:
+      data_type:
+        example: string
+        type: string
       description:
         example: The first name
         type: string
@@ -537,6 +566,12 @@ definitions:
       metadata:
         example: '{"user_id": 1234}'
         type: string
+      sheet_list:
+        example:
+        - Sheet 1
+        items:
+          type: string
+        type: array
       template:
         allOf:
         - $ref: '#/definitions/types.Template'
@@ -571,6 +606,9 @@ definitions:
         items:
           type: string
         type: array
+      suggested_template_column_id:
+        example: a1ed136d-33ce-4b7e-a7a4-8a5ccfe54cd5
+        type: string
     type: object
   types.UploadHeaderRowSelection:
     properties:
@@ -594,16 +632,16 @@ definitions:
         example: 4581
         type: integer
       message:
-        example: This column must contain a value
+        example: The cell must contain a value
+        type: string
+      options:
+        example: "true"
         type: string
       severity:
         example: error
         type: string
-      type:
-        example: filled
-        type: string
-      value:
-        example: "true"
+      validate:
+        example: not_blank
         type: string
     type: object
   web.ImporterCreateRequest:
@@ -635,6 +673,9 @@ definitions:
     type: object
   web.TemplateColumnCreateRequest:
     properties:
+      data_type:
+        example: string
+        type: string
       description:
         example: The first name
         type: string
@@ -661,6 +702,9 @@ definitions:
     type: object
   web.TemplateColumnEditRequest:
     properties:
+      data_type:
+        example: string
+        type: string
       description:
         example: The first name
         type: string
@@ -688,16 +732,23 @@ definitions:
         example: 1
         type: integer
       message:
-        example: This column must contain a value
+        example: The cell must contain a value
+        type: string
+      options:
+        example: "true"
         type: string
       severity:
         example: error
         type: string
-      type:
-        example: filled
+      validate:
+        example: not_blank
         type: string
-      value:
-        example: "true"
+    type: object
+  web.ValidateAllowed:
+    properties:
+      allowed:
+        type: boolean
+      validate:
         type: string
     type: object
 host: localhost:3003
@@ -1036,6 +1087,31 @@ paths:
       summary: Regenerate workspace API key
       tags:
       - Workspace
+  /admin/v1/workspace/{id}/datatype-validations:
+    get:
+      description: Get a map of available data types and allowed validations
+      parameters:
+      - description: Workspace ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              items:
+                $ref: '#/definitions/web.ValidateAllowed'
+              type: array
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/types.Res'
+      summary: Get datatype validations
+      tags:
+      - Workspace
   /file-import/v1/files:
     post:
       description: Creates a new file upload after validating the length and parsing
@@ -1366,7 +1442,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/types.ImportRow'
+              $ref: '#/definitions/types.ImportRowResponse'
             type: array
         "400":
           description: Bad Request

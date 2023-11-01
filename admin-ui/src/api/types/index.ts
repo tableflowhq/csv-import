@@ -141,4 +141,9 @@ export type Import = {
   importer?: Importer;
 };
 
-export type ValidationOptionsType = Record<string, string[]>
+export interface ValidateAllowed {
+  validate: string;
+  allowed: boolean;
+}
+
+export type DataTypeValidation = Record<string, ValidateAllowed[]>;
