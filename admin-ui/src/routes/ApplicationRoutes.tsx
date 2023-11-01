@@ -6,7 +6,7 @@ import parseRoutes from "./utils/parseRoutes";
 import { RoutesType } from "./types";
 import ImporterRoutes from "./ImporterRoutes";
 
-const routes: RoutesType = [
+export const routes: RoutesType = [
   {
     paths: "importers/*",
     children: <ImporterRoutes />,
