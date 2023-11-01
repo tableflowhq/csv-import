@@ -179,7 +179,6 @@ const ValidationOptions = ({
   return (
     <div>
       <Input
-        placeholder="Select a type"
         options={inputOptions}
         label={
           <div className={style.formLabel}>
