@@ -135,7 +135,7 @@ export default function TemplateColumnForm({
   };
 
   return (
-    <div className={style.container}>
+    <div className={style.extendedContainer}>
       {title && (
         <div className={style.title}>
           <h2>{title}</h2>

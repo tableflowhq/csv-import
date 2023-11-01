@@ -10,7 +10,11 @@
 }
 
 .container {
-  width: 820px;
+  min-width: 360px;
+}
+
+.extendedContainer {
+  min-width: 820px;
 }
 
 .formTop {
