@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { Icon, Input, PillInput, Tooltip } from "@tableflow/ui-library";
+import { DataTypeValidation, ValidateAllowed } from "../../../api/types";
 import useGetDataTypeValidations from "../../../api/useDataTypeValidations";
 import useGetOrganization from "../../../api/useGetOrganization";
 import style from "../style/Validation.module.scss";
 import ValidationOptionsEnum from "./ValidationOptionsEnum";
-
-type ValidationOptionsType = Record<string, string[]>;
 
 interface ValidationOptionsProps {
   dataType: string;
@@ -39,28 +38,52 @@ const ValidationOptions = ({
   const [maximumValue, setMaximumValue] = useState("");
   const [showValidateControl, setShowValidateControl] = useState(true);
   const [localRegex, setLocalRegex] = useState(typeof validateOptions !== "object" ? validateOptions : "");
-  const validationOptions: ValidationOptionsType = { ...dataTypesValidations };
+  const dataTypeValidations: DataTypeValidation = { ...dataTypesValidations };
 
   const capitalizeFirstLetter = (str: string) => {
     return str?.charAt(0)?.toUpperCase() + str?.slice(1);
   };
 
-  const getOptionsFromObject = (validationOptions: any) => {
+  const getValidationInputOptions = (validateTypes: ValidateAllowed[]) => {
     const inputOptions = {} as any;
-    for (const key of validationOptions) {
-      const keyOption = capitalizeFirstLetter(key);
-      inputOptions[keyOption] = {
-        value: key,
-      };
+    for (const option of validateTypes) {
+      const key = capitalizeFirstLetter(option.validate);
+      if (!option.allowed) {
+        inputOptions[key] = {
+          value: option.validate,
+          disabled: true,
+        };
+      } else {
+        inputOptions[key] = {
+          value: option.validate,
+        };
+      }
     }
 
     return inputOptions;
   };
 
+  const getDataTypeInputOptions = (dataTypeValidations: DataTypeValidation) => {
+    const inputOptions = {} as any;
+
+    // Manually sort the data types (this allows for other types coming from the backend in the future)
+    const defaultTypes = ["string", "number", "date", "boolean"];
+    const filteredArr = Object.keys(dataTypeValidations).filter((s) => !defaultTypes.includes(s));
+    const dataTypes = [...defaultTypes, ...filteredArr];
+
+    for (const key of dataTypes) {
+      const keyOption = capitalizeFirstLetter(key);
+      inputOptions[keyOption] = {
+        value: key,
+      };
+    }
+    return inputOptions;
+  };
+
   useEffect(() => {
     if (!isLoading && dataType) {
-      if (validationOptions[dataType]) {
-        const options = getOptionsFromObject(validationOptions[dataType]);
+      if (dataTypeValidations[dataType]) {
+        const options = getValidationInputOptions(dataTypeValidations[dataType]);
         setValidationsOptions(options);
       } else {
         setShowValidateControl(false);
@@ -81,16 +104,16 @@ const ValidationOptions = ({
     }
   }, [validateOptions]);
 
-  const inputOptions = validationOptions ? getOptionsFromObject(Object.keys(validationOptions)) : {};
+  const dataTypeOptions = dataTypeValidations ? getDataTypeInputOptions(dataTypeValidations) : {};
 
   const onDataTypeChange = (value: any) => {
-    const options = value && validationOptions[value] ? getOptionsFromObject(validationOptions[value]) : [];
+    const options = value && dataTypeValidations[value] ? getValidationInputOptions(dataTypeValidations[value]) : [];
     setValidationsOptions(options);
     setMaximumValue("");
     setMinimumValue("");
     form.setFieldValue("data_type", value);
     handleDataTypeChange(value);
-    setShowValidateControl(validationOptions[value]?.length > 0);
+    setShowValidateControl(dataTypeValidations[value]?.length > 0);
   };
 
   const onValidationInputChange = ({ target }: any) => {
@@ -180,7 +203,7 @@ const ValidationOptions = ({
   return (
     <div>
       <Input
-        options={inputOptions}
+        options={dataTypeOptions}
         label={
           <div className={style.formLabel}>
             <span>Data Type</span>
