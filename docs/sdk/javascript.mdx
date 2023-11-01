@@ -21,10 +21,11 @@ yarn add @tableflow/js
 import createTableFlowImporter from "@tableflow/js";
 
 const importer = createTableFlowImporter({
-  importerId: "6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353", // Use your importer ID from https://app.tableflow.com/importers
+  importerId: "6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353", // Use your importer ID 
   modalOnCloseTriggered: () => importer.close(),
-  onComplete: (data) => console.log(data),
   darkMode: true,
+  metadata: {"user_id": 1234}, // Pass through user or import info
+  onComplete: (data) => console.log(data)
 });
 
 const uploadButton = document.getElementById("uploadButton");
@@ -39,20 +40,21 @@ Or directly in HTML
   <script src="https://unpkg.com/@tableflow/js@latest/build/index.js"></script>
 </head>
 <body>
-  <button id="uploadButton">Open TableFlow Importer</button>
-  <script>
-    const importer = createTableFlowImporter({
-      importerId: "6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353", // Use your importer ID from https://app.tableflow.com/importers
-      modalOnCloseTriggered: () => importer.close(),
-      onComplete: (data) => console.log(data),
-      darkMode: true,
-    });
+<button id="uploadButton">Open TableFlow Importer</button>
+<script>
+  const importer = createTableFlowImporter({
+    importerId: "6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353", // Use your importer ID
+    modalOnCloseTriggered: () => importer.close(),
+    darkMode: true,
+    metadata: {"user_id": 1234}, // Pass through user or import info
+    onComplete: (data) => console.log(data),
+  });
 
-    const uploadButton = document.getElementById("uploadButton");
-    uploadButton.addEventListener("click", () => {
-      importer?.showModal();
-    });
-  </script>
+  const uploadButton = document.getElementById("uploadButton");
+  uploadButton.addEventListener("click", () => {
+    importer?.showModal();
+  });
+</script>
 </body>
 ```
 
@@ -198,7 +200,11 @@ Or directly in HTML
   An example use case is associating a user ID in your application to an import so when the data is retrieved, you'll
   know which user the data belongs to.
   ```javascript
-  metadata: {userId: 1234, userEmail: "test@example.com"}
+  metadata: {
+    user_id: 1234, 
+    user_email: "test@example.com", 
+    environment: "dev"
+  }
   ```
 </ResponseField>
 
@@ -220,8 +226,9 @@ Or directly in HTML
     "num_columns": 4,
     "num_processed_values": 16,
     "metadata": {
-      "userEmail": "test@example.com",
-      "userId": 1234
+      "user_id": 1234, 
+      "user_email": "test@example.com", 
+      "environment": "dev"
     },
     "is_stored": true,
     "has_errors": false,

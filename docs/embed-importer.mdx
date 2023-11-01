@@ -12,8 +12,8 @@ TableFlow is designed to be added to your frontend with ease. The [React SDK](/s
 <CodeGroup>
 
 ```javascript React
-import {useState} from "react";
-import {TableFlowImporter} from "@tableflow/react";
+import { useState } from "react";
+import { TableFlowImporter } from "@tableflow/react";
 
 function MyComponent() {
   const [isOpen, setIsOpen] = useState(false);
@@ -23,10 +23,11 @@ function MyComponent() {
       <button onClick={() => setIsOpen(true)}>Open TableFlow Importer</button>
 
       <TableFlowImporter
-        importerId={"b0fadb1d-9888-4fcb-b185-21b984bcb227"} // Use your importer ID
+        importerId={"6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353"} // Use your importer ID
         modalIsOpen={isOpen}
         modalOnCloseTriggered={() => setIsOpen(false)}
         darkMode={true}
+        metadata={"user_id": 1234} // Pass through user or import info
         onComplete={(data) => console.log(data)}
       />
     </>
@@ -38,10 +39,11 @@ function MyComponent() {
 import createTableFlowImporter from "@tableflow/js";
 
 const importer = createTableFlowImporter({
-  importerId: "6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353", // Use your importer ID from https://app.tableflow.com/importers
+  importerId: "6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353", // Use your importer ID 
   modalOnCloseTriggered: () => importer.close(),
-  onComplete: (data) => console.log(data),
   darkMode: true,
+  metadata: {"user_id": 1234}, // Pass through user or import info
+  onComplete: (data) => console.log(data)
 });
 
 const uploadButton = document.getElementById("uploadButton");
@@ -55,20 +57,21 @@ uploadButton.addEventListener("click", () => {
   <script src="https://unpkg.com/@tableflow/js@latest/build/index.js"></script>
 </head>
 <body>
-<button id="uploadButton">Open TableFlow Importer</button>
-<script>
-  const importer = createTableFlowImporter({
-  importerId: "6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353", // Use your importer ID from https://app.tableflow.com/importers
-  modalOnCloseTriggered: () => importer.close(),
-  onComplete: (data) => console.log(data),
-  darkMode: true,
-});
-
-  const uploadButton = document.getElementById("uploadButton");
-  uploadButton.addEventListener("click", () => {
-  importer?.showModal();
-});
-</script>
+  <button id="uploadButton">Open TableFlow Importer</button>
+  <script>
+    const importer = createTableFlowImporter({
+      importerId: "6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353", // Use your importer ID
+      modalOnCloseTriggered: () => importer.close(),
+      darkMode: true, 
+      metadata: {"user_id": 1234}, // Pass through user or import info
+      onComplete: (data) => console.log(data),
+    });
+  
+    const uploadButton = document.getElementById("uploadButton");
+    uploadButton.addEventListener("click", () => {
+      importer?.showModal();
+    });
+  </script>
 </body>
 ```
 
