@@ -194,7 +194,7 @@ const ValidationOptions = ({
       />
       {showValidateControl && (
         <Input
-          placeholder="Select"
+          placeholder="Select validation"
           options={validationsOptions}
           name="validation"
           value={selectedValidation}
@@ -211,7 +211,7 @@ const ValidationOptions = ({
         />
       )}
       <>
-        {(!selectedValidation && !showValidateControl) && (
+        {(!selectedValidation && showValidateControl) && (
           <div className={style.validationPlaceholder}>
             <Icon icon="info" className={style.placeholderIcon} /> Select a validation to view additional options.
           </div>
