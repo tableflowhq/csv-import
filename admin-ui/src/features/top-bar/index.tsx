@@ -21,6 +21,16 @@ export default function TopBar() {
     ...(sessionExists && verified
       ? [
           {
+            children: "Docs",
+            onClick: () => window.open("https://tableflow.com/docs", "_blank"),
+            icon: "help",
+            iconPosition: "left",
+          } as DialogItem,
+        ]
+      : []),
+    ...(sessionExists && verified
+      ? [
+          {
             children: "Settings",
             onClick: () => navigate("/settings"),
             icon: "gear",
