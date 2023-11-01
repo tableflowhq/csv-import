@@ -31,6 +31,16 @@ export default function TopBar() {
     ...(sessionExists && showProfile
       ? [
           {
+            children: "Billing",
+            onClick: () => navigate("/billing"),
+            icon: "database",
+            iconPosition: "left",
+          } as DialogItem,
+        ]
+      : []),
+    ...(sessionExists && showProfile
+      ? [
+          {
             children: "Log out",
             onClick: () => onLogout(),
             icon: "logOut",
