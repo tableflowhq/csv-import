@@ -64,12 +64,17 @@ func regenerateWorkspaceAPIKey(c *gin.Context, getWorkspaceUser func(*gin.Contex
 	c.JSON(http.StatusOK, apiKey)
 }
 
+type ValidateAllowed struct {
+	Validate string `json:"validate"`
+	Allowed  bool   `json:"allowed"`
+}
+
 // getWorkspaceDataTypeValidations
 //
 //	@Summary		Get datatype validations
 //	@Description	Get a map of available data types and allowed validations
 //	@Tags			Workspace
-//	@Success		200	{object}	map[string][]string
+//	@Success		200	{object}	map[string][]ValidateTypeOption
 //	@Failure		400	{object}	types.Res
 //	@Router			/admin/v1/workspace/{id}/datatype-validations [get]
 //	@Param			id	path	string	true	"Workspace ID"
@@ -86,14 +91,15 @@ func getWorkspaceDataTypeValidations(c *gin.Context, getWorkspaceUser func(*gin.
 	}
 
 	allowedValidateTypes := getAllowedValidateTypes(workspaceID)
-	dataTypeValidations := make(map[string][]string)
+	dataTypeValidations := make(map[string][]ValidateAllowed)
 
 	for dataType, validations := range evaluator.DataTypeValidations {
-		var newValidations []string
+		var newValidations []ValidateAllowed
 		for _, validation := range validations {
-			if allowedValidateTypes == nil || allowedValidateTypes[validation] {
-				newValidations = append(newValidations, validation)
-			}
+			newValidations = append(newValidations, ValidateAllowed{
+				Validate: validation,
+				Allowed:  allowedValidateTypes == nil || allowedValidateTypes[validation],
+			})
 		}
 		dataTypeValidations[dataType] = newValidations
 	}
