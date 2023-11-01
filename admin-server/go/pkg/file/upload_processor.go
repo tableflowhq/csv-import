@@ -213,7 +213,7 @@ func processAndStoreUpload(upload *model.Upload, file *os.File, limit int) (uplo
 			in <- b
 			break
 		}
-		if limit > 0 && i >= limit {
+		if limit > 0 && i > limit {
 			// Truncate the upload if a limit is provided and there are more rows than the limit
 			tf.Log.Infow("Upload limit reached while processing upload", "upload_id", upload.ID, "limit", limit)
 			in <- b
