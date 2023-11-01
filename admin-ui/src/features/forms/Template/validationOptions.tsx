@@ -38,7 +38,7 @@ const ValidationOptions = ({
   const [validationsOptions, setValidationsOptions] = useState({});
   const [minimumValue, setMinimumValue] = useState("");
   const [maximumValue, setMaximumValue] = useState("");
-  const [showValidateControl, setShowValidateControl] = useState(true);
+  const [showValidateControl, setShowValidateControl] = useState(() => dataType === "string" || dataType === "number");
   const [localRegex, setLocalRegex] = useState(typeof validateOptions !== "object" ? validateOptions : "");
   const validationOptions: ValidationOptionsType = { ...dataTypesValidations };
 
@@ -211,7 +211,7 @@ const ValidationOptions = ({
         />
       )}
       <>
-        {(!selectedValidation && showValidateControl) && (
+        {!selectedValidation && showValidateControl && (
           <div className={style.validationPlaceholder}>
             <Icon icon="info" className={style.placeholderIcon} /> Select a validation to view additional options.
           </div>
