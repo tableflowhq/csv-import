@@ -45,26 +45,25 @@ const ValidationOptions = ({
   };
 
   const getValidationInputOptions = (validateTypes: ValidateAllowed[]) => {
-    const inputOptions = {} as any;
-    for (const option of validateTypes) {
-      const key = capitalizeFirstLetter(option.validate);
-      if (!option.allowed) {
-        inputOptions[key] = {
-          value: option.validate,
-          disabled: true,
-        };
-      } else {
-        inputOptions[key] = {
-          value: option.validate,
-        };
-      }
-    }
+    const inputOptions: Record<string, any> = {};
+    const allowedOptions = validateTypes.filter((option) => option.allowed);
+    const disallowedOptions = validateTypes.filter((option) => !option.allowed);
+    // Have disabled options show last
+    const sortedOptions = [...allowedOptions, ...disallowedOptions];
 
+    for (const option of sortedOptions) {
+      const key = capitalizeFirstLetter(option.validate);
+      inputOptions[key] = {
+        value: option.validate,
+        disabled: !option.allowed,
+        ...(!option.allowed ? { tooltip: "Not available in your current plan" } : {}),
+      };
+    }
     return inputOptions;
   };
 
   const getDataTypeInputOptions = (dataTypeValidations: DataTypeValidation) => {
-    const inputOptions = {} as any;
+    const inputOptions: Record<string, any> = {};
 
     // Manually sort the data types (this allows for other types coming from the backend in the future)
     const defaultTypes = ["string", "number", "date", "boolean"];
