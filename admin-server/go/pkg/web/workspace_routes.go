@@ -74,7 +74,7 @@ type ValidateAllowed struct {
 //	@Summary		Get datatype validations
 //	@Description	Get a map of available data types and allowed validations
 //	@Tags			Workspace
-//	@Success		200	{object}	map[string][]ValidateTypeOption
+//	@Success		200	{object}	map[string][]ValidateAllowed
 //	@Failure		400	{object}	types.Res
 //	@Router			/admin/v1/workspace/{id}/datatype-validations [get]
 //	@Param			id	path	string	true	"Workspace ID"

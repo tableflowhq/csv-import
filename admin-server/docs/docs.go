@@ -512,6 +512,44 @@ const docTemplate = `{
                 }
             }
         },
+        "/admin/v1/workspace/{id}/datatype-validations": {
+            "get": {
+                "description": "Get a map of available data types and allowed validations",
+                "tags": [
+                    "Workspace"
+                ],
+                "summary": "Get datatype validations",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/web.ValidateAllowed"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/types.Res"
+                        }
+                    }
+                }
+            }
+        },
         "/file-import/v1/files": {
             "post": {
                 "description": "Creates a new file upload after validating the length and parsing the metadata",
@@ -996,7 +1034,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/types.ImportRow"
+                                "$ref": "#/definitions/types.ImportRowResponse"
                             }
                         }
                     },
@@ -1093,6 +1131,9 @@ const docTemplate = `{
                 "created_at": {
                     "type": "integer",
                     "example": 1682366228
+                },
+                "data_types": {
+                    "$ref": "#/definitions/jsonb.JSONB"
                 },
                 "id": {
                     "type": "string",
@@ -1284,6 +1325,10 @@ const docTemplate = `{
                 "created_by": {
                     "$ref": "#/definitions/model.User"
                 },
+                "data_type": {
+                    "type": "string",
+                    "example": "string"
+                },
                 "description": {
                     "type": "string",
                     "example": "An email address"
@@ -1387,6 +1432,15 @@ const docTemplate = `{
                     "type": "boolean",
                     "example": false
                 },
+                "sheet_list": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "Sheet 1"
+                    ]
+                },
                 "template": {
                     "description": "Set if the user passes in a template to the SDK (which overrides the template on the importer) or if a schemaless import occurs",
                     "type": "string",
@@ -1478,6 +1532,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "This column must contain a value"
                 },
+                "options": {
+                    "type": "string",
+                    "example": "true"
+                },
                 "severity": {
                     "type": "string",
                     "example": "error"
@@ -1486,13 +1544,9 @@ const docTemplate = `{
                     "type": "string",
                     "example": "a1ed136d-33ce-4b7e-a7a4-8a5ccfe54cd5"
                 },
-                "type": {
+                "validate": {
                     "type": "string",
-                    "example": "filled"
-                },
-                "value": {
-                    "type": "string",
-                    "example": "true"
+                    "example": "not_blank"
                 }
             }
         },
@@ -1579,7 +1633,7 @@ const docTemplate = `{
                     "description": "Used for the final step in the onComplete",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/types.ImportRow"
+                        "$ref": "#/definitions/types.ImportRowResponse"
                     }
                 },
                 "upload_id": {
@@ -1679,8 +1733,30 @@ const docTemplate = `{
                 "severity": {
                     "type": "string"
                 },
-                "type": {
+                "validate": {
                     "type": "string"
+                }
+            }
+        },
+        "types.ImportRowResponse": {
+            "type": "object",
+            "properties": {
+                "errors": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/definitions/types.ImportRowError"
+                        }
+                    }
+                },
+                "index": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "values": {
+                    "type": "object",
+                    "additionalProperties": true
                 }
             }
         },
@@ -1754,6 +1830,10 @@ const docTemplate = `{
         "types.TemplateColumn": {
             "type": "object",
             "properties": {
+                "data_type": {
+                    "type": "string",
+                    "example": "string"
+                },
                 "description": {
                     "type": "string",
                     "example": "The first name"
@@ -1834,6 +1914,15 @@ const docTemplate = `{
                     "type": "string",
                     "example": "{\"user_id\": 1234}"
                 },
+                "sheet_list": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "Sheet 1"
+                    ]
+                },
                 "template": {
                     "description": "Set if the user passes in a template to the SDK, which overrides the template on the importer",
                     "allOf": [
@@ -1883,6 +1972,10 @@ const docTemplate = `{
                     "example": [
                         "test@example.com"
                     ]
+                },
+                "suggested_template_column_id": {
+                    "type": "string",
+                    "example": "a1ed136d-33ce-4b7e-a7a4-8a5ccfe54cd5"
                 }
             }
         },
@@ -1919,19 +2012,19 @@ const docTemplate = `{
                 },
                 "message": {
                     "type": "string",
-                    "example": "This column must contain a value"
+                    "example": "The cell must contain a value"
+                },
+                "options": {
+                    "type": "string",
+                    "example": "true"
                 },
                 "severity": {
                     "type": "string",
                     "example": "error"
                 },
-                "type": {
+                "validate": {
                     "type": "string",
-                    "example": "filled"
-                },
-                "value": {
-                    "type": "string",
-                    "example": "true"
+                    "example": "not_blank"
                 }
             }
         },
@@ -1977,6 +2070,10 @@ const docTemplate = `{
         "web.TemplateColumnCreateRequest": {
             "type": "object",
             "properties": {
+                "data_type": {
+                    "type": "string",
+                    "example": "string"
+                },
                 "description": {
                     "type": "string",
                     "example": "The first name"
@@ -2014,6 +2111,10 @@ const docTemplate = `{
         "web.TemplateColumnEditRequest": {
             "type": "object",
             "properties": {
+                "data_type": {
+                    "type": "string",
+                    "example": "string"
+                },
                 "description": {
                     "type": "string",
                     "example": "The first name"
@@ -2053,19 +2154,30 @@ const docTemplate = `{
                 },
                 "message": {
                     "type": "string",
-                    "example": "This column must contain a value"
+                    "example": "The cell must contain a value"
+                },
+                "options": {
+                    "type": "string",
+                    "example": "true"
                 },
                 "severity": {
                     "type": "string",
                     "example": "error"
                 },
-                "type": {
+                "validate": {
                     "type": "string",
-                    "example": "filled"
+                    "example": "not_blank"
+                }
+            }
+        },
+        "web.ValidateAllowed": {
+            "type": "object",
+            "properties": {
+                "allowed": {
+                    "type": "boolean"
                 },
-                "value": {
-                    "type": "string",
-                    "example": "true"
+                "validate": {
+                    "type": "string"
                 }
             }
         }
