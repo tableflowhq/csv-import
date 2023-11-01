@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Icon, Input, PillInput, Tooltip } from "@tableflow/ui-library";
+import useGetDataTypeValidations from "../../../api/useDataTypeValidations";
+import useGetOrganization from "../../../api/useGetOrganization";
 import style from "../style/Validation.module.scss";
 import ValidationOptionsEnum from "./ValidationOptionsEnum";
-import useGetOrganization from "../../../api/useGetOrganization";
-import useGetDataTypeValidations from "../../../api/useDataTypeValidations";
 
 type ValidationOptionsType = Record<string, string[]>;
 
@@ -33,18 +33,14 @@ const ValidationOptions = ({
 }: ValidationOptionsProps) => {
   const { data: organization } = useGetOrganization();
   const workspaceId = organization?.workspaces?.[0]?.id || "";
-  const { isLoading, data: validationOptions1 } = useGetDataTypeValidations(workspaceId);
+  const { isLoading, data: dataTypesValidations } = useGetDataTypeValidations(workspaceId);
 
   const [validationsOptions, setValidationsOptions] = useState({});
   const [minimumValue, setMinimumValue] = useState("");
   const [maximumValue, setMaximumValue] = useState("");
+  const [showValidateControl, setShowValidateControl] = useState(true);
   const [localRegex, setLocalRegex] = useState(typeof validateOptions !== "object" ? validateOptions : "");
-
-  //TODO: this is a mock from backend
-  const validationOptions: ValidationOptionsType = {
-    string: ["regex", "email", "list", "phone", "length"],
-    number: ["range"],
-  };
+  const validationOptions: ValidationOptionsType = { ...dataTypesValidations };
 
   const capitalizeFirstLetter = (str: string) => {
     return str?.charAt(0)?.toUpperCase() + str?.slice(1);
@@ -52,7 +48,6 @@ const ValidationOptions = ({
 
   const getOptionsFromObject = (validationOptions: any) => {
     const inputOptions = {} as any;
-
     for (const key of validationOptions) {
       const keyOption = capitalizeFirstLetter(key);
       inputOptions[keyOption] = {
@@ -65,10 +60,12 @@ const ValidationOptions = ({
 
   useEffect(() => {
     if (dataType) {
-      const options = getOptionsFromObject(validationOptions[dataType]);
-      setValidationsOptions(options);
+      if (!isLoading && validationOptions[dataType]) {
+        const options = getOptionsFromObject(validationOptions[dataType]);
+        setValidationsOptions(options);
+      }
     }
-  }, []);
+  }, [isLoading]);
 
   useEffect(() => {
     updateValidateOptions();
@@ -83,15 +80,16 @@ const ValidationOptions = ({
     }
   }, [validateOptions]);
 
-  const inputOptions = getOptionsFromObject(Object.keys(validationOptions));
+  const inputOptions = validationOptions ? getOptionsFromObject(Object.keys(validationOptions)) : {};
 
   const onDataTypeChange = (value: any) => {
-    const options = value ? getOptionsFromObject(validationOptions[value]) : [];
+    const options = value && validationOptions[value] ? getOptionsFromObject(validationOptions[value]) : [];
     setValidationsOptions(options);
     setMaximumValue("");
     setMinimumValue("");
     form.setFieldValue("data_type", value);
     handleDataTypeChange(value);
+    setShowValidateControl(validationOptions[value]?.length > 0);
   };
 
   const onValidationInputChange = ({ target }: any) => {
@@ -193,25 +191,28 @@ const ValidationOptions = ({
         value={dataType}
         {...form.getInputProps("data_type")}
         onChange={onDataTypeChange}
+        disabled={isLoading}
       />
-      <Input
-        placeholder="Select"
-        options={validationsOptions}
-        name="validation"
-        value={selectedValidation}
-        label={
-          <div className={style.formLabel}>
-            <span>Validation</span>
-            <Tooltip className={style.formTooltip} title={"Enforce cell values to meet specified conditions before the data is submitted"} />
-          </div>
-        }
-        onChange={(value: any) => {
-          form.setFieldValue("validations.validate", value);
-          handleValidationChange(value);
-        }}
-      />
+      {showValidateControl && (
+        <Input
+          placeholder="Select"
+          options={validationsOptions}
+          name="validation"
+          value={selectedValidation}
+          label={
+            <div className={style.formLabel}>
+              <span>Validation</span>
+              <Tooltip className={style.formTooltip} title={"Enforce cell values to meet specified conditions before the data is submitted"} />
+            </div>
+          }
+          onChange={(value: any) => {
+            form.setFieldValue("validations.validate", value);
+            handleValidationChange(value);
+          }}
+        />
+      )}
       <>
-        {!selectedValidation && (
+        {(!selectedValidation && !showValidateControl) && (
           <div className={style.validationPlaceholder}>
             <Icon icon="info" className={style.placeholderIcon} /> Select a validation to view additional options.
           </div>

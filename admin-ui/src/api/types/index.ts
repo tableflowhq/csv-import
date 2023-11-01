@@ -140,3 +140,5 @@ export type Import = {
   workspace_id: string;
   importer?: Importer;
 };
+
+export type ValidationOptionsType = Record<string, string[]>
