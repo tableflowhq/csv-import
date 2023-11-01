@@ -34,11 +34,10 @@ const ValidationOptions = ({
   const { data: organization } = useGetOrganization();
   const workspaceId = organization?.workspaces?.[0]?.id || "";
   const { isLoading, data: dataTypesValidations } = useGetDataTypeValidations(workspaceId);
-
   const [validationsOptions, setValidationsOptions] = useState({});
   const [minimumValue, setMinimumValue] = useState("");
   const [maximumValue, setMaximumValue] = useState("");
-  const [showValidateControl, setShowValidateControl] = useState(() => dataType === "string" || dataType === "number");
+  const [showValidateControl, setShowValidateControl] = useState(true);
   const [localRegex, setLocalRegex] = useState(typeof validateOptions !== "object" ? validateOptions : "");
   const validationOptions: ValidationOptionsType = { ...dataTypesValidations };
 
@@ -59,10 +58,12 @@ const ValidationOptions = ({
   };
 
   useEffect(() => {
-    if (dataType) {
-      if (!isLoading && validationOptions[dataType]) {
+    if (!isLoading && dataType) {
+      if (validationOptions[dataType]) {
         const options = getOptionsFromObject(validationOptions[dataType]);
         setValidationsOptions(options);
+      } else {
+        setShowValidateControl(false);
       }
     }
   }, [isLoading]);
