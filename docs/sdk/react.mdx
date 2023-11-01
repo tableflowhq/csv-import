@@ -19,8 +19,8 @@ yarn add @tableflow/react
 ## Example
 
 ```javascript
-import { useState } from "react";
-import { TableFlowImporter } from "@tableflow/react";
+import {useState} from "react";
+import {TableFlowImporter} from "@tableflow/react";
 
 function MyComponent() {
   const [isOpen, setIsOpen] = useState(false);
@@ -30,10 +30,11 @@ function MyComponent() {
       <button onClick={() => setIsOpen(true)}>Open TableFlow Importer</button>
 
       <TableFlowImporter
-        importerId={"b0fadb1d-9888-4fcb-b185-21b984bcb227"} // Use your importer ID from https://app.tableflow.com/importers
+        importerId={"6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353"} // Use your importer ID
         modalIsOpen={isOpen}
         modalOnCloseTriggered={() => setIsOpen(false)}
         darkMode={true}
+        metadata={"user_id": 1234} // Pass through user or import info
         onComplete={(data) => console.log(data)}
       />
     </>
@@ -196,7 +197,11 @@ function MyComponent() {
   An example use case is associating a user ID in your application to an import so when the data is retrieved, you'll
   know which user the data belongs to.
   ```jsx
-  metadata={{userId: 1234, userEmail: "test@example.com"}}
+  metadata={{
+    user_id: 1234, 
+    user_email: "test@example.com", 
+    environment: "dev"
+  }}
   ```
 </ResponseField>
 
@@ -218,8 +223,9 @@ function MyComponent() {
     "num_columns": 4,
     "num_processed_values": 16,
     "metadata": {
-      "userEmail": "test@example.com",
-      "userId": 1234
+      "user_id": 1234, 
+      "user_email": "test@example.com", 
+      "environment": "dev"
     },
     "is_stored": true,
     "has_errors": false,
