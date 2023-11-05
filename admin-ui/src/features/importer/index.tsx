@@ -1,7 +1,11 @@
 import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
-import { Button, Icon, Tabs, useTabs, useThemeStore } from "@tableflow/ui-library";
+import Button from "../../components/Button";
+import Icon from "../../components/Icon";
+import Tabs from "../../components/Tabs";
+import useTabs from "../../components/Tabs/hooks/useTabs";
 import { defaultAppHost, getImporterURL } from "../../api/api";
+import useThemeStore from "../../stores/useThemeStore";
 import notification from "../../utils/notification";
 import { ImporterViewProps } from "./types";
 import style from "./style/Importer.module.scss";

@@ -1,6 +1,9 @@
 import { useMemo } from "react";
 import { Light as SyntaxHighlighter } from "react-syntax-highlighter";
-import { Button, Input, useLocalStorage, useThemeStore } from "@tableflow/ui-library";
+import Button from "../../components/Button";
+import Input from "../../components/Input";
+import useLocalStorage from "../../hooks/useLocalStorage";
+import useThemeStore from "../../stores/useThemeStore";
 import notification from "../../utils/notification";
 import getCodeJavaScript from "./utils/getCodeJavaScript";
 import getCodeReact from "./utils/getCodeReact";

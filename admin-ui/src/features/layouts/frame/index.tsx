@@ -1,4 +1,4 @@
-import { Box } from "@tableflow/ui-library";
+import Box from "../../../components/Box";
 import TopBar from "../../top-bar";
 import style from "./style/Frame.module.scss";
 

@@ -1,4 +1,5 @@
-import { Button, Icon } from "@tableflow/ui-library";
+import Button from "../../../components/Button";
+import Icon from "../../../components/Icon";
 import { ApiKeyConfirmationProps } from "../types";
 import style from "../style/DeleteConfirmation.module.scss";
 

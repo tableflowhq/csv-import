@@ -1,9 +1,11 @@
 import { Link } from "react-router-dom";
-import { Dialog, Icon, timeToText } from "@tableflow/ui-library";
-import { DialogItem } from "@tableflow/ui-library/build/Dialog/types";
-import { EntityId, Update } from "@tableflow/ui-library/build/hooks/useEntitySelection";
-import { TableData } from "@tableflow/ui-library/build/Table/types";
+import Dialog from "../../../components/Dialog";
+import { DialogItem } from "../../../components/Dialog/types";
+import Icon from "../../../components/Icon";
+import { TableData } from "../../../components/Table/types";
 import { Importer } from "../../../api/types";
+import { EntityId, Update } from "../../../hooks/useEntitySelection";
+import { timeToText } from "../../../utils/time";
 import style from "../style/Importers.module.scss";
 
 export function importersTable(importers: Importer[] = [], update: Update): TableData {

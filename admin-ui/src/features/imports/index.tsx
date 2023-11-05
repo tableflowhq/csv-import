@@ -1,8 +1,13 @@
-import { collectionCountLabel, Input, Pagination, Table, useFilter, useSyncPagination } from "@tableflow/ui-library";
+import Input from "../../components/Input";
+import Pagination from "../../components/Pagination";
+import useSyncPagination from "../../components/Pagination/hooks/useSyncPagination";
+import Table from "../../components/Table";
 import { Import } from "../../api/types";
 import useApiKey from "../../api/useApiKey";
 import useGetImports from "../../api/useGetImports";
 import useGetOrganization from "../../api/useGetOrganization";
+import useFilter from "../../hooks/useFilter";
+import collectionCountLabel from "../../utils/collectionCountLabel";
 import { importsTable } from "./utils/importsTable";
 import style from "./style/Imports.module.scss";
 
@@ -55,7 +60,7 @@ export default function Imports() {
           </div>
         </div>
 
-        {imports && <Table data={tableData} background="zebra" columnWidths={["25%", "25%", "15%", "25%", "10%"]} />}
+        {imports && <Table data={tableData} background="zebra" columnWidths={["30%", "25%", "10%", "30%", "5%"]} />}
 
         {!!(totalItems && totalItems > itemsPerPage) && (
           <Pagination totalItems={totalItems} itemsPerPage={itemsPerPage} onPageChange={paginate} initialPage={page} />

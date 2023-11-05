@@ -1,7 +1,8 @@
 import { useEffect } from "react";
 import { useColorMode } from "@chakra-ui/react";
-import { Icon, useThemeStore } from "@tableflow/ui-library";
+import useThemeStore from "../../stores/useThemeStore";
 import style from "./style/ThemeToggle.module.scss";
+import Icon from "../Icon";
 
 export default function ThemeToggle() {
   const setTheme = useThemeStore((state) => state.setTheme);

@@ -1,6 +1,14 @@
-import { Box, Button, classes, Errors, Icon, Input, Modal, useModal, usePassword } from "@tableflow/ui-library";
+import Box from "../../../components/Box";
+import Button from "../../../components/Button";
+import Errors from "../../../components/Errors";
+import Icon from "../../../components/Icon";
+import Input from "../../../components/Input";
+import usePassword from "../../../components/Input/hooks/usePassword";
+import Modal from "../../../components/Modal";
+import useModal from "../../../components/Modal/hooks/useModal";
 import useApiKey from "../../../api/useApiKey";
 import useGetOrganization from "../../../api/useGetOrganization";
+import classes from "../../../utils/classes";
 import notification from "../../../utils/notification";
 import style from "../style/Form.module.scss";
 import ApiKeyConfirmation from "./ApiKeyConfirmation";

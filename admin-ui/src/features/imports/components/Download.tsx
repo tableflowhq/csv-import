@@ -1,4 +1,4 @@
-import { Button } from "@tableflow/ui-library";
+import Button from "../../../components/Button";
 import downloadFile from "../../../api/downloadFile";
 import { Import } from "../../../api/types";
 

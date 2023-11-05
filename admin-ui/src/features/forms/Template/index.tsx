@@ -1,8 +1,14 @@
 import { useEffect, useState } from "react";
 import { useForm } from "@mantine/form";
-import { Button, Checkbox, classes, Errors, Input, PillInput, Tooltip } from "@tableflow/ui-library";
+import Button from "../../../components/Button";
+import Checkbox from "../../../components/Checkbox";
+import Errors from "../../../components/Errors";
+import Input from "../../../components/Input";
+import PillInput from "../../../components/Pill";
+import Tooltip from "../../../components/Tooltip";
 import { TemplateColumn } from "../../../api/types";
 import usePostTemplateColumn from "../../../api/usePostTemplateColumn";
+import classes from "../../../utils/classes";
 import { TemplateColumnProps } from "../types";
 import style from "../style/Form.module.scss";
 import ValidationOptions from "./validationOptions";

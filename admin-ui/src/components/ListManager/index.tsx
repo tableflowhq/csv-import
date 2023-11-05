@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
-import { Button, Errors, Input } from "@tableflow/ui-library";
 import { ListManagerProps } from "./types";
 import style from "./style/ListManager.module.scss";
+import Button from "../Button";
+import Errors from "../Errors";
+import Input from "../Input";
 
 const validateUrl = (url: string) => {
   return /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/.test(url);
@@ -45,7 +47,7 @@ export default function ListManager({ formStyle, ...props }: ListManagerProps) {
         addItem();
       }}>
       <div className={formStyle}>
-        <Input {...facade} className={style.input} onChange={(e) => setNewValue(e.target.value.trim())} value={newValue} />
+        <Input {...(facade as any)} className={style.input} onChange={(e) => setNewValue(e.target.value.trim())} value={newValue} />
 
         <input {...inputProps} value={list} type="hidden" />
 

@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Icon, Input, PillInput, Tooltip } from "@tableflow/ui-library";
+import Icon from "../../../components/Icon";
+import Input from "../../../components/Input";
+import PillInput from "../../../components/Pill";
+import Tooltip from "../../../components/Tooltip";
 import { DataTypeValidation, ValidateAllowed } from "../../../api/types";
 import useGetDataTypeValidations from "../../../api/useDataTypeValidations";
 import useGetOrganization from "../../../api/useGetOrganization";

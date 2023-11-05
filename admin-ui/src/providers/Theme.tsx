@@ -2,8 +2,8 @@ import { useEffect } from "react";
 import { ChakraProvider, extendTheme } from "@chakra-ui/react";
 import { MantineProvider } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
-import { useThemeStore } from "@tableflow/ui-library";
 import theme from "../settings/chakra";
+import useThemeStore from "../stores/useThemeStore";
 import { ThemeProps } from "./types";
 
 const chakraTheme = extendTheme(theme);

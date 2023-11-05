@@ -1,22 +1,20 @@
 import { useMemo } from "react";
-import {
-  Box,
-  Button,
-  collectionCountLabel,
-  Input,
-  Modal,
-  Pagination,
-  Table,
-  useEntitySelection,
-  useFilter,
-  useSyncPagination,
-} from "@tableflow/ui-library";
+import Box from "../../components/Box";
+import Button from "../../components/Button";
+import Input from "../../components/Input";
+import Modal from "../../components/Modal";
+import Pagination from "../../components/Pagination";
+import useSyncPagination from "../../components/Pagination/hooks/useSyncPagination";
+import Table from "../../components/Table";
 import ImporterForm from "../forms/Importer";
 import ImporterDelete from "../forms/Importer/ImporterDelete";
 import { Importer } from "../../api/types";
 import useGetImporters from "../../api/useGetImporters";
 import useGetOrganization from "../../api/useGetOrganization";
+import useEntitySelection from "../../hooks/useEntitySelection";
+import useFilter from "../../hooks/useFilter";
 import useComponentsStore from "../../stores/componentsStore";
+import collectionCountLabel from "../../utils/collectionCountLabel";
 import { importersTable } from "./utils/importersTable";
 import style from "./style/Importers.module.scss";
 
