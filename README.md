@@ -46,7 +46,7 @@ You can run TableFlow locally with Docker:
 git clone https://github.com/tableflowhq/tableflow.git
 cd tableflow
 cp .env.example .env
-docker-compose up -d
+docker compose up -d
 ```
 
 Then open [http://localhost:3000](http://localhost:3000) to access TableFlow.
@@ -62,20 +62,23 @@ Then open [http://localhost:3000](http://localhost:3000) to access TableFlow.
 4. [x] Update `TABLEFLOW_WEB_APP_URL` and `TABLEFLOW_WEB_IMPORTER_URL` in your .env.example file with the correct URLs
    where you'll access the web applications from
 
-One-line install script (for Amazon Linux):
+One-line install script (for Amazon Linux 2):
 
 ```bash
 sudo yum update -y && \
-sudo yum install -y docker git && \
+sudo yum install -y git && \
+sudo amazon-linux-extras install docker -y && \
+DOCKER_CONFIG=${DOCKER_CONFIG:-$HOME/.docker} && \
+mkdir -p $DOCKER_CONFIG/cli-plugins &&\
+curl -SL https://github.com/docker/compose/releases/download/v2.23.0/docker-compose-linux-x86_64 -o $DOCKER_CONFIG/cli-plugins/docker-compose &&\
+chmod +x $DOCKER_CONFIG/cli-plugins/docker-compose &&\
 sudo service docker start && \
+sudo systemctl enable docker && \
 sudo usermod -a -G docker $USER && \
-sudo wget -O /usr/local/bin/docker-compose https://github.com/docker/compose/releases/download/v2.19.1/docker-compose-$(uname -s)-$(uname -m) && \
-sudo mv /usr/local/bin/docker-compose /usr/bin/docker-compose && \
-sudo chmod +x /usr/bin/docker-compose && \
 mkdir tableflow && cd tableflow && \
 wget https://raw.githubusercontent.com/tableflowhq/tableflow/main/{.env.example,docker-compose.yml,docker-compose.base.yml} && \
 mv .env.example .env && \
-sg docker -c 'docker-compose up -d'
+sg docker -c 'docker compose up -d'
 ```
 
 ## Get in touch
