@@ -1,6 +1,7 @@
 package file
 
 import (
+	"container/heap"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -432,64 +433,93 @@ func removeUploadFileFromDisk(file *os.File, fileName, uploadID string) {
 	}
 }
 
-// AddColumnMappingSuggestions Iterates through the template and upload columns to determine if there is a match to
-// pre-select during the column mapping stage of the import
-func AddColumnMappingSuggestions(upload *types.Upload, templateColumns []*model.TemplateColumn) {
-	matchedTemplateColumnIDs := make(map[string]bool)
-
-	// TODO: Idea for improving this: Keep track of similarity scores across all upload/template columns. An exact match
-	// would be a 1. If a match is overwritten, we need to reevaluate the match for the previous upload column.
-
+// AddColumnMappingSuggestions determines the best match between upload and template columns
+func AddColumnMappingSuggestions(upload *types.Upload, templateColumns []*model.TemplateColumn, getColumnMatches func(*types.Upload, []*model.TemplateColumn) map[string]string) {
 	// TODO: We should persist these on the upload to avoid having to regenerate them in different scenarios.
 
-	for _, uploadColumn := range upload.UploadColumns {
-		var bestSimilarityScore float32 = 0
-		var bestMatchColumnID model.ID
+	// Call the column mapping service function to get the initial matches, if any
+	serviceMatches := make(map[string]string)
+	if getColumnMatches != nil {
+		serviceMatches = getColumnMatches(upload, templateColumns)
+	}
 
-		for _, templateColumn := range templateColumns {
-			if matchedTemplateColumnIDs[templateColumn.ID.String()] {
+	potentialBestMatches := make([]MatchScore, len(upload.UploadColumns))
+
+	// First pass: Iterate over the upload columns and store the potential best matches
+	for i, uc := range upload.UploadColumns {
+		uploadColumnName := strings.ToLower(strings.TrimSpace(uc.Name))
+		if uploadColumnName == "" {
+			continue
+		}
+
+		// Initialize the priority queue for this upload column
+		pq := make(PriorityMatchQueue, 0)
+		heap.Init(&pq)
+
+		// If a match exists from the service, add to the priority queue
+		if matchedTemplateName, ok := serviceMatches[uploadColumnName]; ok {
+			addMatchToQueueByName(&pq, matchedTemplateName, templateColumns, 0.95)
+		}
+
+		// Add other potential matches to the priority queue
+		for _, tc := range templateColumns {
+			templateColumnName := strings.ToLower(strings.TrimSpace(tc.Name))
+			if templateColumnName == "" {
 				continue
 			}
 
-			uploadColumnName := strings.ToLower(strings.TrimSpace(uploadColumn.Name))
-			templateColumnName := strings.ToLower(strings.TrimSpace(templateColumn.Name))
-			if len(uploadColumnName) == 0 || len(templateColumnName) == 0 {
-				continue
-			}
-
-			// Suggested mappings
-			for _, suggestedMapping := range templateColumn.SuggestedMappings {
+			// Check suggested mappings for a match
+			suggestedMappingFound := false
+			for _, suggestedMapping := range tc.SuggestedMappings {
 				if uploadColumnName == strings.ToLower(suggestedMapping) {
-					bestMatchColumnID = templateColumn.ID
-					continue
+					updateMatchScore(&pq, &MatchScore{
+						templateColumnID: tc.ID,
+						score:            1.0,
+					})
+					suggestedMappingFound = true
+					break
 				}
 			}
+			if suggestedMappingFound {
+				continue // Suggested mapping found, carry on
+			}
 
-			// Exact match
+			// Check for an exact match
 			if uploadColumnName == templateColumnName {
-				bestMatchColumnID = templateColumn.ID
-				continue
+				updateMatchScore(&pq, &MatchScore{
+					templateColumnID: tc.ID,
+					score:            1.0,
+				})
+				continue // Exact match found, carry on
 			}
 
-			// Exact match, with spaces replaced by underscores
-			uploadColumnNameReplaced := strings.ReplaceAll(uploadColumnName, " ", "_")
-			templateColumnNameReplaced := strings.ReplaceAll(templateColumnName, " ", "_")
-			if uploadColumnNameReplaced == templateColumnNameReplaced {
-				bestMatchColumnID = templateColumn.ID
-				continue
-			}
-
-			// String similarity comparison
+			// Calculate similarity score if no suggested or exact match was found
 			similarityScore := util.StringSimilarity(uploadColumnName, templateColumnName)
-			if similarityScore > 0.9 && similarityScore > bestSimilarityScore {
-				bestSimilarityScore = similarityScore
-				bestMatchColumnID = templateColumn.ID
-				continue
+			// Only add high confidence scores
+			if similarityScore > 0.9 {
+				updateMatchScore(&pq, &MatchScore{
+					templateColumnID: tc.ID,
+					score:            similarityScore,
+				})
+			}
+
+			// After evaluating all matches, the best match is the one at the top of the priority queue
+			if pq.Len() > 0 {
+				bestMatch := heap.Pop(&pq).(*MatchScore)
+				potentialBestMatches[i] = *bestMatch
 			}
 		}
-		if bestMatchColumnID.Valid {
-			uploadColumn.SuggestedTemplateColumnID = bestMatchColumnID
-			matchedTemplateColumnIDs[bestMatchColumnID.String()] = true
+	}
+
+	// Second pass: Finalize the matches, ensuring each template column matches to only one upload column
+	matchedTemplateColumnIDs := make(map[string]bool)
+	for i, bestMatch := range potentialBestMatches {
+		if !bestMatch.templateColumnID.Valid || matchedTemplateColumnIDs[bestMatch.templateColumnID.String()] {
+			continue // Skip if already matched or no match was found
 		}
+
+		// Finalize the match
+		upload.UploadColumns[i].SuggestedTemplateColumnID = bestMatch.templateColumnID
+		matchedTemplateColumnIDs[bestMatch.templateColumnID.String()] = true
 	}
 }
