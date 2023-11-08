@@ -17,15 +17,18 @@ export type inputTypes =
   | "week";
 
 export type InputVariants = "fluid" | "small";
-export type InputOption = ButtonHTMLAttributes<HTMLButtonElement> & { required?: boolean };
+export type InputOption = ButtonHTMLAttributes<HTMLButtonElement> & {
+  required?: boolean;
+  tooltip?: string;
+};
 
 export type InputProps = InputHTMLAttributes<HTMLInputElement> &
   InputHTMLAttributes<HTMLSelectElement> &
   InputHTMLAttributes<HTMLTextAreaElement> & {
     as?: "input" | "textarea";
     label?: string | ReactElement;
-    icon?: ReactElement | IconType;
-    iconAfter?: ReactElement | IconType;
+    icon?: IconType;
+    iconAfter?: IconType | ReactElement;
     error?: string;
     options?: { [key: string]: InputOption };
     variants?: InputVariants[];

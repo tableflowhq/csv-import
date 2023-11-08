@@ -1,22 +1,13 @@
-import { ReactElement, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import useClickOutside from "../../hooks/useClickOutside";
 import useRect from "../../hooks/useRect";
 import useWindowSize from "../../hooks/useWindowSize";
 import classes from "../../utils/classes";
-import { IconType } from "../Icon/types";
-import Portal from "../Portal/index";
 import { InputProps } from "./types";
 import style from "./style/Input.module.scss";
 import Icon from "../Icon";
-import { PiCaretDown, PiInfo } from "react-icons/pi";
-
-function getJsxFromIcon(icon: ReactElement | IconType) {
-  if (typeof icon === "string") {
-    return <Icon icon={icon} />;
-  } else {
-    return icon;
-  }
-}
+import Portal from "../Portal";
+import Tooltip from "../Tooltip";
 
 export default function Input({ as = "input", label, icon, iconAfter, error, options, className, variants = [], children, ...props }: InputProps) {
   const Element = as;
@@ -25,21 +16,25 @@ export default function Input({ as = "input", label, icon, iconAfter, error, opt
 
   const containerClassName = classes([style.container, variantStyles, className]);
 
-  const icon1 = icon && <span className={style.icon}>{getJsxFromIcon(icon)}</span>;
+  const icon1 = icon && (
+    <span className={style.icon}>
+      <Icon icon={icon} />
+    </span>
+  );
 
   const icon2 = iconAfter ? (
-    <span className={style.icon}>{iconAfter}</span>
+    <span className={style.icon}>{typeof iconAfter === "string" ? <Icon icon={iconAfter} /> : iconAfter}</span>
   ) : (
     error && (
       <span className={style.icon}>
-        <PiInfo />
+        <Icon icon="error" />
       </span>
     )
   );
 
   const iconSelect = options && (
     <span className={classes([style.icon, style.dropdownIcon])}>
-      <PiCaretDown />
+      <Icon icon="arrowHeadDown" />
     </span>
   );
 
@@ -135,7 +130,9 @@ function Select({ options = {}, placeholder, ...props }: InputProps) {
                   {...options[k]}
                   onClick={onChangeOption}
                   autoFocus={i === 0}>
-                  {k} {options[k].required && <span className={style.requiredMark}>*</span>}
+                  {k}
+                  {options[k].required && <span className={style.requiredMark}>*</span>}
+                  {options[k].tooltip && <Tooltip className={style.optionIcon} title={options[k].tooltip} icon="info" />}
                 </button>
               ))}
             </div>

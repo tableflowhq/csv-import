@@ -204,6 +204,7 @@
     }
     .requiredMark {
       color: var(--color-text-error);
+      margin-left: var(--m-xxxxs);
     }
   }
 }
@@ -220,4 +221,10 @@
   margin-top: var(--m-xxs);
   line-height: 1;
   font-weight: 400;
+}
+
+.optionIcon {
+  margin-left: var(--m-xxs);
+  margin-bottom: 2px;
+  vertical-align: middle;
 }
