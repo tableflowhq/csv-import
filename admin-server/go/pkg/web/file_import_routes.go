@@ -243,7 +243,7 @@ func importerGetImporter(c *gin.Context, getAllowedValidateTypes func(string) ma
 //	@Failure		400	{object}	types.Res
 //	@Router			/file-import/v1/upload/{id} [get]
 //	@Param			id	path	string	true	"tus ID"
-func importerGetUpload(c *gin.Context) {
+func importerGetUpload(c *gin.Context, getColumnMatches func(*types.Upload, []*model.TemplateColumn) map[string]string) {
 	id := c.Param("id")
 	if len(id) == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No upload tus ID provided"})
@@ -302,7 +302,7 @@ func importerGetUpload(c *gin.Context) {
 			}
 			templateColumns = template.TemplateColumns
 		}
-		file.AddColumnMappingSuggestions(importerUpload, templateColumns)
+		file.AddColumnMappingSuggestions(importerUpload, templateColumns, getColumnMatches)
 	}
 
 	c.JSON(http.StatusOK, importerUpload)
@@ -318,7 +318,7 @@ func importerGetUpload(c *gin.Context) {
 //	@Router			/file-import/v1/upload/{id}/set-header-row [post]
 //	@Param			id		path	string							true	"Upload ID"
 //	@Param			body	body	types.UploadHeaderRowSelection	true	"Request body"
-func importerSetHeaderRow(c *gin.Context) {
+func importerSetHeaderRow(c *gin.Context, getColumnMatches func(*types.Upload, []*model.TemplateColumn) map[string]string) {
 	id := c.Param("id")
 	if len(id) == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No upload ID provided"})
@@ -401,7 +401,7 @@ func importerSetHeaderRow(c *gin.Context) {
 			}
 			templateColumns = template.TemplateColumns
 		}
-		file.AddColumnMappingSuggestions(importerUpload, templateColumns)
+		file.AddColumnMappingSuggestions(importerUpload, templateColumns, getColumnMatches)
 
 		c.JSON(http.StatusOK, importerUpload)
 		return
@@ -480,7 +480,7 @@ func importerSetHeaderRow(c *gin.Context) {
 		}
 		templateColumns = template.TemplateColumns
 	}
-	file.AddColumnMappingSuggestions(importerUpload, templateColumns)
+	file.AddColumnMappingSuggestions(importerUpload, templateColumns, getColumnMatches)
 
 	c.JSON(http.StatusOK, importerUpload)
 }
