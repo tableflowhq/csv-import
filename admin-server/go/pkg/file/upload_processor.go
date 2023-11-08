@@ -295,7 +295,7 @@ func processAndStoreUpload(upload *model.Upload, file *os.File, limit int) (uplo
 	close(in)
 	wg.Wait()
 
-	tf.Log.Debugw("Upload processing and storage complete", "num_records", numRows, "time_taken", time.Since(startTime))
+	tf.Log.Infow("Upload processing and storage complete", "upload_id", upload.ID, "num_rows", numRows, "time_taken", time.Since(startTime))
 	return uploadProcessResult{NumRows: numRows, SheetList: it.SheetList}, nil
 }
 
