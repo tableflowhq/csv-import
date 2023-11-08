@@ -35,11 +35,13 @@ export default function Importers() {
     () =>
       !entityId ? (
         <Box variants={["wide", "space-mid"]}>
-          <ImporterForm title="Create Importer" buttonLabel="Add" onSuccess={modal.handleClose} context={{ workspaceId }} />
+          <ImporterForm title="Create Importer" buttonLabel="Add" onSuccess={modal.handleClose}
+                        context={{ workspaceId }} />
         </Box>
       ) : action === "edit" ? (
         <Box>
-          <ImporterForm title="Edit Importer" buttonLabel="Save" onSuccess={modal.handleClose} importer={importer} context={{ workspaceId }} />
+          <ImporterForm title="Edit Importer" buttonLabel="Save" onSuccess={modal.handleClose} importer={importer}
+                        context={{ workspaceId }} />
         </Box>
       ) : action === "delete" ? (
         <Box variants={["wide", "space-mid"]}>
@@ -55,7 +57,7 @@ export default function Importers() {
 
   const { dataFiltered, setFilter } = useFilter<Importer[]>(["name"], importers || []);
 
-  const itemsPerPage = 10;
+  const itemsPerPage = 20;
   const { dataPage, page, paginate, totalItems } = useSyncPagination(dataFiltered as any, itemsPerPage);
 
   // Data to table format
@@ -89,7 +91,8 @@ export default function Importers() {
           </div>
 
           <div className={style.actions}>
-            <Input icon="search" type="search" className={style.searchInput} placeholder="Search" onChange={(e: any) => setFilter(e.target.value)} />
+            <Input icon="search" type="search" className={style.searchInput} placeholder="Search"
+                   onChange={(e: any) => setFilter(e.target.value)} />
             <Button variants={["primary"]} tabIndex={-1} onClick={() => modal.setOpen(true)}>
               Create New
             </Button>
