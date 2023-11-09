@@ -247,6 +247,7 @@
 
     .titleContainer {
       margin: 0 0 var(--m);
+
       .subTitle {
         font-weight: 600;
         margin: 0 0 var(--m-xs);
@@ -260,4 +261,9 @@
       }
     }
   }
+}
+
+.inputFieldset {
+  margin-top: var(--m-xs);
+  margin-bottom: var(--m-xs);
 }
