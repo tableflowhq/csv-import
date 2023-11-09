@@ -77,7 +77,7 @@ export default function RowSelection({ upload, onSuccess, onCancel, selectedHead
               <Table
                 fixHeader
                 mergeThemes={true}
-                data={dataWithRadios?.slice(0, maxNumberOfColumns) || []}
+                data={dataWithRadios || []}
                 heading={
                   <div className={style.headingCaption}>
                     <Tooltip title="Select the row which contains the column headers">Select Header Row</Tooltip>
