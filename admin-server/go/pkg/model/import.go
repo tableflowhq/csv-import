@@ -21,6 +21,7 @@ type Import struct {
 	NumErrorRows       null.Int       `json:"num_error_rows" swaggertype:"integer" example:"32"`
 	NumValidRows       null.Int       `json:"num_valid_rows" swaggertype:"integer" example:"224"`
 	CreatedAt          NullTime       `json:"created_at" swaggertype:"integer" example:"1682366228"`
+	UpdatedAt          NullTime       `json:"updated_at" swaggertype:"integer" example:"1682366228"`
 	DeletedAt          gorm.DeletedAt `json:"-"`
 
 	Upload   *Upload   `json:"upload,omitempty" swaggerignore:"true" gorm:"foreignKey:ID;references:UploadID"`
