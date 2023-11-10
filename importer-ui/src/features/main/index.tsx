@@ -94,7 +94,7 @@ export default function Main() {
   const skipHeader = skipHeaderRowSelection != null ? !!skipHeaderRowSelection : importer.skip_header_row_selection;
 
   // Header row selection state
-  const [selectedHeaderRow, setSelectedHeaderRow] = useState<number>(0);
+  const [selectedHeaderRow, setSelectedHeaderRow] = useState<number | null>(null);
   const [uploadFromHeaderRowSelection, setUploadFromHeaderRowSelection] = useState<any | null>(null);
   const [columnsOrder, setColumnsOrder] = useState<ColumnsOrder>();
 
@@ -143,6 +143,7 @@ export default function Main() {
     if (isUploadSuccess) {
       if (isUploadHeaderRowSet) {
         setUploadFromHeaderRowSelection(upload);
+        setSelectedHeaderRow(upload?.header_row_index);
         stepper.setCurrent(2);
       } else {
         stepper.setCurrent(1);

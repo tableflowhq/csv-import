@@ -16,6 +16,16 @@ export default function RowSelection({ upload, onSuccess, onCancel, selectedHead
     setSelectedHeaderRow(Number(e.target.value));
   };
 
+  useEffect(() => {
+    if (selectedHeaderRow === null) {
+      if (upload?.matched_header_row_index && upload?.matched_header_row_index > -1) {
+        setSelectedHeaderRow(upload?.matched_header_row_index);
+      } else {
+        setSelectedHeaderRow(0);
+      }
+    }
+  }, []);
+
   const dataWithRadios = upload?.upload_rows?.map((row) => {
     const nameWithRadio = (
       <span>
