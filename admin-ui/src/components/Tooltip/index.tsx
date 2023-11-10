@@ -4,9 +4,9 @@ import classes from "../../utils/classes";
 import getStringLengthOfChildren from "../../utils/getStringLengthOfChildren";
 import { AsMap, TooltipProps } from "./types";
 import style from "./style/Tooltip.module.scss";
-import Icon from "../Icon";
+import { PiInfo } from "react-icons/pi";
 
-export default function Tooltip<T extends keyof AsMap>({ as, className, title, children, icon = "info", ...props }: TooltipProps<T>) {
+export default function Tooltip<T extends keyof AsMap>({ as, className, title, children, icon = <PiInfo />, ...props }: TooltipProps<T>) {
   const Tag: any = as || "span";
 
   const length = getStringLengthOfChildren(title);
@@ -54,7 +54,7 @@ export default function Tooltip<T extends keyof AsMap>({ as, className, title, c
     <Tag {...props} className={wrapperClasses}>
       {children}
       <span className={style.icon} onMouseEnter={showTooltip} onMouseLeave={hideTooltip} ref={targetRef}>
-        <Icon icon={icon} />
+        {icon}
         {ReactDOM.createPortal(tooltipMessage, tooltipContainer.current)}
       </span>
     </Tag>

@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import Icon from "../../Icon";
 import useClickOutside from "../../../hooks/useClickOutside";
+import { colors } from "../../../settings/theme";
 import classes from "../../../utils/classes";
 import { TagProps } from "../types";
 import style from "../style/TagEditor.module.scss";
+import { PiCross, PiWarning } from "react-icons/pi";
 
 export default function Tag({ text, id, removeTag, editTag, validation }: TagProps) {
   const [error, setError] = useState("");
@@ -42,9 +43,9 @@ export default function Tag({ text, id, removeTag, editTag, validation }: TagPro
       ) : (
         memoText
       )}
-      {error && <Icon icon="error" />}
+      {error && <PiWarning color={colors.error} />}
       <button type="button" onClick={() => removeTag(id)}>
-        <Icon icon="cross" />
+        <PiCross />
       </button>
     </div>
   );

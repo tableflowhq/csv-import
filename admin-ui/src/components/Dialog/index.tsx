@@ -1,13 +1,15 @@
 import React, { useRef, useState } from "react";
 import ReactFocusLock from "react-focus-lock";
 import useClickOutside from "../../hooks/useClickOutside";
+import { sizes } from "../../settings/theme";
 import classes from "../../utils/classes";
 import { DialogItem, DialogProps } from "./types";
 import style from "./style/Dialog.module.scss";
 import Button from "../Button";
+import { PiDotsThreeVerticalBold } from "react-icons/pi";
 
 export default function Dialog({
-  icon = "ellipsis",
+  icon = <PiDotsThreeVerticalBold size={sizes.icon.large} />,
   variants = ["bare"],
   iconPosition = "right",
   items,

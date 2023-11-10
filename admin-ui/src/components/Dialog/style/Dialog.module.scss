@@ -1,6 +1,8 @@
 .container {
-  display: inline-block;
+  display: inline-flex;
   position: relative;
+  align-items: center;
+  justify-content: center;
 }
 
 .menu {
@@ -11,16 +13,6 @@
   font-weight: 500;
   justify-content: center;
   padding: var(--m-xxs) var(--m-xs);
-  //transition: $transition-ui-component;
-
-  &.outlineHighlight {
-    //background-color: rgba($color-highlight-soft, 0.5);
-    //box-shadow: 0 0 0 1px $color-highlight;
-  }
-
-  &.outline {
-    //box-shadow: 0 0 0 1px $color-border;
-  }
 }
 
 .icon {

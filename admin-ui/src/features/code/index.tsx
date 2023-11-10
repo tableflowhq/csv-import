@@ -9,6 +9,7 @@ import getCodeJavaScript from "./utils/getCodeJavaScript";
 import getCodeReact from "./utils/getCodeReact";
 import { CodeProps } from "./types";
 import style from "./style/Code.module.scss";
+import { PiCode, PiCopy } from "react-icons/pi";
 import js from "react-syntax-highlighter/dist/esm/languages/hljs/javascript";
 import { colorBrewer as syntaxHighlighterStyle } from "react-syntax-highlighter/dist/esm/styles/hljs";
 
@@ -56,13 +57,13 @@ export default function Code(props: CodeProps) {
         options={options}
         value={framework}
         onChange={(v) => setFramework(v)}
-        icon="code"
+        icon={<PiCode />}
         className={style.dropdown}
       />
 
       <div className={style.top}>
         <p>Copy and paste the code below into your application:</p>
-        <Button icon="copy" variants={["tertiary"]} onClick={() => copyToClipboard(code)}>
+        <Button icon={<PiCopy />} variants={["tertiary"]} onClick={() => copyToClipboard(code)}>
           Copy code
         </Button>
       </div>

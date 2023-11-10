@@ -4,6 +4,7 @@ import style from "./style/ListManager.module.scss";
 import Button from "../Button";
 import Errors from "../Errors";
 import Input from "../Input";
+import { PiTrash } from "react-icons/pi";
 
 const validateUrl = (url: string) => {
   return /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/.test(url);
@@ -61,7 +62,7 @@ export default function ListManager({ formStyle, ...props }: ListManagerProps) {
           {list.map((item) => (
             <div key={item} className={style.item}>
               <span>{item}</span>{" "}
-              <Button type="button" icon="trash" variants={["tertiary"]} onClick={() => removeItem(item)} className={style.icon} />
+              <Button type="button" icon={<PiTrash />} variants={["tertiary"]} onClick={() => removeItem(item)} className={style.icon} />
             </div>
           ))}
         </div>

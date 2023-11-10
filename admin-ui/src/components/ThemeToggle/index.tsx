@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useColorMode } from "@chakra-ui/react";
 import useThemeStore from "../../stores/useThemeStore";
 import style from "./style/ThemeToggle.module.scss";
-import Icon from "../Icon";
+import { PiMoon, PiSun } from "react-icons/pi";
 
 export default function ThemeToggle() {
   const setTheme = useThemeStore((state) => state.setTheme);
@@ -19,10 +19,10 @@ export default function ThemeToggle() {
     <button className={style.themeToggle} onClick={() => setTheme()}>
       <span className={style.inner}>
         <span>
-          <Icon icon="sun" />
+          <PiSun />
         </span>
         <span>
-          <Icon icon="moon" />
+          <PiMoon />
         </span>
       </span>
     </button>

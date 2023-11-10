@@ -1,12 +1,12 @@
 import { Link } from "react-router-dom";
 import Dialog from "../../../components/Dialog";
 import { DialogItem } from "../../../components/Dialog/types";
-import Icon from "../../../components/Icon";
 import { TableData } from "../../../components/Table/types";
 import { Importer } from "../../../api/types";
 import { EntityId, Update } from "../../../hooks/useEntitySelection";
 import { timeToText } from "../../../utils/time";
 import style from "../style/Importers.module.scss";
+import { FaCube } from "react-icons/fa";
 
 export function importersTable(importers: Importer[] = [], update: Update): TableData {
   const actionMenu: DialogItem[] = [
@@ -21,7 +21,7 @@ export function importersTable(importers: Importer[] = [], update: Update): Tabl
         raw: importer.name,
         content: (
           <div className={style.tableName}>
-            <Icon icon="cube" size="m" />
+            <FaCube />
             <Link to={`/importers/${importer.id}/template`}>{importer.name}</Link>
           </div>
         ),

@@ -2,7 +2,7 @@ import classes from "../../utils/classes";
 import usePagination from "./hooks/usePagination";
 import { PaginationProps } from "./types";
 import style from "./style/Pagination.module.scss";
-import Icon from "../Icon";
+import { PiArrowLeftBold, PiArrowRightBold } from "react-icons/pi";
 
 export default function Pagination({
   totalItems,
@@ -50,7 +50,7 @@ export default function Pagination({
 
           {showArrows && (
             <button onClick={() => handleClick(prevPage || 0)} disabled={prevPage === null} className={arrowClass}>
-              <Icon icon="arrowLeft" />
+              <PiArrowLeftBold />
             </button>
           )}
 
@@ -58,7 +58,7 @@ export default function Pagination({
 
           {showArrows && (
             <button onClick={() => handleClick(nextPage || 0)} disabled={nextPage === null} className={arrowClass}>
-              <Icon icon="arrowRight" />
+              <PiArrowRightBold />
             </button>
           )}
 

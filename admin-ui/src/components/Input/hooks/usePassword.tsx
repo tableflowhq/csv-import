@@ -1,6 +1,6 @@
 import { useState } from "react";
-import Icon from "../../Icon";
 import { inputTypes } from "../types";
+import { PiEyeBold, PiEyeClosedBold } from "react-icons/pi";
 
 export default function usePassword() {
   const [show, setShow] = useState(false);
@@ -9,7 +9,7 @@ export default function usePassword() {
     type: (show ? "text" : "password") as inputTypes,
     iconAfter: (
       <button type="button" onClick={() => setShow((s) => !s)} tabIndex={0}>
-        <Icon icon={show ? "eyesOpen" : "eyesClosed"} />
+        {show ? <PiEyeClosedBold /> : <PiEyeBold />}
       </button>
     ),
     placeholder: show ? "A.#Kj8*/" : "••••••••",

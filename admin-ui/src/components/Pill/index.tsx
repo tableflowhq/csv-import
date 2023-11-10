@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import classes from "../../utils/classes";
 import { PillProps } from "./types";
 import style from "./style/Pill.module.scss";
-import Icon from "../Icon";
+import { PiXBold } from "react-icons/pi";
 
 export default function PillInput({ label, className, error, variants = [], placeholder, initialPills = [], onChange, ...props }: PillProps) {
   const [pills, setPills] = useState<string[]>(initialPills);
@@ -43,7 +43,7 @@ export default function PillInput({ label, className, error, variants = [], plac
 
   const iconElement = (
     <span className={style.icon}>
-      <Icon icon="cross" />
+      <PiXBold />
     </span>
   );
 

@@ -1,17 +1,18 @@
 import Box from "../../../components/Box";
 import Button from "../../../components/Button";
 import Errors from "../../../components/Errors";
-import Icon from "../../../components/Icon";
 import Input from "../../../components/Input";
 import usePassword from "../../../components/Input/hooks/usePassword";
 import Modal from "../../../components/Modal";
 import useModal from "../../../components/Modal/hooks/useModal";
 import useApiKey from "../../../api/useApiKey";
 import useGetOrganization from "../../../api/useGetOrganization";
+import { sizes } from "../../../settings/theme";
 import classes from "../../../utils/classes";
 import notification from "../../../utils/notification";
 import style from "../style/Form.module.scss";
 import ApiKeyConfirmation from "./ApiKeyConfirmation";
+import { PiCopy } from "react-icons/pi";
 
 export default function ApiKey() {
   const { data: organization } = useGetOrganization();
@@ -61,7 +62,7 @@ export default function ApiKey() {
 
             {apiKey && (
               <Button type="button" variants={["bare", "square"]} onClick={() => copyToClipboard(apiKey)} title="Copy to clipboard">
-                <Icon icon="copy" size="m" className={style.iconFix} />
+                <PiCopy size={sizes.icon.large} className={style.iconFix} />
               </Button>
             )}
           </div>

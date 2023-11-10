@@ -6,6 +6,7 @@ import style from "./style/Modal.module.scss";
 import Box from "../Box";
 import Button from "../Button";
 import Portal from "../Portal";
+import { PiXBold } from "react-icons/pi";
 
 const setModal = (on: boolean) => {
   if (on) {
@@ -56,7 +57,7 @@ export default function Modal({
       <div {...props} className={className}>
         <div className={style.veil} onClick={() => handleClose && handleClose()} />
         <Element className={style.content}>
-          {useCloseButton && <Button type="button" icon="cross" onClick={handleClose} className={style.close} variants={["bare", "square"]} />}
+          {useCloseButton && <Button type="button" icon={<PiXBold />} onClick={handleClose} className={style.close} variants={["bare", "square"]} />}
           {children}
         </Element>
       </div>

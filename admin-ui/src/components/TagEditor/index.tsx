@@ -1,10 +1,11 @@
 import { FormEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
 import useLocalStorage from "../../hooks/useLocalStorage";
+import { colors } from "../../settings/theme";
 import classes from "../../utils/classes";
 import Tag from "./components/Tag";
 import { TagEditorProps } from "./types";
 import style from "./style/TagEditor.module.scss";
-import Icon from "../Icon";
+import { PiWarning } from "react-icons/pi";
 
 export default function TagEditor({
   placeholder = "",
@@ -105,7 +106,7 @@ export default function TagEditor({
 
       {error && (
         <div className={style.error}>
-          <Icon icon="error" /> {error}
+          <PiWarning color={colors.error} /> {error}
         </div>
       )}
 

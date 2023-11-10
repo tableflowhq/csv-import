@@ -2,12 +2,13 @@ import { useRef, useState } from "react";
 import useClickOutside from "../../hooks/useClickOutside";
 import useRect from "../../hooks/useRect";
 import useWindowSize from "../../hooks/useWindowSize";
+import { colors } from "../../settings/theme";
 import classes from "../../utils/classes";
 import { InputProps } from "./types";
 import style from "./style/Input.module.scss";
-import Icon from "../Icon";
 import Portal from "../Portal";
 import Tooltip from "../Tooltip";
+import { PiCaretDownBold, PiInfo, PiWarning } from "react-icons/pi";
 
 export default function Input({ as = "input", label, icon, iconAfter, error, options, className, variants = [], children, ...props }: InputProps) {
   const Element = as;
@@ -16,25 +17,21 @@ export default function Input({ as = "input", label, icon, iconAfter, error, opt
 
   const containerClassName = classes([style.container, variantStyles, className]);
 
-  const icon1 = icon && (
-    <span className={style.icon}>
-      <Icon icon={icon} />
-    </span>
-  );
+  const icon1 = icon && <span className={style.icon}>{icon}</span>;
 
   const icon2 = iconAfter ? (
-    <span className={style.icon}>{typeof iconAfter === "string" ? <Icon icon={iconAfter} /> : iconAfter}</span>
+    <span className={style.icon}>{icon}</span>
   ) : (
     error && (
       <span className={style.icon}>
-        <Icon icon="error" />
+        <PiWarning color={colors.error} />
       </span>
     )
   );
 
   const iconSelect = options && (
     <span className={classes([style.icon, style.dropdownIcon])}>
-      <Icon icon="arrowHeadDown" />
+      <PiCaretDownBold />
     </span>
   );
 
@@ -132,7 +129,7 @@ function Select({ options = {}, placeholder, ...props }: InputProps) {
                   autoFocus={i === 0}>
                   {k}
                   {options[k].required && <span className={style.requiredMark}>*</span>}
-                  {options[k].tooltip && <Tooltip className={style.optionIcon} title={options[k].tooltip} icon="info" />}
+                  {options[k].tooltip && <Tooltip className={style.optionIcon} title={options[k].tooltip} icon={<PiInfo />} />}
                 </button>
               ))}
             </div>

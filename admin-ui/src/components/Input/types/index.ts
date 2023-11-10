@@ -1,5 +1,4 @@
 import { ButtonHTMLAttributes, InputHTMLAttributes, ReactElement } from "react";
-import { IconType } from "../../Icon/types";
 
 export type inputTypes =
   | "date"
@@ -27,8 +26,8 @@ export type InputProps = InputHTMLAttributes<HTMLInputElement> &
   InputHTMLAttributes<HTMLTextAreaElement> & {
     as?: "input" | "textarea";
     label?: string | ReactElement;
-    icon?: IconType;
-    iconAfter?: IconType | ReactElement;
+    icon?: ReactElement;
+    iconAfter?: ReactElement;
     error?: string;
     options?: { [key: string]: InputOption };
     variants?: InputVariants[];

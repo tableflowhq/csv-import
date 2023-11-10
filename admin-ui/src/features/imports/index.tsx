@@ -10,6 +10,7 @@ import useFilter from "../../hooks/useFilter";
 import collectionCountLabel from "../../utils/collectionCountLabel";
 import { importsTable } from "./utils/importsTable";
 import style from "./style/Imports.module.scss";
+import { PiMagnifyingGlassBold } from "react-icons/pi";
 
 export default function Imports() {
   const { data: organization } = useGetOrganization();
@@ -56,7 +57,13 @@ export default function Imports() {
           </div>
 
           <div className={style.actions}>
-            <Input icon="search" type="search" className={style.searchInput} placeholder="Search" onChange={(e: any) => setFilter(e.target.value)} />
+            <Input
+              icon={<PiMagnifyingGlassBold />}
+              type="search"
+              className={style.searchInput}
+              placeholder="Search"
+              onChange={(e: any) => setFilter(e.target.value)}
+            />
           </div>
         </div>
 

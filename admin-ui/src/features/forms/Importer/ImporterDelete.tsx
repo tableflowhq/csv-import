@@ -1,10 +1,11 @@
 import { useEffect } from "react";
 import Badge from "../../../components/Badge";
 import Button from "../../../components/Button";
-import Icon from "../../../components/Icon";
 import useDeleteImporter from "../../../api/useDeleteImporter";
+import { sizes } from "../../../settings/theme";
 import { ImporterDeleteProps } from "../types";
 import style from "../style/DeleteConfirmation.module.scss";
+import { PiTrash } from "react-icons/pi";
 
 export default function ImporterDelete({ importer, onSuccess = () => null, context }: ImporterDeleteProps) {
   const { mutate, isLoading, isSuccess } = useDeleteImporter(context?.workspaceId, importer?.id);
@@ -22,7 +23,7 @@ export default function ImporterDelete({ importer, onSuccess = () => null, conte
     <>
       <div className={style.top}>
         <div className={style.icon}>
-          <Icon icon="trash" size="m" className={style.iconRed} />
+          <PiTrash className={style.iconRed} size={sizes.icon.large} />
         </div>
         <div className={style.texts}>
           <h3>Delete Importer</h3>

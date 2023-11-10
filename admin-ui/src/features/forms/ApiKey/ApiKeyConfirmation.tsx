@@ -1,14 +1,16 @@
 import Button from "../../../components/Button";
-import Icon from "../../../components/Icon";
+import { sizes } from "../../../settings/theme";
+import { colors } from "../../../settings/theme";
 import { ApiKeyConfirmationProps } from "../types";
 import style from "../style/DeleteConfirmation.module.scss";
+import { PiWarning } from "react-icons/pi";
 
 export default function ApiKeyConfirmation({ onCancel, onConfirm = () => null }: ApiKeyConfirmationProps) {
   return (
     <>
       <div className={style.top}>
         <div className={style.icon}>
-          <Icon icon="error" size="m" className={style.iconRed} />
+          <PiWarning size={sizes.icon.large} color={colors.error} />
         </div>
         <div className={style.texts}>
           <h3>Regenerate API Key</h3>

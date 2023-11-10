@@ -3,8 +3,10 @@ import { ChakraProvider, extendTheme } from "@chakra-ui/react";
 import { MantineProvider } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
 import theme from "../settings/chakra";
+import { sizes } from "../settings/theme/sizes";
 import useThemeStore from "../stores/useThemeStore";
 import { ThemeProps } from "./types";
+import { IconContext } from "react-icons/lib";
 
 const chakraTheme = extendTheme(theme);
 
@@ -19,8 +21,10 @@ export default function ThemeProvider({ children }: ThemeProps): React.ReactElem
   return (
     <ChakraProvider resetCSS={false} theme={chakraTheme}>
       <MantineProvider>
-        <Notifications />
-        {children}
+        <IconContext.Provider value={{ style: { display: "block", minWidth: sizes.icon.medium, minHeight: sizes.icon.medium } }}>
+          <Notifications />
+          {children}
+        </IconContext.Provider>
       </MantineProvider>
     </ChakraProvider>
   );
