@@ -68,16 +68,6 @@
   align-items: center;
 }
 
-.sqlTextarea {
-  textarea {
-    height: 450px;
-    font-family: courier, monospace;
-    line-height: 1.5;
-    padding: var(--m-s);
-    font-weight: 600;
-  }
-}
-
 .subTitle {
   margin-left: calc(var(--m-xxxxs) * -1);
   gap: var(--m-xxxs);

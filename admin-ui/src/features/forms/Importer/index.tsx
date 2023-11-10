@@ -36,13 +36,12 @@ export default function ImporterForm({ title = "Importer form", importer = {} as
     <div className={style.container}>
       {title && <h2>{title}</h2>}
       <form onSubmit={form.onSubmit(onSubmit)} aria-disabled={isLoading}>
-        <fieldset disabled={isLoading}>
+        <fieldset disabled={isLoading} className={style.inputFieldset}>
           <Input
-            placeholder={!isEditForm ? "name" : `${importer?.name}`}
+            placeholder={!isEditForm ? "Name" : `${importer?.name}`}
             name="name"
             {...form.getInputProps("name")}
             autoFocus={!isEditForm}
-            className={style.sqlTextarea}
             required
           />
         </fieldset>

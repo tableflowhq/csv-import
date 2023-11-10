@@ -7,7 +7,7 @@ import ThemeToggle from "../../components/ThemeToggle";
 import { AuthContext } from "../../providers/Auth";
 import MainMenu from "./components/MainMenu";
 import style from "./style/TopBar.module.scss";
-import { PiGear, PiPower, PiQuestion, PiUser } from "react-icons/pi";
+import { PiDatabase, PiGear, PiPower, PiQuestion, PiUser } from "react-icons/pi";
 
 export default function TopBar() {
   const sessionContext = useContext(AuthContext);
@@ -40,16 +40,16 @@ export default function TopBar() {
           } as DialogItem,
         ]
       : []),
-    // ...(sessionExists && showProfile
-    //   ? [
-    //       {
-    //         children: "Billing",
-    //         onClick: () => navigate("/billing"),
-    //          icon: <PiDatabase />,
-    //         iconPosition: "left",
-    //       } as DialogItem,
-    //     ]
-    //   : []),
+    ...(sessionExists && showProfile
+      ? [
+          {
+            children: "Billing",
+            onClick: () => navigate("/billing"),
+            icon: <PiDatabase />,
+            iconPosition: "left",
+          } as DialogItem,
+        ]
+      : []),
     ...(sessionExists && showProfile
       ? [
           {

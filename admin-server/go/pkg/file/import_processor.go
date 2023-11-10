@@ -52,7 +52,7 @@ func ImportData(upload *model.Upload, template *model.Template) {
 		tf.Log.Errorw("Could not process and store import", "error", err, "import_id", imp.ID)
 		return
 	}
-	tf.Log.Debugw("Import processing and storage complete", "import_id", imp.ID, "time_taken", time.Since(importStartTime))
+	tf.Log.Infow("Import processing and storage complete", "import_id", imp.ID, "num_rows", importResult.NumRows, "time_taken", time.Since(importStartTime))
 
 	imp.IsStored = true
 	imp.NumRows = null.IntFrom(int64(importResult.NumRows))
