@@ -172,7 +172,7 @@ func UploadCompleteHandler(event handler.HookEvent,
 
 	err = tf.DB.Save(upload).Error
 	if err != nil {
-		tf.Log.Errorw("Could not update upload in database", "error", err)
+		tf.Log.Errorw("Could not update upload in database", "error", err, "upload_id", upload.ID)
 		removeUploadFileFromDisk(file, fileName, upload.ID.String())
 		return
 	}
