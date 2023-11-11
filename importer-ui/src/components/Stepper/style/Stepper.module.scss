@@ -21,13 +21,6 @@ $transition: all 0.3s ease-out;
       align-items: center;
       justify-content: center;
       transition: $transition;
-
-      svg {
-        width: 12px;
-        aspect-ratio: 1;
-        fill: var(--color-primary);
-        stroke: none;
-      }
     }
 
     &.active {

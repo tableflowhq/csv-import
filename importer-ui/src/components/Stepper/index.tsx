@@ -1,3 +1,4 @@
+import { colors } from "../../settings/theme";
 import classes from "../../utils/classes";
 import { StepperProps } from "./types";
 import style from "./style/Stepper.module.scss";
@@ -23,7 +24,7 @@ export default function Stepper({ steps, current, clickable, setCurrent }: Stepp
             key={i}
             className={classes([style.step, i === current ? style.active : done && style.done, steps.length < 4 && style.stepWide])}
             {...buttonProps}>
-            <div className={style.badge}>{done ? <PiCheckBold /> : i + 1}</div>
+            <div className={style.badge}>{done ? <PiCheckBold color={colors.primary} /> : i + 1}</div>
             <div className={style.label}>{step.label}</div>
           </Element>
         );
