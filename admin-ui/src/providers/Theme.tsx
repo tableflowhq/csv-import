@@ -21,7 +21,7 @@ export default function ThemeProvider({ children }: ThemeProps): React.ReactElem
   return (
     <ChakraProvider resetCSS={false} theme={chakraTheme}>
       <MantineProvider>
-        <IconContext.Provider value={{ style: { display: "block", minWidth: sizes.icon.medium, minHeight: sizes.icon.medium } }}>
+        <IconContext.Provider value={{ className: "react-icon", size: sizes.icon.medium }}>
           <Notifications />
           {children}
         </IconContext.Provider>

@@ -9,9 +9,7 @@ const chakraTheme = extendTheme(theme);
 export default function ThemeProvider({ children }: ThemeProps): React.ReactElement {
   return (
     <ChakraProvider resetCSS={false} theme={chakraTheme}>
-      <IconContext.Provider value={{ style: { display: "block", minWidth: sizes.icon.medium, minHeight: sizes.icon.medium } }}>
-        {children}
-      </IconContext.Provider>
+      <IconContext.Provider value={{ className: "react-icon", size: sizes.icon.medium }}>{children}</IconContext.Provider>
     </ChakraProvider>
   );
 }
