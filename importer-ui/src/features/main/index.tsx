@@ -93,9 +93,8 @@ export default function Main() {
   const [columnsOrder, setColumnsOrder] = useState<ColumnsOrder>();
 
   // Stepper handler
-  const { currentStep, setStep, stepper } = useStepNavigation(StepEnum.Upload, skipHeader, importerId);
-  console.log(currentStep);
-  const step = stepper?.step?.id;
+  const { currentStep, setStep, stepper, stepId } = useStepNavigation(StepEnum.Upload, skipHeader, importerId);
+  console.log(stepper);
 
   // There was an error the last time they tried to upload a file. Reload to clear stored tusId
   // TODO: This doesn't work, fix it
@@ -119,12 +118,13 @@ export default function Main() {
   useEffect(() => {
     const isUploadLoading = tusId && !uploadError && !uploadIsStored;
     setShowUploadSpinner(isUploadLoading);
-  }, [tusId, uploadIsStored, uploadError, step]);
+  }, [tusId, uploadIsStored, uploadError, currentStep]);
 
   // Handle jumping to the right step from page reloads or upload errors
   useEffect(() => {
     // If we're not on the first step, the page wasn't reloaded or an error would have been already handled
-    if (step !== Steps.Upload) {
+    console.log("currentStep, chage", currentStep);
+    if (currentStep !== StepEnum.Upload) {
       return;
     }
     const isUploadSuccess = tusId && !uploadError && uploadIsStored;
@@ -138,19 +138,17 @@ export default function Main() {
       if (currentStep) {
         if (currentStep === StepEnum.Upload) {
           setStep(currentStep + 1);
-          stepper.setCurrent(currentStep + 1);
         } else {
           if (currentStep === StepEnum.MapColumns) {
             setUploadFromHeaderRowSelection(upload);
           }
-          stepper.setCurrent(currentStep);
+          setStep(currentStep);
         }
       } else {
         setStep(currentStep + 1);
-        stepper.setCurrent(currentStep + 1);
       }
     }
-  }, [tusId, uploadIsStored, uploadError, step]);
+  }, [tusId, uploadIsStored, uploadError, currentStep]);
 
   useEffect(() => {
     if (review && !reviewIsLoading && reviewIsStored && enabledReview) {
@@ -171,7 +169,7 @@ export default function Main() {
 
   const reload = () => {
     setTusId("");
-    stepper.setCurrent(StepEnum.Upload);
+    setStep(StepEnum.Upload);
     location.reload();
   };
   // Send messages to parent (SDK iframe)
@@ -185,13 +183,13 @@ export default function Main() {
     postMessage(message);
   }, []);
 
-  useEffect(() => {
-    const currentIndex = stepsConfig.findIndex((config) => config.id === step);
+  // useEffect(() => {
+  //   const currentIndex = stepsConfig.findIndex((config) => config.id === stepId);
 
-    if (currentIndex !== -1) {
-      setStep(currentIndex);
-    }
-  }, [step]);
+  //   if (currentIndex !== -1) {
+  //     setStep(currentIndex);
+  //   }
+  // }, [stepId]);
 
   const requestClose = () => {
     if (!isEmbeddedInIframe || !isModal) return;
@@ -220,7 +218,6 @@ export default function Main() {
       setUploadFromHeaderRowSelection(upload);
     }
     setStep(currentStep - 1);
-    stepper.setCurrent(currentStep - 1);
   };
 
   if (!initialPageLoaded) {
@@ -253,9 +250,8 @@ export default function Main() {
     if (displayUploadSpinner) {
       return <TableLoading hideBorder>Processing your file...</TableLoading>;
     }
-
-    switch (step) {
-      case Steps.Upload:
+    switch (currentStep) {
+      case StepEnum.Upload:
         return (
           <Uploader
             template={template}
@@ -268,31 +264,32 @@ export default function Main() {
             schemaless={schemaless}
           />
         );
-      case Steps.RowSelection:
+      case StepEnum.RowSelection:
         return (
           <RowSelection
             upload={upload}
             onCancel={reload}
             onSuccess={(upload: any) => {
               setUploadFromHeaderRowSelection(upload);
-              stepper.setCurrent(StepEnum.MapColumns);
+              setStep(StepEnum.MapColumns);
             }}
             selectedHeaderRow={selectedHeaderRow}
             setSelectedHeaderRow={setSelectedHeaderRow}
           />
         );
-      case Steps.MapColumns:
+      case StepEnum.MapColumns:
         return (
           <MapColumns
             template={template}
-            upload={skipHeader ? upload : uploadFromHeaderRowSelection}
+            // upload={skipHeader ? upload : uploadFromHeaderRowSelection}
+            upload={uploadFromHeaderRowSelection || upload}
             onSuccess={(_, columnsValues) => {
               setEnabledReview(true);
               setColumnsOrder(columnsValues);
-              skipHeader ? stepper.setCurrent(2) : stepper.setCurrent(3);
+              skipHeader ? setStep(StepEnum.RowSelection) : setStep(StepEnum.Review);
             }}
             skipHeaderRowSelection={skipHeader}
-            onCancel={skipHeader ? reload : () => stepper.setCurrent(1)}
+            onCancel={skipHeader ? reload : () => setStep(StepEnum.RowSelection)}
             schemaless={schemaless}
             schemalessReadOnly={schemalessReadOnly}
             seColumnsValues={seColumnsValues}
@@ -301,7 +298,7 @@ export default function Main() {
             onLoad={() => setEnabledReview(false)}
           />
         );
-      case Steps.Review:
+      case StepEnum.Review:
         return (
           <Review
             template={template}
