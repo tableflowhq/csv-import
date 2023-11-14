@@ -33,7 +33,12 @@ var maxColumnLimit = int(math.Min(500, math.MaxInt16))
 var maxRowLimit = 1000 * 1000 * 10       // TODO: Store and configure this on the workspace? But keep a max limit to prevent runaways?
 const UploadColumnSampleDataSize = 1 + 3 // 1 header row + 3 sample rows
 
-func UploadCompleteHandler(event handler.HookEvent, uploadAdditionalStorageHandler func(*model.Upload, *os.File) error, uploadLimitCheck func(*model.Upload, *os.File) (int, error), getAllowedValidateTypes func(string) map[string]bool) {
+func UploadCompleteHandler(event handler.HookEvent,
+	uploadAdditionalStorageHandler func(*model.Upload, *os.File) error,
+	uploadLimitCheck func(*model.Upload, *os.File) (int, error),
+	uploadChunkHandler func(upload *model.Upload, chunk [][]string, isLastChunk bool),
+	getAllowedValidateTypes func(string) map[string]bool) {
+
 	uploadFileName := event.Upload.MetaData["filename"]
 	uploadFileType := event.Upload.MetaData["filetype"]
 	uploadFileExtension := ""
@@ -123,7 +128,7 @@ func UploadCompleteHandler(event handler.HookEvent, uploadAdditionalStorageHandl
 		}
 	}
 
-	uploadResult, err := processAndStoreUpload(upload, file, limit)
+	uploadResult, err := processAndStoreUpload(upload, file, limit, uploadChunkHandler)
 	if err != nil {
 		tf.Log.Errorw("Could not process upload", "error", err, "upload_id", upload.ID)
 		saveUploadError(upload, err.Error())
@@ -167,7 +172,7 @@ func UploadCompleteHandler(event handler.HookEvent, uploadAdditionalStorageHandl
 
 	err = tf.DB.Save(upload).Error
 	if err != nil {
-		tf.Log.Errorw("Could not update upload in database", "error", err)
+		tf.Log.Errorw("Could not update upload in database", "error", err, "upload_id", upload.ID)
 		removeUploadFileFromDisk(file, fileName, upload.ID.String())
 		return
 	}
@@ -184,7 +189,7 @@ func UploadCompleteHandler(event handler.HookEvent, uploadAdditionalStorageHandl
 	}
 }
 
-func processAndStoreUpload(upload *model.Upload, file *os.File, limit int) (uploadProcessResult, error) {
+func processAndStoreUpload(upload *model.Upload, file *os.File, limit int, uploadChunkHandler func(upload *model.Upload, chunk [][]string, isLastChunk bool)) (uploadProcessResult, error) {
 	it, err := util.OpenDataFileIterator(file, upload.FileType.String)
 	defer it.Close()
 	if err != nil {
@@ -207,6 +212,10 @@ func processAndStoreUpload(upload *model.Upload, file *os.File, limit int) (uplo
 	}
 	b := scylla.NewBatchInserter()
 	startTime := time.Now()
+
+	chunkCount := 0
+	chunkProcessingComplete := false
+	uploadChunk := make([][]string, 0)
 
 	for i := 0; ; i++ {
 		if i >= maxRowLimit {
@@ -273,6 +282,11 @@ func processAndStoreUpload(upload *model.Upload, file *os.File, limit int) (uplo
 			continue
 		}
 
+		// Handle sending chunks to any additional services
+		if uploadChunkHandler != nil && !chunkProcessingComplete {
+			chunkProcessingComplete = handleChunk(upload, row, &chunkCount, &uploadChunk, uploadChunkHandler)
+		}
+
 		numRows++
 		batchCounter++
 		batchSize += approxMutationSize
@@ -292,11 +306,48 @@ func processAndStoreUpload(upload *model.Upload, file *os.File, limit int) (uplo
 		}
 	}
 
+	// Handle sending in the last chunk if there are rows left and chunk processing isn't complete
+	if uploadChunkHandler != nil && len(uploadChunk) > 0 && !chunkProcessingComplete {
+		uploadChunkHandler(upload, uploadChunk, true)
+
+		// Reset for sanity and extensibility
+		chunkProcessingComplete = true
+		uploadChunk = make([][]string, 0)
+	}
+
 	close(in)
 	wg.Wait()
 
 	tf.Log.Infow("Upload processing and storage complete", "upload_id", upload.ID, "num_rows", numRows, "time_taken", time.Since(startTime))
 	return uploadProcessResult{NumRows: numRows, SheetList: it.SheetList}, nil
+}
+
+var maxChunks = 1
+var chunkRowLimit = 60
+
+func handleChunk(upload *model.Upload, row []string, chunkCount *int, chunk *[][]string, handler func(*model.Upload, [][]string, bool)) bool {
+	*chunk = append(*chunk, row)
+
+	// If we haven't reached the chunk limit, there's nothing more to do
+	if len(*chunk) < chunkRowLimit+1 {
+		return false
+	}
+
+	*chunkCount++
+
+	// We've reached the chunk limit, so process the chunk
+	isLastChunk := *chunkCount == maxChunks
+	handler(upload, (*chunk)[:chunkRowLimit], isLastChunk)
+
+	// If this is the last chunk we can process, clear the chunk and return true
+	if isLastChunk {
+		*chunk = make([][]string, 0)
+		return true
+	}
+
+	// Otherwise, prepare for the next chunk
+	*chunk = (*chunk)[chunkRowLimit:]
+	return false
 }
 
 func getImportMetadata(importMetadataEncodedStr string) (jsonb.JSONB, error) {

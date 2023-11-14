@@ -22,6 +22,7 @@ import (
 	"tableflow/go/pkg/tf"
 	"tableflow/go/pkg/types"
 	"tableflow/go/pkg/util"
+	"time"
 )
 
 // importServiceMaxNumRowsToPassData If the import has more rows than this value, then don't pass the data back to the
@@ -243,7 +244,7 @@ func importerGetImporter(c *gin.Context, getAllowedValidateTypes func(string) ma
 //	@Failure		400	{object}	types.Res
 //	@Router			/file-import/v1/upload/{id} [get]
 //	@Param			id	path	string	true	"tus ID"
-func importerGetUpload(c *gin.Context, getColumnMatches func(*types.Upload, []*model.TemplateColumn) map[string]string) {
+func importerGetUpload(c *gin.Context, getColumnMatches func(*types.Upload, []*model.TemplateColumn) map[string]string, shouldWaitForHeaderRowMatch func(upload *model.Upload) bool) {
 	id := c.Param("id")
 	if len(id) == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No upload tus ID provided"})
@@ -257,6 +258,36 @@ func importerGetUpload(c *gin.Context, getColumnMatches func(*types.Upload, []*m
 	if upload.Error.Valid {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: upload.Error.String})
 		return
+	}
+
+	waitForHeaderRowMatch := false
+	// Check to see if we should wait on the service finding a header row match if...
+	//  1. The service is enabled
+	//  2. The header row index has not been set yet (from skip header row selection being enabled or the user going back after selecting a header)
+	//  3. A match has not been set yet from the service (or from a timeout)
+	if shouldWaitForHeaderRowMatch != nil && !upload.HeaderRowIndex.Valid && !upload.MatchedHeaderRowIndex.Valid {
+		waitForHeaderRowMatch = shouldWaitForHeaderRowMatch(upload)
+	}
+	if waitForHeaderRowMatch {
+		// Enforce a timeout on the service finding a match by checking when the upload was stored (the last updated_at)
+		now := time.Now()
+		timeoutLimit := 5 * time.Second
+		if now.After(upload.UpdatedAt.Time.Add(timeoutLimit)) {
+			tf.Log.Warnw("Timeout reached waiting for header row match from service", "upload_id", upload.ID, "time_waited", now.Sub(upload.UpdatedAt.Time).String(), "time_limit", timeoutLimit.String())
+
+			// Cancel subsequent waits by setting the MatchedHeaderRowIndex to -1
+			upload.MatchedHeaderRowIndex = null.IntFrom(-1)
+			err = tf.DB.Save(upload).Error
+			if err != nil {
+				tf.Log.Errorw("Could not update upload in database", "error", err, "upload_id", upload.ID)
+				c.AbortWithStatusJSON(http.StatusInternalServerError, types.Res{Err: err.Error()})
+				return
+			}
+		} else {
+			// Continue waiting for a match to be found or time out by overriding the upload being stored on the response
+			// The importer polls this endpoint until IsStored comes back as true or a max number of attempts has been reached
+			upload.IsStored = false
+		}
 	}
 
 	numRowsToPreview := 25
@@ -445,7 +476,7 @@ func importerSetHeaderRow(c *gin.Context, getColumnMatches func(*types.Upload, [
 
 	err = tf.DB.Save(upload).Error
 	if err != nil {
-		tf.Log.Errorw("Could not update upload in database", "error", err)
+		tf.Log.Errorw("Could not update upload in database", "error", err, "upload_id", upload.ID)
 		c.AbortWithStatusJSON(http.StatusInternalServerError, types.Res{Err: err.Error()})
 		return
 	}
@@ -599,7 +630,7 @@ func importerSetColumnMapping(c *gin.Context) {
 		}
 		err = tf.DB.Save(upload).Error
 		if err != nil {
-			tf.Log.Errorw("Could not update upload in database", "error", err)
+			tf.Log.Errorw("Could not update upload in database", "error", err, "upload_id", upload.ID)
 			c.AbortWithStatusJSON(http.StatusInternalServerError, types.Res{Err: err.Error()})
 			return
 		}
@@ -781,6 +812,7 @@ func importerReviewImport(c *gin.Context) {
 		NumErrorRows:       imp.NumErrorRows,
 		NumValidRows:       imp.NumValidRows,
 		CreatedAt:          imp.CreatedAt,
+		UpdatedAt:          imp.UpdatedAt,
 	}
 	if !imp.IsStored {
 		// Don't attempt to retrieve the data in Scylla if it's not stored
@@ -1163,6 +1195,7 @@ func importerSubmitImport(c *gin.Context, importCompleteHandler func(types.Impor
 		NumErrorRows:       imp.NumErrorRows,
 		NumValidRows:       imp.NumValidRows,
 		CreatedAt:          imp.CreatedAt,
+		UpdatedAt:          imp.UpdatedAt,
 		Rows:               []types.ImportRowResponse{},
 	}
 	if int(imp.NumRows.Int64) <= maxNumRowsForFrontendPassThrough {

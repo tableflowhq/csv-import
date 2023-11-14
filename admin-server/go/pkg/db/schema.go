@@ -252,6 +252,7 @@ func GetDatabaseSchemaInitSQL() string {
 		    is_stored      bool             not null default false,       -- Have all the records been stored?
 		    error          text,
 		    created_at     timestamptz      not null default now(),
+            updated_at     timestamptz      not null default now(),
 		    constraint fk_importer_id
 		        foreign key (importer_id)
 		            references importers(id),
@@ -294,6 +295,7 @@ func GetDatabaseSchemaInitSQL() string {
 		    metadata             jsonb            not null default '{}'::jsonb, -- Optional custom data the client can send from the SDK, i.e. their user ID
 		    is_stored            bool             not null default false,       -- Have all the records been stored?
 		    created_at           timestamptz      not null default now(),
+		    updated_at           timestamptz      not null default now(),
 		    constraint fk_upload_id
 		        foreign key (upload_id)
 		            references uploads(id),
@@ -410,5 +412,48 @@ func GetDatabaseSchemaInitSQL() string {
 
 		alter table uploads
 		    add column if not exists sheet_list text[];
+
+		do
+		$$
+			begin
+				if not exists (select
+				               from information_schema.columns
+				               where table_name = 'uploads' and column_name = 'updated_at')
+				then
+					alter table uploads
+						add column updated_at timestamptz;
+		
+					update uploads set updated_at = created_at where updated_at is null;
+		
+					alter table uploads
+						alter column updated_at set default now();
+					alter table uploads
+						alter column updated_at set not null;
+				end if;
+			end
+		$$;
+
+		do
+		$$
+			begin
+				if not exists (select
+				               from information_schema.columns
+				               where table_name = 'imports' and column_name = 'updated_at')
+				then
+					alter table imports
+						add column updated_at timestamptz;
+		
+					update imports set updated_at = created_at where updated_at is null;
+		
+					alter table imports
+						alter column updated_at set default now();
+					alter table imports
+						alter column updated_at set not null;
+				end if;
+			end
+		$$;
+
+		alter table uploads
+		    add column if not exists matched_header_row_index integer;
 	`
 }

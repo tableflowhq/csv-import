@@ -54,19 +54,20 @@ type Validation struct {
 /* ---------------------------  Upload types  --------------------------- */
 
 type Upload struct {
-	ID             model.ID       `json:"id" swaggertype:"string" example:"50ca61e1-f683-4b03-9ec4-4b3adb592bf1"`
-	TusID          string         `json:"tus_id" example:"ee715c254ee61855b465ed61be930487"`
-	ImporterID     model.ID       `json:"importer_id" swaggertype:"string" example:"6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353"`
-	FileName       null.String    `json:"file_name" swaggertype:"string" example:"example.csv"`
-	FileType       null.String    `json:"file_type" swaggertype:"string" example:"text/csv"`
-	FileExtension  null.String    `json:"file_extension" swaggertype:"string" example:"csv"`
-	FileSize       null.Int       `json:"file_size" swaggertype:"integer" example:"1024"`
-	Metadata       jsonb.JSONB    `json:"metadata" swaggertype:"string" example:"{\"user_id\": 1234}"`
-	Template       *Template      `json:"template"` // Set if the user passes in a template to the SDK, which overrides the template on the importer
-	IsStored       bool           `json:"is_stored" example:"false"`
-	HeaderRowIndex null.Int       `json:"header_row_index" swaggertype:"integer" example:"0"`
-	SheetList      []string       `json:"sheet_list" swaggertype:"array,string" example:"Sheet 1"`
-	CreatedAt      model.NullTime `json:"created_at" swaggertype:"integer" example:"1682366228"`
+	ID                    model.ID       `json:"id" swaggertype:"string" example:"50ca61e1-f683-4b03-9ec4-4b3adb592bf1"`
+	TusID                 string         `json:"tus_id" example:"ee715c254ee61855b465ed61be930487"`
+	ImporterID            model.ID       `json:"importer_id" swaggertype:"string" example:"6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353"`
+	FileName              null.String    `json:"file_name" swaggertype:"string" example:"example.csv"`
+	FileType              null.String    `json:"file_type" swaggertype:"string" example:"text/csv"`
+	FileExtension         null.String    `json:"file_extension" swaggertype:"string" example:"csv"`
+	FileSize              null.Int       `json:"file_size" swaggertype:"integer" example:"1024"`
+	Metadata              jsonb.JSONB    `json:"metadata" swaggertype:"string" example:"{\"user_id\": 1234}"`
+	Template              *Template      `json:"template"` // Set if the user passes in a template to the SDK, which overrides the template on the importer
+	IsStored              bool           `json:"is_stored" example:"false"`
+	HeaderRowIndex        null.Int       `json:"header_row_index" swaggertype:"integer" example:"0"`
+	MatchedHeaderRowIndex null.Int       `json:"matched_header_row_index" swaggertype:"integer" example:"0"`
+	SheetList             []string       `json:"sheet_list" swaggertype:"array,string" example:"Sheet 1"`
+	CreatedAt             model.NullTime `json:"created_at" swaggertype:"integer" example:"1682366228"`
 
 	UploadRows    []UploadRow     `json:"upload_rows"`
 	UploadColumns []*UploadColumn `json:"upload_columns"`
@@ -104,6 +105,7 @@ type Import struct {
 	NumErrorRows       null.Int            `json:"num_error_rows" swaggertype:"integer" example:"32"`
 	NumValidRows       null.Int            `json:"num_valid_rows" swaggertype:"integer" example:"224"`
 	CreatedAt          model.NullTime      `json:"created_at" swaggertype:"integer" example:"1682366228"`
+	UpdatedAt          model.NullTime      `json:"updated_at" swaggertype:"integer" example:"1682366228"`
 	Error              null.String         `json:"error,omitempty" swaggerignore:"true"`
 	Rows               []ImportRowResponse `json:"rows,omitempty"` // Used for the final step in the onComplete
 }
@@ -168,21 +170,22 @@ func ConvertUpload(upload *model.Upload, uploadRows []UploadRow) (*Upload, error
 		return nil, err
 	}
 	importerUpload := &Upload{
-		ID:             upload.ID,
-		TusID:          upload.TusID,
-		ImporterID:     upload.ImporterID,
-		FileName:       upload.FileName,
-		FileType:       upload.FileType,
-		FileExtension:  upload.FileExtension,
-		FileSize:       upload.FileSize,
-		Metadata:       upload.Metadata,
-		Template:       uploadTemplate,
-		IsStored:       upload.IsStored,
-		HeaderRowIndex: upload.HeaderRowIndex,
-		SheetList:      upload.SheetList,
-		CreatedAt:      upload.CreatedAt,
-		UploadColumns:  importerUploadColumns,
-		UploadRows:     uploadRows,
+		ID:                    upload.ID,
+		TusID:                 upload.TusID,
+		ImporterID:            upload.ImporterID,
+		FileName:              upload.FileName,
+		FileType:              upload.FileType,
+		FileExtension:         upload.FileExtension,
+		FileSize:              upload.FileSize,
+		Metadata:              upload.Metadata,
+		Template:              uploadTemplate,
+		IsStored:              upload.IsStored,
+		HeaderRowIndex:        upload.HeaderRowIndex,
+		MatchedHeaderRowIndex: upload.MatchedHeaderRowIndex,
+		SheetList:             upload.SheetList,
+		CreatedAt:             upload.CreatedAt,
+		UploadColumns:         importerUploadColumns,
+		UploadRows:            uploadRows,
 	}
 	return importerUpload, nil
 }
