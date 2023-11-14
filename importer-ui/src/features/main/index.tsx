@@ -15,9 +15,8 @@ import { providedJSONString } from "../../utils/cssInterpreter";
 import postMessage from "../../utils/postMessage";
 import { ColumnsOrder } from "../review/types";
 import useApi from "./hooks/useApi";
-import useModifiedSteps from "./hooks/useModifiedSteps";
 import useMutableLocalStorage from "./hooks/useMutableLocalStorage";
-import useStepNavigation, { StepEnum } from "./hooks/useStepNavigation";
+import useStepNavigation, { StepEnum, stepsConfig } from "./hooks/useStepNavigation";
 import { Steps } from "./types";
 import style from "./style/Main.module.scss";
 import MapColumns from "../map-columns";
@@ -27,13 +26,6 @@ import Uploader from "../uploader";
 import { PiArrowsClockwise, PiX } from "react-icons/pi";
 
 const TUS_ENDPOINT = getAPIBaseURL("v1") + "files";
-
-const stepsConfig = [
-  { label: "Upload", id: Steps.Upload },
-  { label: "Select Header", id: Steps.RowSelection },
-  { label: "Map Columns", id: Steps.MapColumns },
-  { label: "Review", id: Steps.Review },
-];
 
 export default function Main() {
   useRevealApp();
@@ -101,11 +93,9 @@ export default function Main() {
   const [columnsOrder, setColumnsOrder] = useState<ColumnsOrder>();
 
   // Stepper handler
-  const steps = useModifiedSteps(stepsConfig, skipHeader);
-  const stepper = useStepper(steps, 0);
+  const { currentStep, setStep, stepper } = useStepNavigation(StepEnum.Upload, skipHeader, importerId);
+  console.log(currentStep);
   const step = stepper?.step?.id;
-  const [currentStep, setCurrentStep] = useMutableLocalStorage(`uploadStep_${importerId}`, "");
-  const { currentStep: cStep, setStep } = useStepNavigation(StepEnum.Upload, skipHeader);
 
   // There was an error the last time they tried to upload a file. Reload to clear stored tusId
   // TODO: This doesn't work, fix it
@@ -147,8 +137,8 @@ export default function Main() {
     if (isUploadSuccess) {
       if (currentStep) {
         if (currentStep === StepEnum.Upload) {
-          setStep(cStep + 1);
-          stepper.setCurrent(cStep + 1);
+          setStep(currentStep + 1);
+          stepper.setCurrent(currentStep + 1);
         } else {
           if (currentStep === StepEnum.MapColumns) {
             setUploadFromHeaderRowSelection(upload);
@@ -182,7 +172,6 @@ export default function Main() {
   const reload = () => {
     setTusId("");
     stepper.setCurrent(StepEnum.Upload);
-    setCurrentStep(StepEnum.Upload);
     location.reload();
   };
   // Send messages to parent (SDK iframe)
@@ -201,7 +190,6 @@ export default function Main() {
 
     if (currentIndex !== -1) {
       setStep(currentIndex);
-      setCurrentStep(currentIndex);
     }
   }, [step]);
 
@@ -228,11 +216,11 @@ export default function Main() {
   };
 
   const handleCancelReview = () => {
-    if (cStep === StepEnum.MapColumns) {
+    if (currentStep === StepEnum.MapColumns) {
       setUploadFromHeaderRowSelection(upload);
     }
-    setStep(cStep - 1);
-    stepper.setCurrent(cStep - 1);
+    setStep(currentStep - 1);
+    stepper.setCurrent(currentStep - 1);
   };
 
   if (!initialPageLoaded) {
