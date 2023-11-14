@@ -16,6 +16,8 @@ import postMessage from "../../utils/postMessage";
 import { ColumnsOrder } from "../review/types";
 import useApi from "./hooks/useApi";
 import useModifiedSteps from "./hooks/useModifiedSteps";
+import useMutableLocalStorage from "./hooks/useMutableLocalStorage";
+import useStepNavigation, { StepEnum } from "./hooks/useStepNavigation";
 import { Steps } from "./types";
 import style from "./style/Main.module.scss";
 import MapColumns from "../map-columns";
@@ -102,6 +104,8 @@ export default function Main() {
   const steps = useModifiedSteps(stepsConfig, skipHeader);
   const stepper = useStepper(steps, 0);
   const step = stepper?.step?.id;
+  const [currentStep, setCurrentStep] = useMutableLocalStorage(`uploadStep_${importerId}`, "");
+  const { currentStep: cStep, setStep } = useStepNavigation(StepEnum.Upload, skipHeader);
 
   // There was an error the last time they tried to upload a file. Reload to clear stored tusId
   // TODO: This doesn't work, fix it
@@ -134,18 +138,26 @@ export default function Main() {
       return;
     }
     const isUploadSuccess = tusId && !uploadError && uploadIsStored;
-    const isUploadHeaderRowSet = upload?.header_row_index != null && !skipHeader;
-
     if (uploadError) {
-      stepper.setCurrent(0);
+      setStep(StepEnum.Upload);
+      stepper.setCurrent(StepEnum.Upload);
       return;
     }
+
     if (isUploadSuccess) {
-      if (isUploadHeaderRowSet) {
-        setUploadFromHeaderRowSelection(upload);
-        stepper.setCurrent(2);
+      if (currentStep) {
+        if (currentStep === StepEnum.Upload) {
+          setStep(cStep + 1);
+          stepper.setCurrent(cStep + 1);
+        } else {
+          if (currentStep === StepEnum.MapColumns) {
+            setUploadFromHeaderRowSelection(upload);
+          }
+          stepper.setCurrent(currentStep);
+        }
       } else {
-        stepper.setCurrent(1);
+        setStep(currentStep + 1);
+        stepper.setCurrent(currentStep + 1);
       }
     }
   }, [tusId, uploadIsStored, uploadError, step]);
@@ -169,10 +181,10 @@ export default function Main() {
 
   const reload = () => {
     setTusId("");
-    stepper.setCurrent(0);
+    stepper.setCurrent(StepEnum.Upload);
+    setCurrentStep(StepEnum.Upload);
     location.reload();
   };
-
   // Send messages to parent (SDK iframe)
 
   useEffect(() => {
@@ -183,6 +195,15 @@ export default function Main() {
     };
     postMessage(message);
   }, []);
+
+  useEffect(() => {
+    const currentIndex = stepsConfig.findIndex((config) => config.id === step);
+
+    if (currentIndex !== -1) {
+      setStep(currentIndex);
+      setCurrentStep(currentIndex);
+    }
+  }, [step]);
 
   const requestClose = () => {
     if (!isEmbeddedInIframe || !isModal) return;
@@ -207,11 +228,11 @@ export default function Main() {
   };
 
   const handleCancelReview = () => {
-    if (skipHeader) {
-      stepper.setCurrent(1);
-    } else {
-      stepper.setCurrent(2);
+    if (cStep === StepEnum.MapColumns) {
+      setUploadFromHeaderRowSelection(upload);
     }
+    setStep(cStep - 1);
+    stepper.setCurrent(cStep - 1);
   };
 
   if (!initialPageLoaded) {
@@ -265,8 +286,8 @@ export default function Main() {
             upload={upload}
             onCancel={reload}
             onSuccess={(upload: any) => {
-              stepper.setCurrent(2);
               setUploadFromHeaderRowSelection(upload);
+              stepper.setCurrent(StepEnum.MapColumns);
             }}
             selectedHeaderRow={selectedHeaderRow}
             setSelectedHeaderRow={setSelectedHeaderRow}
@@ -280,6 +301,7 @@ export default function Main() {
             onSuccess={(_, columnsValues) => {
               setEnabledReview(true);
               setColumnsOrder(columnsValues);
+              skipHeader ? stepper.setCurrent(2) : stepper.setCurrent(3);
             }}
             skipHeaderRowSelection={skipHeader}
             onCancel={skipHeader ? reload : () => stepper.setCurrent(1)}
