@@ -553,12 +553,12 @@ func AddColumnMappingSuggestions(upload *types.Upload, templateColumns []*model.
 					score:            similarityScore,
 				})
 			}
+		}
 
-			// After evaluating all matches, the best match is the one at the top of the priority queue
-			if pq.Len() > 0 {
-				bestMatch := heap.Pop(&pq).(*MatchScore)
-				potentialBestMatches[i] = *bestMatch
-			}
+		// After evaluating all matches, the best match is the one at the top of the priority queue
+		if pq.Len() > 0 {
+			bestMatch := heap.Pop(&pq).(*MatchScore)
+			potentialBestMatches[i] = *bestMatch
 		}
 	}
 
