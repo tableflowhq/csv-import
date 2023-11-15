@@ -177,6 +177,7 @@ export default function Review({ onCancel, onComplete, waitOnComplete, upload, t
             uploadId={uploadId}
             filter={filter.current}
             disabled={isSubmitting || waitOnCompleteLoading}
+            upload={upload}
           />
         </div>
         <div className={style.actions}>

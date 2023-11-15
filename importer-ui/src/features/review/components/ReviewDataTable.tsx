@@ -15,7 +15,7 @@ import { PiInfo } from "react-icons/pi";
 const INDEX_ROW_WIDTH = 70;
 const MAX_COLUMN_SCROLL = 7;
 
-function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged, columnsOrder, disabled }: TableProps) {
+function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged, columnsOrder, disabled, upload }: TableProps) {
   const customSelectClass = "ag-theme-alpine-dark-custom-select";
   const paginatedDataRef: any = useRef();
   const filterRef: any = useRef(filter);
@@ -97,7 +97,25 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
 
   useEffect(() => {
     if (!paginatedData?.rows?.[0]?.values) return;
-    if (!columnsOrder) return;
+    if (!columnsOrder) {
+      const defaultColumnsOrder = upload?.upload_columns.reduce(
+        (acc, uc) => ({
+          ...acc,
+          [uc.id]: {
+            template: uc?.suggested_template_column_id || "",
+            use: !!uc?.suggested_template_column_id,
+            selected: !!uc?.suggested_template_column_id,
+          },
+        }),
+        []
+      );
+
+      const filteredColumnsOrder = Object.keys(defaultColumnsOrder).reduce((acc, key: any) => {
+        const { template, use } = defaultColumnsOrder[key];
+        return { ...acc, ...(use ? { [key]: template } : {}) };
+      }, {});
+      columnsOrder = { ...filteredColumnsOrder }
+    };
     // Extract ids from columnOrder and preserve the order
     const orderedIds = Object.values(columnsOrder);
 
