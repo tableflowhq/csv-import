@@ -5,7 +5,7 @@ import useThemeStore from "../../stores/theme";
 import useTemplateTable from "./hooks/useTemplateTable";
 import { UploaderProps } from "./types";
 import style from "./style/Uploader.module.scss";
-import { PiDownload } from "react-icons/pi";
+import { PiDownloadSimple } from "react-icons/pi";
 
 export default function Uploader({
   template,
@@ -62,7 +62,7 @@ export default function Uploader({
   const downloadTemplateButton = showDownloadTemplateButton ? (
     <Button
       width="100%"
-      leftIcon={<PiDownload />}
+      leftIcon={<PiDownloadSimple />}
       onClick={downloadTemplate}
       colorScheme={"secondary"}
       variant={theme === "light" ? "outline" : "solid"}>

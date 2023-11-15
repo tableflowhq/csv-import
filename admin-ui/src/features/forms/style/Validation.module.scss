@@ -35,9 +35,8 @@
   width: 48px;
   height: 48px;
   border-radius: 28px;
-  border: 8px solid var(--color-secondary-disabled);
-  background: var(--color-text-on-secondary);
-  margin: 0 auto;
-  margin-bottom: var(--m-s);
+  border: 8px solid var(--color-background-small-button-selected);
+  background: var(--color-text-on-tertiary);
+  margin: 0 auto var(--m-s);
   fill: var(--color-background-modal);
 }

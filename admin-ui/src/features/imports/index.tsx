@@ -49,7 +49,7 @@ export default function Imports() {
                   "files uploaded",
                   imports?.length || 0,
                   "No",
-                  "files found in",
+                  `file${dataFiltered.length === 1 ? "" : "s"} found from`,
                   dataFiltered.length
                 )}
               </small>

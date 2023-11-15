@@ -1,84 +1,88 @@
 :root {
-    color-scheme: dark;
+  color-scheme: dark;
 
-    // BACKGROUND
+  // BACKGROUND
 
-    --color-background: #0e1116;
-    --color-background-main: var(--color-background);
-    --color-background-modal: #171a20;
-    --color-background-modal-hover: #2e323c;
-    --color-background-modal-veil: #0e1116;
-    --color-background-modal-shadow: #0e1116;
-    --color-background-modal-shade: #171a20;
+  --color-background: #0e1116;
+  --color-background-main: var(--color-background);
+  --color-background-modal: #171a20;
+  --color-background-modal-hover: #2e323c;
+  --color-background-modal-veil: #0e1116;
+  --color-background-modal-shadow: #0e1116;
+  --color-background-modal-shade: #171a20;
 
-    --color-tertiary: #{$gray-900};
-    --color-tertiary-hover: #{$gray-800};
-    --color-tertiary-focus: #{$gray-800};
-    --color-tertiary-disabled: #{$gray-200};
+  --color-tertiary: #{$gray-900};
+  --color-tertiary-hover: #{$gray-800};
+  --color-tertiary-focus: #{$gray-800};
+  --color-tertiary-disabled: #{$gray-200};
 
-    --color-background-menu: #{$gray-900};
-    --color-background-menu-hover: #{$gray-800};
+  --color-background-menu: #{$gray-900};
+  --color-background-menu-hover: #{$gray-800};
 
-    // TEXT
+  // TEXT
 
-    --color-text-strong: #{$gray-100};
-    --color-text: #{$gray-300};
-    --color-text-soft: #{$gray-500};
+  --color-text-strong: #{$gray-100};
+  --color-text: #{$gray-300};
+  --color-text-soft: #{$gray-500};
 
-    --color-text-on-tertiary: #{$base-white};
-    --color-text-on-tertiary-disabled: #{$gray-500};
+  --color-text-on-tertiary: #{$base-white};
+  --color-text-on-tertiary-disabled: #{$gray-500};
 
-    --color-error: #{$error-800};
-    --color-text-error: #{$error-500};
-    --color-background-error: #{$error-500};
-    --color-background-error-hover: #{$error-600};
-    --color-background-error-soft: #{$error-200};
+  --color-error: #{$error-800};
+  --color-text-error: #{$error-500};
+  --color-background-error: #{$error-500};
+  --color-background-error-hover: #{$error-600};
+  --color-background-error-soft: #{$error-200};
 
-    // INPUT
+  // INPUT
 
-    --color-input-background: #{$gray-900};
-    --color-input-background-soft: #{$gray-800};
-    --color-input-border: #{$gray-700};
-    --color-input-placeholder: #{$gray-700};
-    --color-input-text-disabled: #{$gray-700};
-    --color-input-disabled: #171a20;
+  --color-input-background: #{$gray-900};
+  --color-input-background-soft: #{$gray-800};
+  --color-input-border: #{$gray-700};
+  --color-input-placeholder: #{$gray-700};
+  --color-input-text-disabled: #{$gray-700};
+  --color-input-disabled: #171a20;
 
-    --color-border: #{$gray-800};
+  --color-border: #{$gray-800};
 
-    --color-background-small-button-selected: #{$gray-700};
-    --color-background-small-button-hover: #{$gray-900};
-    --color-text-small-button: $base-white;
+  --color-background-small-button-selected: #{$gray-700};
+  --color-background-small-button-hover: #{$gray-900};
+  --color-text-small-button: $base-white;
 
-    // BUTTON
+  // BUTTON
 
-    --color-button: #{$primary-50};
-    --color-button-hover: #{$primary-100};
-    --color-button-disabled: #{$primary-100};
+  --color-button: #{$primary-50};
+  --color-button-hover: #{$primary-100};
+  --color-button-disabled: #{$primary-100};
 
-    --color-button-text: #171a20;
-    --color-button-text-disabled: lighter(#171a20, 10);
+  --color-button-text: #171a20;
+  --color-button-text-disabled: lighter(#171a20, 10);
 
-    --color-button-border: transparent;
+  --color-button-border: transparent;
 
-    // BORDER
+  // BORDER
 
-    --color-border: #{$gray-700};
-    --color-border-soft: #{$gray-800};
+  --color-border: #{$gray-700};
+  --color-border-soft: #{$gray-800};
 
-    // ICONS
+  // ICONS
 
-    --color-icon: #{$gray-300};
+  --color-icon: #{$gray-300};
 
-    // SHADOW
+  // TOGGLE
 
-    --color-bisel: rgba(255, 255, 255, 0.05);
+  --color-toggle: #{$gray-900};
 
-    // BRAND
+  // SHADOW
 
-    --color-tableflow-text: var(--color-text);
+  --color-bisel: rgba(255, 255, 255, 0.05);
 
-    // STEPPER
+  // BRAND
 
-    --color-stepper: #{$gray-cool-800};
-    --color-stepper-active: #{$success-300};
+  --color-tableflow-text: var(--color-text);
+
+  // STEPPER
+
+  --color-stepper: #{$gray-cool-800};
+  --color-stepper-active: #{$success-300};
 }

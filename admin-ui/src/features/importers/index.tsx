@@ -82,7 +82,7 @@ export default function Importers() {
                   "importers",
                   importers?.length || 0,
                   "No",
-                  "importers found in",
+                  `importer${dataFiltered.length === 1 ? "" : "s"} found from`,
                   dataFiltered.length
                 )}
               </small>

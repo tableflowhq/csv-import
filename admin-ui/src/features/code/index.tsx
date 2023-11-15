@@ -63,7 +63,7 @@ export default function Code(props: CodeProps) {
 
       <div className={style.top}>
         <p>Copy and paste the code below into your application:</p>
-        <Button icon={<PiCopy />} variants={["tertiary"]} onClick={() => copyToClipboard(code)}>
+        <Button icon={<PiCopy size={18} />} variants={["tertiary"]} onClick={() => copyToClipboard(code)}>
           Copy code
         </Button>
       </div>

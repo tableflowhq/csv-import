@@ -7,7 +7,7 @@ import ThemeToggle from "../../components/ThemeToggle";
 import { AuthContext } from "../../providers/Auth";
 import MainMenu from "./components/MainMenu";
 import style from "./style/TopBar.module.scss";
-import { PiDatabase, PiGear, PiPower, PiQuestion, PiUser } from "react-icons/pi";
+import { PiGear, PiQuestion, PiSignOut, PiUser, PiWallet } from "react-icons/pi";
 
 export default function TopBar() {
   const sessionContext = useContext(AuthContext);
@@ -25,7 +25,7 @@ export default function TopBar() {
           {
             children: "Docs",
             onClick: () => window.open("https://tableflow.com/docs", "_blank"),
-            icon: <PiQuestion />,
+            icon: <PiQuestion size={18} />,
             iconPosition: "left",
           } as DialogItem,
         ]
@@ -35,7 +35,7 @@ export default function TopBar() {
           {
             children: "Settings",
             onClick: () => navigate("/settings"),
-            icon: <PiGear />,
+            icon: <PiGear size={18} />,
             iconPosition: "left",
           } as DialogItem,
         ]
@@ -45,7 +45,7 @@ export default function TopBar() {
           {
             children: "Billing",
             onClick: () => navigate("/billing"),
-            icon: <PiDatabase />,
+            icon: <PiWallet size={18} />,
             iconPosition: "left",
           } as DialogItem,
         ]
@@ -55,7 +55,7 @@ export default function TopBar() {
           {
             children: "Log out",
             onClick: () => onLogout(),
-            icon: <PiPower />,
+            icon: <PiSignOut size={18} />,
             iconPosition: "left",
           } as DialogItem,
         ]
