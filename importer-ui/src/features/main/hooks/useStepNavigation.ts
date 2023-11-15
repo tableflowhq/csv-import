@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import useStepper from "../../../components/Stepper/hooks/useStepper";
 import { Steps } from "../types";
-import useModifiedSteps from "./useModifiedSteps";
 import useMutableLocalStorage from "./useMutableLocalStorage";
 
 export const StepEnum = {
@@ -35,9 +34,9 @@ const getStepConfig = (skipHeader: boolean) => {
   ];
 };
 
-function useStepNavigation(initialStep: number, skipHeader: boolean, importerId: string) {
+function useStepNavigation(initialStep: number, skipHeader: boolean, importerId: string, tusId: string) {
   const stepper = useStepper(getStepConfig(skipHeader), StepEnum.Upload);
-  const [storageStep, setStorageStep] = useMutableLocalStorage(`tf_steps_${importerId}`, "");
+  const [storageStep, setStorageStep] = useMutableLocalStorage(`tf_steps_${importerId}_${tusId}`, "");
   const [currentStep, setCurrentStep] = useState(initialStep);
 
   const goBack = (backStep = 0) => {

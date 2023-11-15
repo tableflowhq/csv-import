@@ -90,7 +90,7 @@ export default function Main() {
   const [columnsOrder, setColumnsOrder] = useState<ColumnsOrder>();
 
   // Stepper handler
-  const { currentStep, setStep, goNext, goBack, stepper } = useStepNavigation(StepEnum.Upload, skipHeader, importerId);
+  const { currentStep, setStep, goNext, goBack, stepper } = useStepNavigation(StepEnum.Upload, skipHeader, importerId, tusId);
 
   // There was an error the last time they tried to upload a file. Reload to clear stored tusId
   // TODO: This doesn't work, fix it
