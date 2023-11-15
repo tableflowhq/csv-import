@@ -22,6 +22,7 @@ export type TableProps = {
   onCellValueChanged: (event: CellValueChangedEvent) => void;
   columnsOrder?: ColumnsOrder;
   disabled: boolean;
+  upload: Upload;
 };
 
 export interface ColumnsOrder {
