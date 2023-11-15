@@ -1,6 +1,7 @@
 package util
 
 import (
+	"bytes"
 	"encoding/csv"
 	"errors"
 	"github.com/xuri/excelize/v2"
@@ -63,6 +64,19 @@ func OpenDataFileIterator(file *os.File, fileType string) (DataFileIterator, err
 	it.File = file
 	switch fileType {
 	case "text/csv":
+		// Check and skip BOM if present
+		bom := []byte{0xEF, 0xBB, 0xBF}
+		buffer := make([]byte, 3)
+		n, err := file.Read(buffer)
+		if err != nil {
+			return it, err
+		}
+		if n != 3 || !bytes.Equal(buffer, bom) {
+			_, err := file.Seek(0, io.SeekStart) // No BOM, reset to start
+			if err != nil {
+				return it, err
+			}
+		}
 		r := csv.NewReader(file)
 		it.GetRow = func() ([]string, error) {
 			return r.Read()

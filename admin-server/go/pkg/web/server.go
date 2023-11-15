@@ -47,6 +47,8 @@ type ServerConfig struct {
 	GetAllowedValidateTypes        func(workspaceID string) map[string]bool
 	UploadLimitCheck               func(*model.Upload, *os.File) (int, error)
 	UploadAdditionalStorageHandler func(*model.Upload, *os.File) error
+	UploadChunkHandler             func(upload *model.Upload, chunk [][]string, isLastChunk bool)
+	ShouldWaitForHeaderRowMatch    func(upload *model.Upload) bool
 	GetColumnMatches               func(*types.Upload, []*model.TemplateColumn) map[string]string
 	ImportCompleteHandler          func(imp types.Import, workspaceID string)
 	AdditionalCORSOrigins          []string
@@ -130,14 +132,16 @@ func StartWebServer(config ServerConfig) *http.Server {
 	/* --------------------------  Importer routes  -------------------------- */
 
 	importer := router.Group("/file-import/v1")
-	tusHandler := tusFileHandler(config.UploadAdditionalStorageHandler, config.UploadLimitCheck, config.GetAllowedValidateTypes)
+	tusHandler := tusFileHandler(config.UploadAdditionalStorageHandler, config.UploadLimitCheck, config.UploadChunkHandler, config.GetAllowedValidateTypes)
 
 	importer.POST("/files", tusPostFile(tusHandler))
 	importer.HEAD("/files/:id", tusHeadFile(tusHandler))
 	importer.PATCH("/files/:id", tusPatchFile(tusHandler))
 
 	importer.POST("/importer/:id", func(c *gin.Context) { importerGetImporter(c, config.GetAllowedValidateTypes) })
-	importer.GET("/upload/:id", func(c *gin.Context) { importerGetUpload(c, config.GetColumnMatches) })
+	importer.GET("/upload/:id", func(c *gin.Context) {
+		importerGetUpload(c, config.GetColumnMatches, config.ShouldWaitForHeaderRowMatch)
+	})
 	importer.POST("/upload/:id/set-header-row", func(c *gin.Context) { importerSetHeaderRow(c, config.GetColumnMatches) })
 	importer.POST("/upload/:id/set-column-mapping", importerSetColumnMapping)
 	importer.GET("/import/:id/review", importerReviewImport)
