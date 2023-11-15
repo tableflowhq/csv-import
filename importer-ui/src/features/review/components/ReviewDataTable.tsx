@@ -28,6 +28,7 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
   const gridRef = useRef<GridApi | null>(null);
   const tableRef = useRef<HTMLDivElement>(null);
   const [selectedClass, setSelectedClass] = useState(customSelectClass);
+  const [columnsSelected, setColumnsSelected] = useState<string[]>([]);
 
   useEffect(() => {
     paginatedDataRef.current = paginatedData;
@@ -66,7 +67,8 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
 
         // gets the paginated data
         const newData = await fetchRows(uploadId, filterRef.current, 100, nextOffset);
-
+        const firstColumnsKeys = Object.keys(newData?.rows[0]?.values || {});
+        setColumnsSelected([...firstColumnsKeys]);
         const tableData = addEmptyRows(newData);
         const paginationInfo = tableData?.pagination;
         const rowThisPage = tableData?.rows || [];
@@ -97,27 +99,23 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
 
   useEffect(() => {
     if (!paginatedData?.rows?.[0]?.values) return;
-    if (!columnsOrder) {
-      const defaultColumnsOrder = upload?.upload_columns.reduce(
-        (acc, uc) => ({
-          ...acc,
-          [uc.id]: {
-            template: uc?.suggested_template_column_id || "",
-            use: !!uc?.suggested_template_column_id,
-            selected: !!uc?.suggested_template_column_id,
-          },
-        }),
-        []
-      );
-
-      const filteredColumnsOrder = Object.keys(defaultColumnsOrder).reduce((acc, key: any) => {
-        const { template, use } = defaultColumnsOrder[key];
-        return { ...acc, ...(use ? { [key]: template } : {}) };
-      }, {});
-      columnsOrder = { ...filteredColumnsOrder }
-    };
     // Extract ids from columnOrder and preserve the order
-    const orderedIds = Object.values(columnsOrder);
+    let orderedIds;
+    if (!columnsOrder) {
+      const mappedIds = columnsSelected.map((key) => {
+        const matchingObject = template?.columns.find((obj) => obj.key === key);
+        return matchingObject ? matchingObject.id : null;
+      });
+      const filteredIds = mappedIds.filter((id) => id !== null);
+      const extendedArray = filteredIds.map((id) => ({
+        id,
+        index: upload?.upload_columns.findIndex((item) => item.suggested_template_column_id === id),
+      }));
+      const sortedArray = extendedArray.sort((a, b) => a.index - b.index);
+      orderedIds = sortedArray.map((item) => item.id);
+    } else {
+      orderedIds = Object.values(columnsOrder);
+    }
 
     // Map over orderedIds to get the corresponding columns from templateCols
     let orderedColumns = [];
