@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Button, IconButton } from "@chakra-ui/button";
 import Errors from "../../components/Errors";
 import Stepper from "../../components/Stepper";
-import useStepper from "../../components/Stepper/hooks/useStepper";
 import TableLoading from "../../components/TableLoading";
 import { defaultImporterHost, getAPIBaseURL } from "../../api/api";
 import useCssOverrides from "../../hooks/useCssOverrides";
@@ -15,9 +14,7 @@ import { providedJSONString } from "../../utils/cssInterpreter";
 import postMessage from "../../utils/postMessage";
 import { ColumnsOrder } from "../review/types";
 import useApi from "./hooks/useApi";
-import useMutableLocalStorage from "./hooks/useMutableLocalStorage";
-import useStepNavigation, { StepEnum, stepsConfig } from "./hooks/useStepNavigation";
-import { Steps } from "./types";
+import useStepNavigation, { StepEnum } from "./hooks/useStepNavigation";
 import style from "./style/Main.module.scss";
 import MapColumns from "../map-columns";
 import Review from "../review";
@@ -93,8 +90,7 @@ export default function Main() {
   const [columnsOrder, setColumnsOrder] = useState<ColumnsOrder>();
 
   // Stepper handler
-  const { currentStep, setStep, stepper, stepId } = useStepNavigation(StepEnum.Upload, skipHeader, importerId);
-  console.log(stepper);
+  const { currentStep, setStep, goNext, goBack, stepper } = useStepNavigation(StepEnum.Upload, skipHeader, importerId);
 
   // There was an error the last time they tried to upload a file. Reload to clear stored tusId
   // TODO: This doesn't work, fix it
@@ -123,57 +119,33 @@ export default function Main() {
   // Handle jumping to the right step from page reloads or upload errors
   useEffect(() => {
     // If we're not on the first step, the page wasn't reloaded or an error would have been already handled
-    console.log("currentStep, chage", currentStep);
     if (currentStep !== StepEnum.Upload) {
       return;
     }
     const isUploadSuccess = tusId && !uploadError && uploadIsStored;
     if (uploadError) {
       setStep(StepEnum.Upload);
-      stepper.setCurrent(StepEnum.Upload);
       return;
     }
 
     if (isUploadSuccess) {
-      if (currentStep) {
-        if (currentStep === StepEnum.Upload) {
-          setStep(currentStep + 1);
-        } else {
-          if (currentStep === StepEnum.MapColumns) {
-            setUploadFromHeaderRowSelection(upload);
-          }
-          setStep(currentStep);
-        }
+      if (currentStep === StepEnum.MapColumns) {
+        setUploadFromHeaderRowSelection(upload);
+        setStep(currentStep);
       } else {
-        setStep(currentStep + 1);
+        goNext();
       }
     }
   }, [tusId, uploadIsStored, uploadError, currentStep]);
 
-  useEffect(() => {
-    if (review && !reviewIsLoading && reviewIsStored && enabledReview) {
-      if (skipHeader) stepper.setCurrent(2);
-      else stepper.setCurrent(3);
-    }
-  }, [review, reviewIsLoading, reviewIsStored, skipHeader, enabledReview]);
-
-  // Reload on close modal if completed
-  useEffect(() => {
-    // TODO: ****************************** Update this to actually check if completed ********************************
-    // if (!modalIsOpen && step === Steps.Review) {
-    //   reload();
-    // }
-  }, [modalIsOpen]);
-
   // Actions
-
   const reload = () => {
     setTusId("");
     setStep(StepEnum.Upload);
     location.reload();
   };
-  // Send messages to parent (SDK iframe)
 
+  // Send messages to parent (SDK iframe)
   useEffect(() => {
     if (!isEmbeddedInIframe) return;
     const message = {
@@ -182,14 +154,6 @@ export default function Main() {
     };
     postMessage(message);
   }, []);
-
-  // useEffect(() => {
-  //   const currentIndex = stepsConfig.findIndex((config) => config.id === stepId);
-
-  //   if (currentIndex !== -1) {
-  //     setStep(currentIndex);
-  //   }
-  // }, [stepId]);
 
   const requestClose = () => {
     if (!isEmbeddedInIframe || !isModal) return;
@@ -217,7 +181,7 @@ export default function Main() {
     if (currentStep === StepEnum.MapColumns) {
       setUploadFromHeaderRowSelection(upload);
     }
-    setStep(currentStep - 1);
+    goBack();
   };
 
   if (!initialPageLoaded) {
@@ -271,7 +235,7 @@ export default function Main() {
             onCancel={reload}
             onSuccess={(upload: any) => {
               setUploadFromHeaderRowSelection(upload);
-              setStep(StepEnum.MapColumns);
+              goNext();
             }}
             selectedHeaderRow={selectedHeaderRow}
             setSelectedHeaderRow={setSelectedHeaderRow}
@@ -281,15 +245,14 @@ export default function Main() {
         return (
           <MapColumns
             template={template}
-            // upload={skipHeader ? upload : uploadFromHeaderRowSelection}
             upload={uploadFromHeaderRowSelection || upload}
             onSuccess={(_, columnsValues) => {
               setEnabledReview(true);
               setColumnsOrder(columnsValues);
-              skipHeader ? setStep(StepEnum.RowSelection) : setStep(StepEnum.Review);
+              goNext();
             }}
             skipHeaderRowSelection={skipHeader}
-            onCancel={skipHeader ? reload : () => setStep(StepEnum.RowSelection)}
+            onCancel={skipHeader ? reload : () => goBack(StepEnum.RowSelection)}
             schemaless={schemaless}
             schemalessReadOnly={schemalessReadOnly}
             seColumnsValues={seColumnsValues}
