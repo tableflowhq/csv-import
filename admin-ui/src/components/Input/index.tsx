@@ -20,7 +20,7 @@ export default function Input({ as = "input", label, icon, iconAfter, error, opt
   const icon1 = icon && <span className={style.icon}>{icon}</span>;
 
   const icon2 = iconAfter ? (
-    <span className={style.icon}>{icon}</span>
+    <span className={style.icon}>{iconAfter}</span>
   ) : (
     error && (
       <span className={style.icon}>
