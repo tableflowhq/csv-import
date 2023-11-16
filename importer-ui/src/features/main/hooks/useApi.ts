@@ -6,8 +6,11 @@ import useGetUpload from "../../../api/useGetUpload";
 import useReview from "../../../api/useReview";
 import useMutableLocalStorage from "./useMutableLocalStorage";
 
+const ONE_HOUR_IN_MS = 60 * 60 * 1000;
+
 export default function useApi(importerId: string, sdkDefinedTemplate: string, checkOrganizationStatus: boolean, schemaless?: boolean) {
   const [tusId, setTusId] = useMutableLocalStorage(importerId + "-tusId", "");
+  const [importStartTime, setImportStartTime] = useMutableLocalStorage(importerId + "-importStartTime", "");
   const tusWasStored = useMemo(() => !!tusId, []);
   const [enabledReview, setEnabledReview] = useState(false);
 
@@ -26,6 +29,16 @@ export default function useApi(importerId: string, sdkDefinedTemplate: string, c
   const { is_stored: uploadIsStored } = upload || {};
 
   const uploadId = upload?.id || "";
+  const importStartTimestamp = parseInt(importStartTime, 10);
+
+  if (importStartTimestamp && Date.now() - importStartTimestamp > ONE_HOUR_IN_MS) {
+    setTusId("");
+    setImportStartTime("");
+  }
+
+  if (!importStartTimestamp && tusWasStored) {
+    setImportStartTime(Date.now().toString());
+  }
 
   const {
     data: review,
