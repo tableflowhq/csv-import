@@ -1,5 +1,5 @@
 import React from "react";
-import { classes } from "@tableflow/ui-library";
+import classes from "../../../utils/classes";
 import TopBar from "../../top-bar";
 import style from "./style/Main.module.scss";
 

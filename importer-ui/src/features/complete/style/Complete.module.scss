@@ -37,10 +37,8 @@
     svg {
       width: 38%;
       height: 38%;
-      display: block;
       object-fit: contain;
-      fill: var(--color-text-on-primary);
-      stroke: none;
+      color: var(--color-text-on-primary);
     }
   }
 

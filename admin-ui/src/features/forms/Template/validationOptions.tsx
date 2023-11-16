@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { Icon, Input, PillInput, Tooltip } from "@tableflow/ui-library";
+import Input from "../../../components/Input";
+import PillInput from "../../../components/Pill";
+import Tooltip from "../../../components/Tooltip";
 import { DataTypeValidation, ValidateAllowed } from "../../../api/types";
 import useGetDataTypeValidations from "../../../api/useDataTypeValidations";
 import useGetOrganization from "../../../api/useGetOrganization";
 import style from "../style/Validation.module.scss";
 import ValidationOptionsEnum from "./ValidationOptionsEnum";
+import { PiInfo } from "react-icons/pi";
 
 interface ValidationOptionsProps {
   dataType: string;
@@ -236,7 +239,7 @@ const ValidationOptions = ({
       <>
         {!selectedValidation && showValidateControl && (
           <div className={style.validationPlaceholder}>
-            <Icon icon="info" className={style.placeholderIcon} /> Select a validation to view additional options.
+            <PiInfo className={style.placeholderIcon} /> Select a validation to view additional options.
           </div>
         )}
         {selectedValidation === ValidationOptionsEnum.Regex && renderInputPattern()}

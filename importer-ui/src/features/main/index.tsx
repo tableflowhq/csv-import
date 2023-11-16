@@ -22,7 +22,7 @@ import MapColumns from "../map-columns";
 import Review from "../review";
 import RowSelection from "../row-selection";
 import Uploader from "../uploader";
-import { PiArrowsClockwise, PiX } from "react-icons/pi";
+import { PiArrowCounterClockwise, PiX } from "react-icons/pi";
 
 const TUS_ENDPOINT = getAPIBaseURL("v1") + "files";
 
@@ -324,7 +324,7 @@ export default function Main() {
         <div className={style.status}>
           <div></div>
           <Errors error={uploadError.toString()} centered />
-          <Button onClick={reload} colorScheme="primary" leftIcon={<PiArrowsClockwise />}>
+          <Button onClick={reload} colorScheme="primary" leftIcon={<PiArrowCounterClockwise />}>
             Reload
           </Button>
         </div>

@@ -1,12 +1,21 @@
 import { useMemo } from "react";
-import { Box, Button, Input, Modal, Pagination, Table, useEntitySelection, useFilter, useSyncPagination } from "@tableflow/ui-library";
+import Box from "../../components/Box";
+import Button from "../../components/Button";
+import Input from "../../components/Input";
+import Modal from "../../components/Modal";
+import Pagination from "../../components/Pagination";
+import useSyncPagination from "../../components/Pagination/hooks/useSyncPagination";
+import Table from "../../components/Table";
 import TemplateColumnForm from "../forms/Template";
 import TemplateColumnDelete from "../forms/Template/templateColumnDelete";
 import { TemplateColumn } from "../../api/types";
 import useGetTemplate from "../../api/useGetTemplate";
+import useEntitySelection from "../../hooks/useEntitySelection";
+import useFilter from "../../hooks/useFilter";
 import { columnsTable } from "./utils/columnsTable";
 import { TemplatesProps } from "./types";
 import style from "./style/Templates.module.scss";
+import { PiMagnifyingGlass } from "react-icons/pi";
 
 export default function Templates({ importer }: TemplatesProps) {
   const { template } = importer;
@@ -78,7 +87,13 @@ export default function Templates({ importer }: TemplatesProps) {
       <div className="container">
         <div className={style.header}>
           <div className={style.actions}>
-            <Input icon="search" type="search" className={style.searchInput} placeholder="Search" onChange={(e: any) => setFilter(e.target.value)} />
+            <Input
+              icon={<PiMagnifyingGlass />}
+              type="search"
+              className={style.searchInput}
+              placeholder="Search"
+              onChange={(e: any) => setFilter(e.target.value)}
+            />
           </div>
           <div className={style.actions}>
             <Button variants={["primary"]} tabIndex={-1} onClick={() => modal.setOpen(true)}>

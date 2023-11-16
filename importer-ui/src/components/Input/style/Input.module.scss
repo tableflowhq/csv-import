@@ -39,10 +39,6 @@
   min-width: 270px;
   position: relative;
 
-  svg {
-    display: block;
-  }
-
   &:focus-within,
   &:has(.open) {
     outline-color: var(--color-text);

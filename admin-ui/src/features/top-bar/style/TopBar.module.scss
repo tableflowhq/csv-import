@@ -18,13 +18,8 @@
 .profileButton {
   align-self: normal;
   aspect-ratio: 1;
-
-  svg {
-    width: 18px;
-    height: 18px;
-  }
 }
 
 .profileButton {
-  border-radius: 50%;
+  padding: var(--m-xs);
 }

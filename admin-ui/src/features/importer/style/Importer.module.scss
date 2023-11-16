@@ -74,11 +74,3 @@
   display: flex;
   align-items: center;
 }
-
-// This should be removed when the UI library is updated
-.iconFix.iconFix {
-  path {
-    stroke: none !important;
-    fill: var(--color-text-soft);
-  }
-}

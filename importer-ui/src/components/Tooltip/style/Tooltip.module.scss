@@ -9,13 +9,7 @@ $height: calc($side * 1.732);
   .icon {
     position: relative;
     display: block;
-
-    svg {
-      display: block;
-      cursor: pointer;
-      height: 18px;
-      width: 18px;
-    }
+    cursor: pointer;
   }
 
   &.multiline .message {
@@ -23,7 +17,6 @@ $height: calc($side * 1.732);
     white-space: normal;
   }
 }
-
 
 .message {
   position: absolute;

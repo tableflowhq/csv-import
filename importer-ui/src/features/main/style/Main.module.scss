@@ -38,17 +38,12 @@ $closeSide: calc(var(--m-xl) * 36 / 48);
 
 .close.close {
   position: absolute;
-  right: 12px;
-  top: 12px;
+  right: var(--m-xs, 0.5rem);
+  top: var(--m-xs, 0.5rem);
   border-radius: 50%;
   min-width: $closeSide;
   height: $closeSide;
   aspect-ratio: 1;
   font-size: var(--font-size-xl);
   padding: 0;
-
-  svg {
-    width: var(--m-s);
-    height: var(--m-s);
-  }
 }

@@ -1,0 +1,98 @@
+$localSpeed: var(--speed);
+
+.container {
+  position: absolute;
+  z-index: 12;
+  inset: 0;
+
+  .veil {
+    position: absolute;
+    inset: 0;
+    background-color: var(--color-background-modal-veil);
+    opacity: 0.8;
+  }
+  .content {
+    position: absolute;
+    z-index: 11;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .veil {
+    animation: fadeIn $localSpeed forwards;
+  }
+  .content {
+    animation: opening $localSpeed forwards;
+  }
+
+  &.isClosing {
+    pointer-events: none;
+
+    .veil {
+      animation: fadeOut $localSpeed forwards;
+    }
+    .content {
+      animation: closing $localSpeed forwards;
+    }
+  }
+}
+
+.close {
+  cursor: pointer;
+  padding: var(--m-xxs);
+  position: absolute;
+  right: var(--m-s);
+  top: var(--m-s);
+
+  svg {
+    stroke: var(--color-text-soft);
+  }
+
+  &:hover {
+    svg {
+      stroke: var(--color-text);
+    }
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0.7;
+  }
+}
+@keyframes fadeOut {
+  from {
+    opacity: 0.7;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes opening {
+  from {
+    transform: translate(-50%, -50%) scale(0.96);
+    opacity: 0;
+    filter: blur(var(--blurred));
+  }
+  to {
+    transform: translate(-50%, -50%);
+    filter: none;
+  }
+}
+@keyframes closing {
+  from {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+    filter: none;
+  }
+  to {
+    transform: translate(-50%, -50%) scale(0.96);
+    opacity: 0;
+    filter: blur(var(--blurred));
+  }
+}

@@ -19,7 +19,7 @@
       height: 100%;
       width: 50%;
       border-radius: var(--border-radius-r);
-      background-color: var(--color-green-ui);
+      background-color: var(--color-toggle);
       left: 0;
       transition: var(--transition-ui);
       transform: translate(100%, 0);
@@ -30,8 +30,8 @@
 
       & > svg {
         display: block;
-        width: 18px;
-        height: 18px;
+        width: 15px;
+        height: 15px;
         object-position: center;
 
         path {

@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { Errors } from "@tableflow/ui-library";
+import Errors from "../../../components/Errors";
 import ListManager from "../../../components/ListManager";
 import { Importer } from "../../../api/types";
 import usePostImporter from "../../../api/usePostImporter";
 import style from "../style/Form.module.scss";
+import { PiLink } from "react-icons/pi";
 
 export default function Domains({ importer }: { importer: Importer }) {
   const [allowed_domains, setAllowedDomains] = useState<string[]>(importer.allowed_domains || []);
@@ -19,7 +20,7 @@ export default function Domains({ importer }: { importer: Importer }) {
       <ListManager
         placeholder="example.com"
         name="Allowed domains"
-        icon="link"
+        icon={<PiLink />}
         required
         formStyle={style.form}
         onChange={(value: string[]) => setAllowedDomains(value)}

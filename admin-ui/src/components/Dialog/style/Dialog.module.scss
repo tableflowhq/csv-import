@@ -1,0 +1,123 @@
+.container {
+  display: inline-flex;
+  position: relative;
+  align-items: center;
+  justify-content: center;
+}
+
+.menu {
+  align-items: center;
+  border-radius: var(--border-radius-1);
+  cursor: pointer;
+  display: flex;
+  font-weight: 500;
+  justify-content: center;
+  padding: var(--m-xxs) var(--m-xs);
+}
+
+.icon {
+  align-items: center;
+  display: flex;
+  fill: currentColor;
+  justify-content: center;
+  order: 2;
+  cursor: pointer;
+
+  &.iconLeft {
+    order: 0;
+  }
+}
+
+.text {
+  order: 1;
+  margin-right: var(--m-xs);
+}
+
+.items {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background-color: var(--color-background-menu);
+  border-radius: var(--border-radius-2);
+  box-shadow: 0 1px 4px rgba(black, 0.15);
+  border: 1px solid var(--color-border);
+  min-width: 100px;
+  overflow: hidden;
+  position: absolute;
+  right: 0;
+  top: 100%;
+  z-index: 2;
+  padding: var(--m-xxxxs);
+  margin-top: 3px;
+
+  .left & {
+    right: auto;
+    left: 0;
+  }
+}
+
+.item.item {
+  position: relative;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -1px 0 0;
+    z-index: -1;
+    background-color: var(--color-background-menu-hover);
+    border-radius: var(--border-radius-2);
+    opacity: 0;
+  }
+
+  &:hover,
+  &.active {
+    &::before {
+      opacity: 1;
+    }
+  }
+
+  &.active {
+    cursor: default;
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: auto var(--m-xxxs) 0 var(--m-xxxs);
+    height: 1px;
+  }
+
+  &:last-child {
+    &::after {
+      display: none;
+    }
+  }
+}
+
+.tooltip {
+  display: none;
+  position: absolute;
+  z-index: 2;
+  top: 100%;
+  left: 50%;
+  margin-top: var(--m-xxs);
+  padding: var(--m-xs);
+  width: 220px;
+  transform: translate(-50%, 0);
+
+  .container:hover & {
+    display: block;
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-right: var(--m-xxxs) solid transparent;
+    border-left: var(--m-xxxs) solid transparent;
+    transform: translate(-50%, 0);
+  }
+}
