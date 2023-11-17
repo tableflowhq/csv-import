@@ -8,8 +8,10 @@ export default function Main({ center, children }: React.PropsWithChildren<{ cen
   return (
     <div className={style.container} data-layout="main">
       {/* <TopBar /> */}
-      <SimpleSidebar />
-      {/* <div className={classes([style.content, center && style.center])}>{children}</div> */}
+      <div className={style.wrapper}>
+        <SimpleSidebar />
+        <div className={classes([style.content, center && style.center])}>{children}</div>
+      </div>
     </div>
   );
 }
