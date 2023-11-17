@@ -7,6 +7,7 @@ import (
 	"github.com/samber/lo"
 	"gorm.io/gorm"
 	"net/http"
+	"sort"
 	"strings"
 	"tableflow/go/pkg/db"
 	"tableflow/go/pkg/evaluator"
@@ -37,6 +38,7 @@ type TemplateColumnEditRequest struct {
 	DataType          *string                            `json:"data_type" example:"string"`
 	Validations       *[]TemplateColumnValidationRequest `json:"validations"`
 	SuggestedMappings *[]string                          `json:"suggested_mappings"`
+	Index             *int                               `json:"index" example:"0"`
 }
 
 type TemplateColumnValidationRequest struct {
@@ -145,6 +147,7 @@ func createTemplateColumn(c *gin.Context, getWorkspaceUser func(*gin.Context, st
 		DataType:          dataType,
 		Description:       null.NewString(req.Description, len(req.Description) != 0),
 		SuggestedMappings: suggestedMappings,
+		Index:             null.IntFrom(int64(len(template.TemplateColumns))), // The next index is just the current length
 		CreatedBy:         user.ID,
 		UpdatedBy:         user.ID,
 	}
@@ -244,6 +247,47 @@ func editTemplateColumn(c *gin.Context, getWorkspaceUser func(*gin.Context, stri
 		return
 	}
 
+	// Check if the edit is for index reordering and if so, handle it separately as request to update this index should
+	// be independent of other updates
+	if req.Index != nil && *req.Index != int(templateColumn.Index.Int64) {
+		newIndex := *req.Index
+		// Ensure the new index is within the valid range
+		if newIndex < 0 || newIndex >= len(template.TemplateColumns) {
+			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Invalid index"})
+			return
+		}
+
+		// Update the index of the current column
+		templateColumn.Index = null.IntFrom(int64(newIndex))
+
+		// Adjust the indexes of the other columns
+		for _, column := range template.TemplateColumns {
+			if column.ID != templateColumn.ID {
+				currentIdx := int(column.Index.Int64)
+				if currentIdx >= newIndex {
+					column.Index = null.IntFrom(int64(currentIdx + 1))
+				}
+			}
+		}
+
+		// Normalize the indexes to be sequential starting from 0
+		sort.SliceStable(template.TemplateColumns, func(i, j int) bool {
+			return template.TemplateColumns[i].Index.Int64 < template.TemplateColumns[j].Index.Int64
+		})
+		for i := range template.TemplateColumns {
+			template.TemplateColumns[i].Index = null.IntFrom(int64(i))
+		}
+
+		err = db.UpdateTemplateColumnIndexes(template)
+		if err != nil {
+			tf.Log.Errorw("Could not update template columns in database to adjust index order", "error", err, "template_id", template.ID)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, types.Res{Err: err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, template)
+		return
+	}
 	// Change any field that exists on the request and are different
 	save := false
 	if req.Name != nil && *req.Name != templateColumn.Name && len(*req.Name) != 0 {
@@ -430,6 +474,7 @@ func deleteTemplateColumn(c *gin.Context, getWorkspaceUser func(*gin.Context, st
 		c.AbortWithStatusJSON(http.StatusInternalServerError, types.Res{Err: "Unable to find template column"})
 		return
 	}
+	templateColumn.Index = null.Int{}
 	templateColumn.DeletedBy = user.ID
 	templateColumn.DeletedAt = gorm.DeletedAt{Time: time.Now(), Valid: true}
 	err = tf.DB.Save(&templateColumn).Error

@@ -94,6 +94,7 @@ export type TemplateColumnFormFields = {
   validations?: Validation[];
   suggested_mappings?: string[];
   data_type?: string;
+  index?: number;
 };
 
 export type Validation = {

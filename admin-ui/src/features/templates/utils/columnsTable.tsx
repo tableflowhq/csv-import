@@ -16,6 +16,7 @@ export function columnsTable(columns: TemplateColumn[] = [], update: Update): Ta
   return columns.map((column) => {
     return {
       id: column.id,
+      index: column.index,
       "Column Name": column.name,
       ...(hasDescription
         ? {
