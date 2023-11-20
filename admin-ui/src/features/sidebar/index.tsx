@@ -17,7 +17,7 @@ import {
 } from "@chakra-ui/react";
 import Tableflow from "../../components/Tableflow";
 import NavItem from "./components/NavItem";
-import { FiCompass, FiHome, FiMenu, FiSettings, FiTrendingUp } from "react-icons/fi";
+import { FiCompass, FiHome, FiMenu, FiSettings, FiTrendingUp, FiCalendar } from "react-icons/fi";
 import { typedSxMap } from "../../utils/typedSxMap";
 
 interface LinkItemProps {
@@ -63,16 +63,16 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
       w: navSize === "small" ? "75px" : "250px",
       flexDir: "column",
       justifyContent: "space-between",
+      transition: "width 0.3s ease"
     }
   });
   return (
     <Flex sx={styles.container}>
       <Flex p="5%" flexDir="column" w="100%" alignItems={navSize === "small" ? "center" : "flex-start"} as="nav">
-        <Flex h="10" alignItems="center" mx="2">
-          <Tableflow color />
+        <Flex alignItems="center" mx="2" mb={5}>
+          {navSize === "large" && <Tableflow color size="small" />}
           <IconButton
             background="none"
-            mt={5}
             _hover={{ background: "none" }}
             aria-label="toggle navigation"
             icon={<FiMenu />}
@@ -82,13 +82,18 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
             }}
           />
         </Flex>
-        {LinkItems.map((link) => (
-          <NavItem navSize={navSize} icon={link.icon} title={link.name} description="This is the description for the test." />
-        ))}
+
+        
+          {LinkItems.map((link) => (
+            <NavItem navSize={navSize} icon={link.icon} title={link.name} url={link.url} description="This is the description for the test." />
+          ))}
+
       </Flex>
 
       <Flex p="5%" flexDir="column" w="100%" alignItems={navSize === "small" ? "center" : "flex-start"} mb={4}>
         <Divider display={navSize === "small" ? "none" : "flex"} borderColor="white" />
+        <NavItem navSize={navSize} icon={FiSettings} title="Settings" />
+        <NavItem navSize={navSize} icon={FiCalendar} title="Calendar" active />
         <Flex mt={4} align="center">
           <Avatar size="sm" />
           <Flex flexDir="column" ml={4} display={navSize === "small" ? "none" : "flex"}>
