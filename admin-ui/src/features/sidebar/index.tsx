@@ -1,4 +1,4 @@
-import { ReactText, useState } from "react";
+import { ReactText, useEffect, useState } from "react";
 import { IconType } from "react-icons";
 import {
   Avatar,
@@ -22,25 +22,27 @@ import { typedSxMap } from "../../utils/typedSxMap";
 
 interface LinkItemProps {
   name: string;
+  label: string;
   icon: IconType;
   url: string;
 }
 const LinkItems: Array<LinkItemProps> = [
-  { name: "Getting started", icon: FiHome, url: "/" },
-  { name: "Importers", icon: FiTrendingUp, url: "/importers" },
-  { name: "Data", icon: FiCompass, url: "/data" },
-  { name: "Settings", icon: FiSettings, url: "/settings" },
+  { name: "getting", label: "Getting started", icon: FiHome, url: "/importers" },
+  { name: "importers", label: "Importers", icon: FiTrendingUp, url: "/importers" },
+  { name: "data", label: "Data", icon: FiCompass, url: "/data" },
+  { name: "settings", label: "Settings", icon: FiSettings, url: "/settings" },
 ];
 
-export default function SimpleSidebar() {
+export default function Sidebar() {
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const [selectedPage, setSelectedPage] = useState("");
 
   return (
     <Box minH="100vh" bg={useColorModeValue("gray.100", "gray.900")}>
-      <SidebarContent onClose={() => onClose} display={{ base: "none", md: "block" }} />
+      <SidebarContent onClose={() => onClose} selectedPage={selectedPage} onSelectPage={setSelectedPage} display={{ base: "none", md: "block" }} />
       <Drawer isOpen={isOpen} placement="left" onClose={onClose} returnFocusOnClose={false} onOverlayClick={onClose} size="full">
         <DrawerContent>
-          <SidebarContent onClose={onClose} />
+          <SidebarContent onClose={onClose} selectedPage={selectedPage} onSelectPage={setSelectedPage} />
         </DrawerContent>
       </Drawer>
       <MobileNav display={{ base: "flex", md: "none" }} onOpen={onOpen} />
@@ -50,9 +52,11 @@ export default function SimpleSidebar() {
 
 interface SidebarProps extends BoxProps {
   onClose: () => void;
+  selectedPage: string;
+  onSelectPage: any
 }
 
-const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
+const SidebarContent = ({ onClose, selectedPage, onSelectPage, ...rest }: SidebarProps) => {
   const [navSize, changeNavSize] = useState("large");
   const styles = typedSxMap({
     container: {
@@ -83,7 +87,7 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
     <Flex sx={styles.container}>
       <Flex sx={styles.topMenuContainer} as="nav">
         <Flex alignItems="center" mx="2" mb={5}>
-          {navSize === "large" && <Tableflow color size="small" />}
+          <Tableflow color size="small" short={navSize === "small"} />
           <IconButton
             background="none"
             _hover={{ background: "none" }}
@@ -98,12 +102,22 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
 
         
           {LinkItems.map((link) => (
-            <NavItem navSize={navSize} icon={link.icon} title={link.name} url={link.url} description="This is the description for the test." />
+            <NavItem
+             key={link.name} 
+             navSize={navSize} 
+             icon={link.icon} 
+             title={link.label} 
+             url={link.url}
+             name={link.name} 
+             isSelected={selectedPage === link.name}
+             onSelect={() => onSelectPage(link.name)}
+            />
           ))}
 
       </Flex>
 
       <Flex sx={styles.bottomMenuContainer}>
+      <Divider mt={4} mb={2} borderColor="white" />
         <Divider display={navSize === "small" ? "none" : "flex"} borderColor="white" />
         <NavItem navSize={navSize} icon={FiSettings} title="Settings" />
         <NavItem navSize={navSize} icon={FiCalendar} title="Calendar" />
