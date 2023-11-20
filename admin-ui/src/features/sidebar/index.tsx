@@ -64,11 +64,24 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
       flexDir: "column",
       justifyContent: "space-between",
       transition: "width 0.3s ease"
+    },
+    topMenuContainer: {
+      p:"5%", 
+      flexDir:"column", 
+      w:"100%",
+      alignItems: navSize === "small" ? "center" : "flex-start"
+    },
+    bottomMenuContainer: {
+      p:"5%",
+      flexDir:"column",
+      w:"100%",
+      alignItems: navSize === "small" ? "center" : "flex-start",
+      mb:4
     }
   });
   return (
     <Flex sx={styles.container}>
-      <Flex p="5%" flexDir="column" w="100%" alignItems={navSize === "small" ? "center" : "flex-start"} as="nav">
+      <Flex sx={styles.topMenuContainer} as="nav">
         <Flex alignItems="center" mx="2" mb={5}>
           {navSize === "large" && <Tableflow color size="small" />}
           <IconButton
@@ -90,11 +103,12 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
 
       </Flex>
 
-      <Flex p="5%" flexDir="column" w="100%" alignItems={navSize === "small" ? "center" : "flex-start"} mb={4}>
+      <Flex sx={styles.bottomMenuContainer}>
         <Divider display={navSize === "small" ? "none" : "flex"} borderColor="white" />
         <NavItem navSize={navSize} icon={FiSettings} title="Settings" />
-        <NavItem navSize={navSize} icon={FiCalendar} title="Calendar" active />
-        <Flex mt={4} align="center">
+        <NavItem navSize={navSize} icon={FiCalendar} title="Calendar" />
+        <NavItem navSize={navSize} icon={FiCalendar} title="Calendar" />
+        {/* <Flex mt={2} align="center">
           <Avatar size="sm" />
           <Flex flexDir="column" ml={4} display={navSize === "small" ? "none" : "flex"}>
             <Heading as="h3" size="sm">
@@ -102,7 +116,7 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
             </Heading>
             <Text color="gray">User Role Test</Text>
           </Flex>
-        </Flex>
+        </Flex> */}
       </Flex>
     </Flex>
   );
