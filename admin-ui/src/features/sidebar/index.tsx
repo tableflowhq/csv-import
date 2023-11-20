@@ -1,20 +1,23 @@
-import { ReactText } from "react";
+import { ReactText, useState } from "react";
 import { IconType } from "react-icons";
 import {
+  Avatar,
   Box,
   BoxProps,
-  CloseButton,
+  Divider,
   Drawer,
   DrawerContent,
   Flex,
   FlexProps,
-  Icon,
+  Heading,
   IconButton,
+  Text,
   useColorModeValue,
   useDisclosure,
 } from "@chakra-ui/react";
 import Tableflow from "../../components/Tableflow";
-import { FiCompass, FiHome, FiMenu, FiSettings, FiStar, FiTrendingUp } from "react-icons/fi";
+import NavItem from "./components/NavItem";
+import { FiCompass, FiHome, FiMenu, FiSettings, FiTrendingUp } from "react-icons/fi";
 
 interface LinkItemProps {
   name: string;
@@ -22,14 +25,15 @@ interface LinkItemProps {
   url: string;
 }
 const LinkItems: Array<LinkItemProps> = [
-  { name: "Getting started", icon: FiHome, url: '/' },
-  { name: "Importers", icon: FiTrendingUp, url: '/importers' },
-  { name: "Data", icon: FiCompass, url: '/data' },
-  { name: "Settings", icon: FiSettings, url: '/settings' },
+  { name: "Getting started", icon: FiHome, url: "/" },
+  { name: "Importers", icon: FiTrendingUp, url: "/importers" },
+  { name: "Data", icon: FiCompass, url: "/data" },
+  { name: "Settings", icon: FiSettings, url: "/settings" },
 ];
 
 export default function SimpleSidebar() {
   const { isOpen, onOpen, onClose } = useDisclosure();
+
   return (
     <Box minH="100vh" bg={useColorModeValue("gray.100", "gray.900")}>
       <SidebarContent onClose={() => onClose} display={{ base: "none", md: "block" }} />
@@ -38,7 +42,6 @@ export default function SimpleSidebar() {
           <SidebarContent onClose={onClose} />
         </DrawerContent>
       </Drawer>
-      {/* mobilenav */}
       <MobileNav display={{ base: "flex", md: "none" }} onOpen={onOpen} />
     </Box>
   );
@@ -49,61 +52,42 @@ interface SidebarProps extends BoxProps {
 }
 
 const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
+  const [navSize, changeNavSize] = useState("large");
   return (
-    <Box
-      bg={useColorModeValue("white", "gray.900")}
-      borderRight="1px"
-      borderRightColor={useColorModeValue("gray.200", "gray.700")}
-      //   w={{ base: 'full', md: 60 }}
-      pos="fixed"
-      h="full"
-      {...rest}>
-      <Flex h="10" alignItems="center" mx="4">
-        <Tableflow color />
-        <CloseButton display={{ base: "flex", md: "none" }} onClick={onClose} />
-      </Flex>
-      {LinkItems.map((link) => (
-        <NavItem key={link.name} icon={link.icon} link={link.url}>
-          {link.name}
-        </NavItem>
-      ))}
-    </Box>
-  );
-};
-
-interface NavItemProps extends FlexProps {
-  icon: IconType;
-  children: ReactText;
-  link: string;
-}
-const NavItem = ({ icon, link, children, ...rest }: NavItemProps) => {
-  return (
-    <Box as="a" href={link} style={{ textDecoration: "none" }} _focus={{ boxShadow: "none" }}>
-      <Flex
-        align="center"
-        p="2"
-        mx="3"
-        borderRadius="lg"
-        role="group"
-        cursor="pointer"
-        _hover={{
-          bg: "var(--color-secondary-hover)",
-          color: "white",
-        }}
-        {...rest}>
-        {icon && (
-          <Icon
-            mr="4"
-            fontSize="16"
-            _groupHover={{
-              color: "white",
+    <Flex pos="sticky" left="5" h="100vh" marginTop="2.5vh" w={navSize === "small" ? "75px" : "250px"} flexDir="column" justifyContent="space-between">
+      <Flex p="5%" flexDir="column" w="100%" alignItems={navSize === "small" ? "center" : "flex-start"} as="nav">
+        <Flex h="10" alignItems="center" mx="2">
+          <Tableflow color />
+          <IconButton
+            background="none"
+            mt={5}
+            _hover={{ background: "none" }}
+            aria-label="toggle navigation"
+            icon={<FiMenu />}
+            onClick={() => {
+              if (navSize === "small") changeNavSize("large");
+              else changeNavSize("small");
             }}
-            as={icon}
           />
-        )}
-        {children}
+        </Flex>
+        {LinkItems.map((link) => (
+          <NavItem navSize={navSize} icon={link.icon} title={link.name} description="This is the description for the test." />
+        ))}
       </Flex>
-    </Box>
+
+      <Flex p="5%" flexDir="column" w="100%" alignItems={navSize === "small" ? "center" : "flex-start"} mb={4}>
+        <Divider display={navSize === "small" ? "none" : "flex"} borderColor="white" />
+        <Flex mt={4} align="center">
+          <Avatar size="sm" />
+          <Flex flexDir="column" ml={4} display={navSize === "small" ? "none" : "flex"}>
+            <Heading as="h3" size="sm">
+              User Test
+            </Heading>
+            <Text color="gray">User Role Test</Text>
+          </Flex>
+        </Flex>
+      </Flex>
+    </Flex>
   );
 };
 
