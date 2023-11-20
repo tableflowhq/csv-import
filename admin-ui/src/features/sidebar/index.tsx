@@ -18,6 +18,7 @@ import {
 import Tableflow from "../../components/Tableflow";
 import NavItem from "./components/NavItem";
 import { FiCompass, FiHome, FiMenu, FiSettings, FiTrendingUp } from "react-icons/fi";
+import { typedSxMap } from "../../utils/typedSxMap";
 
 interface LinkItemProps {
   name: string;
@@ -53,8 +54,19 @@ interface SidebarProps extends BoxProps {
 
 const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
   const [navSize, changeNavSize] = useState("large");
+  const styles = typedSxMap({
+    container: {
+      position: "sticky",
+      left: "5",
+      h: "100vh",
+      marginTop: "2.5vh",
+      w: navSize === "small" ? "75px" : "250px",
+      flexDir: "column",
+      justifyContent: "space-between",
+    }
+  });
   return (
-    <Flex pos="sticky" left="5" h="100vh" marginTop="2.5vh" w={navSize === "small" ? "75px" : "250px"} flexDir="column" justifyContent="space-between">
+    <Flex sx={styles.container}>
       <Flex p="5%" flexDir="column" w="100%" alignItems={navSize === "small" ? "center" : "flex-start"} as="nav">
         <Flex h="10" alignItems="center" mx="2">
           <Tableflow color />
