@@ -10,11 +10,11 @@ interface NavItemProps {
   navSize: string;
   url?: string;
   isSelected?: boolean;
-  isExtarnalLink?: boolean;
+  isExternalLink?: boolean;
   onClick?: () => void;
 }
 
-export default function NavItem({ icon, title, name, navSize, url, isSelected, isExtarnalLink }: NavItemProps) {
+export default function NavItem({ icon, title, name, navSize, url, isSelected, isExternalLink }: NavItemProps) {
   const navigate = useNavigate();
   const styles = typedSxMap({
     container: {
@@ -47,7 +47,7 @@ export default function NavItem({ icon, title, name, navSize, url, isSelected, i
         <Link
           sx={styles.link}
           onClick={() => {
-            if (url && !isExtarnalLink) {
+            if (url && !isExternalLink) {
               navigate(url);
             } else {
               window.open(url, "_blank");

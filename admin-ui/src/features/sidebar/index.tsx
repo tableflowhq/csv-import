@@ -1,4 +1,4 @@
-import { ReactText, useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { IconType } from "react-icons";
 import { useLocation } from "react-router";
 import {
@@ -22,9 +22,7 @@ import { AuthContext } from "../../providers/Auth";
 import useLocalStorage from "../../hooks/useLocalStorage";
 import { typedSxMap } from "../../utils/typedSxMap";
 import NavItem from "./components/NavItem";
-import { FaAnglesLeft, FaAnglesRight } from "react-icons/fa6";
-import { FiChevronsLeft, FiChevronsRight, FiCompass, FiDatabase, FiHome, FiMenu, FiSettings, FiTrendingUp } from "react-icons/fi";
-import { GoQuestion } from "react-icons/go";
+import { FiChevronsLeft, FiChevronsRight, FiCompass, FiDatabase, FiHelpCircle, FiHome, FiMenu, FiSettings, FiTrendingUp } from "react-icons/fi";
 
 interface LinkItemProps {
   name: string;
@@ -157,7 +155,7 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
             title={link.label}
             url={link.url}
             name={link.name}
-            isSelected={link.name === urlPage}
+            isSelected={urlPage.includes(link.name.toLowerCase())}
           />
         ))}
       </Flex>
@@ -170,8 +168,15 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
 
         {sessionExists && verified && (
           <>
-            <NavItem navSize={navSize} icon={GoQuestion} title="Docs" name="docs" url="https://tableflow.com/docs" isExtarnalLink />
-            <NavItem navSize={navSize} icon={FiSettings} title="Settings" name="settings" url="/settings" />
+            <NavItem navSize={navSize} icon={FiHelpCircle} title="Docs" name="docs" url="https://tableflow.com/docs" isExternalLink />
+            <NavItem
+              navSize={navSize}
+              icon={FiSettings}
+              title="Settings"
+              name="settings"
+              url="/settings"
+              isSelected={urlPage.includes("settings")}
+            />
           </>
         )}
 
