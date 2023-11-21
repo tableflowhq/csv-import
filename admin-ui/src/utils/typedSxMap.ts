@@ -1,6 +1,6 @@
-import { CSSWithMultiValues } from '@chakra-ui/react';
+import { SystemProps, SystemStyleObject } from "@chakra-ui/react";
 
-type ThemeSxProps = CSSWithMultiValues
+type ThemeSxProps = SystemStyleObject & SystemProps;
 
 type SxMap<ClassKey extends string> = Record<ClassKey, ThemeSxProps>;
 

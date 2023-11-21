@@ -1,5 +1,6 @@
 import { ReactText, useContext, useEffect, useState } from "react";
 import { IconType } from "react-icons";
+import { useLocation } from "react-router";
 import {
   Avatar,
   Box,
@@ -21,10 +22,9 @@ import { AuthContext } from "../../providers/Auth";
 import useLocalStorage from "../../hooks/useLocalStorage";
 import { typedSxMap } from "../../utils/typedSxMap";
 import NavItem from "./components/NavItem";
-import { FiCompass, FiDatabase, FiHome, FiMenu, FiSettings, FiTrendingUp } from "react-icons/fi";
-import { GoQuestion } from "react-icons/go";
 import { FaAnglesLeft, FaAnglesRight } from "react-icons/fa6";
-import { useLocation } from "react-router";
+import { FiChevronsLeft, FiChevronsRight, FiCompass, FiDatabase, FiHome, FiMenu, FiSettings, FiTrendingUp } from "react-icons/fi";
+import { GoQuestion } from "react-icons/go";
 
 interface LinkItemProps {
   name: string;
@@ -64,7 +64,8 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
   const sessionContext = useContext(AuthContext);
   const { sessionExists, verified, showProfile, signOut } = sessionContext;
   const location = useLocation();
-  const urlPage = location.pathname?.substring(1);;
+  const urlPage = location.pathname?.substring(1);
+  const [isHovering, setIsHovering] = useState(false);
 
   useEffect(() => {
     setStoragedNavSize(navSize);
@@ -78,29 +79,30 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
     signOut && signOut();
   }
 
+  const isCollapsed = navSize === "small";
+
   const styles = typedSxMap({
     container: {
       position: "sticky",
       left: "5",
       h: "100vh",
-      //   marginTop: "2.5vh",
-      w: navSize === "small" ? "75px" : "250px",
+      w: isCollapsed ? "75px" : "250px",
       flexDir: "column",
       justifyContent: "space-between",
       transition: "width 0.3s ease",
     },
     topMenuContainer: {
       mt: 2,
-      p: "5%",
+      p: "2",
       flexDir: "column",
       w: "100%",
-      alignItems: navSize === "small" ? "center" : "flex-start",
+      alignItems: isCollapsed ? "center" : "flex-start",
     },
     bottomMenuContainer: {
       p: "5%",
       flexDir: "column",
       w: "100%",
-      alignItems: navSize === "small" ? "center" : "flex-start",
+      alignItems: isCollapsed ? "center" : "flex-start",
       mb: 2,
     },
     divider: {
@@ -110,19 +112,38 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
       borderBottomWidth: "1px",
       borderStyle: "solid",
     },
+    themeToggleBox: {
+      margin: "2",
+    },
+    toggleNavSize: {
+      fontSize: "xl",
+      position: "absolute",
+      left: isCollapsed ? "50%" : undefined,
+      transform: isCollapsed ? "translateX(-50%)" : undefined,
+      right: isCollapsed ? "" : "2",
+      opacity: isCollapsed ? (isHovering && "1") || "0" : "1",
+      padding: "2",
+      transition: "opacity 0.3s ease 0s",
+      borderRadius: "10",
+      backgroundColor: isCollapsed ? "var(--color-border)" : undefined,
+      _hover: {
+        backgroundColor: !isCollapsed ? "var(--color-border)" : undefined,
+      },
+    },
   });
   return (
-    <Flex sx={styles.container}>
+    <Flex sx={styles.container} onMouseEnter={() => setIsHovering(true)} onMouseLeave={() => setIsHovering(false)}>
       <Flex sx={styles.topMenuContainer} as="nav">
         <Flex alignItems="center" mx="2" mb={5}>
-          <Tableflow color size="small" short={navSize === "small"} />
+          <Tableflow color size="small" short={isCollapsed} />
           <IconButton
+            className="toggle-nav-size"
+            sx={styles.toggleNavSize}
             background="none"
-             _hover={{ backgroundColor: "var(--color-secondary-hover)" }}
             aria-label="toggle navigation"
-            icon={navSize === "small"? <FaAnglesRight/> :<FaAnglesLeft /> }
+            icon={isCollapsed ? <FiChevronsRight /> : <FiChevronsLeft />}
             onClick={() => {
-              if (navSize === "small") changeNavSize("large");
+              if (isCollapsed) changeNavSize("large");
               else changeNavSize("small");
             }}
           />
@@ -137,25 +158,20 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
             url={link.url}
             name={link.name}
             isSelected={link.name === urlPage}
-            //onSelect={() => onSelectPage(link.name)}
           />
         ))}
       </Flex>
 
       <Flex sx={styles.bottomMenuContainer}>
         <Divider sx={styles.divider} />
-        <ThemeToggle />
+        <Box sx={styles.themeToggleBox}>
+          <ThemeToggle />
+        </Box>
+
         {sessionExists && verified && (
           <>
-            <NavItem
-              navSize={navSize}
-              icon={GoQuestion}
-              title="Docks"
-              name="docs"
-              url="https://tableflow.com/docs"
-              isExtarnalLink
-            />
-            <NavItem navSize={navSize} icon={FiSettings} title="Settings" name="settings" url="/settings" isSelected={"settings" === urlPage} />
+            <NavItem navSize={navSize} icon={GoQuestion} title="Docs" name="docs" url="https://tableflow.com/docs" isExtarnalLink />
+            <NavItem navSize={navSize} icon={FiSettings} title="Settings" name="settings" url="/settings" />
           </>
         )}
 

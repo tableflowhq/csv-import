@@ -24,14 +24,21 @@ export default function NavItem({ icon, title, name, navSize, url, isSelected, i
       justifyContent: "center",
     },
     link: {
-      backgroundColor: isSelected && "var(--color-secondary-hover)",
+      backgroundColor: isSelected ? "var(--color-secondary-hover)" : undefined,
+      color: isSelected ? "var(--color-button-hover)" : undefined,
       p: 2,
       borderRadius: 10,
       w: navSize === "large" ? "100%" : undefined,
+      display: "flex",
+      transition: "all 0.2s ease-in-out 0s",
+      _hover: {
+        textDecor: "none",
+        backgroundColor: "var(--color-secondary-hover)",
+        color: "var(--color-button-hover)",
+      },
     },
     icon: {
       fontSize: "xl",
-      color: isSelected ? "#82AAAD" : "gray.500",
     },
   });
   return (
@@ -39,7 +46,6 @@ export default function NavItem({ icon, title, name, navSize, url, isSelected, i
       <Menu placement="right">
         <Link
           sx={styles.link}
-          _hover={{ textDecor: "none", backgroundColor: "var(--color-secondary-hover)" }}
           onClick={() => {
             if (url && !isExtarnalLink) {
               navigate(url);
