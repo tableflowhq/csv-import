@@ -16,15 +16,18 @@ $radius: var(--border-radius-2);
   .tbody {
     display: table-row-group;
   }
+
   .tr {
     display: table-row;
   }
+
   .td {
     display: table-cell;
     vertical-align: middle;
     max-width: 300px;
     height: 48px;
   }
+
   .caption {
     display: table-caption;
     border-bottom: 1px solid var(--color-border);
@@ -47,6 +50,7 @@ $radius: var(--border-radius-2);
         &:first-of-type {
           border-radius: $radius 0 0 0;
         }
+
         &:last-child {
           border-radius: 0 $radius 0 0;
         }
@@ -56,6 +60,7 @@ $radius: var(--border-radius-2);
 
   &.fixHeader {
     border-radius: 0 0 $radius $radius;
+
     .thead {
       position: sticky;
       top: 0;
@@ -64,6 +69,7 @@ $radius: var(--border-radius-2);
 
       .tr {
         margin-bottom: var(--m-s);
+
         .td {
           background-color: var(--color-background-modal);
 
@@ -114,6 +120,7 @@ $radius: var(--border-radius-2);
           &:first-of-type {
             border-radius: 0 0 0 $radius;
           }
+
           &:last-child {
             border-radius: 0 0 $radius 0;
           }
@@ -124,6 +131,7 @@ $radius: var(--border-radius-2);
 
   &.zebra {
     background-color: var(--color-background-modal);
+
     .tbody {
       .tr {
         &:nth-child(odd) {
@@ -137,6 +145,7 @@ $radius: var(--border-radius-2);
 
   &.dark {
     background-color: var(--color-background);
+
     .thead .tr .td {
       background-color: var(--color-background-modal);
     }
@@ -154,11 +163,14 @@ $radius: var(--border-radius-2);
           box-shadow: none;
           position: static;
         }
+
         .td {
         }
+
         &:first-of-type .td {
           padding-top: var(--m-s);
         }
+
         &:last-of-type .td {
           padding-bottom: var(--m-s);
         }

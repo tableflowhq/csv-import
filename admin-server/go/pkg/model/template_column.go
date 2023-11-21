@@ -44,6 +44,7 @@ type TemplateColumn struct {
 	DataType          TemplateColumnDataType `json:"data_type" swaggertype:"string" example:"string"`
 	Description       null.String            `json:"description" swaggertype:"string" example:"An email address"`
 	SuggestedMappings pq.StringArray         `json:"suggested_mappings" gorm:"type:text[]" swaggertype:"array,string" example:"first_name"`
+	Index             null.Int               `json:"index" swaggertype:"integer" example:"0"`
 	CreatedBy         ID                     `json:"-"`
 	CreatedByUser     *User                  `json:"created_by,omitempty" gorm:"foreignKey:ID;references:CreatedBy"`
 	CreatedAt         NullTime               `json:"created_at" swaggertype:"integer" example:"1682366228"`

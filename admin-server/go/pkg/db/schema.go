@@ -223,6 +223,7 @@ func GetDatabaseSchemaInitSQL() string {
 		    name        text                     not null,
 		    key         text                     not null,
 		    required    bool                     not null default false,
+		    index       int                      not null, -- The 0-based position of the column
 		    created_by  uuid                     not null,
 		    created_at  timestamp with time zone not null,
 		    updated_by  uuid                     not null,
@@ -455,5 +456,35 @@ func GetDatabaseSchemaInitSQL() string {
 
 		alter table uploads
 		    add column if not exists matched_header_row_index integer;
+
+		do
+		$$
+			declare
+				column_exists boolean;
+				r             record;
+			begin
+				select exists (select
+				               from information_schema.columns
+				               where table_name = 'template_columns' and column_name = 'index')
+				into column_exists;
+		
+				-- If the index column does not exist, add it and perform the update
+				if not column_exists
+				then
+					alter table template_columns
+						add column index integer;
+		
+					for r in select template_id from template_columns where deleted_at is null group by template_id
+						loop
+							update template_columns
+							set index = rn - 1
+							from (select id, row_number() over (order by created_at) as rn
+							      from template_columns
+							      where template_id = r.template_id and deleted_at is null) as sub
+							where template_columns.id = sub.id;
+						end loop;
+				end if;
+			end
+		$$;
 	`
 }
