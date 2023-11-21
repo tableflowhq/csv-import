@@ -286,7 +286,7 @@ export default function Main() {
             onCancel={skipHeader ? reload : () => stepper.setCurrent(1)}
             schemaless={schemaless}
             schemalessReadOnly={schemalessReadOnly}
-            seColumnsValues={seColumnsValues}
+            setColumnsValues={seColumnsValues}
             columnsValues={columnsValues}
             isLoading={reviewIsLoading || (!reviewIsStored && enabledReview)}
             onLoad={() => setEnabledReview(false)}
