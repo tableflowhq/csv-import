@@ -1,4 +1,4 @@
-import { ReactText, useEffect, useState } from "react";
+import { ReactText, useContext, useEffect, useState } from "react";
 import { IconType } from "react-icons";
 import {
   Avatar,
@@ -16,9 +16,11 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import Tableflow from "../../components/Tableflow";
-import NavItem from "./components/NavItem";
-import { FiCompass, FiHome, FiMenu, FiSettings, FiTrendingUp, FiCalendar } from "react-icons/fi";
+import ThemeToggle from "../../components/ThemeToggle";
+import { AuthContext } from "../../providers/Auth";
 import { typedSxMap } from "../../utils/typedSxMap";
+import NavItem from "./components/NavItem";
+import { FiCompass, FiDatabase, FiHome, FiMenu, FiSettings, FiTrendingUp } from "react-icons/fi";
 
 interface LinkItemProps {
   name: string;
@@ -53,35 +55,50 @@ export default function Sidebar() {
 interface SidebarProps extends BoxProps {
   onClose: () => void;
   selectedPage: string;
-  onSelectPage: any
+  onSelectPage: any;
 }
 
 const SidebarContent = ({ onClose, selectedPage, onSelectPage, ...rest }: SidebarProps) => {
   const [navSize, changeNavSize] = useState("large");
+  const sessionContext = useContext(AuthContext);
+  const { sessionExists, verified, showProfile, signOut } = sessionContext;
+
+  async function onLogout() {
+    signOut && signOut();
+  }
+
   const styles = typedSxMap({
     container: {
       position: "sticky",
       left: "5",
       h: "100vh",
-      marginTop: "2.5vh",
+      //   marginTop: "2.5vh",
       w: navSize === "small" ? "75px" : "250px",
       flexDir: "column",
       justifyContent: "space-between",
-      transition: "width 0.3s ease"
+      transition: "width 0.3s ease",
     },
     topMenuContainer: {
-      p:"5%", 
-      flexDir:"column", 
-      w:"100%",
-      alignItems: navSize === "small" ? "center" : "flex-start"
+      mt: 2,
+      p: "5%",
+      flexDir: "column",
+      w: "100%",
+      alignItems: navSize === "small" ? "center" : "flex-start",
     },
     bottomMenuContainer: {
-      p:"5%",
-      flexDir:"column",
-      w:"100%",
+      p: "5%",
+      flexDir: "column",
+      w: "100%",
       alignItems: navSize === "small" ? "center" : "flex-start",
-      mb:4
-    }
+      mb: 2,
+    },
+    divider: {
+      mt: 4,
+      mb: 2,
+      borderColor: "var(--color-border)",
+      borderBottomWidth: "1px",
+      borderStyle: "solid",
+    },
   });
   return (
     <Flex sx={styles.container}>
@@ -100,37 +117,41 @@ const SidebarContent = ({ onClose, selectedPage, onSelectPage, ...rest }: Sideba
           />
         </Flex>
 
-        
-          {LinkItems.map((link) => (
-            <NavItem
-             key={link.name} 
-             navSize={navSize} 
-             icon={link.icon} 
-             title={link.label} 
-             url={link.url}
-             name={link.name} 
-             isSelected={selectedPage === link.name}
-             onSelect={() => onSelectPage(link.name)}
-            />
-          ))}
-
+        {LinkItems.map((link) => (
+          <NavItem
+            key={link.name}
+            navSize={navSize}
+            icon={link.icon}
+            title={link.label}
+            url={link.url}
+            name={link.name}
+            isSelected={selectedPage === link.name}
+            onSelect={() => onSelectPage(link.name)}
+          />
+        ))}
       </Flex>
 
       <Flex sx={styles.bottomMenuContainer}>
-      <Divider mt={4} mb={2} borderColor="white" />
-        <Divider display={navSize === "small" ? "none" : "flex"} borderColor="white" />
-        <NavItem navSize={navSize} icon={FiSettings} title="Settings" />
-        <NavItem navSize={navSize} icon={FiCalendar} title="Calendar" />
-        <NavItem navSize={navSize} icon={FiCalendar} title="Calendar" />
-        {/* <Flex mt={2} align="center">
-          <Avatar size="sm" />
-          <Flex flexDir="column" ml={4} display={navSize === "small" ? "none" : "flex"}>
-            <Heading as="h3" size="sm">
-              User Test
-            </Heading>
-            <Text color="gray">User Role Test</Text>
+        <Divider sx={styles.divider} />
+        <ThemeToggle />
+        <NavItem navSize={navSize} icon={FiSettings} title="Settings" url="/settings" onSelect={() => onSelectPage("setting")} />
+        {sessionExists && showProfile && (
+          <NavItem navSize={navSize} icon={FiDatabase} title="Billing" url="/billing" onSelect={() => onSelectPage("billing")} />
+        )}
+        {sessionExists && showProfile && (
+          <Flex mt={2} align="center">
+            <Avatar size="sm" borderRadius={"full"} alignItems={"center"} justifyContent={"center"} textAlign={"center"} width={4} height={4} />
+            <Flex flexDir="column" ml={4} display={navSize === "small" ? "none" : "flex"}>
+              <Heading as="h3" size="sm">
+                User Test
+              </Heading>
+              <Text color="gray">User Role Test</Text>
+            </Flex>
           </Flex>
-        </Flex> */}
+        )}
+        {sessionExists && showProfile && (
+          <NavItem navSize={navSize} icon={FiDatabase} title="Billing" onClick={() => onLogout()} onSelect={() => onSelectPage("logout")} />
+        )}
       </Flex>
     </Flex>
   );
