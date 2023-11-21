@@ -223,7 +223,7 @@ func GetDatabaseSchemaInitSQL() string {
 		    name        text                     not null,
 		    key         text                     not null,
 		    required    bool                     not null default false,
-		    index       int                      not null, -- The 0-based position of column
+		    index       int                      not null, -- The 0-based position of the column
 		    created_by  uuid                     not null,
 		    created_at  timestamp with time zone not null,
 		    updated_by  uuid                     not null,
