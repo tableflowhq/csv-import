@@ -23,6 +23,8 @@ import { typedSxMap } from "../../utils/typedSxMap";
 import NavItem from "./components/NavItem";
 import { FiCompass, FiDatabase, FiHome, FiMenu, FiSettings, FiTrendingUp } from "react-icons/fi";
 import { GoQuestion } from "react-icons/go";
+import { FaAnglesLeft, FaAnglesRight } from "react-icons/fa6";
+import { useLocation } from "react-router";
 
 interface LinkItemProps {
   name: string;
@@ -38,14 +40,13 @@ const LinkItems: Array<LinkItemProps> = [
 
 export default function Sidebar() {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [selectedPage, setSelectedPage] = useState("");
 
   return (
     <Box minH="100vh" bg={useColorModeValue("gray.100", "gray.900")}>
-      <SidebarContent onClose={() => onClose} selectedPage={selectedPage} onSelectPage={setSelectedPage} display={{ base: "none", md: "block" }} />
+      <SidebarContent onClose={() => onClose} display={{ base: "none", md: "block" }} />
       <Drawer isOpen={isOpen} placement="left" onClose={onClose} returnFocusOnClose={false} onOverlayClick={onClose} size="full">
         <DrawerContent>
-          <SidebarContent onClose={onClose} selectedPage={selectedPage} onSelectPage={setSelectedPage} />
+          <SidebarContent onClose={onClose} />
         </DrawerContent>
       </Drawer>
       <MobileNav display={{ base: "flex", md: "none" }} onOpen={onOpen} />
@@ -55,15 +56,15 @@ export default function Sidebar() {
 
 interface SidebarProps extends BoxProps {
   onClose: () => void;
-  selectedPage: string;
-  onSelectPage: any;
 }
 
-const SidebarContent = ({ onClose, selectedPage, onSelectPage, ...rest }: SidebarProps) => {
+const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
   const [storagedNavSize, setStoragedNavSize] = useLocalStorage("navSize", "large");
   const [navSize, setNavSize] = useState(storagedNavSize);
   const sessionContext = useContext(AuthContext);
   const { sessionExists, verified, showProfile, signOut } = sessionContext;
+  const location = useLocation();
+  const urlPage = location.pathname?.substring(1);;
 
   useEffect(() => {
     setStoragedNavSize(navSize);
@@ -117,9 +118,9 @@ const SidebarContent = ({ onClose, selectedPage, onSelectPage, ...rest }: Sideba
           <Tableflow color size="small" short={navSize === "small"} />
           <IconButton
             background="none"
-            _hover={{ background: "none" }}
+             _hover={{ backgroundColor: "var(--color-secondary-hover)" }}
             aria-label="toggle navigation"
-            icon={<FiMenu />}
+            icon={navSize === "small"? <FaAnglesRight/> :<FaAnglesLeft /> }
             onClick={() => {
               if (navSize === "small") changeNavSize("large");
               else changeNavSize("small");
@@ -135,8 +136,8 @@ const SidebarContent = ({ onClose, selectedPage, onSelectPage, ...rest }: Sideba
             title={link.label}
             url={link.url}
             name={link.name}
-            isSelected={selectedPage === link.name}
-            onSelect={() => onSelectPage(link.name)}
+            isSelected={link.name === urlPage}
+            //onSelect={() => onSelectPage(link.name)}
           />
         ))}
       </Flex>
@@ -154,13 +155,13 @@ const SidebarContent = ({ onClose, selectedPage, onSelectPage, ...rest }: Sideba
               url="https://tableflow.com/docs"
               isExtarnalLink
             />
-            <NavItem navSize={navSize} icon={FiSettings} title="Settings" name="settings" url="/settings" onSelect={() => onSelectPage("setting")} />
+            <NavItem navSize={navSize} icon={FiSettings} title="Settings" name="settings" url="/settings" isSelected={"settings" === urlPage} />
           </>
         )}
 
         {sessionExists && showProfile && (
           <>
-            <NavItem navSize={navSize} icon={FiDatabase} title="Billing" name="billing" url="/billing" onSelect={() => onSelectPage("billing")} />
+            <NavItem navSize={navSize} icon={FiDatabase} title="Billing" name="billing" url="/billing" isSelected={"billing" === urlPage} />
             <Flex mt={2} align="center">
               <Avatar size="sm" borderRadius={"full"} alignItems={"center"} justifyContent={"center"} textAlign={"center"} width={4} height={4} />
               <Flex flexDir="column" ml={4} display={navSize === "small" ? "none" : "flex"}>
@@ -170,7 +171,7 @@ const SidebarContent = ({ onClose, selectedPage, onSelectPage, ...rest }: Sideba
                 <Text color="gray">User Role Test</Text>
               </Flex>
             </Flex>
-            <NavItem navSize={navSize} icon={FiDatabase} title="Logout" name="logout" onClick={() => onLogout()} onSelect={() => onSelectPage("logout")} />
+            <NavItem navSize={navSize} icon={FiDatabase} title="Logout" name="logout" onClick={() => onLogout()} />
           </>
         )}
       </Flex>
