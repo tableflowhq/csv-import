@@ -1,19 +1,19 @@
-import { useNavigate } from "react-router";
 import { IconType } from "react-icons";
+import { useNavigate } from "react-router";
 import { Flex, Icon, Link, Menu, MenuButton, Text } from "@chakra-ui/react";
 import { typedSxMap } from "../../../utils/typedSxMap";
 
 interface NavItemProps {
-    icon: IconType;
-    title: string;
-    name: string;
-    navSize: string;
-    url?: string;
-    isSelected?: boolean;
-    onSelect?: (name: string) => void;
-    isExtarnalLink?: boolean;
-    onClick?: () => void;
-  }
+  icon: IconType;
+  title: string;
+  name: string;
+  navSize: string;
+  url?: string;
+  isSelected?: boolean;
+  onSelect?: (name: string) => void;
+  isExtarnalLink?: boolean;
+  onClick?: () => void;
+}
 
 export default function NavItem({ icon, title, name, navSize, url, isSelected, onSelect, isExtarnalLink }: NavItemProps) {
   const navigate = useNavigate();
@@ -44,9 +44,9 @@ export default function NavItem({ icon, title, name, navSize, url, isSelected, o
           onClick={() => {
             onSelect && onSelect(name);
             if (url && !isExtarnalLink) {
-               navigate(url); 
+              navigate(url);
             } else {
-                window.open(url, "_blank")
+              window.open(url, "_blank");
             }
           }}>
           <MenuButton w="100%">
