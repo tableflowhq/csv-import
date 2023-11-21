@@ -1,8 +1,21 @@
 import { useNavigate } from "react-router";
+import { IconType } from "react-icons";
 import { Flex, Icon, Link, Menu, MenuButton, Text } from "@chakra-ui/react";
 import { typedSxMap } from "../../../utils/typedSxMap";
 
-export default function NavItem({ icon, title, name, navSize, url, isSelected, onSelect }: any) {
+interface NavItemProps {
+    icon: IconType;
+    title: string;
+    name: string;
+    navSize: string;
+    url?: string;
+    isSelected?: boolean;
+    onSelect?: (name: string) => void;
+    isExtarnalLink?: boolean;
+    onClick?: () => void;
+  }
+
+export default function NavItem({ icon, title, name, navSize, url, isSelected, onSelect, isExtarnalLink }: NavItemProps) {
   const navigate = useNavigate();
   const styles = typedSxMap({
     container: {
@@ -29,8 +42,12 @@ export default function NavItem({ icon, title, name, navSize, url, isSelected, o
           sx={styles.link}
           _hover={{ textDecor: "none", backgroundColor: "var(--color-secondary-hover)" }}
           onClick={() => {
-            onSelect(name);
-            navigate(url);
+            onSelect && onSelect(name);
+            if (url && !isExtarnalLink) {
+               navigate(url); 
+            } else {
+                window.open(url, "_blank")
+            }
           }}>
           <MenuButton w="100%">
             <Flex>
