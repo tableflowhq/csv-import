@@ -257,23 +257,28 @@ func editTemplateColumn(c *gin.Context, getWorkspaceUser func(*gin.Context, stri
 			return
 		}
 
-		// Update the index of the current column
+		// Store the old index and update the index of the target column
+		oldIndex := int(templateColumn.Index.Int64)
 		templateColumn.Index = null.IntFrom(int64(newIndex))
 
-		// Adjust the indexes of the other columns
-		for _, column := range template.TemplateColumns {
-			if column.ID != templateColumn.ID {
+		// Adjust the indexes of other columns
+		for i, column := range template.TemplateColumns {
+			if !column.ID.Equals(templateColumn.ID) {
 				currentIdx := int(column.Index.Int64)
-				if currentIdx >= newIndex {
-					column.Index = null.IntFrom(int64(currentIdx + 1))
+				if currentIdx >= newIndex && currentIdx < oldIndex {
+					template.TemplateColumns[i].Index = null.IntFrom(int64(currentIdx + 1))
+				} else if currentIdx > oldIndex && currentIdx <= newIndex {
+					template.TemplateColumns[i].Index = null.IntFrom(int64(currentIdx - 1))
 				}
 			}
 		}
 
-		// Normalize the indexes to be sequential starting from 0
+		// Sort the columns by their indexes
 		sort.SliceStable(template.TemplateColumns, func(i, j int) bool {
 			return template.TemplateColumns[i].Index.Int64 < template.TemplateColumns[j].Index.Int64
 		})
+
+		// Normalize the indexes to be sequential starting from 0
 		for i := range template.TemplateColumns {
 			template.TemplateColumns[i].Index = null.IntFrom(int64(i))
 		}
