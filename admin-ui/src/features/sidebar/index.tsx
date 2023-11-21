@@ -64,7 +64,7 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
   const location = useLocation();
   const urlPage = location.pathname?.substring(1);
   const [isHovering, setIsHovering] = useState(false);
-
+  console.log("Session Context", sessionContext);
   useEffect(() => {
     setStoragedNavSize(navSize);
   }, [navSize]);
