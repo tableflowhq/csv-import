@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { Box, chakra, Flex, Link, SimpleGrid, Stat, StatLabel, StatNumber, useColorModeValue } from "@chakra-ui/react";
-import { FiBookOpen, FiServer, FiUsers, FiVideo } from "react-icons/fi";
+import { FiBookOpen, FiUsers, FiVideo } from "react-icons/fi";
 
 interface StatsCardProps {
   title: string;

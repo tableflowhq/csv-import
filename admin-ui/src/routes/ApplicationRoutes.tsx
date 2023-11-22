@@ -29,7 +29,7 @@ export const routes: RoutesType = [
   },
   {
     paths: "*",
-    children: <Navigate to={"importers"} />,
+    children: <Navigate to={"welcome"} />,
   },
 ];
 
