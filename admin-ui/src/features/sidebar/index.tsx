@@ -23,6 +23,7 @@ import useLocalStorage from "../../hooks/useLocalStorage";
 import { typedSxMap } from "../../utils/typedSxMap";
 import NavItem from "./components/NavItem";
 import { FiChevronsLeft, FiChevronsRight, FiCompass, FiDatabase, FiHelpCircle, FiHome, FiMenu, FiSettings, FiTrendingUp } from "react-icons/fi";
+import { LuLogOut, LuUser2 } from "react-icons/lu";
 
 interface LinkItemProps {
   name: string;
@@ -74,6 +75,7 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
   };
 
   async function onLogout() {
+    console.log("Logout");
     signOut && signOut();
   }
 
@@ -128,6 +130,18 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
         backgroundColor: !isCollapsed ? "var(--color-border)" : undefined,
       },
     },
+    avatar: {
+      borderRadius: "full",
+      alignItems: "center",
+      justifyContent: "center",
+      textAlign: "center",
+      width: 4,
+      height: 4,
+      borderWidth: "1px",
+      borderStyle: "solid",
+      borderColor: "var(--color-border)",
+      ml: 1,
+    },
   });
   return (
     <Flex sx={styles.container} onMouseEnter={() => setIsHovering(true)} onMouseLeave={() => setIsHovering(false)}>
@@ -169,14 +183,7 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
         {sessionExists && verified && (
           <>
             <NavItem navSize={navSize} icon={FiHelpCircle} title="Docs" name="docs" url="https://tableflow.com/docs" isExternalLink />
-            <NavItem
-              navSize={navSize}
-              icon={FiSettings}
-              title="Settings"
-              name="settings"
-              url="/settings"
-              isSelected={urlPage.includes("settings")}
-            />
+            <NavItem navSize={navSize} icon={FiSettings} title="Settings" name="settings" url="/settings" isSelected={urlPage.includes("settings")} />
           </>
         )}
 
@@ -184,15 +191,15 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
           <>
             <NavItem navSize={navSize} icon={FiDatabase} title="Billing" name="billing" url="/billing" isSelected={urlPage.includes("billing")} />
             <Flex mt={2} align="center">
-              <Avatar size="sm" borderRadius={"full"} alignItems={"center"} justifyContent={"center"} textAlign={"center"} width={4} height={4} />
-              <Flex flexDir="column" ml={4} display={navSize === "small" ? "none" : "flex"}>
-                <Heading as="h3" size="sm">
+              <Avatar size="sm" sx={styles.avatar} icon={<LuUser2 />} />
+              <Flex flexDir="column" ml={2} display={navSize === "small" ? "none" : "flex"}>
+                {/* <Heading as="h3" size="sm">
                   User Test
-                </Heading>
-                <Text color="gray">User Role Test</Text>
+                </Heading> */}
+                <Text>user@tableflow.com</Text>
               </Flex>
             </Flex>
-            <NavItem navSize={navSize} icon={FiDatabase} title="Logout" name="logout" onClick={() => onLogout()} />
+            <NavItem navSize={navSize} icon={LuLogOut} title="Logout" name="logout" onClick={() => onLogout()} />
           </>
         )}
       </Flex>

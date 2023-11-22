@@ -14,7 +14,7 @@ interface NavItemProps {
   onClick?: () => void;
 }
 
-export default function NavItem({ icon, title, name, navSize, url, isSelected, isExternalLink }: NavItemProps) {
+export default function NavItem({ icon, title, name, navSize, url, isSelected, isExternalLink, onClick }: NavItemProps) {
   const navigate = useNavigate();
   const styles = typedSxMap({
     container: {
@@ -47,6 +47,9 @@ export default function NavItem({ icon, title, name, navSize, url, isSelected, i
         <Link
           sx={styles.link}
           onClick={() => {
+            if (onClick) {
+                onClick();
+              }
             if (url && !isExternalLink) {
               navigate(url);
             } else {
