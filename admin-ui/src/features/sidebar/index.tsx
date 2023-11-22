@@ -64,7 +64,7 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
   const location = useLocation();
   const urlPage = location.pathname?.substring(1);
   const [isHovering, setIsHovering] = useState(false);
-  console.log("Session Context", sessionContext);
+
   useEffect(() => {
     setStoragedNavSize(navSize);
   }, [navSize]);
@@ -182,7 +182,7 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
 
         {sessionExists && showProfile && (
           <>
-            <NavItem navSize={navSize} icon={FiDatabase} title="Billing" name="billing" url="/billing" isSelected={"billing" === urlPage} />
+            <NavItem navSize={navSize} icon={FiDatabase} title="Billing" name="billing" url="/billing" isSelected={urlPage.includes("billing")} />
             <Flex mt={2} align="center">
               <Avatar size="sm" borderRadius={"full"} alignItems={"center"} justifyContent={"center"} textAlign={"center"} width={4} height={4} />
               <Flex flexDir="column" ml={4} display={navSize === "small" ? "none" : "flex"}>
