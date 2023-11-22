@@ -1,31 +1,25 @@
-import {
-  Box,
-  Button,
-  Container,
-  createIcon,
-  Flex,
-  Heading,
-  Icon,
-  IconButton,
-  IconProps,
-  Image,
-  Stack,
-  Text,
-  useColorModeValue,
-} from "@chakra-ui/react";
+import { Box, Container, createIcon, Flex, Heading, Icon, IconButton, IconProps, Image, Stack, Text, useColorModeValue } from "@chakra-ui/react";
+import Button from "../../components/Button";
 import { typedSxMap } from "../../utils/typedSxMap";
+import WelcomeBoxes from "./components/WelcomeBoxes";
 
 export default function Welcome() {
   const styles = typedSxMap({
     container: {
       maxW: "7xl",
       margin: "0 auto",
+      pb: 5,
+    },
+    stackWrapper: {
+      gap: 6,
+      py: 8,
+      paddingBottom: 3,
     },
   });
   return (
     <Container sx={styles.container}>
-      <Stack align={"center"} spacing={{ base: 8, md: 10 }} py={{ base: 5, md: 10 }} direction={{ base: "column", md: "row" }}>
-        <Stack flex={1} spacing={{ base: 5, md: 10 }}>
+      <Stack sx={styles.stackWrapper} align={"center"} direction={{ base: "column", md: "row" }}>
+        <Stack flex={1} spacing={{ base: 5, md: 8 }}>
           <Heading lineHeight={1.1} fontWeight={600} fontSize={{ base: "3xl", sm: "4xl", lg: "6xl" }}>
             <Text as={"span"} position={"relative"}>
               Welcome to Tableflow
@@ -40,11 +34,8 @@ export default function Welcome() {
             provident numquam quis tenetur vel reprehenderit reiciendis delectus, molestias vero, qui sunt eos omnis.
           </Text>
           <Stack spacing={{ base: 4, sm: 6 }} direction={{ base: "column", sm: "row" }}>
-            <Button rounded={"full"} size={"lg"} fontWeight={"normal"} px={6} colorScheme={"red"} bg={"var(--color-primary)"} _hover={{ bg: "var(--color-primary-hover)" }}>
-              Get started
-            </Button>
-            <Button rounded={"full"} size={"lg"} fontWeight={"normal"} px={6} leftIcon={<PlayIcon h={4} w={4} color={"gray.300"} />}>
-              How It Works
+            <Button variants={["primary"]}>
+            Try out our Importer Demo
             </Button>
           </Stack>
         </Stack>
@@ -76,6 +67,7 @@ export default function Welcome() {
           </Box>
         </Flex>
       </Stack>
+      <WelcomeBoxes />
     </Container>
   );
 }
