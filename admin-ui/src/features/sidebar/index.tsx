@@ -32,7 +32,7 @@ interface LinkItemProps {
   url: string;
 }
 const LinkItems: Array<LinkItemProps> = [
-  { name: "getting", label: "Getting started", icon: FiHome, url: "/importers" },
+  { name: "getting", label: "Getting started", icon: FiHome, url: "/welcome" },
   { name: "importers", label: "Importers", icon: FiTrendingUp, url: "/importers" },
   { name: "data", label: "Data", icon: FiCompass, url: "/data" },
 ];
