@@ -131,16 +131,11 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
       },
     },
     avatar: {
-      borderRadius: "full",
       alignItems: "center",
       justifyContent: "center",
       textAlign: "center",
       width: 4,
       height: 4,
-      borderWidth: "1px",
-      borderStyle: "solid",
-      borderColor: "var(--color-border)",
-      ml: 1,
     },
   });
   return (
@@ -190,12 +185,9 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
         {sessionExists && showProfile && (
           <>
             <NavItem navSize={navSize} icon={FiDatabase} title="Billing" name="billing" url="/billing" isSelected={urlPage.includes("billing")} />
-            <Flex mt={2} align="center">
+            <Flex align="center">
               <Avatar size="sm" sx={styles.avatar} icon={<LuUser2 />} />
-              <Flex flexDir="column" ml={2} display={navSize === "small" ? "none" : "flex"}>
-                {/* <Heading as="h3" size="sm">
-                  User Test
-                </Heading> */}
+              <Flex flexDir="column" ml={1} display={navSize === "small" ? "none" : "flex"}>
                 <Text>user@tableflow.com</Text>
               </Flex>
             </Flex>
