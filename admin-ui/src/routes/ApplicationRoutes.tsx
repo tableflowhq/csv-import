@@ -23,13 +23,13 @@ export const routes: RoutesType = [
     children: <SettingsPage />,
   },
   {
-    paths: "welcome",
+    paths: "getting-started",
     layout: Main,
     children: <Welcome />,
   },
   {
     paths: "*",
-    children: <Navigate to={"welcome"} />,
+    children: <Navigate to={"getting-started"} />,
   },
 ];
 

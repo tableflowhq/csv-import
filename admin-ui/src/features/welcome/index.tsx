@@ -34,13 +34,19 @@ export default function Welcome() {
             provident numquam quis tenetur vel reprehenderit reiciendis delectus, molestias vero, qui sunt eos omnis.
           </Text>
           <Stack spacing={{ base: 4, sm: 6 }} direction={{ base: "column", sm: "row" }}>
-            <Button variants={["primary"]}>
-            Try out our Importer Demo
-            </Button>
+            <Button variants={["primary"]}>Try out our Importer Demo</Button>
           </Stack>
         </Stack>
         <Flex flex={1} justify={"center"} align={"center"} position={"relative"} w={"full"}>
-          <Blob w={"150%"} h={"150%"} position={"absolute"} top={"-20%"} left={0} zIndex={-1} color={"var(--color-primary-button-disabled)"} />
+          <Blob
+            w={"150%"}
+            h={"150%"}
+            position={"absolute"}
+            top={"-20%"}
+            left={0}
+            zIndex={-1}
+            color={useColorModeValue("var(--color-primary-disabled)", "var(--color-primary-button-disabled)")}
+          />
           <Box position={"relative"} height={"300px"} rounded={"2xl"} boxShadow={"2xl"} width={"full"} overflow={"hidden"}>
             <IconButton
               aria-label={"Play Button"}
