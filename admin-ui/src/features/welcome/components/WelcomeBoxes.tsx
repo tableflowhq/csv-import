@@ -24,7 +24,7 @@ function WelcomeLink({ title, subTitle, icon, path }: StatsCardProps) {
         }}
         rounded={"lg"}>
         <Flex justifyContent={"space-between"}>
-          <Box pl={{ base: 2, md: 4 }}>
+          <Box mr={3}>
             <StatLabel fontWeight={"medium"} isTruncated>
               {subTitle}
             </StatLabel>
@@ -37,6 +37,7 @@ function WelcomeLink({ title, subTitle, icon, path }: StatsCardProps) {
             color={useColorModeValue("gray.800", "gray.200")}
             alignContent={"center"}
             transition={"all 0.3s ease-in-out 0s"}
+            mr={2}
             _groupHover={{
               color: "var(--color-primary)",
             }}>
@@ -50,15 +51,10 @@ function WelcomeLink({ title, subTitle, icon, path }: StatsCardProps) {
 
 export default function WelcomeBoxes() {
   return (
-    <Box maxW="7xl" mx={"auto"} pt={5} px={{ base: 2 }}>
-      <chakra.h3 textAlign={"center"} fontSize={"2xl"} py={3} fontWeight={"normal"}>
-       Let's get started,
-      </chakra.h3>
-      <SimpleGrid columns={{ base: 1, md: 3 }} spacing={{ base: 5, lg: 8 }}>
-        <WelcomeLink title={"Our docs"} subTitle={"First take a look to"} path="https://tableflow.com/docs/" icon={<FiBookOpen size={"3em"} />} />
-        <WelcomeLink title={"Invite your team"} subTitle={"Don't be a loner, "} path="/" icon={<FiUsers size={"3em"} />} />
-        <WelcomeLink title={"Book a Call"} subTitle={"Keep in touch"} path="/" icon={<FiVideo size={"3em"} />} />
-      </SimpleGrid>
-    </Box>
+    <SimpleGrid columns={{ base: 1 }} spacing={{ base: 3, lg: 5 }}>
+      <WelcomeLink title={"Our docs"} subTitle={"First take a look to"} path="https://tableflow.com/docs/" icon={<FiBookOpen size={"3em"} />} />
+      <WelcomeLink title={"Invite your team"} subTitle={"Don't be a loner"} path="/" icon={<FiUsers size={"3em"} />} />
+      <WelcomeLink title={"Book a Call"} subTitle={"Keep in touch"} path="/" icon={<FiVideo size={"3em"} />} />
+    </SimpleGrid>
   );
 }

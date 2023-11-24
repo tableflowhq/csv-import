@@ -9,35 +9,23 @@ export default function Welcome() {
       maxW: "7xl",
       margin: "0 auto",
       pb: 5,
+      mt: 8,
     },
     stackWrapper: {
       gap: 6,
-      py: 8,
+      py: 3,
       paddingBottom: 3,
     },
   });
   return (
     <Container sx={styles.container}>
-      <Stack sx={styles.stackWrapper} align={"center"} direction={{ base: "column", md: "row" }}>
-        <Stack flex={1} spacing={{ base: 5, md: 8 }}>
-          <Heading lineHeight={1.1} fontWeight={600} fontSize={{ base: "3xl", sm: "4xl", lg: "6xl" }}>
-            <Text as={"span"} position={"relative"}>
-              Welcome to Tableflow
-            </Text>
-            <br />
-            <Text as={"span"} color={"var(--color-primary)"}>
-              The open source CSV importer
-            </Text>
-          </Heading>
-          <Text color={"gray.500"}>
-            Lorem, ipsum dolor sit amet consectetur adipisicing elit. Asperiores consectetur, hic laudantium perferendis dolor cupiditate? Eaque
-            provident numquam quis tenetur vel reprehenderit reiciendis delectus, molestias vero, qui sunt eos omnis.
-          </Text>
-          <Stack spacing={{ base: 4, sm: 6 }} direction={{ base: "column", sm: "row" }}>
-            <Button variants={["primary"]}>Try out our Importer Demo</Button>
-          </Stack>
-        </Stack>
-        <Flex flex={1} justify={"center"} align={"center"} position={"relative"} w={"full"}>
+      <Heading lineHeight={1.1} fontWeight={600} fontSize={{ base: "2xl", sm: "4xl", lg: "5xl" }}>
+        <Text as={"span"} position={"relative"}>
+          Welcome to Tableflow
+        </Text>
+      </Heading>
+      <Stack sx={styles.stackWrapper} align={"center"} direction={{ base: "column", md: "row" }} justifyContent={"space-between"}>
+        <Flex justify={"center"} align={"center"} position={"relative"} w={"55%"} maxW={"800px"}>
           <Blob
             w={"150%"}
             h={"150%"}
@@ -72,8 +60,16 @@ export default function Welcome() {
             />
           </Box>
         </Flex>
+        <Box maxW="7xl">
+          <WelcomeBoxes />
+        </Box>
       </Stack>
-      <WelcomeBoxes />
+      <Stack flexDirection={"row"} justifyContent={"space-between"} alignItems={"center"} flex={1} p={4} mt={10} shadow={"xl"} border={"1px solid"} borderColor={useColorModeValue("gray.800", "gray.500")} borderRadius={10}>
+        <Text fontSize={"xl"} mb={"0 !important"}>
+          Checkout an example import experience{" "}
+        </Text>
+        <Button variants={["primary"]}>Try out our Importer Demo</Button>
+      </Stack>
     </Container>
   );
 }
