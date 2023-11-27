@@ -10,7 +10,6 @@ import {
   DrawerContent,
   Flex,
   FlexProps,
-  Heading,
   IconButton,
   Text,
   useColorModeValue,
@@ -38,7 +37,7 @@ const LinkItems: Array<LinkItemProps> = [
 ];
 
 export default function Sidebar() {
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { isOpen, onClose } = useDisclosure();
 
   return (
     <Box minH="100vh" bg={useColorModeValue("gray.100", "gray.900")}>
@@ -48,7 +47,6 @@ export default function Sidebar() {
           <SidebarContent onClose={onClose} />
         </DrawerContent>
       </Drawer>
-      <MobileNav display={{ base: "flex", md: "none" }} onOpen={onOpen} />
     </Box>
   );
 }
@@ -195,28 +193,6 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
           </>
         )}
       </Flex>
-    </Flex>
-  );
-};
-
-interface MobileProps extends FlexProps {
-  onOpen: () => void;
-}
-const MobileNav = ({ onOpen, ...rest }: MobileProps) => {
-  return (
-    <Flex
-      ml={{ base: 0, md: 60 }}
-      px={{ base: 4, md: 24 }}
-      height="20"
-      alignItems="center"
-      bg={useColorModeValue("white", "gray.900")}
-      borderBottomWidth="1px"
-      borderBottomColor={useColorModeValue("gray.200", "gray.700")}
-      justifyContent="flex-start"
-      {...rest}>
-      <IconButton variant="outline" onClick={onOpen} aria-label="open menu" icon={<FiMenu />} />
-
-      <Tableflow color />
     </Flex>
   );
 };

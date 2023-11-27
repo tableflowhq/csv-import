@@ -48,12 +48,15 @@ export default function NavItem({ icon, title, name, navSize, url, isSelected, i
           sx={styles.link}
           onClick={() => {
             if (onClick) {
-                onClick();
-              }
-            if (url && !isExternalLink) {
-              navigate(url);
+              onClick();
             } else {
-              window.open(url, "_blank");
+              if (url) {
+                if (!isExternalLink) {
+                  navigate(url);
+                } else {
+                  window.open(url, "_blank");
+                }
+              }
             }
           }}>
           <MenuButton w="100%">

@@ -2,8 +2,12 @@ import { Box, Container, createIcon, Flex, Heading, Icon, IconButton, IconProps,
 import Button from "../../components/Button";
 import { typedSxMap } from "../../utils/typedSxMap";
 import WelcomeBoxes from "./components/WelcomeBoxes";
+import { ModalVideo } from "./components/ModalVideo";
+import { useState } from "react";
 
 export default function Welcome() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const styles = typedSxMap({
     container: {
       maxW: "7xl",
@@ -18,6 +22,8 @@ export default function Welcome() {
     },
   });
   return (
+    <>
+    {isModalOpen && <ModalVideo isOpen={isModalOpen} setClose={() => setIsModalOpen(false) } />}
     <Container sx={styles.container}>
       <Heading lineHeight={1.1} fontWeight={600} fontSize={{ base: "2xl", sm: "4xl", lg: "5xl" }}>
         <Text as={"span"} position={"relative"}>
@@ -47,6 +53,7 @@ export default function Welcome() {
               left={"50%"}
               top={"50%"}
               transform={"translateX(-50%) translateY(-50%)"}
+              onClick={() => setIsModalOpen(true) }
             />
             <Image
               alt={"Hero Image"}
@@ -70,7 +77,9 @@ export default function Welcome() {
         </Text>
         <Button variants={["primary"]}>Try out our Importer Demo</Button>
       </Stack>
+      
     </Container>
+    </>
   );
 }
 
