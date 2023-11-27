@@ -2,16 +2,13 @@ import { useContext, useEffect, useState } from "react";
 import { IconType } from "react-icons";
 import { useLocation } from "react-router";
 import {
-  Avatar,
   Box,
   BoxProps,
   Divider,
   Drawer,
   DrawerContent,
   Flex,
-  FlexProps,
   IconButton,
-  Text,
   useColorModeValue,
   useDisclosure,
 } from "@chakra-ui/react";
@@ -21,8 +18,8 @@ import { AuthContext } from "../../providers/Auth";
 import useLocalStorage from "../../hooks/useLocalStorage";
 import { typedSxMap } from "../../utils/typedSxMap";
 import NavItem from "./components/NavItem";
-import { FiChevronsLeft, FiChevronsRight, FiCompass, FiDatabase, FiHelpCircle, FiHome, FiMenu, FiSettings, FiTrendingUp } from "react-icons/fi";
-import { LuLogOut, LuUser2 } from "react-icons/lu";
+import { FiChevronsLeft, FiChevronsRight, FiCompass, FiDatabase, FiHelpCircle, FiHome, FiSettings, FiTrendingUp } from "react-icons/fi";
+import { LuLogOut } from "react-icons/lu";
 
 interface LinkItemProps {
   name: string;
@@ -170,7 +167,7 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
       <Flex sx={styles.bottomMenuContainer}>
         <Divider sx={styles.divider} />
         <Box sx={styles.themeToggleBox}>
-          <ThemeToggle />
+          <ThemeToggle small={isCollapsed} />
         </Box>
 
         {sessionExists && verified && (
@@ -183,12 +180,6 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
         {sessionExists && showProfile && (
           <>
             <NavItem navSize={navSize} icon={FiDatabase} title="Billing" name="billing" url="/billing" isSelected={urlPage.includes("billing")} />
-            <Flex align="center">
-              <Avatar size="sm" sx={styles.avatar} icon={<LuUser2 />} />
-              <Flex flexDir="column" ml={1} display={navSize === "small" ? "none" : "flex"}>
-                <Text>user@tableflow.com</Text>
-              </Flex>
-            </Flex>
             <NavItem navSize={navSize} icon={LuLogOut} title="Logout" name="logout" onClick={() => onLogout()} />
           </>
         )}
