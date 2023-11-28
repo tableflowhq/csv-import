@@ -3,10 +3,21 @@ import Button from "../../components/Button";
 import { typedSxMap } from "../../utils/typedSxMap";
 import WelcomeBoxes from "./components/WelcomeBoxes";
 import { ModalVideo } from "./components/ModalVideo";
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
+import { useNavigate } from "react-router";
+import { AuthContext } from "../../providers/Auth";
 
 export default function Welcome() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const navigate = useNavigate();
+  const sessionContext = useContext(AuthContext);
+  const { showProfile } = sessionContext;
+
+  useEffect(() => {
+    if (!showProfile) {
+      navigate("/importers");
+    }
+  }, [showProfile, navigate]);
 
   const styles = typedSxMap({
     container: {

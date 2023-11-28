@@ -28,7 +28,6 @@ interface LinkItemProps {
   url: string;
 }
 const LinkItems: Array<LinkItemProps> = [
-  { name: "getting", label: "Getting started", icon: FiHome, url: "/welcome" },
   { name: "importers", label: "Importers", icon: FiTrendingUp, url: "/importers" },
   { name: "data", label: "Data", icon: FiCompass, url: "/data" },
 ];
@@ -70,7 +69,6 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
   };
 
   async function onLogout() {
-    console.log("Logout");
     signOut && signOut();
   }
 
@@ -150,6 +148,10 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
             }}
           />
         </Flex>
+
+        {sessionExists && showProfile && (
+          <NavItem navSize={navSize} icon={FiHome} title="Getting started" name="getting" url= "/getting-started" isSelected={urlPage.includes("getting")} />
+        )}
 
         {LinkItems.map((link) => (
           <NavItem
