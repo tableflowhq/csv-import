@@ -38,7 +38,11 @@ func APIKeyAuthMiddleware(isAuthorized func(c *gin.Context, apiKey string) bool)
 }
 
 // tusFileHandler TODO: Break this out into its own service eventually
-func tusFileHandler(uploadAdditionalStorageHandler func(*model.Upload, *os.File) error, uploadLimitCheck func(*model.Upload, *os.File) (int, error), getAllowedValidateTypes func(string) map[string]bool) *handler.UnroutedHandler {
+func tusFileHandler(uploadAdditionalStorageHandler func(*model.Upload, *os.File) error,
+	uploadLimitCheck func(*model.Upload, *os.File) (int, error),
+	uploadChunkHandler func(upload *model.Upload, chunk [][]string, isLastChunk bool),
+	getAllowedValidateTypes func(string) map[string]bool) *handler.UnroutedHandler {
+
 	store := filestore.FileStore{
 		Path: file.TempUploadsDirectory,
 	}
@@ -62,7 +66,7 @@ func tusFileHandler(uploadAdditionalStorageHandler func(*model.Upload, *os.File)
 
 			util.SafeGo(func() {
 				// TODO: Implement a recover function that updates the upload error
-				file.UploadCompleteHandler(event, uploadAdditionalStorageHandler, uploadLimitCheck, getAllowedValidateTypes)
+				file.UploadCompleteHandler(event, uploadAdditionalStorageHandler, uploadLimitCheck, uploadChunkHandler, getAllowedValidateTypes)
 			}, "tus_id", event.Upload.ID)
 		}
 	}()

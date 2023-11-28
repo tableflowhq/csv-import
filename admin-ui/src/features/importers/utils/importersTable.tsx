@@ -1,10 +1,13 @@
 import { Link } from "react-router-dom";
-import { Dialog, Icon, timeToText } from "@tableflow/ui-library";
-import { DialogItem } from "@tableflow/ui-library/build/Dialog/types";
-import { EntityId, Update } from "@tableflow/ui-library/build/hooks/useEntitySelection";
-import { TableData } from "@tableflow/ui-library/build/Table/types";
+import Dialog from "../../../components/Dialog";
+import { DialogItem } from "../../../components/Dialog/types";
+import { TableData } from "../../../components/Table/types";
 import { Importer } from "../../../api/types";
+import { EntityId, Update } from "../../../hooks/useEntitySelection";
+import { colors, sizes } from "../../../settings/theme";
+import { timeToText } from "../../../utils/time";
 import style from "../style/Importers.module.scss";
+import { PiCube } from "react-icons/pi";
 
 export function importersTable(importers: Importer[] = [], update: Update): TableData {
   const actionMenu: DialogItem[] = [
@@ -19,7 +22,8 @@ export function importersTable(importers: Importer[] = [], update: Update): Tabl
         raw: importer.name,
         content: (
           <div className={style.tableName}>
-            <Icon icon="cube" size="m" />
+            <PiCube size={sizes.icon.large} color={colors.primary} />
+            {/*<PiCube className={style.importerIcon} size={24} />*/}
             <Link to={`/importers/${importer.id}/template`}>{importer.name}</Link>
           </div>
         ),

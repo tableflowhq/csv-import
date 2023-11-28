@@ -1,11 +1,13 @@
 import { useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Dialog, Tableflow } from "@tableflow/ui-library";
-import { DialogItem } from "@tableflow/ui-library/build/Dialog/types";
+import Dialog from "../../components/Dialog";
+import { DialogItem } from "../../components/Dialog/types";
+import Tableflow from "../../components/Tableflow";
 import ThemeToggle from "../../components/ThemeToggle";
 import { AuthContext } from "../../providers/Auth";
 import MainMenu from "./components/MainMenu";
 import style from "./style/TopBar.module.scss";
+import { PiGear, PiQuestion, PiSignOut, PiUser, PiWallet } from "react-icons/pi";
 
 export default function TopBar() {
   const sessionContext = useContext(AuthContext);
@@ -23,7 +25,7 @@ export default function TopBar() {
           {
             children: "Docs",
             onClick: () => window.open("https://tableflow.com/docs", "_blank"),
-            icon: "help",
+            icon: <PiQuestion size={18} />,
             iconPosition: "left",
           } as DialogItem,
         ]
@@ -33,7 +35,7 @@ export default function TopBar() {
           {
             children: "Settings",
             onClick: () => navigate("/settings"),
-            icon: "gear",
+            icon: <PiGear size={18} />,
             iconPosition: "left",
           } as DialogItem,
         ]
@@ -43,7 +45,7 @@ export default function TopBar() {
           {
             children: "Billing",
             onClick: () => navigate("/billing"),
-            icon: "database",
+            icon: <PiWallet size={18} />,
             iconPosition: "left",
           } as DialogItem,
         ]
@@ -53,7 +55,7 @@ export default function TopBar() {
           {
             children: "Log out",
             onClick: () => onLogout(),
-            icon: "logOut",
+            icon: <PiSignOut size={18} />,
             iconPosition: "left",
           } as DialogItem,
         ]
@@ -73,7 +75,7 @@ export default function TopBar() {
 
         <ThemeToggle />
 
-        {sessionExists && verified && <Dialog items={userMenu} icon="userSimple" variants={["tertiary", "small"]} className={style.profileButton} />}
+        {sessionExists && verified && <Dialog items={userMenu} icon={<PiUser />} variants={["tertiary", "small"]} className={style.profileButton} />}
       </div>
     </div>
   );

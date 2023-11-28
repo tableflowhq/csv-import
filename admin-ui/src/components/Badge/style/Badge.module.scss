@@ -1,0 +1,40 @@
+.badge {
+    font-family: var(--font-family-2);
+    border: 1.5px solid var(--color-text);
+    padding: var(--m-xxxxs) var(--m-xxs);
+    border-radius: 5rem;
+    display: inline-block;
+    background-color: var(--color-background-modal);
+    line-height: 1.1;
+    font-weight: 500;
+    font-size: var(--font-size-xs);
+
+    &.highlight {
+        border-color: var(--blue-light-500);
+        color: var(--blue-light-500);
+    }
+
+    &.success {
+        border-color: var(--color-green-ui);
+        color: var(--color-green-ui);
+    }
+
+    &.deep {
+        background-color: var(--color-background);
+        border: none;
+        font-weight: inherit;
+    }
+
+    &.circle {
+        display: inline-flex;
+        align-items: center;
+        padding: var(--m-xxxs);
+        border-radius: 50%;
+        aspect-ratio: 1;
+        position: relative;
+        font-weight: bold;
+        font-size: var(--font-size-xs);
+        line-height: 0;
+        color: currentColor;
+    }
+}

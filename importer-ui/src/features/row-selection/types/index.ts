@@ -4,6 +4,6 @@ export type RowSelectionProps = {
   upload?: Upload;
   onSuccess: (upload: any) => void;
   onCancel: () => void;
-  selectedHeaderRow: number;
+  selectedHeaderRow: number | null;
   setSelectedHeaderRow: (id: number) => void;
 };

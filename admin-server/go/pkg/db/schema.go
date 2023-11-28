@@ -48,6 +48,7 @@ func CreateObjectsForNewUser(user *model.User) (workspaceID, organizationID stri
 			DataType:          model.TemplateColumnDataTypeString,
 			Description:       null.StringFrom("The user's first name"),
 			SuggestedMappings: []string{"first"},
+			Index:             null.IntFrom(0),
 			CreatedBy:         user.ID,
 			UpdatedBy:         user.ID,
 		},
@@ -60,6 +61,7 @@ func CreateObjectsForNewUser(user *model.User) (workspaceID, organizationID stri
 			DataType:          model.TemplateColumnDataTypeString,
 			Description:       null.StringFrom("The user's last name"),
 			SuggestedMappings: []string{"last"},
+			Index:             null.IntFrom(1),
 			CreatedBy:         user.ID,
 			UpdatedBy:         user.ID,
 		},
@@ -71,6 +73,7 @@ func CreateObjectsForNewUser(user *model.User) (workspaceID, organizationID stri
 			Required:    true,
 			DataType:    model.TemplateColumnDataTypeString,
 			Description: null.StringFrom("The email of the user"),
+			Index:       null.IntFrom(2),
 			CreatedBy:   user.ID,
 			UpdatedBy:   user.ID,
 		},
@@ -223,6 +226,7 @@ func GetDatabaseSchemaInitSQL() string {
 		    name        text                     not null,
 		    key         text                     not null,
 		    required    bool                     not null default false,
+		    index       int                      not null, -- The 0-based position of the column
 		    created_by  uuid                     not null,
 		    created_at  timestamp with time zone not null,
 		    updated_by  uuid                     not null,
@@ -252,6 +256,7 @@ func GetDatabaseSchemaInitSQL() string {
 		    is_stored      bool             not null default false,       -- Have all the records been stored?
 		    error          text,
 		    created_at     timestamptz      not null default now(),
+            updated_at     timestamptz      not null default now(),
 		    constraint fk_importer_id
 		        foreign key (importer_id)
 		            references importers(id),
@@ -294,6 +299,7 @@ func GetDatabaseSchemaInitSQL() string {
 		    metadata             jsonb            not null default '{}'::jsonb, -- Optional custom data the client can send from the SDK, i.e. their user ID
 		    is_stored            bool             not null default false,       -- Have all the records been stored?
 		    created_at           timestamptz      not null default now(),
+		    updated_at           timestamptz      not null default now(),
 		    constraint fk_upload_id
 		        foreign key (upload_id)
 		            references uploads(id),
@@ -410,5 +416,78 @@ func GetDatabaseSchemaInitSQL() string {
 
 		alter table uploads
 		    add column if not exists sheet_list text[];
+
+		do
+		$$
+			begin
+				if not exists (select
+				               from information_schema.columns
+				               where table_name = 'uploads' and column_name = 'updated_at')
+				then
+					alter table uploads
+						add column updated_at timestamptz;
+		
+					update uploads set updated_at = created_at where updated_at is null;
+		
+					alter table uploads
+						alter column updated_at set default now();
+					alter table uploads
+						alter column updated_at set not null;
+				end if;
+			end
+		$$;
+
+		do
+		$$
+			begin
+				if not exists (select
+				               from information_schema.columns
+				               where table_name = 'imports' and column_name = 'updated_at')
+				then
+					alter table imports
+						add column updated_at timestamptz;
+		
+					update imports set updated_at = created_at where updated_at is null;
+		
+					alter table imports
+						alter column updated_at set default now();
+					alter table imports
+						alter column updated_at set not null;
+				end if;
+			end
+		$$;
+
+		alter table uploads
+		    add column if not exists matched_header_row_index integer;
+
+		do
+		$$
+			declare
+				column_exists boolean;
+				r             record;
+			begin
+				select exists (select
+				               from information_schema.columns
+				               where table_name = 'template_columns' and column_name = 'index')
+				into column_exists;
+		
+				-- If the index column does not exist, add it and perform the update
+				if not column_exists
+				then
+					alter table template_columns
+						add column index integer;
+		
+					for r in select template_id from template_columns where deleted_at is null group by template_id
+						loop
+							update template_columns
+							set index = rn - 1
+							from (select id, row_number() over (order by created_at) as rn
+							      from template_columns
+							      where template_id = r.template_id and deleted_at is null) as sub
+							where template_columns.id = sub.id;
+						end loop;
+				end if;
+			end
+		$$;
 	`
 }

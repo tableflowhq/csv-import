@@ -1,24 +1,23 @@
 import { useMemo } from "react";
-import {
-  Box,
-  Button,
-  collectionCountLabel,
-  Input,
-  Modal,
-  Pagination,
-  Table,
-  useEntitySelection,
-  useFilter,
-  useSyncPagination,
-} from "@tableflow/ui-library";
+import Box from "../../components/Box";
+import Button from "../../components/Button";
+import Input from "../../components/Input";
+import Modal from "../../components/Modal";
+import Pagination from "../../components/Pagination";
+import useSyncPagination from "../../components/Pagination/hooks/useSyncPagination";
+import Table from "../../components/Table";
 import ImporterForm from "../forms/Importer";
 import ImporterDelete from "../forms/Importer/ImporterDelete";
 import { Importer } from "../../api/types";
 import useGetImporters from "../../api/useGetImporters";
 import useGetOrganization from "../../api/useGetOrganization";
+import useEntitySelection from "../../hooks/useEntitySelection";
+import useFilter from "../../hooks/useFilter";
 import useComponentsStore from "../../stores/componentsStore";
+import collectionCountLabel from "../../utils/collectionCountLabel";
 import { importersTable } from "./utils/importersTable";
 import style from "./style/Importers.module.scss";
+import { PiMagnifyingGlassBold } from "react-icons/pi";
 
 export default function Importers() {
   const { data: organization } = useGetOrganization();
@@ -57,7 +56,7 @@ export default function Importers() {
 
   const { dataFiltered, setFilter } = useFilter<Importer[]>(["name"], importers || []);
 
-  const itemsPerPage = 10;
+  const itemsPerPage = 20;
   const { dataPage, page, paginate, totalItems } = useSyncPagination(dataFiltered as any, itemsPerPage);
 
   // Data to table format
@@ -83,7 +82,7 @@ export default function Importers() {
                   "importers",
                   importers?.length || 0,
                   "No",
-                  "importers found in",
+                  `importer${dataFiltered.length === 1 ? "" : "s"} found from`,
                   dataFiltered.length
                 )}
               </small>
@@ -91,7 +90,13 @@ export default function Importers() {
           </div>
 
           <div className={style.actions}>
-            <Input icon="search" type="search" className={style.searchInput} placeholder="Search" onChange={(e: any) => setFilter(e.target.value)} />
+            <Input
+              icon={<PiMagnifyingGlassBold />}
+              type="search"
+              className={style.searchInput}
+              placeholder="Search"
+              onChange={(e: any) => setFilter(e.target.value)}
+            />
             <Button variants={["primary"]} tabIndex={-1} onClick={() => modal.setOpen(true)}>
               Create New
             </Button>

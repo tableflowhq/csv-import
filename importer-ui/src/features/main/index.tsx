@@ -20,7 +20,7 @@ import MapColumns from "../map-columns";
 import Review from "../review";
 import RowSelection from "../row-selection";
 import Uploader from "../uploader";
-import { PiArrowsClockwise, PiX } from "react-icons/pi";
+import { PiArrowCounterClockwise, PiX } from "react-icons/pi";
 
 const TUS_ENDPOINT = getAPIBaseURL("v1") + "files";
 
@@ -85,7 +85,7 @@ export default function Main() {
   const skipHeader = skipHeaderRowSelection != null ? !!skipHeaderRowSelection : importer.skip_header_row_selection;
 
   // Header row selection state
-  const [selectedHeaderRow, setSelectedHeaderRow] = useState<number>(0);
+  const [selectedHeaderRow, setSelectedHeaderRow] = useState<number | null>(null);
   const [uploadFromHeaderRowSelection, setUploadFromHeaderRowSelection] = useState<any | null>(null);
   const [columnsOrder, setColumnsOrder] = useState<ColumnsOrder>();
 
@@ -131,6 +131,7 @@ export default function Main() {
     if (isUploadSuccess) {
       if (currentStep === StepEnum.MapColumns) {
         setUploadFromHeaderRowSelection(upload);
+        setSelectedHeaderRow(upload?.header_row_index);
         setStep(currentStep);
       } else {
         goNext();
@@ -255,7 +256,7 @@ export default function Main() {
             onCancel={skipHeader ? reload : () => goBack(StepEnum.RowSelection)}
             schemaless={schemaless}
             schemalessReadOnly={schemalessReadOnly}
-            seColumnsValues={seColumnsValues}
+            setColumnsValues={seColumnsValues}
             columnsValues={columnsValues}
             isLoading={reviewIsLoading || (!reviewIsStored && enabledReview)}
             onLoad={() => setEnabledReview(false)}
@@ -293,7 +294,7 @@ export default function Main() {
         <div className={style.status}>
           <div></div>
           <Errors error={uploadError.toString()} centered />
-          <Button onClick={reload} colorScheme="primary" leftIcon={<PiArrowsClockwise />}>
+          <Button onClick={reload} colorScheme="primary" leftIcon={<PiArrowCounterClockwise />}>
             Reload
           </Button>
         </div>

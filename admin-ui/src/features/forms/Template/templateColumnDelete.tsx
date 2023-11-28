@@ -1,8 +1,11 @@
 import { useEffect } from "react";
-import { Badge, Button, Icon } from "@tableflow/ui-library";
+import Badge from "../../../components/Badge";
+import Button from "../../../components/Button";
 import useDeleteTemplateColumn from "../../../api/useDeleteTemplateColumn";
+import { sizes } from "../../../settings/theme";
 import { TemplateDeleteProps } from "../types";
 import style from "../style/DeleteConfirmation.module.scss";
+import { PiTrash } from "react-icons/pi";
 
 export default function TemplateColumnDelete({ column, onSuccess = () => null, context }: TemplateDeleteProps) {
   const { mutate, isLoading, isSuccess } = useDeleteTemplateColumn(context?.templateId);
@@ -20,7 +23,7 @@ export default function TemplateColumnDelete({ column, onSuccess = () => null, c
     <>
       <div className={style.top}>
         <div className={style.icon}>
-          <Icon icon="trash" size="m" className={style.iconRed} />
+          <PiTrash className={style.iconRed} size={sizes.icon.large} />
         </div>
         <div className={style.texts}>
           <h3>Delete Column</h3>

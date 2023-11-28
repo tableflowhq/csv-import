@@ -1,7 +1,7 @@
 import { useParams } from "react-router";
-import { Frame } from "@tableflow/ui-library";
 import Error404 from "../../404";
 import useGetImporter from "../../../api/useGetImporter";
+import Frame from "../../layouts/frame";
 import ImporterPage from "..";
 
 export default function ImporterBase() {

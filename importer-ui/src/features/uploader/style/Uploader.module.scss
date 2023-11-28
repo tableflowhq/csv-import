@@ -18,11 +18,6 @@
   display: flex;
   flex-direction: column;
   gap: var(--m-s);
-
-  svg {
-    height: var(--font-size-xl);
-    width: var(--font-size-xl);
-  }
 }
 
 .tableContainer {
@@ -37,9 +32,4 @@
   .tbody {
     overflow: auto;
   }
-}
-
-svg {
-    height: 18px;
-    width: 18px;
 }

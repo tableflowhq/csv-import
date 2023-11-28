@@ -1,6 +1,7 @@
-import { InputProps } from "@tableflow/ui-library/build/Input/types";
+import { InputProps } from "../../Input/types";
 
-export type ListManagerProps = Omit<InputProps, "onChange"> & {
+export type ListManagerProps = Omit<InputProps, "onChange" | "icon"> & {
   formStyle?: string;
   onChange: (value: string[]) => void;
+  icon?: React.ReactElement;
 };

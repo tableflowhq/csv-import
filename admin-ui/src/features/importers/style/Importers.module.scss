@@ -52,18 +52,23 @@
     &.select svg path {
       stroke: var(--color-primary);
     }
+
     &.insert svg path {
       stroke: var(--color-green);
     }
+
     &.update svg {
       transform: rotate(90deg);
+
       path {
         stroke: var(--color-yellow);
       }
     }
+
     &.delete svg path {
       stroke: var(--color-red);
     }
+
     &.database svg path {
       stroke: var(--color-text);
     }
@@ -113,4 +118,8 @@
   display: flex;
   align-items: center;
   gap: var(--m-xs);
+}
+
+.importerIcon {
+  color: var(--color-primary);
 }

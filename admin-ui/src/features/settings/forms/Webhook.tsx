@@ -1,8 +1,11 @@
 import { useForm } from "@mantine/form";
-import { Button, Errors, Input } from "@tableflow/ui-library";
+import Button from "../../../components/Button";
+import Errors from "../../../components/Errors";
+import Input from "../../../components/Input";
 import { Importer } from "../../../api/types";
 import usePostImporter from "../../../api/usePostImporter";
 import style from "../style/Form.module.scss";
+import { PiBell } from "react-icons/pi";
 
 export default function Webhook({ importer }: { importer: Importer }) {
   const form = useForm({
@@ -21,7 +24,7 @@ export default function Webhook({ importer }: { importer: Importer }) {
   return (
     <>
       <form onSubmit={form.onSubmit(onSubmit)} className={style.form}>
-        <Input placeholder="https://" name="webhook_url" {...form.getInputProps("webhook_url")} icon="bell" required />
+        <Input placeholder="https://" name="webhook_url" {...form.getInputProps("webhook_url")} icon={<PiBell />} required />
         <Button variants={["primary"]} disabled={isLoading}>
           Save
         </Button>

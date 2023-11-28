@@ -1,0 +1,108 @@
+@import "./mixins.scss";
+
+.container {
+  margin-bottom: var(--m);
+  text-align: left;
+
+  &:only-child {
+    margin: var(--m-xxs) 0;
+  }
+
+  .label {
+    display: inline-block;
+    margin-bottom: var(--m-xxs);
+    cursor: pointer;
+    line-height: 1;
+    font-weight: 500;
+    font-family: var(--font-family-1);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .inputWrapper {
+    background-color: var(--color-input-background);
+    border-radius: var(--border-radius-2);
+    outline: 1px solid transparent;
+    padding: var(--m-xxxs);
+    border: 1px solid var(--color-border);
+    font-weight: 400;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    width: 100%;
+    min-height: 60px;
+    align-content: flex-start;
+    position: relative;
+
+    &:focus-within {
+      outline-color: var(--color-text);
+      z-index: 1;
+    }
+
+    &.hasError {
+      border-color: var(--color-text-error);
+    }
+
+    input,
+    textarea {
+      -webkit-tap-highlight-color: transparent;
+      appearance: none;
+      resize: none;
+      display: block;
+      padding: calc(var(--m-xxs) / 2);
+      border: none;
+      background-color: transparent;
+      min-width: 30px;
+      color: var(--color-text);
+
+      &:focus {
+        outline: none;
+      }
+
+      &::placeholder {
+        color: var(--color-text-soft);
+      }
+    }
+
+    .pill {
+      background-color: var(--color-input-background);
+      border-radius: var(--border-radius-2);
+      padding: 1px 6px;
+      border: 1px solid var(--color-border);
+      color: var(--color-text);
+      display: flex;
+      align-items: center;
+      margin: 2px 2px;
+
+      &first-child {
+        margin-left: 0;
+      }
+
+      span {
+        cursor: pointer;
+        margin-left: 2px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        &:hover {
+          border-color: var(--color-border);
+        }
+      }
+    }
+  }
+}
+
+.icon {
+  & > svg {
+    transform: scale(0.6);
+  }
+}
+
+.error {
+  color: var(--color-text-error);
+  margin-top: var(--m-xxs);
+  line-height: 1;
+  font-weight: 400;
+}

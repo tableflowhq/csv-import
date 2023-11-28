@@ -1,0 +1,138 @@
+@import "../../style/mixins.scss";
+
+.container {
+  padding: var(--m-xxs);
+  font-weight: 400;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--m-xxs);
+  line-height: 1.2;
+  cursor: text;
+  position: relative;
+  isolation: isolate;
+  min-height: 140px;
+  min-width: 340px;
+  align-content: flex-start;
+  text-align: left;
+
+  .backDrop {
+    background-color: var(--color-input-background);
+    border-radius: var(--border-radius-2);
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border: 1px solid var(--color-border);
+    box-shadow: 0px 1px 2px var(--color-bisel);
+  }
+
+  &:hover {
+    .backDrop {
+      border-color: var(--color-text-soft);
+    }
+  }
+
+  &:focus-within {
+    .backDrop {
+      border-color: var(--color-primary);
+    }
+  }
+
+  .tag,
+  & > input {
+    display: inline-flex;
+    align-self: flex-start;
+  }
+
+  .tag {
+    padding: var(--m-xxxs);
+    border: 1px solid var(--color-border);
+    gap: var(--m-xxxs);
+    border-radius: var(--border-radius-2);
+    align-items: center;
+
+    &:focus-within {
+      background-color: var(--color-input-background-soft);
+    }
+
+    & > .input {
+      border: none;
+      padding: 0;
+      background-color: transparent;
+      display: inline;
+      outline: none;
+    }
+
+    &.hasError {
+      border-color: var(--color-error);
+    }
+
+    button {
+      border: 1px solid transparent;
+      background-color: transparent;
+      cursor: pointer;
+      display: flex;
+      border-radius: var(--border-radius-r);
+      width: 1.2rem;
+      height: 1.2rem;
+      flex-basis: 1.2rem;
+      align-items: center;
+      justify-content: center;
+
+      svg {
+        width: 8px;
+
+        path {
+          stroke: var(--color-text-soft);
+        }
+      }
+
+      &:hover {
+        border-color: var(--color-border);
+
+        svg {
+          transform: scale(1.1);
+
+          path {
+            stroke: var(--color-text);
+          }
+        }
+      }
+    }
+
+    &:hover {
+      border-color: var(--color-primary);
+    }
+  }
+
+  & > input {
+    background-color: transparent;
+    padding: 0;
+    border: none;
+    min-width: 220px;
+    padding: calc(var(--m-xxxs) + 2px) 0;
+
+    @include placeholder {
+      color: inherit;
+    }
+
+    &:focus {
+      outline: none;
+
+      @include placeholder {
+        color: var(--color-text-soft);
+      }
+    }
+  }
+}
+
+.error {
+  color: var(--color-text-error);
+  margin-top: var(--m-xxs);
+  line-height: 1.4;
+  font-weight: 400;
+  text-align: left;
+}
+
+.spacer {
+  margin-bottom: var(--m-mm);
+}

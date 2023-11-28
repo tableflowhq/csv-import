@@ -1,5 +1,4 @@
-import React from "react";
-import { Box } from "@tableflow/ui-library";
+import Box from "../../components/Box";
 import { Importer } from "../../api/types";
 import useComponentsStore from "../../stores/componentsStore";
 import Domains from "./forms/Domains";

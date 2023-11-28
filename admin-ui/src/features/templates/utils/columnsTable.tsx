@@ -1,8 +1,9 @@
-import { Badge, Dialog } from "@tableflow/ui-library";
-import { DialogItem } from "@tableflow/ui-library/build/Dialog/types";
-import { EntityId, Update } from "@tableflow/ui-library/build/hooks/useEntitySelection";
-import { TableData } from "@tableflow/ui-library/build/Table/types";
+import Badge from "../../../components/Badge";
+import Dialog from "../../../components/Dialog";
+import { DialogItem } from "../../../components/Dialog/types";
+import { TableData } from "../../../components/Table/types";
 import { TemplateColumn } from "../../../api/types";
+import { EntityId, Update } from "../../../hooks/useEntitySelection";
 
 export function columnsTable(columns: TemplateColumn[] = [], update: Update): TableData {
   const actionMenu: DialogItem[] = [
@@ -15,6 +16,7 @@ export function columnsTable(columns: TemplateColumn[] = [], update: Update): Ta
   return columns.map((column) => {
     return {
       id: column.id,
+      index: column.index,
       "Column Name": column.name,
       ...(hasDescription
         ? {

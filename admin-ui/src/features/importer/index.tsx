@@ -1,20 +1,29 @@
 import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
-import { Button, Icon, Tabs, useTabs, useThemeStore } from "@tableflow/ui-library";
+import Button from "../../components/Button";
+import Tabs from "../../components/Tabs";
+import useTabs from "../../components/Tabs/hooks/useTabs";
 import { defaultAppHost, getImporterURL } from "../../api/api";
+import { colors, sizes } from "../../settings/theme";
+import useThemeStore from "../../stores/useThemeStore";
 import notification from "../../utils/notification";
 import { ImporterViewProps } from "./types";
 import style from "./style/Importer.module.scss";
 import Code from "../code";
 import Settings from "../settings";
 import Templates from "../templates";
+import { PiArrowSquareOut, PiCopyBold, PiCubeBold } from "react-icons/pi";
 
 export default function ImporterPage({ importer }: ImporterViewProps) {
   const importerId = importer.id;
   const { importerTab } = useParams();
   const templateCount = importer?.template?.template_columns?.length;
   const tabs = useTabs(
-    { template: <>Template {!!templateCount && <small className={style.miniBadge}>{templateCount}</small>}</>, code: "Code", settings: "Settings" },
+    {
+      template: <>Template {!!templateCount && <small className={style.miniBadge}>{templateCount}</small>}</>,
+      code: "Code",
+      settings: "Settings",
+    },
     importerTab || "template"
   );
   const navigate = useNavigate();
@@ -48,13 +57,13 @@ export default function ImporterPage({ importer }: ImporterViewProps) {
             <div className={style.heading}>
               <div>
                 <div className={style.title}>
-                  <Icon icon="cube" size="m" className={style.icon} />
+                  <PiCubeBold size={sizes.icon.xlarge} color={colors.primary} />
                   <h1>{importer.name}</h1>
                 </div>
 
                 <div className={style.subTitle}>
                   <Button type="button" variants={["bare", "square"]} onClick={() => copyToClipboard(importer.id)} title="Copy to clipboard">
-                    <Icon icon="copy" size="s" className={style.iconFix} />
+                    <PiCopyBold size={20} color={colors.textSoft} />
                   </Button>
                   <small>{importer.id}</small>
                 </div>
@@ -62,7 +71,7 @@ export default function ImporterPage({ importer }: ImporterViewProps) {
             </div>
             <div>
               <Button
-                icon="share"
+                icon={<PiArrowSquareOut size={18} />}
                 type="button"
                 variants={theme === "light" ? [] : ["secondary"]}
                 onClick={() => window.open(importerPreviewURL, "_blank")}
