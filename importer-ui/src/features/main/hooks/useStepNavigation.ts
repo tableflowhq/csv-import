@@ -10,19 +10,19 @@ export const StepEnum = {
   Review: 3,
 };
 
-const calculateNextStep = (currentStep: number, skipHeader: boolean) => {
+const calculateNextStep = (nextStep: number, skipHeader: boolean) => {
   if (skipHeader) {
-    switch (currentStep) {
+    switch (nextStep) {
       case StepEnum.Upload:
       case StepEnum.RowSelection:
         return StepEnum.MapColumns;
       case StepEnum.MapColumns:
         return StepEnum.Review;
       default:
-        return currentStep;
+        return nextStep;
     }
   }
-  return currentStep;
+  return nextStep;
 };
 
 const getStepConfig = (skipHeader: boolean) => {
