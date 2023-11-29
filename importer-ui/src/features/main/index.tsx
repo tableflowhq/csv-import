@@ -164,6 +164,9 @@ export default function Main() {
     };
     postMessage(message);
     // TODO: If waitOnComplete and in the last stage of the import, should we setTusId("") to reset the importer here?
+    if (!waitOnComplete) {
+      setTusId("");
+    }
   };
 
   const handleComplete = (data: any) => {
@@ -175,7 +178,6 @@ export default function Main() {
       };
       postMessage(message);
     }
-    setTusId("");
   };
 
   const handleCancelReview = () => {
