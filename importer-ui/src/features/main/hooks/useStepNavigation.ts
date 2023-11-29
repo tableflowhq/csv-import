@@ -68,6 +68,7 @@ function useStepNavigation(initialStep: number, skipHeader: boolean, importerId:
     goNext,
     stepper,
     stepId: stepper?.step?.id,
+    setStorageStep,
   };
 }
 

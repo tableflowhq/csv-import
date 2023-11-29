@@ -158,6 +158,10 @@ export default function Review({ onCancel, onComplete, waitOnComplete, upload, t
     mutate({ uploadId: uploadId });
   };
 
+  const handleImportAlreadySubmitted = () => {
+    reload();
+  };
+
   if (isSubmitCompleted && !waitOnComplete) {
     return <Complete reload={reload} close={close} upload={upload} showImportLoadingStatus={false} />;
   }
@@ -178,6 +182,7 @@ export default function Review({ onCancel, onComplete, waitOnComplete, upload, t
             filter={filter.current}
             disabled={isSubmitting || waitOnCompleteLoading}
             upload={upload}
+            onImportAlreadySubmitted={handleImportAlreadySubmitted}
           />
         </div>
         <div className={style.actions}>

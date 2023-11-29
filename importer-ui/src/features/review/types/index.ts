@@ -23,6 +23,7 @@ export type TableProps = {
   columnsOrder?: ColumnsOrder;
   disabled: boolean;
   upload: Upload;
+  onImportAlreadySubmitted: () => void;
 };
 
 export interface ColumnsOrder {

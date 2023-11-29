@@ -15,7 +15,7 @@ import { PiInfo } from "react-icons/pi";
 const INDEX_ROW_WIDTH = 70;
 const MAX_COLUMN_SCROLL = 7;
 
-function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged, columnsOrder, disabled, upload }: TableProps) {
+function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged, columnsOrder, disabled, upload, onImportAlreadySubmitted }: TableProps) {
   const customSelectClass = "ag-theme-alpine-dark-custom-select";
   const paginatedDataRef: any = useRef();
   const filterRef: any = useRef(filter);
@@ -62,11 +62,16 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
     const dataSource: IDatasource = {
       rowCount: paginatedData?.pagination?.total || undefined,
       getRows: async (params: any) => {
+        try {
         const previousData = paginatedDataRef.current || {};
         const nextOffset = previousData?.pagination?.next_offset || 0;
 
         // gets the paginated data
         const newData = await fetchRows(uploadId, filterRef.current, 100, nextOffset);
+        if (!newData) {
+          console.error("Error fetching data");
+          return;
+        }
         const firstColumnsKeys = Object.keys(newData?.rows[0]?.values || {});
         setColumnsSelected([...firstColumnsKeys]);
         const tableData = addEmptyRows(newData);
@@ -79,6 +84,11 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
         }
         params.successCallback(rowThisPage, lastRow);
         setPaginatedData({ ...tableData });
+      } catch (error) {
+        if (error === "Import is already submitted") {
+          onImportAlreadySubmitted();
+        }
+      }
       },
     };
     gridRef.current?.setDatasource?.(dataSource);
