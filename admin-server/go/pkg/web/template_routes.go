@@ -502,6 +502,21 @@ func deleteTemplateColumn(c *gin.Context, getWorkspaceUser func(*gin.Context, st
 		return tc.ID.Equals(templateColumn.ID)
 	})
 	template.TemplateColumns = append(template.TemplateColumns[:i], template.TemplateColumns[i+1:]...)
+
+	// Adjust the indexes of the remaining template columns
+	sort.SliceStable(template.TemplateColumns, func(i, j int) bool {
+		return template.TemplateColumns[i].Index.Int64 < template.TemplateColumns[j].Index.Int64
+	})
+	for j := range template.TemplateColumns {
+		template.TemplateColumns[j].Index = null.IntFrom(int64(j))
+	}
+	err = db.UpdateTemplateColumnIndexes(template)
+	if err != nil {
+		tf.Log.Errorw("Could not update template columns in database to adjust index order during deletion", "error", err, "template_id", template.ID)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, types.Res{Err: err.Error()})
+		return
+	}
+
 	c.JSON(http.StatusOK, template)
 }
 
