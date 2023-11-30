@@ -45,6 +45,7 @@ export default function ApiKey({ workspaceId }: { workspaceId: string }) {
             <a href="https://tableflow.com/docs/api-reference/get-import-rows" target="_blank">
               here
             </a>
+            .
           </small>
         </div>
       </div>
