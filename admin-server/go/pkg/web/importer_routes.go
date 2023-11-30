@@ -1,17 +1,13 @@
 package web
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/samber/lo"
 	"gorm.io/gorm"
 	"net/http"
-	"strings"
 	"tableflow/go/pkg/db"
 	"tableflow/go/pkg/model"
 	"tableflow/go/pkg/tf"
 	"tableflow/go/pkg/types"
-	"tableflow/go/pkg/util"
 	"time"
 )
 
@@ -21,10 +17,8 @@ type ImporterCreateRequest struct {
 }
 
 type ImporterEditRequest struct {
-	Name                   *string   `json:"name" example:"Test Importer"`
-	AllowedDomains         *[]string `json:"allowed_domains" example:"example.com"`
-	WebhooksEnabled        *bool     `json:"webhooks_enabled" example:"true"`
-	SkipHeaderRowSelection *bool     `json:"skip_header_row_selection" example:"false"`
+	Name            *string `json:"name" example:"Test Importer"`
+	WebhooksEnabled *bool   `json:"webhooks_enabled" example:"true"`
 }
 
 // createImporter
@@ -181,28 +175,6 @@ func editImporter(c *gin.Context, getWorkspaceUser func(*gin.Context, string) (s
 	}
 	if req.WebhooksEnabled != nil && *req.WebhooksEnabled != importer.WebhooksEnabled {
 		importer.WebhooksEnabled = *req.WebhooksEnabled
-		save = true
-	}
-	if req.SkipHeaderRowSelection != nil && *req.SkipHeaderRowSelection != importer.SkipHeaderRowSelection {
-		importer.SkipHeaderRowSelection = *req.SkipHeaderRowSelection
-		save = true
-	}
-	if req.AllowedDomains != nil && !util.EqualContents(*req.AllowedDomains, importer.AllowedDomains) {
-		// Loosely validate the domains
-		invalidDomains := make([]string, 0)
-		for _, d := range *req.AllowedDomains {
-			if !util.IsValidDomain(d) {
-				invalidDomains = append(invalidDomains, d)
-			}
-		}
-		if len(invalidDomains) != 0 {
-			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{
-				Err: fmt.Sprintf("Invalid domain%s: %s - Domains must be in the format 'example.com' or 'www.example.com' and not complete URLs.",
-					lo.Ternary(len(invalidDomains) == 1, "", "s"), strings.Join(invalidDomains, ", ")),
-			})
-			return
-		}
-		importer.AllowedDomains = *req.AllowedDomains
 		save = true
 	}
 

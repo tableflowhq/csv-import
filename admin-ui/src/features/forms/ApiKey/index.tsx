@@ -6,7 +6,6 @@ import usePassword from "../../../components/Input/hooks/usePassword";
 import Modal from "../../../components/Modal";
 import useModal from "../../../components/Modal/hooks/useModal";
 import useApiKey from "../../../api/useApiKey";
-import useGetOrganization from "../../../api/useGetOrganization";
 import { sizes } from "../../../settings/theme";
 import classes from "../../../utils/classes";
 import notification from "../../../utils/notification";
@@ -14,15 +13,9 @@ import style from "../style/Form.module.scss";
 import ApiKeyConfirmation from "./ApiKeyConfirmation";
 import { PiCopy } from "react-icons/pi";
 
-export default function ApiKey() {
-  const { data: organization } = useGetOrganization();
-
-  const workspaceId = organization?.workspaces?.[0]?.id || "";
-
+export default function ApiKey({ workspaceId }: { workspaceId: string }) {
   const { data: apiKey, isLoading, error, update: updateApiKey } = useApiKey(workspaceId);
-
   const password = usePassword();
-
   const modal = useModal();
 
   const copyToClipboard = (text: string) => {
@@ -43,7 +36,7 @@ export default function ApiKey() {
   if (isLoading) return null;
 
   return (
-    <div className={style.apiKey}>
+    <div>
       <div className={style.header}>
         <div className={classes([style.title, style.smallInnerSpace])}>
           <h3>API Key</h3>
