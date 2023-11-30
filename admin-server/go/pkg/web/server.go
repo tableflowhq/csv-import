@@ -16,15 +16,15 @@ import (
 	"time"
 )
 
-//	@title						TableFlow File Import API
-//	@version					1.2
-//	@description				The backend file import API of the TableFlow application.
-//	@termsOfService				https://tableflow.com/terms
-//	@contact.name				TableFlow
-//	@contact.url				https://tableflow.com
-//	@contact.email				support@tableflow.com
-//	@host						localhost:3003
-//	@BasePath					/
+//	@title			TableFlow File Import API
+//	@version		1.2
+//	@description	The backend file import API of the TableFlow application.
+//	@termsOfService	https://tableflow.com/terms
+//	@contact.name	TableFlow
+//	@contact.url	https://tableflow.com
+//	@contact.email	support@tableflow.com
+//	@host			localhost:3003
+//	@BasePath		/
 
 const httpServerReadTimeout = 120 * time.Second
 const httpServerWriteTimeout = 120 * time.Second
