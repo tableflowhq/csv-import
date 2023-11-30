@@ -15,7 +15,7 @@ export default function Domains({ workspace }: { workspace?: Workspace }) {
         <div className={classes([style.title, style.smallInnerSpace])}>
           <h3>Allowed Domains</h3>
           <small>
-            Add domains to restrict where the importer can be hosted. If no domains are added, the importer will allow uploads from anywhere.
+            Add domains to restrict where your importers can be embedded. If no domains are added, your importers will work on any website.
           </small>
         </div>
       </div>
