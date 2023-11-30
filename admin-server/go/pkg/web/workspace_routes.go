@@ -55,7 +55,7 @@ func getWorkspace(c *gin.Context, getWorkspaceUser func(*gin.Context, string) (s
 //	@Success		200	{object}	model.Workspace
 //	@Failure		400	{object}	types.Res
 //	@Router			/admin/v1/workspace/{id} [post]
-//	@Param			id		path	string				true	"Workspace ID"
+//	@Param			id		path	string					true	"Workspace ID"
 //	@Param			body	body	WorkspaceEditRequest	true	"Request body"
 func editWorkspace(c *gin.Context, getWorkspaceUser func(*gin.Context, string) (string, error)) {
 	id := c.Param("id")
