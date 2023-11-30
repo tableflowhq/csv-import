@@ -66,7 +66,8 @@ func tusPatchFile(h *handler.UnroutedHandler) gin.HandlerFunc {
 //	@Tags			File Import
 //	@Success		200	{object}	types.Importer
 //	@Failure		400	{object}	types.Res
-//	@Router			/file-import/v1/importer [post]
+//	@Router			/file-import/v1/importer/{id} [post]
+//	@Param			id		path	string					true	"0"
 //	@Param			body	body	map[string]interface{}	false	"Request body"
 func importerGetImporter(c *gin.Context) {
 	// If schemaless mode is enabled, return an empty template
