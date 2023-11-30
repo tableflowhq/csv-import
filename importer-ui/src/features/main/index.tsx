@@ -277,6 +277,7 @@ export default function Main() {
             showImportLoadingStatus={showImportLoadingStatus}
             columnsOrder={columnsOrder}
             review={review}
+            schemaless={schemaless}
           />
         );
       default:

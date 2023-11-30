@@ -25,7 +25,18 @@ type FilterOptionCounts = {
   NumErrorRows: number;
 };
 
-export default function Review({ onCancel, onComplete, waitOnComplete, upload, template, review, reload, close, columnsOrder }: ReviewProps) {
+export default function Review({
+  onCancel,
+  onComplete,
+  waitOnComplete,
+  upload,
+  template,
+  review,
+  reload,
+  close,
+  columnsOrder,
+  schemaless,
+}: ReviewProps) {
   const uploadId = upload?.id;
   const filter = useRef<QueryFilter>("all");
   const [filterOptions, setFilterOptions] = useState<Option[]>(defaultOptions);
@@ -35,7 +46,6 @@ export default function Review({ onCancel, onComplete, waitOnComplete, upload, t
   const [waitOnCompleteLoading, setWaitOnCompleteLoading] = useState(false);
   const theme = useThemeStore((state) => state.theme);
   const hasValidations = template.columns.some((tc) => tc.validations && tc.validations.length > 0);
-
   const cellValueChangeSet = useRef(new Set<string>());
   const onCellValueChanged = useCallback((event: CellValueChangedEvent) => {
     const { rowIndex, column, data, newValue, oldValue, api } = event;
@@ -183,6 +193,7 @@ export default function Review({ onCancel, onComplete, waitOnComplete, upload, t
             disabled={isSubmitting || waitOnCompleteLoading}
             upload={upload}
             onImportAlreadySubmitted={handleImportAlreadySubmitted}
+            schemaless={schemaless}
           />
         </div>
         <div className={style.actions}>

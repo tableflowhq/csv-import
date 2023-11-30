@@ -25,6 +25,7 @@ function ReviewDataTable({
   disabled,
   upload,
   onImportAlreadySubmitted,
+  schemaless,
 }: TableProps) {
   const customSelectClass = "ag-theme-alpine-dark-custom-select";
   const paginatedDataRef: any = useRef();
@@ -123,17 +124,31 @@ function ReviewDataTable({
     // Extract ids from columnOrder and preserve the order
     let orderedIds;
     if (!columnsOrder) {
-      const mappedIds = columnsSelected.map((key) => {
-        const matchingObject = template?.columns.find((obj) => obj.key === key);
-        return matchingObject ? matchingObject.id : null;
-      });
-      const filteredIds = mappedIds.filter((id) => id !== null);
-      const extendedArray = filteredIds.map((id) => ({
-        id,
-        index: upload?.upload_columns.findIndex((item) => item.suggested_template_column_id === id),
-      }));
-      const sortedArray = extendedArray.sort((a, b) => a.index - b.index);
-      orderedIds = sortedArray.map((item) => item.id);
+      if (!schemaless) {
+        const mappedIds = columnsSelected.map((key) => {
+          const matchingObject = template?.columns.find((obj) => obj.key === key);
+          return matchingObject ? matchingObject.id : null;
+        });
+        const filteredIds = mappedIds.filter((id) => id !== null);
+        const extendedArray = filteredIds.map((id) => ({
+          id,
+          index: upload?.upload_columns.findIndex((item) => item.suggested_template_column_id === id),
+        }));
+        const sortedArray = extendedArray.sort((a, b) => a.index - b.index);
+        orderedIds = sortedArray.map((item) => item.id);
+      } else {
+        const schemalessColumnOrder: { [key: string]: string } = {};
+        upload?.upload_columns?.map((column) => {
+          if (column?.suggested_template_column_id) {
+            schemalessColumnOrder[column.id] = column.name
+              ?.replace(/[^a-zA-Z0-9 ]/g, "")
+              .replace(/\s/g, "_")
+              .toLowerCase();
+          }
+          return column;
+        });
+        orderedIds = Object.values(schemalessColumnOrder);
+      }
     } else {
       orderedIds = Object.values(columnsOrder);
     }
@@ -141,7 +156,7 @@ function ReviewDataTable({
     // Map over orderedIds to get the corresponding columns from templateCols
     let orderedColumns = [];
     if (template?.columns.length !== 0) {
-      orderedColumns = orderedIds.map((id) => template?.columns?.find((col) => col.id === id)).filter(Boolean) || [];
+      orderedColumns = orderedIds?.map((id) => template?.columns?.find((col) => col.id === id)).filter(Boolean) || [];
     } else {
       // If no columns exist, the upload is schemaless
       orderedColumns = orderedIds.map((id) => ({ name: id, key: id }));

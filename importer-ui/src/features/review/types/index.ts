@@ -12,6 +12,7 @@ export type ReviewProps = {
   reload: () => void;
   columnsOrder?: ColumnsOrder;
   review: any;
+  schemaless?: boolean;
 };
 
 export type TableProps = {
@@ -24,6 +25,7 @@ export type TableProps = {
   disabled: boolean;
   upload: Upload;
   onImportAlreadySubmitted: () => void;
+  schemaless?: boolean;
 };
 
 export interface ColumnsOrder {
