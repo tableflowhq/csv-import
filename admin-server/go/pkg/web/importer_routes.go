@@ -17,8 +17,7 @@ type ImporterCreateRequest struct {
 }
 
 type ImporterEditRequest struct {
-	Name            *string `json:"name" example:"Test Importer"`
-	WebhooksEnabled *bool   `json:"webhooks_enabled" example:"true"`
+	Name *string `json:"name" example:"Test Importer"`
 }
 
 // createImporter
@@ -171,10 +170,6 @@ func editImporter(c *gin.Context, getWorkspaceUser func(*gin.Context, string) (s
 	save := false
 	if req.Name != nil && *req.Name != importer.Name && len(*req.Name) != 0 {
 		importer.Name = *req.Name
-		save = true
-	}
-	if req.WebhooksEnabled != nil && *req.WebhooksEnabled != importer.WebhooksEnabled {
-		importer.WebhooksEnabled = *req.WebhooksEnabled
 		save = true
 	}
 
