@@ -20,10 +20,9 @@ import (
 /* ---------------------------  Importer types  --------------------------- */
 
 type Importer struct {
-	ID                     model.ID  `json:"id" swaggertype:"string" example:"6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353"`
-	Name                   string    `json:"name" example:"Test Importer"`
-	SkipHeaderRowSelection bool      `json:"skip_header_row_selection" example:"false"`
-	Template               *Template `json:"template"`
+	ID       model.ID  `json:"id" swaggertype:"string" example:"6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353"`
+	Name     string    `json:"name" example:"Test Importer"`
+	Template *Template `json:"template"`
 }
 
 type Template struct {

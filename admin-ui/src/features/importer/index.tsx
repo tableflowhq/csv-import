@@ -10,7 +10,6 @@ import notification from "../../utils/notification";
 import { ImporterViewProps } from "./types";
 import style from "./style/Importer.module.scss";
 import Code from "../code";
-import Settings from "../settings";
 import Templates from "../templates";
 import { PiArrowSquareOut, PiCopyBold, PiCubeBold } from "react-icons/pi";
 
@@ -22,7 +21,6 @@ export default function ImporterPage({ importer }: ImporterViewProps) {
     {
       template: <>Template {!!templateCount && <small className={style.miniBadge}>{templateCount}</small>}</>,
       code: "Code",
-      settings: "Settings",
     },
     importerTab || "template"
   );
@@ -88,8 +86,6 @@ export default function ImporterPage({ importer }: ImporterViewProps) {
               <Templates importer={importer} />
             ) : tab === "code" ? (
               <Code importerId={importerId} theme={theme} hostUrl={importerCodeURL} />
-            ) : tab === "settings" ? (
-              <Settings importer={importer} />
             ) : null}
           </div>
         </div>

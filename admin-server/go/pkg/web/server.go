@@ -163,6 +163,8 @@ func StartWebServer(config ServerConfig) *http.Server {
 	adm.GET("/organization-workspaces", func(c *gin.Context) { getOrganizationWorkspaces(c, config.GetUserID) })
 
 	/* Workspace */
+	adm.GET("/workspace/:id", func(c *gin.Context) { getWorkspace(c, config.GetWorkspaceUser) })
+	adm.POST("/workspace/:id", func(c *gin.Context) { editWorkspace(c, config.GetWorkspaceUser) })
 	adm.GET("/workspace/:id/api-key", func(c *gin.Context) { getWorkspaceAPIKey(c, config.GetWorkspaceUser) })
 	adm.POST("/workspace/:id/api-key", func(c *gin.Context) { regenerateWorkspaceAPIKey(c, config.GetWorkspaceUser) })
 	adm.GET("/workspace/:id/datatype-validations", func(c *gin.Context) {

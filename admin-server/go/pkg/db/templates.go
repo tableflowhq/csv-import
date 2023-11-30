@@ -90,7 +90,7 @@ func GetTemplateByImporterWithImporter(importerID string) (*model.Template, erro
 	err := tf.DB.Preload("TemplateColumns", func(db *gorm.DB) *gorm.DB {
 		return db.Order("template_columns.index asc").Preload("Validations")
 	}).
-		Preload("Importer").
+		Preload("Importer.Workspace").
 		First(&template, "importer_id = ?", model.ParseID(importerID)).Error
 	if err != nil {
 		return nil, err

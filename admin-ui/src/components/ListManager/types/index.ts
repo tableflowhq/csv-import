@@ -4,4 +4,5 @@ export type ListManagerProps = Omit<InputProps, "onChange" | "icon"> & {
   formStyle?: string;
   onChange: (value: string[]) => void;
   icon?: React.ReactElement;
+  buttonText?: string;
 };
