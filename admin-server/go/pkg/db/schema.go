@@ -273,7 +273,6 @@ func GetDatabaseSchemaInitSQL() string {
 					references workspaces(id)
 		);
 		create unique index if not exists uploads_tus_id_idx on uploads(tus_id);
-		create index if not exists uploads_workspace_id_created_at_idx on uploads(workspace_id, created_at);
 		create index if not exists uploads_importer_id_idx on uploads(importer_id);
 
 		create table if not exists upload_columns (
