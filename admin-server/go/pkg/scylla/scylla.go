@@ -95,17 +95,12 @@ func GetImportRowError(importID string, index int) (types.ImportRow, error) {
 }
 
 func RetrieveAllImportRows(imp *model.Import) []types.ImportRow {
-	if imp.NumRows.Int64 > MaxAllRowRetrieval {
-		tf.Log.Errorw("Attempted to retrieve all import rows exceeding max allowed retrieval", "import_id", imp.ID, "num_rows", imp.NumRows.Int64, "max_rows_allowed", MaxAllRowRetrieval)
-		return make([]types.ImportRow, 0)
-	}
-
 	validations := make(map[uint]model.Validation)
 	var err error
 
 	if imp.HasErrors() {
 		if imp.Upload.Template.Valid {
-			template, err := types.ConvertRawTemplate(imp.Upload.Template, false, nil, false)
+			template, err := types.ConvertRawTemplate(imp.Upload.Template, false)
 			if err == nil {
 				for _, templateColumn := range template.TemplateColumns {
 					for _, v := range templateColumn.Validations {
@@ -124,9 +119,13 @@ func RetrieveAllImportRows(imp *model.Import) []types.ImportRow {
 		}
 	}
 
-	rows := make([]types.ImportRow, 0, imp.NumRows.Int64)
+	rows := make([]types.ImportRow, 0)
 	for offset := 0; ; offset += DefaultPaginationSize {
 		if offset > int(imp.NumRows.Int64) {
+			break
+		}
+		if offset > MaxAllRowRetrieval {
+			tf.Log.Warnw("Truncated import rows exceeding max allowed retrieval", "import_id", imp.ID, "num_rows", imp.NumRows.Int64, "max_rows_allowed", MaxAllRowRetrieval)
 			break
 		}
 		rows = append(rows, paginateImportRowsWithValidations(imp, validations, offset, DefaultPaginationSize, types.ImportRowFilterAll)...)
@@ -140,7 +139,7 @@ func PaginateImportRows(imp *model.Import, offset, limit int, filter types.Filte
 
 	if imp.HasErrors() {
 		if imp.Upload.Template.Valid {
-			template, err := types.ConvertRawTemplate(imp.Upload.Template, false, nil, false)
+			template, err := types.ConvertRawTemplate(imp.Upload.Template, false)
 			if err == nil {
 				for _, templateColumn := range template.TemplateColumns {
 					for _, v := range templateColumn.Validations {

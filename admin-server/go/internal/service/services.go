@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"github.com/gocql/gocql"
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"
@@ -15,7 +14,6 @@ import (
 	"sync"
 	"tableflow/go/pkg/db"
 	"tableflow/go/pkg/file"
-	"tableflow/go/pkg/model"
 	"tableflow/go/pkg/scylla"
 	"tableflow/go/pkg/tf"
 	"tableflow/go/pkg/util"
@@ -156,40 +154,6 @@ func initDatabase() error {
 		tf.Log.Errorw("Error running standard database initialization SQL", "error", err)
 		return err
 	}
-	if err = tf.DB.Exec(getDatabaseConfigurationSQL()).Error; err != nil {
-		tf.Log.Errorw("Error running env database initialization SQL", "error", err)
-		return err
-	}
-	// If this is the first time starting up, create standard objects
-	type Res struct {
-		Exists bool
-	}
-	var res Res
-	err = tf.DB.Raw("select exists(select 1 from users);").Scan(&res).Error
-	if err != nil {
-		tf.Log.Errorw("Error checking determining if first startup", "error", err)
-		return err
-	}
-	if !res.Exists {
-		// Create a new user
-		user := &model.User{
-			ID:         model.NewID(),
-			TimeJoined: uint64(time.Now().Unix()),
-			Role:       "owner",
-			Recipe:     "none",
-		}
-		err = tf.DB.Create(&user).Error
-		if err != nil {
-			tf.Log.Errorw("Error creating new user", "error", err)
-			return err
-		}
-		// Create the standard objects for that user
-		_, _, err = db.CreateObjectsForNewUser(user)
-		if err != nil {
-			tf.Log.Errorw("Error creating objects for new user", "error", err)
-			return err
-		}
-	}
 	return nil
 }
 
@@ -278,81 +242,13 @@ func initTempStorage(ctx context.Context, wg *sync.WaitGroup) error {
 }
 
 func initWebServer(ctx context.Context, wg *sync.WaitGroup) error {
-	webAppDefaultAuthToken := "tableflow"
-	authHeaderToken := os.Getenv("TABLEFLOW_WEB_APP_AUTH_TOKEN")
-	if len(authHeaderToken) == 0 {
-		authHeaderToken = webAppDefaultAuthToken
-	}
-	adminAPIAuthValidator := web.APIKeyAuthMiddleware(func(c *gin.Context, apiKey string) bool {
-		return apiKey == authHeaderToken
-	})
-	externalAPIAuthValidator := func(c *gin.Context, apiKey string) bool {
-		workspaceID, err := db.GetWorkspaceIDFromAPIKey(apiKey)
-		if err != nil || len(workspaceID) == 0 {
-			return false
-		}
-		c.Set("workspace_id", workspaceID)
-		return true
-	}
-	getWorkspaceUser := func(c *gin.Context, workspaceID string) (string, error) {
-		if len(workspaceID) == 0 {
-			return "", errors.New("no workspace ID provided in request")
-		}
-		type Res struct {
-			UserID string
-		}
-		var res Res
-		err := tf.DB.Raw("select user_id::text from workspace_users where workspace_id = ? limit 1;", model.ParseID(workspaceID)).Scan(&res).Error
-		if err != nil {
-			return "", err
-		}
-		if len(res.UserID) == 0 {
-			return "", errors.New("error determining user in workspace")
-		}
-		return res.UserID, nil
-	}
-	getUserID := func(c *gin.Context) string {
-		type Res struct {
-			UserID string
-		}
-		var res Res
-		err := tf.DB.Raw("select id::text as user_id from users limit 1;").Scan(&res).Error
-		if err != nil || len(res.UserID) == 0 {
-			return ""
-		}
-		return res.UserID
-	}
-
-	config := web.ServerConfig{
-		AdminAPIAuthValidator:    adminAPIAuthValidator,
-		ExternalAPIAuthValidator: externalAPIAuthValidator,
-		GetWorkspaceUser:         getWorkspaceUser,
-		GetUserID:                getUserID,
-		GetAllowedValidateTypes: func(_ string) map[string]bool {
-			return nil
-		},
-	}
-	server := web.StartWebServer(config)
+	server := web.StartFileImportServer()
 
 	go util.ShutdownHandler(ctx, wg, func() {
 		if err := server.Shutdown(ctx); err != nil {
-			tf.Log.Fatalw("API server forced to shutdown", "error", err)
+			tf.Log.Fatalw("File import server forced to shutdown", "error", err)
 		}
-		tf.Log.Debugw("API server shutdown")
+		tf.Log.Debugw("File import server shutdown")
 	})
 	return nil
-}
-
-func getDatabaseConfigurationSQL() string {
-	return `
-		create table if not exists users (
-		    id          uuid primary key not null default gen_random_uuid(),
-		    email       text,
-		    time_joined bigint           not null,
-		    role        text             not null,
-		    recipe      text             not null,
-		    initialized bool unique      not null default true,
-		    constraint initialized check (initialized)
-		);
-	`
 }

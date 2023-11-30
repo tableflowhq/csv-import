@@ -20,14 +20,11 @@ import (
 /* ---------------------------  Importer types  --------------------------- */
 
 type Importer struct {
-	ID       model.ID  `json:"id" swaggertype:"string" example:"6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353"`
-	Name     string    `json:"name" example:"Test Importer"`
 	Template *Template `json:"template"`
 }
 
 type Template struct {
 	ID              model.ID          `json:"id,omitempty" swaggertype:"string" example:"f0797968-becc-422a-b135-19de1d8c5d46"`
-	Name            string            `json:"name,omitempty" example:"My Template"`
 	TemplateColumns []*TemplateColumn `json:"columns"`
 }
 
@@ -55,7 +52,6 @@ type Validation struct {
 type Upload struct {
 	ID                    model.ID       `json:"id" swaggertype:"string" example:"50ca61e1-f683-4b03-9ec4-4b3adb592bf1"`
 	TusID                 string         `json:"tus_id" example:"ee715c254ee61855b465ed61be930487"`
-	ImporterID            model.ID       `json:"importer_id" swaggertype:"string" example:"6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353"`
 	FileName              null.String    `json:"file_name" swaggertype:"string" example:"example.csv"`
 	FileType              null.String    `json:"file_type" swaggertype:"string" example:"text/csv"`
 	FileExtension         null.String    `json:"file_extension" swaggertype:"string" example:"csv"`
@@ -94,7 +90,6 @@ type UploadRow struct {
 type Import struct {
 	ID                 model.ID            `json:"id" swaggertype:"string" example:"da5554e3-6c87-41b2-9366-5449a2f15b53"`
 	UploadID           model.ID            `json:"upload_id" swaggertype:"string" example:"50ca61e1-f683-4b03-9ec4-4b3adb592bf1"`
-	ImporterID         model.ID            `json:"importer_id" swaggertype:"string" example:"6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353"`
 	NumRows            null.Int            `json:"num_rows" swaggertype:"integer" example:"256"`
 	NumColumns         null.Int            `json:"num_columns" swaggertype:"integer" example:"8"`
 	NumProcessedValues null.Int            `json:"num_processed_values" swaggertype:"integer" example:"128"`
@@ -163,7 +158,7 @@ func ConvertUpload(upload *model.Upload, uploadRows []UploadRow) (*Upload, error
 			SuggestedTemplateColumnID: uc.TemplateColumnID,
 		}
 	}
-	uploadTemplate, err := ConvertRawTemplate(upload.Template, false, nil, false)
+	uploadTemplate, err := ConvertRawTemplate(upload.Template, false)
 	if err != nil {
 		tf.Log.Warnw("Could not convert upload template to import service template", "error", err, "upload_id", upload.ID, "upload_template", upload.Template)
 		return nil, err
@@ -171,7 +166,6 @@ func ConvertUpload(upload *model.Upload, uploadRows []UploadRow) (*Upload, error
 	importerUpload := &Upload{
 		ID:                    upload.ID,
 		TusID:                 upload.TusID,
-		ImporterID:            upload.ImporterID,
 		FileName:              upload.FileName,
 		FileType:              upload.FileType,
 		FileExtension:         upload.FileExtension,
@@ -189,7 +183,7 @@ func ConvertUpload(upload *model.Upload, uploadRows []UploadRow) (*Upload, error
 	return importerUpload, nil
 }
 
-func ConvertRawTemplate(rawTemplate jsonb.JSONB, isCreation bool, allowedValidateTypes map[string]bool, failOnNotAllowedType bool) (*Template, error) {
+func ConvertRawTemplate(rawTemplate jsonb.JSONB, isCreation bool) (*Template, error) {
 	if !rawTemplate.Valid {
 		// No template provided, this means the template from the importer will be used
 		return nil, nil
@@ -305,12 +299,6 @@ func ConvertRawTemplate(rawTemplate jsonb.JSONB, isCreation bool, allowedValidat
 					validationMessage, _ := validationMap["message"].(string)
 					validationSeverity, _ := validationMap["severity"].(string)
 
-					if allowedValidateTypes != nil && !allowedValidateTypes[validationValidate] {
-						if failOnNotAllowedType {
-							return nil, fmt.Errorf("Invalid template: please upgrade your plan to use the %s validate type", validationValidate)
-						}
-						continue
-					}
 					if isCreation {
 						validationID = float64(generatedValidationID)
 						generatedValidationID++
