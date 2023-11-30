@@ -89,16 +89,14 @@ func StartFileImportServer() *http.Server {
 	importer.HEAD("/files/:id", tusHeadFile(tusHandler))
 	importer.PATCH("/files/:id", tusPatchFile(tusHandler))
 
-	importer.POST("/importer/:id", func(c *gin.Context) { importerGetImporter(c, config.GetAllowedValidateTypes) })
-	importer.GET("/upload/:id", func(c *gin.Context) {
-		importerGetUpload(c, config.GetColumnMatches, config.ShouldWaitForHeaderRowMatch)
-	})
-	importer.POST("/upload/:id/set-header-row", func(c *gin.Context) { importerSetHeaderRow(c, config.GetColumnMatches) })
+	importer.POST("/importer/:id", importerGetImporter)
+	importer.GET("/upload/:id", importerGetUpload)
+	importer.POST("/upload/:id/set-header-row", importerSetHeaderRow)
 	importer.POST("/upload/:id/set-column-mapping", importerSetColumnMapping)
 	importer.GET("/import/:id/review", importerReviewImport)
 	importer.GET("/import/:id/rows", importerGetImportRows)
 	importer.POST("/import/:id/cell/edit", importerEditImportCell)
-	importer.POST("/import/:id/submit", func(c *gin.Context) { importerSubmitImport(c, config.ImportCompleteHandler) })
+	importer.POST("/import/:id/submit", importerSubmitImport)
 
 	// Initialize the server in a goroutine so that it won't block shutdown handling
 	go func() {

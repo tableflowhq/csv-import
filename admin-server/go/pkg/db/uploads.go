@@ -25,18 +25,6 @@ func GetUpload(id string) (*model.Upload, error) {
 	return &upload, nil
 }
 
-func IsUploadStored(id string) (bool, error) {
-	if len(id) == 0 {
-		return false, errors.New("no ID provided")
-	}
-	type Res struct {
-		IsStored bool
-	}
-	var res Res
-	err := tf.DB.Raw("select is_stored from uploads where id = ?;", id).Scan(&res).Error
-	return res.IsStored, err
-}
-
 func GetUploadByTusID(tusID string) (*model.Upload, error) {
 	if len(tusID) == 0 {
 		return nil, errors.New("no Tus ID provided")

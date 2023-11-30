@@ -27,11 +27,9 @@ type templateColumnKeyValidation struct {
 
 func ImportData(upload *model.Upload, template *model.Template) {
 	imp := &model.Import{
-		ID:          model.NewID(),
-		UploadID:    upload.ID,
-		ImporterID:  upload.ImporterID,
-		WorkspaceID: upload.WorkspaceID,
-		Metadata:    upload.Metadata,
+		ID:       model.NewID(),
+		UploadID: upload.ID,
+		Metadata: upload.Metadata,
 	}
 	dataTypes := make(map[string]interface{})
 	for _, tc := range template.TemplateColumns {

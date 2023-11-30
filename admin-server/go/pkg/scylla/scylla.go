@@ -5,7 +5,6 @@ import (
 	"sort"
 	"strings"
 	"sync"
-	"tableflow/go/pkg/db"
 	"tableflow/go/pkg/model"
 	"tableflow/go/pkg/tf"
 	"tableflow/go/pkg/types"
@@ -96,7 +95,6 @@ func GetImportRowError(importID string, index int) (types.ImportRow, error) {
 
 func RetrieveAllImportRows(imp *model.Import) []types.ImportRow {
 	validations := make(map[uint]model.Validation)
-	var err error
 
 	if imp.HasErrors() {
 		if imp.Upload.Template.Valid {
@@ -110,11 +108,6 @@ func RetrieveAllImportRows(imp *model.Import) []types.ImportRow {
 						}
 					}
 				}
-			}
-		} else {
-			validations, err = db.GetValidationsMapForImporterUnscoped(imp.ImporterID.String())
-			if err != nil {
-				tf.Log.Errorw("Could not retrieve template by importer to get validations", "import_id", imp.ID, "error", err)
 			}
 		}
 	}
@@ -135,7 +128,6 @@ func RetrieveAllImportRows(imp *model.Import) []types.ImportRow {
 
 func PaginateImportRows(imp *model.Import, offset, limit int, filter types.Filter) []types.ImportRow {
 	validations := make(map[uint]model.Validation)
-	var err error
 
 	if imp.HasErrors() {
 		if imp.Upload.Template.Valid {
@@ -149,11 +141,6 @@ func PaginateImportRows(imp *model.Import, offset, limit int, filter types.Filte
 						}
 					}
 				}
-			}
-		} else {
-			validations, err = db.GetValidationsMapForImporterUnscoped(imp.ImporterID.String())
-			if err != nil {
-				tf.Log.Errorw("Could not retrieve template by importer to get validations", "import_id", imp.ID, "error", err)
 			}
 		}
 	}

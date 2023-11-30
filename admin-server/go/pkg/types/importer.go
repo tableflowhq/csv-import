@@ -50,19 +50,18 @@ type Validation struct {
 /* ---------------------------  Upload types  --------------------------- */
 
 type Upload struct {
-	ID                    model.ID       `json:"id" swaggertype:"string" example:"50ca61e1-f683-4b03-9ec4-4b3adb592bf1"`
-	TusID                 string         `json:"tus_id" example:"ee715c254ee61855b465ed61be930487"`
-	FileName              null.String    `json:"file_name" swaggertype:"string" example:"example.csv"`
-	FileType              null.String    `json:"file_type" swaggertype:"string" example:"text/csv"`
-	FileExtension         null.String    `json:"file_extension" swaggertype:"string" example:"csv"`
-	FileSize              null.Int       `json:"file_size" swaggertype:"integer" example:"1024"`
-	Metadata              jsonb.JSONB    `json:"metadata" swaggertype:"string" example:"{\"user_id\": 1234}"`
-	Template              *Template      `json:"template"` // Set if the user passes in a template to the SDK, which overrides the template on the importer
-	IsStored              bool           `json:"is_stored" example:"false"`
-	HeaderRowIndex        null.Int       `json:"header_row_index" swaggertype:"integer" example:"0"`
-	MatchedHeaderRowIndex null.Int       `json:"matched_header_row_index" swaggertype:"integer" example:"0"`
-	SheetList             []string       `json:"sheet_list" swaggertype:"array,string" example:"Sheet 1"`
-	CreatedAt             model.NullTime `json:"created_at" swaggertype:"integer" example:"1682366228"`
+	ID                    model.ID    `json:"id" swaggertype:"string" example:"50ca61e1-f683-4b03-9ec4-4b3adb592bf1"`
+	TusID                 string      `json:"tus_id" example:"ee715c254ee61855b465ed61be930487"`
+	FileName              null.String `json:"file_name" swaggertype:"string" example:"example.csv"`
+	FileType              null.String `json:"file_type" swaggertype:"string" example:"text/csv"`
+	FileExtension         null.String `json:"file_extension" swaggertype:"string" example:"csv"`
+	FileSize              null.Int    `json:"file_size" swaggertype:"integer" example:"1024"`
+	Metadata              jsonb.JSONB `json:"metadata" swaggertype:"string" example:"{\"user_id\": 1234}"`
+	Template              *Template   `json:"template"` // Set from the template provided in the SDK
+	IsStored              bool        `json:"is_stored" example:"false"`
+	HeaderRowIndex        null.Int    `json:"header_row_index" swaggertype:"integer" example:"0"`
+	MatchedHeaderRowIndex null.Int    `json:"matched_header_row_index" swaggertype:"integer" example:"0"`
+	SheetList             []string    `json:"sheet_list" swaggertype:"array,string" example:"Sheet 1"`
 
 	UploadRows    []UploadRow     `json:"upload_rows"`
 	UploadColumns []*UploadColumn `json:"upload_columns"`
@@ -72,7 +71,7 @@ type UploadColumn struct {
 	ID                        model.ID       `json:"id" swaggertype:"string" example:"3c79e7fd-1018-4a27-8b86-9cee84221cd8"`
 	Name                      string         `json:"name" example:"Work Email"`
 	Index                     int            `json:"index" example:"0"`
-	SampleData                pq.StringArray `json:"sample_data" gorm:"type:text[]" swaggertype:"array,string" example:"test@example.com"`
+	SampleData                pq.StringArray `json:"sample_data" swaggertype:"array,string" example:"test@example.com"`
 	SuggestedTemplateColumnID model.ID       `json:"suggested_template_column_id" swaggertype:"string" example:"a1ed136d-33ce-4b7e-a7a4-8a5ccfe54cd5"`
 }
 
@@ -98,8 +97,6 @@ type Import struct {
 	HasErrors          bool                `json:"has_errors" example:"false"`
 	NumErrorRows       null.Int            `json:"num_error_rows" swaggertype:"integer" example:"32"`
 	NumValidRows       null.Int            `json:"num_valid_rows" swaggertype:"integer" example:"224"`
-	CreatedAt          model.NullTime      `json:"created_at" swaggertype:"integer" example:"1682366228"`
-	UpdatedAt          model.NullTime      `json:"updated_at" swaggertype:"integer" example:"1682366228"`
 	Error              null.String         `json:"error,omitempty" swaggerignore:"true"`
 	Rows               []ImportRowResponse `json:"rows,omitempty"` // Used for the final step in the onComplete
 }
@@ -176,7 +173,6 @@ func ConvertUpload(upload *model.Upload, uploadRows []UploadRow) (*Upload, error
 		HeaderRowIndex:        upload.HeaderRowIndex,
 		MatchedHeaderRowIndex: upload.MatchedHeaderRowIndex,
 		SheetList:             upload.SheetList,
-		CreatedAt:             upload.CreatedAt,
 		UploadColumns:         importerUploadColumns,
 		UploadRows:            uploadRows,
 	}

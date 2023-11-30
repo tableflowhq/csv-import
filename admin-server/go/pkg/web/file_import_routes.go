@@ -619,8 +619,6 @@ func importerReviewImport(c *gin.Context) {
 		HasErrors:          imp.HasErrors(),
 		NumErrorRows:       imp.NumErrorRows,
 		NumValidRows:       imp.NumValidRows,
-		CreatedAt:          imp.CreatedAt,
-		UpdatedAt:          imp.UpdatedAt,
 	}
 	if !imp.IsStored {
 		// Don't attempt to retrieve the data in Scylla if it's not stored
@@ -953,7 +951,7 @@ func importerEditImportCell(c *gin.Context) {
 //	@Failure		400	{object}	types.Res
 //	@Router			/file-import/v1/import/{id}/submit [post]
 //	@Param			id	path	string	true	"Upload ID"
-func importerSubmitImport(c *gin.Context, importCompleteHandler func(types.Import, string)) {
+func importerSubmitImport(c *gin.Context) {
 	id := c.Param("id")
 	if len(id) == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No upload ID provided"})
@@ -996,18 +994,10 @@ func importerSubmitImport(c *gin.Context, importCompleteHandler func(types.Impor
 		HasErrors:          imp.HasErrors(),
 		NumErrorRows:       imp.NumErrorRows,
 		NumValidRows:       imp.NumValidRows,
-		CreatedAt:          imp.CreatedAt,
-		UpdatedAt:          imp.UpdatedAt,
 		Rows:               []types.ImportRowResponse{},
 	}
 	rows := scylla.RetrieveAllImportRows(imp)
 	importServiceImport.Rows = types.ConvertImportRowsResponse(rows, imp)
-
-	if importCompleteHandler != nil {
-		util.SafeGo(func() {
-			importCompleteHandler(*importServiceImport, imp.WorkspaceID.String())
-		}, "import_id", imp.ID)
-	}
 
 	c.JSON(http.StatusOK, importServiceImport)
 }
