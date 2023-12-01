@@ -48,7 +48,7 @@ export default function createTableFlowImporter({
 
   // iframe element
   let urlParams = {
-    importerId,
+    importerId: importerId === undefined || importerId?.trim() === "" ? "0" : importerId,
     isModal: isModal ? "true" : "false",
     modalIsOpen: "true",
     template: parseObjectOrStringJSON("template", template),

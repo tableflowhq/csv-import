@@ -41,7 +41,7 @@ export default function TableFlowImporter({
   const domElementClass = [`${baseClass}-${isModal ? "dialog" : "div"}`, themeClass, className].filter((i) => i).join(" ");
 
   const urlParams = {
-    importerId,
+    importerId: importerId === undefined || importerId?.trim() === "" ? "0" : importerId,
     isModal: isModal ? "true" : "false",
     modalIsOpen: modalIsOpen.toString(),
     template: parseObjectOrStringJSON("template", template),
