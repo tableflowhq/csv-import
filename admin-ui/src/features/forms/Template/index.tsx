@@ -220,7 +220,7 @@ export default function TemplateColumnForm({
         </div>
 
         <div className={classes([style.actions, style.compact])}>
-          <Button type="submit" variants={["primary", "noMargin"]} disabled={isLoading || !form.isDirty() || requiredFieldEmpty}>
+          <Button type="submit" variants={["primary", "noMargin"]} disabled={isLoading || (isEditForm && !form.isDirty()) || requiredFieldEmpty}>
             {isLoading ? "Please wait..." : isEditForm ? "Save" : "Add"}
           </Button>
         </div>

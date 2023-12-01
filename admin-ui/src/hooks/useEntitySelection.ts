@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import useModal from "../components/Modal/hooks/useModal";
 
 export type EntityId = string | null;
-export type Action = "add" | "edit" | "delete" | "resetPassword" | null;
+export type Action = "add" | "edit" | "duplicate" | "delete" | "resetPassword" | null;
 export type Update = (entityId: EntityId, action: Action) => void;
 
 export default function useEntitySelection() {

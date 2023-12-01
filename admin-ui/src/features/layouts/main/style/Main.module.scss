@@ -1,14 +1,18 @@
 .container {
   display: flex;
-  flex-direction: column;
   height: 100%;
+}
+
+.wrapper {
+  display: flex;
+  flex: 1;
 }
 
 .content {
   padding: var(--m);
+  flex: 1;
 
   &.center {
-    flex-grow: 1;
     display: flex;
     align-items: center;
     justify-content: center;

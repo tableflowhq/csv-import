@@ -4,7 +4,7 @@ import useThemeStore from "../../stores/useThemeStore";
 import style from "./style/ThemeToggle.module.scss";
 import { PiMoon, PiSun } from "react-icons/pi";
 
-export default function ThemeToggle() {
+export default function ThemeToggle({ small }: { small?: boolean}) {
   const setTheme = useThemeStore((state) => state.setTheme);
   const theme = useThemeStore((state) => state.theme);
   const { colorMode, toggleColorMode } = useColorMode();
@@ -17,14 +17,20 @@ export default function ThemeToggle() {
 
   return (
     <button className={style.themeToggle} onClick={() => setTheme()}>
-      <span className={style.inner}>
-        <span>
-          <PiSun />
+      {!small ? (
+        <span className={style.inner}>
+          <span>
+            <PiSun />
+          </span>
+          <span>
+            <PiMoon />
+          </span>
         </span>
-        <span>
-          <PiMoon />
-        </span>
-      </span>
+      ) : (
+        <>
+          {theme === "light" ? <PiSun /> : <PiMoon />}
+        </>
+      )}
     </button>
   );
 }

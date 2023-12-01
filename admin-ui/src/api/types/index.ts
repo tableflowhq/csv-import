@@ -54,6 +54,7 @@ export type Workspace = {
   updated_by: User;
   users: User[];
   workspace_limit: WorkspaceLimit;
+  allowed_import_domains: string[];
 };
 
 export type Organization = {
@@ -67,13 +68,17 @@ export type Organization = {
   workspaces: Workspace[];
 };
 
+export type WorkspaceFormFields = {
+  id: string;
+  allowed_import_domains: string[];
+};
+
 export type ImporterFormFields = {
   id: string;
   name: string;
 };
 
 export type Importer = Required<ImporterFormFields> & {
-  allowed_domains: string[];
   created_at: number;
   created_by: User;
   template: Template;

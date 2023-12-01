@@ -8,6 +8,7 @@ import { EntityId, Update } from "../../../hooks/useEntitySelection";
 export function columnsTable(columns: TemplateColumn[] = [], update: Update): TableData {
   const actionMenu: DialogItem[] = [
     { children: "Edit", action: (id: EntityId) => update(id, "edit") },
+    { children: "Duplicate", action: (id: EntityId) => update(id, "duplicate") },
     { children: "Delete", action: (id: EntityId) => update(id, "delete") },
   ];
 

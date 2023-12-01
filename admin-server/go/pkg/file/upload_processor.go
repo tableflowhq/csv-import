@@ -72,8 +72,7 @@ func UploadCompleteHandler(event handler.HookEvent,
 	}
 
 	// Determine if the header row selection step should be skipped, setting the header row to the first row of the file
-	// Setting the option in the SDK will override the importer setting
-	skipHeaderRowSelection := importer.SkipHeaderRowSelection
+	skipHeaderRowSelection := false
 	skipHeaderRowSelectionHeader := event.HTTPRequest.Header.Get("X-Import-SkipHeaderRowSelection")
 	if len(skipHeaderRowSelectionHeader) != 0 {
 		skipHeaderRowSelection, _ = strconv.ParseBool(skipHeaderRowSelectionHeader)
@@ -149,8 +148,7 @@ func UploadCompleteHandler(event handler.HookEvent,
 		return
 	}
 
-	// If SkipHeaderRowSelection is turned on for the importer, set the upload column header index and return the
-	// upload columns with the upload
+	// If SkipHeaderRowSelection is turned on, set the upload column header index and return the upload columns with the upload
 	if skipHeaderRowSelection {
 		upload.HeaderRowIndex = null.IntFrom(0)
 

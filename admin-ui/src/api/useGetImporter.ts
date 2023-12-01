@@ -10,8 +10,6 @@ export default function useGetImporter(id: string): UseQueryResult<Importer> {
 }
 
 async function getImporter(id: string): Promise<Importer> {
-  // return importers[0];
-
   const response = await get(`importer/${id}`);
 
   if (!response.ok) throw response.error;

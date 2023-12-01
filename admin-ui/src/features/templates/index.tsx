@@ -68,35 +68,50 @@ export default function Templates({ importer }: TemplatesProps) {
     mutate({ id: templateColumnId, index: newIndex });
   };
 
-  const modalContent = useMemo(
-    () =>
-      !entityId ? (
-        <Box variants={["wide", "space-mid"]} className={style.extraWide}>
-          <TemplateColumnForm
-            title="Add Column"
-            buttonLabel="Save"
-            onSuccess={modal.handleClose}
-            column={column}
-            context={{ templateId: template?.id }}
-          />
-        </Box>
-      ) : action === "edit" ? (
-        <Box variants={["wide", "space-mid"]} className={style.extraWide}>
-          <TemplateColumnForm
-            title="Edit Column"
-            buttonLabel="Save"
-            onSuccess={modal.handleClose}
-            column={column}
-            context={{ templateId: template?.id }}
-          />
-        </Box>
-      ) : action === "delete" ? (
-        <Box variants={["wide", "space-mid"]}>
-          <TemplateColumnDelete column={column} onSuccess={modal.handleClose} context={{ templateId: template?.id }} />{" "}
-        </Box>
-      ) : null,
-    [modal.openDelayed]
-  );
+  const modalContent = useMemo(() => {
+    let columnDuplicate;
+    if (column && action === "duplicate") {
+      columnDuplicate = Object.assign({}, column);
+      columnDuplicate.id = "";
+      columnDuplicate.name = columnDuplicate.name + " Copy";
+      columnDuplicate.key = columnDuplicate.key + "_copy";
+    }
+    return !entityId ? (
+      <Box variants={["wide", "space-mid"]} className={style.extraWide}>
+        <TemplateColumnForm
+          title="Add Column"
+          buttonLabel="Save"
+          onSuccess={modal.handleClose}
+          column={column}
+          context={{ templateId: template?.id }}
+        />
+      </Box>
+    ) : action === "edit" ? (
+      <Box variants={["wide", "space-mid"]} className={style.extraWide}>
+        <TemplateColumnForm
+          title="Edit Column"
+          buttonLabel="Save"
+          onSuccess={modal.handleClose}
+          column={column}
+          context={{ templateId: template?.id }}
+        />
+      </Box>
+    ) : action === "duplicate" ? (
+      <Box variants={["wide", "space-mid"]} className={style.extraWide}>
+        <TemplateColumnForm
+          title="Add Column"
+          buttonLabel="Save"
+          onSuccess={modal.handleClose}
+          column={columnDuplicate}
+          context={{ templateId: template?.id }}
+        />
+      </Box>
+    ) : action === "delete" ? (
+      <Box variants={["wide", "space-mid"]}>
+        <TemplateColumnDelete column={column} onSuccess={modal.handleClose} context={{ templateId: template?.id }} />{" "}
+      </Box>
+    ) : null;
+  }, [modal.openDelayed]);
 
   // Filter, Sort & Pagination
   // const { dataSorted, setSort, sortKey, sortAsc } = useSort<Template[]>(data || [], "updated_at");

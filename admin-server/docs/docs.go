@@ -450,6 +450,77 @@ const docTemplate = `{
                 }
             }
         },
+        "/admin/v1/workspace/{id}": {
+            "get": {
+                "description": "Get a workspace",
+                "tags": [
+                    "Workspace"
+                ],
+                "summary": "Get workspace",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Workspace"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/types.Res"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Edit a workspace",
+                "tags": [
+                    "Workspace"
+                ],
+                "summary": "Edit workspace",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/web.WorkspaceEditRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Workspace"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/types.Res"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/v1/workspace/{id}/api-key": {
             "get": {
                 "description": "Get the current API key of a workspace",
@@ -1174,6 +1245,10 @@ const docTemplate = `{
                     "type": "integer",
                     "example": 224
                 },
+                "updated_at": {
+                    "type": "integer",
+                    "example": 1682366228
+                },
                 "upload_id": {
                     "type": "string",
                     "example": "50ca61e1-f683-4b03-9ec4-4b3adb592bf1"
@@ -1187,15 +1262,6 @@ const docTemplate = `{
         "model.Importer": {
             "type": "object",
             "properties": {
-                "allowed_domains": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    },
-                    "example": [
-                        "example.com"
-                    ]
-                },
                 "created_at": {
                     "type": "integer",
                     "example": 1682366228
@@ -1211,10 +1277,6 @@ const docTemplate = `{
                     "type": "string",
                     "example": "Test Importer"
                 },
-                "skip_header_row_selection": {
-                    "type": "boolean",
-                    "example": false
-                },
                 "template": {
                     "$ref": "#/definitions/model.Template"
                 },
@@ -1225,9 +1287,8 @@ const docTemplate = `{
                 "updated_by": {
                     "$ref": "#/definitions/model.User"
                 },
-                "webhooks_enabled": {
-                    "type": "boolean",
-                    "example": true
+                "workspace": {
+                    "$ref": "#/definitions/model.Workspace"
                 },
                 "workspace_id": {
                     "type": "string",
@@ -1337,6 +1398,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "a1ed136d-33ce-4b7e-a7a4-8a5ccfe54cd5"
                 },
+                "index": {
+                    "type": "integer",
+                    "example": 0
+                },
                 "key": {
                     "type": "string",
                     "example": "email"
@@ -1416,6 +1481,10 @@ const docTemplate = `{
                     "type": "boolean",
                     "example": false
                 },
+                "matched_header_row_index": {
+                    "type": "integer",
+                    "example": 0
+                },
                 "metadata": {
                     "type": "string",
                     "example": "{\"user_id\": 1234}"
@@ -1449,6 +1518,10 @@ const docTemplate = `{
                 "tus_id": {
                     "type": "string",
                     "example": "ee715c254ee61855b465ed61be930487"
+                },
+                "updated_at": {
+                    "type": "integer",
+                    "example": 1682366228
                 },
                 "upload_columns": {
                     "type": "array",
@@ -1553,6 +1626,15 @@ const docTemplate = `{
         "model.Workspace": {
             "type": "object",
             "properties": {
+                "allowed_import_domains": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "example.com"
+                    ]
+                },
                 "created_at": {
                     "type": "integer",
                     "example": 1682366228
@@ -1635,6 +1717,10 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/types.ImportRowResponse"
                     }
+                },
+                "updated_at": {
+                    "type": "integer",
+                    "example": 1682366228
                 },
                 "upload_id": {
                     "type": "string",
@@ -1771,10 +1857,6 @@ const docTemplate = `{
                     "type": "string",
                     "example": "Test Importer"
                 },
-                "skip_header_row_selection": {
-                    "type": "boolean",
-                    "example": false
-                },
                 "template": {
                     "$ref": "#/definitions/types.Template"
                 }
@@ -1910,6 +1992,10 @@ const docTemplate = `{
                     "type": "boolean",
                     "example": false
                 },
+                "matched_header_row_index": {
+                    "type": "integer",
+                    "example": 0
+                },
                 "metadata": {
                     "type": "string",
                     "example": "{\"user_id\": 1234}"
@@ -2044,26 +2130,9 @@ const docTemplate = `{
         "web.ImporterEditRequest": {
             "type": "object",
             "properties": {
-                "allowed_domains": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    },
-                    "example": [
-                        "example.com"
-                    ]
-                },
                 "name": {
                     "type": "string",
                     "example": "Test Importer"
-                },
-                "skip_header_row_selection": {
-                    "type": "boolean",
-                    "example": false
-                },
-                "webhooks_enabled": {
-                    "type": "boolean",
-                    "example": true
                 }
             }
         },
@@ -2118,6 +2187,10 @@ const docTemplate = `{
                 "description": {
                     "type": "string",
                     "example": "The first name"
+                },
+                "index": {
+                    "type": "integer",
+                    "example": 0
                 },
                 "key": {
                     "type": "string",
@@ -2178,6 +2251,20 @@ const docTemplate = `{
                 },
                 "validate": {
                     "type": "string"
+                }
+            }
+        },
+        "web.WorkspaceEditRequest": {
+            "type": "object",
+            "properties": {
+                "allowed_import_domains": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "example.com"
+                    ]
                 }
             }
         }
