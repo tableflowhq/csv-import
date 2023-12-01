@@ -14,9 +14,6 @@ jobs:
           - image: tableflow/admin-server
             dockerfile: admin-server/Dockerfile
             subdir: admin-server
-          - image: tableflow/admin-ui
-            dockerfile: admin-ui/Dockerfile
-            subdir: admin-ui
           - image: tableflow/importer-ui
             dockerfile: importer-ui/Dockerfile
             subdir: importer-ui
