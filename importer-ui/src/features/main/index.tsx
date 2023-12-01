@@ -36,6 +36,10 @@ const stepsConfig = [
 export default function Main() {
   useRevealApp();
 
+  const isHosted = window.location.host.indexOf(defaultImporterHost) === 0;
+  const isDevelopment = window.location.hostname === "localhost";
+  const isEmbeddedInIframe = window?.top !== window?.self;
+
   // Get iframe URL params
   const {
     importerId,
@@ -76,13 +80,9 @@ export default function Main() {
   } = useApi(
     importerId,
     schemaless ? "" : sdkDefinedTemplate, // Don't pass in a template if schemaless is enabled
-    window.location.host.indexOf(defaultImporterHost) === 0 && (providedJSONString(customStyles) || providedJSONString(cssOverrides)),
+    isHosted && (providedJSONString(customStyles) || providedJSONString(cssOverrides)),
     schemaless
   );
-
-  const isDevelopment = window.location.hostname === "localhost";
-  const isEmbeddedInIframe = window?.top !== window?.self;
-  const [columnsValues, seColumnsValues] = useState({});
 
   // Apply custom styles
   useCustomStyles(customStyles, isDevelopment ? true : organizationStatus && organizationStatus["feature-custom-styles"]);
@@ -97,6 +97,7 @@ export default function Main() {
   const [selectedHeaderRow, setSelectedHeaderRow] = useState<number | null>(null);
   const [uploadFromHeaderRowSelection, setUploadFromHeaderRowSelection] = useState<any | null>(null);
   const [columnsOrder, setColumnsOrder] = useState<ColumnsOrder>();
+  const [columnsValues, seColumnsValues] = useState({});
 
   // Stepper handler
   const steps = useModifiedSteps(stepsConfig, skipHeader);
@@ -221,14 +222,6 @@ export default function Main() {
         <div className={style.content}>
           <TableLoading hideBorder />
         </div>
-      </div>
-    );
-  }
-
-  if (!importerId) {
-    return (
-      <div className={isEmbeddedInIframe ? style.wrapper : classes([style.wrapper, style.wrapperLink])}>
-        <Errors error={"The parameter 'importerId' is required"} centered />
       </div>
     );
   }
