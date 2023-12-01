@@ -18,7 +18,7 @@ function WelcomeLink({ title, subTitle, icon, path }: StatsCardProps) {
         shadow={"xl"}
         border={"1px solid"}
         borderColor={useColorModeValue("gray.800", "gray.500")}
-        transition={"all 0.3s ease-in-out 0s"}
+        transition={"all 0.1s ease-in-out 0s"}
         _groupHover={{
           borderColor: "var(--color-primary)",
         }}
@@ -36,7 +36,7 @@ function WelcomeLink({ title, subTitle, icon, path }: StatsCardProps) {
             my={"auto"}
             color={useColorModeValue("gray.800", "gray.200")}
             alignContent={"center"}
-            transition={"all 0.3s ease-in-out 0s"}
+            transition={"all 0.1s ease-in-out 0s"}
             mr={2}
             _groupHover={{
               color: "var(--color-primary)",

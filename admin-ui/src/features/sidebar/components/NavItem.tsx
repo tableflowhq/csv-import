@@ -36,6 +36,7 @@ export default function NavItem({ icon, title, name, navSize, url, isSelected, i
         backgroundColor: "var(--color-secondary-hover)",
         color: "var(--color-button-hover)",
       },
+      mb: "1px"
     },
     icon: {
       fontSize: "xl",

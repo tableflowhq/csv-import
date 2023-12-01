@@ -1,6 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import { IconType } from "react-icons";
 import { useLocation } from "react-router";
+import { Link } from "react-router-dom";
 import {
   Box,
   BoxProps,
@@ -135,7 +136,9 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
     <Flex sx={styles.container} onMouseEnter={() => setIsHovering(true)} onMouseLeave={() => setIsHovering(false)}>
       <Flex sx={styles.topMenuContainer} as="nav">
         <Flex alignItems="center" mx="2" mb={5}>
-          <Tableflow color size="small" short={isCollapsed} />
+          <Link to="/">
+            <Tableflow color size="small" short={isCollapsed} />
+          </Link>
           <IconButton
             className="toggle-nav-size"
             sx={styles.toggleNavSize}
