@@ -43,6 +43,9 @@ definitions:
       num_valid_rows:
         example: 224
         type: integer
+      updated_at:
+        example: 1682366228
+        type: integer
       upload_id:
         example: 50ca61e1-f683-4b03-9ec4-4b3adb592bf1
         type: string
@@ -52,12 +55,6 @@ definitions:
     type: object
   model.Importer:
     properties:
-      allowed_domains:
-        example:
-        - example.com
-        items:
-          type: string
-        type: array
       created_at:
         example: 1682366228
         type: integer
@@ -69,9 +66,6 @@ definitions:
       name:
         example: Test Importer
         type: string
-      skip_header_row_selection:
-        example: false
-        type: boolean
       template:
         $ref: '#/definitions/model.Template'
       updated_at:
@@ -79,9 +73,8 @@ definitions:
         type: integer
       updated_by:
         $ref: '#/definitions/model.User'
-      webhooks_enabled:
-        example: true
-        type: boolean
+      workspace:
+        $ref: '#/definitions/model.Workspace'
       workspace_id:
         example: b2079476-261a-41fe-8019-46eb51c537f7
         type: string
@@ -158,6 +151,9 @@ definitions:
       id:
         example: a1ed136d-33ce-4b7e-a7a4-8a5ccfe54cd5
         type: string
+      index:
+        example: 0
+        type: integer
       key:
         example: email
         type: string
@@ -215,6 +211,9 @@ definitions:
       is_stored:
         example: false
         type: boolean
+      matched_header_row_index:
+        example: 0
+        type: integer
       metadata:
         example: '{"user_id": 1234}'
         type: string
@@ -241,6 +240,9 @@ definitions:
       tus_id:
         example: ee715c254ee61855b465ed61be930487
         type: string
+      updated_at:
+        example: 1682366228
+        type: integer
       upload_columns:
         items:
           $ref: '#/definitions/model.UploadColumn'
@@ -314,6 +316,12 @@ definitions:
     type: object
   model.Workspace:
     properties:
+      allowed_import_domains:
+        example:
+        - example.com
+        items:
+          type: string
+        type: array
       created_at:
         example: 1682366228
         type: integer
@@ -374,6 +382,9 @@ definitions:
         items:
           $ref: '#/definitions/types.ImportRowResponse'
         type: array
+      updated_at:
+        example: 1682366228
+        type: integer
       upload_id:
         example: 50ca61e1-f683-4b03-9ec4-4b3adb592bf1
         type: string
@@ -466,9 +477,6 @@ definitions:
       name:
         example: Test Importer
         type: string
-      skip_header_row_selection:
-        example: false
-        type: boolean
       template:
         $ref: '#/definitions/types.Template'
     type: object
@@ -563,6 +571,9 @@ definitions:
       is_stored:
         example: false
         type: boolean
+      matched_header_row_index:
+        example: 0
+        type: integer
       metadata:
         example: '{"user_id": 1234}'
         type: string
@@ -655,21 +666,9 @@ definitions:
     type: object
   web.ImporterEditRequest:
     properties:
-      allowed_domains:
-        example:
-        - example.com
-        items:
-          type: string
-        type: array
       name:
         example: Test Importer
         type: string
-      skip_header_row_selection:
-        example: false
-        type: boolean
-      webhooks_enabled:
-        example: true
-        type: boolean
     type: object
   web.TemplateColumnCreateRequest:
     properties:
@@ -708,6 +707,9 @@ definitions:
       description:
         example: The first name
         type: string
+      index:
+        example: 0
+        type: integer
       key:
         example: first_name
         type: string
@@ -750,6 +752,15 @@ definitions:
         type: boolean
       validate:
         type: string
+    type: object
+  web.WorkspaceEditRequest:
+    properties:
+      allowed_import_domains:
+        example:
+        - example.com
+        items:
+          type: string
+        type: array
     type: object
 host: localhost:3003
 info:
@@ -1045,6 +1056,53 @@ paths:
       summary: Get upload
       tags:
       - Upload
+  /admin/v1/workspace/{id}:
+    get:
+      description: Get a workspace
+      parameters:
+      - description: Workspace ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Workspace'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/types.Res'
+      summary: Get workspace
+      tags:
+      - Workspace
+    post:
+      description: Edit a workspace
+      parameters:
+      - description: Workspace ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/web.WorkspaceEditRequest'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Workspace'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/types.Res'
+      summary: Edit workspace
+      tags:
+      - Workspace
   /admin/v1/workspace/{id}/api-key:
     get:
       description: Get the current API key of a workspace

@@ -263,17 +263,15 @@ func createImporterForExternalAPI(c *gin.Context, getAllowedValidateTypes func(s
 		return
 	}
 	name, _ := importerRaw["name"].(string)
-	skipHeaderRowSelection, _ := importerRaw["skip_header_row_selection"].(bool)
 	if len(name) == 0 {
 		name = "My Importer"
 	}
 	importer := model.Importer{
-		ID:                     model.NewID(),
-		WorkspaceID:            model.ParseID(workspaceID),
-		Name:                   name,
-		SkipHeaderRowSelection: skipHeaderRowSelection,
-		CreatedBy:              user.ID,
-		UpdatedBy:              user.ID,
+		ID:          model.NewID(),
+		WorkspaceID: model.ParseID(workspaceID),
+		Name:        name,
+		CreatedBy:   user.ID,
+		UpdatedBy:   user.ID,
 	}
 
 	// Parse the template from the request
@@ -351,10 +349,9 @@ func createImporterForExternalAPI(c *gin.Context, getAllowedValidateTypes func(s
 	importer.Template = &template
 
 	importerType := types.Importer{
-		ID:                     importer.ID,
-		Name:                   importer.Name,
-		SkipHeaderRowSelection: importer.SkipHeaderRowSelection,
-		Template:               templateType,
+		ID:       importer.ID,
+		Name:     importer.Name,
+		Template: templateType,
 	}
 
 	c.JSON(http.StatusOK, &importerType)

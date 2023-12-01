@@ -42,13 +42,13 @@ func tusPostFile(h *handler.UnroutedHandler) gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusBadRequest, "No importer ID is configured for this importer. Please contact support.")
 			return
 		}
-		importer, err := db.GetImporterWithoutTemplate(importerID)
+		importer, err := db.GetImporterWithoutTemplateWithWorkspace(importerID)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, "Unable to retrieve importer with the provided ID. Please contact support.")
 			return
 		}
-		if len(importer.AllowedDomains) != 0 {
-			if err = validateAllowedDomains(c, importer); err != nil {
+		if len(importer.Workspace.AllowedImportDomains) != 0 {
+			if err = validateAllowedImportDomains(c, importer.Workspace); err != nil {
 				c.AbortWithStatusJSON(http.StatusUnauthorized, types.Res{Err: err.Error()})
 				return
 			}
@@ -95,8 +95,8 @@ func tusPatchFile(h *handler.UnroutedHandler) gin.HandlerFunc {
 //	@Param			body	body	map[string]interface{}	false	"Request body"
 func importerGetImporter(c *gin.Context, getAllowedValidateTypes func(string) map[string]bool) {
 	id := c.Param("id")
-	if len(id) == 0 {
-		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No importer ID provided"})
+	if len(id) == 0 || id == "0" {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "The parameter 'importerId' is required"})
 		return
 	}
 	_, err := uuid.FromString(id)
@@ -108,7 +108,7 @@ func importerGetImporter(c *gin.Context, getAllowedValidateTypes func(string) ma
 	// If schemaless mode is enabled, return the importer without an attached template
 	schemaless, _ := strconv.ParseBool(c.Query("schemaless"))
 	if schemaless {
-		importer, err := db.GetImporterWithoutTemplate(id)
+		importer, err := db.GetImporterWithoutTemplateWithWorkspace(id)
 		if err != nil {
 			errStr := err.Error()
 			if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -117,16 +117,15 @@ func importerGetImporter(c *gin.Context, getAllowedValidateTypes func(string) ma
 			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: errStr})
 			return
 		}
-		if len(importer.AllowedDomains) != 0 {
-			if err = validateAllowedDomains(c, importer); err != nil {
+		if len(importer.Workspace.AllowedImportDomains) != 0 {
+			if err = validateAllowedImportDomains(c, importer.Workspace); err != nil {
 				c.AbortWithStatusJSON(http.StatusUnauthorized, types.Res{Err: err.Error()})
 				return
 			}
 		}
 		importServiceImporter := types.Importer{
-			ID:                     importer.ID,
-			Name:                   importer.Name,
-			SkipHeaderRowSelection: importer.SkipHeaderRowSelection,
+			ID:   importer.ID,
+			Name: importer.Name,
 			Template: &types.Template{
 				TemplateColumns: []*types.TemplateColumn{},
 			},
@@ -137,7 +136,7 @@ func importerGetImporter(c *gin.Context, getAllowedValidateTypes func(string) ma
 
 	// If a template is provided in the request, validate and return that instead of the template attached to the importer
 	if c.Request.ContentLength != 0 {
-		importer, err := db.GetImporterWithoutTemplate(id)
+		importer, err := db.GetImporterWithoutTemplateWithWorkspace(id)
 		if err != nil {
 			errStr := err.Error()
 			if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -146,8 +145,8 @@ func importerGetImporter(c *gin.Context, getAllowedValidateTypes func(string) ma
 			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: errStr})
 			return
 		}
-		if len(importer.AllowedDomains) != 0 {
-			if err = validateAllowedDomains(c, importer); err != nil {
+		if len(importer.Workspace.AllowedImportDomains) != 0 {
+			if err = validateAllowedImportDomains(c, importer.Workspace); err != nil {
 				c.AbortWithStatusJSON(http.StatusUnauthorized, types.Res{Err: err.Error()})
 				return
 			}
@@ -167,10 +166,9 @@ func importerGetImporter(c *gin.Context, getAllowedValidateTypes func(string) ma
 			return
 		}
 		importServiceImporter := types.Importer{
-			ID:                     importer.ID,
-			Name:                   importer.Name,
-			SkipHeaderRowSelection: importer.SkipHeaderRowSelection,
-			Template:               requestTemplate,
+			ID:       importer.ID,
+			Name:     importer.Name,
+			Template: requestTemplate,
 		}
 		c.JSON(http.StatusOK, importServiceImporter)
 		return
@@ -189,8 +187,8 @@ func importerGetImporter(c *gin.Context, getAllowedValidateTypes func(string) ma
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Template not attached to importer"})
 		return
 	}
-	if len(template.Importer.AllowedDomains) != 0 {
-		if err = validateAllowedDomains(c, template.Importer); err != nil {
+	if len(template.Importer.Workspace.AllowedImportDomains) != 0 {
+		if err = validateAllowedImportDomains(c, template.Importer.Workspace); err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, types.Res{Err: err.Error()})
 			return
 		}
@@ -227,10 +225,9 @@ func importerGetImporter(c *gin.Context, getAllowedValidateTypes func(string) ma
 		TemplateColumns: importerTemplateColumns,
 	}
 	importServiceImporter := types.Importer{
-		ID:                     template.Importer.ID,
-		Name:                   template.Importer.Name,
-		SkipHeaderRowSelection: template.Importer.SkipHeaderRowSelection,
-		Template:               importerTemplate,
+		ID:       template.Importer.ID,
+		Name:     template.Importer.Name,
+		Template: importerTemplate,
 	}
 	c.JSON(http.StatusOK, importServiceImporter)
 }
@@ -1217,23 +1214,23 @@ func importerSubmitImport(c *gin.Context, importCompleteHandler func(types.Impor
 	c.JSON(http.StatusOK, importServiceImport)
 }
 
-func validateAllowedDomains(c *gin.Context, importer *model.Importer) error {
+func validateAllowedImportDomains(c *gin.Context, workspace *model.Workspace) error {
 	referer := c.Request.Referer()
 	uri, err := url.ParseRequestURI(referer)
 	if err != nil || len(uri.Host) == 0 {
-		tf.Log.Errorw("Missing or invalid referer header while checking allowed domains during import", "importer_id", importer.ID, "referer", referer)
+		tf.Log.Errorw("Missing or invalid referer header while checking allowed domains during import", "workspace_id", workspace.ID, "referer", referer)
 		return errors.New("Unable to determine upload origin. Please contact support.")
 	}
 	hostName := uri.Hostname()
 	containsAllowedDomain := false
-	for _, d := range importer.AllowedDomains {
+	for _, d := range workspace.AllowedImportDomains {
 		if strings.HasSuffix(hostName, strings.ToLower(d)) {
 			containsAllowedDomain = true
 			break
 		}
 	}
 	if !containsAllowedDomain {
-		tf.Log.Infow("Upload request blocked coming from unauthorized domain", "importer_id", importer.ID, "referer", referer, "allowed_domains", importer.AllowedDomains)
+		tf.Log.Infow("Upload request blocked coming from unauthorized domain", "workspace_id", workspace.ID, "referer", referer, "allowed_import_domains", workspace.AllowedImportDomains)
 		return errors.New("Uploads are only allowed from authorized domains. Please contact support.")
 	}
 	return nil

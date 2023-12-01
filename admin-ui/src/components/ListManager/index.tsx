@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ListManagerProps } from "./types";
 import style from "./style/ListManager.module.scss";
 import Button from "../Button";
@@ -10,14 +10,23 @@ const validateUrl = (url: string) => {
   return /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/.test(url);
 };
 
-export default function ListManager({ formStyle, ...props }: ListManagerProps) {
+const arraysEqual = (a: string[], b: string[]): boolean => {
+  return a.length === b.length && a.every((val, index) => val === b[index]);
+};
+
+export default function ListManager({ formStyle, buttonText, ...props }: ListManagerProps) {
   const { placeholder, required, icon, onChange, value: discardValue, ...inputProps } = props;
-
   const [newValue, setNewValue] = useState<string>("");
-
   const [list, setList] = useState<string[]>((discardValue as string[]) || []);
-
   const [error, setError] = useState<string | null>(null);
+  const userActionRef = useRef(false);
+
+  useEffect(() => {
+    // Check if discardValue is different from the current list
+    if (Array.isArray(discardValue) && !arraysEqual(discardValue, list)) {
+      setList(discardValue);
+    }
+  }, [discardValue]);
 
   const facade = { placeholder, required, icon };
 
@@ -31,15 +40,20 @@ export default function ListManager({ formStyle, ...props }: ListManagerProps) {
       setNewValue("");
       setList((list) => [...list, newValue]);
     }
+    userActionRef.current = true;
   };
 
   const removeItem = (text: string) => {
     setList((list) => list.filter((item) => item !== text));
+    userActionRef.current = true;
   };
 
   useEffect(() => {
-    onChange && onChange(list);
-  }, [list]);
+    if (userActionRef.current) {
+      onChange && onChange(list);
+      userActionRef.current = false;
+    }
+  }, [list, onChange]);
 
   return (
     <form
@@ -53,7 +67,7 @@ export default function ListManager({ formStyle, ...props }: ListManagerProps) {
         <input {...inputProps} value={list} type="hidden" />
 
         <Button className={style.button} variants={["primary"]}>
-          + Add Item
+          {buttonText ?? "+ Add Item"}
         </Button>
       </div>
       {error && <Errors error={error} />}

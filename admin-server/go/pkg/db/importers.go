@@ -56,6 +56,21 @@ func GetImporterWithoutTemplate(id string) (*model.Importer, error) {
 	return &importer, nil
 }
 
+func GetImporterWithoutTemplateWithWorkspace(id string) (*model.Importer, error) {
+	if len(id) == 0 {
+		return nil, errors.New("no importer ID provided")
+	}
+	var importer model.Importer
+	err := tf.DB.Preload("Workspace").First(&importer, model.ParseID(id)).Error
+	if err != nil {
+		return nil, err
+	}
+	if !importer.ID.Valid {
+		return nil, gorm.ErrRecordNotFound
+	}
+	return &importer, nil
+}
+
 func GetImporterWithUsers(id string) (*model.Importer, error) {
 	if len(id) == 0 {
 		return nil, errors.New("no importer ID provided")

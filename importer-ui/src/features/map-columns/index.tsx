@@ -15,7 +15,7 @@ export default function MapColumns({
   skipHeaderRowSelection,
   schemaless,
   schemalessReadOnly,
-  seColumnsValues,
+  setColumnsValues,
   columnsValues,
   isLoading,
   onLoad,
@@ -27,7 +27,7 @@ export default function MapColumns({
   const onSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    seColumnsValues(formValues);
+    setColumnsValues(formValues);
     const columns = Object.keys(formValues).reduce((acc, key) => {
       const { template, use } = formValues[key];
       return { ...acc, ...(use ? { [key]: template } : {}) };

@@ -1,6 +1,8 @@
 import React, { createContext, useContext } from "react";
+import { DragDropContext, Draggable } from "react-beautiful-dnd";
 import useRect from "../../hooks/useRect";
 import classes from "../../utils/classes";
+import { StrictModeDroppable } from "./types/droppable";
 import { CellProps, RowProps, TableProps } from "./types";
 import themeDefault from "./style/Default.module.scss";
 import Tooltip from "../Tooltip";
@@ -21,6 +23,8 @@ export default function Table({
   columnAlignments = [],
   fixHeader = false,
   onRowClick,
+  reorderable,
+  onRowsReorder,
 }: TableProps): React.ReactElement {
   // THEME
   // Tables receive a full CSS module as theme or applies default styles
@@ -34,17 +38,15 @@ export default function Table({
   // Hide column title if the item has an action (action button) or the title starts with underscore
   const modelDatum = data?.[0];
   const thead: any = modelDatum
-    ? Object.keys(modelDatum).map((k) => {
+    ? // Add extra column for the drag handle
+      (reorderable ? ["", ...Object.keys(modelDatum)] : Object.keys(modelDatum)).map((k) => {
         const value = modelDatum[k];
-
         if (k.indexOf("_") === 0) {
           return "";
         }
-
         if (typeof value === "object" && value?.captionInfo) {
           return { key: k, captionInfo: value.captionInfo };
         }
-
         return k;
       })
     : {};
@@ -68,70 +70,121 @@ export default function Table({
     <div className={style.caption}>{heading}</div>
   ) : (
     <div className={style.thead} role="rowgroup">
-      <Row datum={thead} isHeading={true} />
+      <HeadingRow datum={thead} isHeading={true} index={0} keyAsId={keyAsId} />
     </div>
   );
+
+  const onDragEnd = (result: any) => {
+    if (!reorderable) return;
+    if (typeof onRowsReorder === "undefined") return;
+    if (!result.destination) return;
+
+    onRowsReorder(result);
+  };
 
   return (
     <TableContext.Provider value={context}>
       <div className={tableStyle} role="table">
         {headingContent}
 
-        <div className={style.tbody} role="rowgroup" ref={setRef}>
-          {data.map((d, i) => {
-            const key = keyAsId && d?.[keyAsId] ? d[keyAsId] : i;
-            const props = { datum: d, onClick: onRowClick };
-            return <Row {...props} key={key?.toString()} />;
-          })}
-        </div>
+        <DragDropContext onDragEnd={onDragEnd}>
+          <StrictModeDroppable droppableId="droppable">
+            {(provided) => (
+              <div {...provided.droppableProps} ref={provided.innerRef} className={style.tbody} role="rowgroup">
+                {data.map((d, i) => {
+                  const index = d.index ? Number(d.index) : i;
+                  const key = keyAsId && d?.[keyAsId] ? d[keyAsId] : index;
+                  const props = { datum: d, onClick: onRowClick, index: index, keyAsId };
+                  return <Row {...props} key={key?.toString()} reorderable={reorderable} />;
+                })}
+                {provided.placeholder}
+              </div>
+            )}
+          </StrictModeDroppable>
+        </DragDropContext>
       </div>
-      {!data.length && (
-        <div className={style.emptyMsg} role="empty-query">
-          <p>Empty</p>
-        </div>
-      )}
     </TableContext.Provider>
   );
 }
 
-const Row = ({ datum, onClick, isHeading }: RowProps) => {
-  const { style, highlightColumns, hideColumns, columnWidths, columnAlignments, tableSize } = useContext(TableContext);
+const HeadingRow = ({ datum, onClick }: RowProps) => {
+  const context = useContext(TableContext);
+  const className = classes([context.style?.tr]);
 
-  const className = classes([style?.tr]);
   return (
     <div className={className} role="row" onClick={() => onClick?.(datum)}>
-      {Object.keys(datum)
-        .filter((k) => !hideColumns.includes(datum[k]) && !hideColumns.includes(k))
-        .map((k, i) => {
-          // datum is the row
-          // datum[k] is the content for the cell
-          // If it is an object with the 'content' property, use that as content (can be JSX or a primitive)
-          // Another 'raw' property with a primitive value is used to sort and search
-          let content = (datum[k] as any)?.content || datum[k];
-          const tooltip = (datum[k] as any)?.tooltip;
-          const captionInfo = isHeading ? (datum[k] as any)?.captionInfo : null;
-          const headingKey = isHeading ? (datum[k] as any)?.key : null;
-          content = isHeading && captionInfo ? <Tooltip title={captionInfo}>{headingKey}</Tooltip> : content;
-          const wrappedContent = content && typeof content === "string" ? <span>{content}</span> : content;
-
-          const cellClass = classes([
-            highlightColumns?.includes(k) && style.highlight,
-            !wrappedContent && style.empty,
-            typeof content !== "string" && style.element,
-          ]);
-
-          const width = columnWidthBound(tableSize?.width, columnWidths?.[i]);
-
-          const cellStyle = { width, textAlign: columnAlignments?.[i] || "left" };
-
-          return (
-            <Cell key={k} cellClass={cellClass} cellStyle={cellStyle} tooltip={tooltip || ""}>
-              {wrappedContent}
-            </Cell>
-          );
-        })}
+      {renderCells(datum, context, true)}
     </div>
   );
+};
+
+const Row = ({ datum, onClick, index, keyAsId, reorderable }: RowProps) => {
+  const context = useContext(TableContext);
+  const className = classes([context.style?.tr]);
+
+  if (reorderable) {
+    return (
+      <Draggable draggableId={datum[keyAsId]?.toString() ?? `${index}`} index={index}>
+        {(provided) => {
+          // Append the grab handle to the datum
+          const modifiedDatum = {
+            grabHandle: (
+              <div {...provided.dragHandleProps} style={{ cursor: "grab" }}>
+                ☰
+              </div>
+            ),
+            ...datum,
+          };
+          return (
+            <div {...provided.draggableProps} ref={provided.innerRef} className={className} role="row" onClick={() => onClick?.(datum)}>
+              {renderCells(modifiedDatum, context)}
+            </div>
+          );
+        }}
+      </Draggable>
+    );
+  }
+  return (
+    <div className={className} role="row" onClick={() => onClick?.(datum)}>
+      {renderCells(datum, context)}
+    </div>
+  );
+};
+
+const renderCells = (datum: any, { highlightColumns, hideColumns, columnWidths, columnAlignments, tableSize, style }: any, isHeading = false) => {
+  return Object.keys(datum)
+    .filter((k) => !hideColumns.includes(datum[k]) && !hideColumns.includes(k))
+    .map((k, i) => {
+      let content = (datum[k] as any)?.content || datum[k];
+      const tooltip = (datum[k] as any)?.tooltip;
+      const captionInfo = isHeading ? (datum[k] as any)?.captionInfo : null;
+      const headingKey = isHeading ? (datum[k] as any)?.key : null;
+      content = isHeading && captionInfo ? <Tooltip title={captionInfo}>{headingKey}</Tooltip> : content;
+      const wrappedContent = content && typeof content === "string" ? <span>{content}</span> : content;
+
+      const cellClass = classes([
+        highlightColumns?.includes(k) && style.highlight,
+        !wrappedContent && style.empty,
+        typeof content !== "string" && style.element,
+      ]);
+
+      const width = columnWidthBound(tableSize?.width, columnWidths?.[i]);
+      const cellStyle = { width, textAlign: columnAlignments?.[i] || "left" };
+
+      if (k === "grabHandle") {
+        // Special handling for the grab handle cell, if needed in the future
+        return (
+          <Cell key={k} cellClass={cellClass} cellStyle={cellStyle} tooltip={tooltip || ""}>
+            {wrappedContent}
+          </Cell>
+        );
+      }
+      return (
+        <Cell key={k} cellClass={cellClass} cellStyle={cellStyle} tooltip={tooltip || ""}>
+          {wrappedContent}
+        </Cell>
+      );
+    });
 };
 
 const Cell = ({ children, cellClass, cellStyle, tooltip }: CellProps) => {
