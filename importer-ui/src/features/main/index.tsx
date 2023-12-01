@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Button, IconButton } from "@chakra-ui/button";
 import Errors from "../../components/Errors";
 import Stepper from "../../components/Stepper";
-import useStepper from "../../components/Stepper/hooks/useStepper";
 import TableLoading from "../../components/TableLoading";
 import { defaultImporterHost, getAPIBaseURL } from "../../api/api";
 import useCssOverrides from "../../hooks/useCssOverrides";
@@ -15,8 +14,7 @@ import { providedJSONString } from "../../utils/cssInterpreter";
 import postMessage from "../../utils/postMessage";
 import { ColumnsOrder } from "../review/types";
 import useApi from "./hooks/useApi";
-import useModifiedSteps from "./hooks/useModifiedSteps";
-import { Steps } from "./types";
+import useStepNavigation, { StepEnum } from "./hooks/useStepNavigation";
 import style from "./style/Main.module.scss";
 import MapColumns from "../map-columns";
 import Review from "../review";
@@ -25,13 +23,6 @@ import Uploader from "../uploader";
 import { PiArrowCounterClockwise, PiX } from "react-icons/pi";
 
 const TUS_ENDPOINT = getAPIBaseURL("v1") + "files";
-
-const stepsConfig = [
-  { label: "Upload", id: Steps.Upload },
-  { label: "Select Header", id: Steps.RowSelection },
-  { label: "Map Columns", id: Steps.MapColumns },
-  { label: "Review", id: Steps.Review },
-];
 
 export default function Main() {
   useRevealApp();
@@ -99,9 +90,7 @@ export default function Main() {
   const [columnsOrder, setColumnsOrder] = useState<ColumnsOrder>();
 
   // Stepper handler
-  const steps = useModifiedSteps(stepsConfig, skipHeader);
-  const stepper = useStepper(steps, 0);
-  const step = stepper?.step?.id;
+  const { currentStep, setStep, goNext, goBack, stepper, setStorageStep } = useStepNavigation(StepEnum.Upload, skipHeader, importerId, tusId);
 
   // There was an error the last time they tried to upload a file. Reload to clear stored tusId
   // TODO: This doesn't work, fix it
@@ -125,57 +114,39 @@ export default function Main() {
   useEffect(() => {
     const isUploadLoading = tusId && !uploadError && !uploadIsStored;
     setShowUploadSpinner(isUploadLoading);
-  }, [tusId, uploadIsStored, uploadError, step]);
+  }, [tusId, uploadIsStored, uploadError, currentStep]);
 
   // Handle jumping to the right step from page reloads or upload errors
   useEffect(() => {
     // If we're not on the first step, the page wasn't reloaded or an error would have been already handled
-    if (step !== Steps.Upload) {
+    if (currentStep !== StepEnum.Upload) {
       return;
     }
     const isUploadSuccess = tusId && !uploadError && uploadIsStored;
-    const isUploadHeaderRowSet = upload?.header_row_index != null && !skipHeader;
-
     if (uploadError) {
-      stepper.setCurrent(0);
+      setStep(StepEnum.Upload);
       return;
     }
+
     if (isUploadSuccess) {
-      if (isUploadHeaderRowSet) {
+      if (currentStep === StepEnum.MapColumns) {
         setUploadFromHeaderRowSelection(upload);
         setSelectedHeaderRow(upload?.header_row_index);
-        stepper.setCurrent(2);
+        setStep(currentStep);
       } else {
-        stepper.setCurrent(1);
+        goNext();
       }
     }
-  }, [tusId, uploadIsStored, uploadError, step]);
-
-  useEffect(() => {
-    if (review && !reviewIsLoading && reviewIsStored && enabledReview) {
-      if (skipHeader) stepper.setCurrent(2);
-      else stepper.setCurrent(3);
-    }
-  }, [review, reviewIsLoading, reviewIsStored, skipHeader, enabledReview]);
-
-  // Reload on close modal if completed
-  useEffect(() => {
-    // TODO: ****************************** Update this to actually check if completed ********************************
-    // if (!modalIsOpen && step === Steps.Review) {
-    //   reload();
-    // }
-  }, [modalIsOpen]);
+  }, [tusId, uploadIsStored, uploadError, currentStep]);
 
   // Actions
-
   const reload = () => {
     setTusId("");
-    stepper.setCurrent(0);
+    setStep(StepEnum.Upload);
     location.reload();
   };
 
   // Send messages to parent (SDK iframe)
-
   useEffect(() => {
     if (!isEmbeddedInIframe) return;
     const message = {
@@ -193,6 +164,9 @@ export default function Main() {
     };
     postMessage(message);
     // TODO: If waitOnComplete and in the last stage of the import, should we setTusId("") to reset the importer here?
+    if (!waitOnComplete) {
+      setTusId("");
+    }
   };
 
   const handleComplete = (data: any) => {
@@ -204,15 +178,13 @@ export default function Main() {
       };
       postMessage(message);
     }
-    setTusId("");
   };
 
   const handleCancelReview = () => {
-    if (skipHeader) {
-      stepper.setCurrent(1);
-    } else {
-      stepper.setCurrent(2);
+    if (currentStep === StepEnum.MapColumns) {
+      setUploadFromHeaderRowSelection(upload);
     }
+    goBack();
   };
 
   if (!initialPageLoaded) {
@@ -245,9 +217,8 @@ export default function Main() {
     if (displayUploadSpinner) {
       return <TableLoading hideBorder>Processing your file...</TableLoading>;
     }
-
-    switch (step) {
-      case Steps.Upload:
+    switch (currentStep) {
+      case StepEnum.Upload:
         return (
           <Uploader
             template={template}
@@ -260,30 +231,31 @@ export default function Main() {
             schemaless={schemaless}
           />
         );
-      case Steps.RowSelection:
+      case StepEnum.RowSelection:
         return (
           <RowSelection
             upload={upload}
             onCancel={reload}
             onSuccess={(upload: any) => {
-              stepper.setCurrent(2);
               setUploadFromHeaderRowSelection(upload);
+              goNext();
             }}
             selectedHeaderRow={selectedHeaderRow}
             setSelectedHeaderRow={setSelectedHeaderRow}
           />
         );
-      case Steps.MapColumns:
+      case StepEnum.MapColumns:
         return (
           <MapColumns
             template={template}
-            upload={skipHeader ? upload : uploadFromHeaderRowSelection}
+            upload={uploadFromHeaderRowSelection || upload}
             onSuccess={(_, columnsValues) => {
               setEnabledReview(true);
               setColumnsOrder(columnsValues);
+              goNext();
             }}
             skipHeaderRowSelection={skipHeader}
-            onCancel={skipHeader ? reload : () => stepper.setCurrent(1)}
+            onCancel={skipHeader ? reload : () => goBack(StepEnum.RowSelection)}
             schemaless={schemaless}
             schemalessReadOnly={schemalessReadOnly}
             setColumnsValues={seColumnsValues}
@@ -292,7 +264,7 @@ export default function Main() {
             onLoad={() => setEnabledReview(false)}
           />
         );
-      case Steps.Review:
+      case StepEnum.Review:
         return (
           <Review
             template={template}
@@ -305,6 +277,7 @@ export default function Main() {
             showImportLoadingStatus={showImportLoadingStatus}
             columnsOrder={columnsOrder}
             review={review}
+            schemaless={schemaless}
           />
         );
       default:

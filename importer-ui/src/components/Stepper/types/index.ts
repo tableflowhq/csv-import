@@ -1,6 +1,7 @@
 export type Step = {
   label: string;
   id?: string | number;
+  disabled?: boolean;
 };
 
 export type StepperProps = {

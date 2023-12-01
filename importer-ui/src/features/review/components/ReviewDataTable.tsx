@@ -15,19 +15,30 @@ import { PiInfo } from "react-icons/pi";
 const INDEX_ROW_WIDTH = 70;
 const MAX_COLUMN_SCROLL = 7;
 
-function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged, columnsOrder, disabled }: TableProps) {
+function ReviewDataTable({
+  theme,
+  uploadId,
+  filter,
+  template,
+  onCellValueChanged,
+  columnsOrder,
+  disabled,
+  upload,
+  onImportAlreadySubmitted,
+  schemaless,
+}: TableProps) {
   const customSelectClass = "ag-theme-alpine-dark-custom-select";
   const paginatedDataRef: any = useRef();
   const filterRef: any = useRef(filter);
 
   const [columnDefs, setColumnDefs] = useState<any>([]);
   const [tableWidth, setTableWidth] = useState(1000);
-  const [maxRows, setMaxRows] = useState(100);
 
   const [paginatedData, setPaginatedData] = useState<any>();
   const gridRef = useRef<GridApi | null>(null);
   const tableRef = useRef<HTMLDivElement>(null);
   const [selectedClass, setSelectedClass] = useState(customSelectClass);
+  const [columnsSelected, setColumnsSelected] = useState<string[]>([]);
 
   useEffect(() => {
     paginatedDataRef.current = paginatedData;
@@ -38,9 +49,11 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
     setPaginatedData(null);
     paginatedDataRef.current = null;
     gridRef.current && setDataSource();
-  }, [filter, maxRows]);
+  }, [filter]);
 
   const addEmptyRows = (newData: any) => {
+    const maxRows = Math.floor((tableRef?.current?.offsetHeight || 1000) / 41) - 2;
+
     if (!!Object.keys(newData).length && newData.rows.length < maxRows) {
       const missingRows = maxRows - newData.rows.length;
       const rows = [...newData.rows, ...Array(missingRows).fill({})];
@@ -61,22 +74,33 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
     const dataSource: IDatasource = {
       rowCount: paginatedData?.pagination?.total || undefined,
       getRows: async (params: any) => {
-        const previousData = paginatedDataRef.current || {};
-        const nextOffset = previousData?.pagination?.next_offset || 0;
+        try {
+          const previousData = paginatedDataRef.current || {};
+          const nextOffset = previousData?.pagination?.next_offset || 0;
 
-        // gets the paginated data
-        const newData = await fetchRows(uploadId, filterRef.current, 100, nextOffset);
+          // gets the paginated data
+          const newData = await fetchRows(uploadId, filterRef.current, 100, nextOffset);
+          if (!newData) {
+            console.error("Error fetching data");
+            return;
+          }
+          const firstColumnsKeys = Object.keys(newData?.rows[0]?.values || {});
+          setColumnsSelected([...firstColumnsKeys]);
+          const tableData = addEmptyRows(newData);
+          const paginationInfo = tableData?.pagination;
+          const rowThisPage = tableData?.rows || [];
 
-        const tableData = addEmptyRows(newData);
-        const paginationInfo = tableData?.pagination;
-        const rowThisPage = tableData?.rows || [];
-
-        let lastRow = -1;
-        if (paginationInfo?.total !== undefined && paginationInfo.total <= params.endRow) {
-          lastRow = paginationInfo.total;
+          let lastRow = -1;
+          if (paginationInfo?.total !== undefined && paginationInfo.total <= params.endRow) {
+            lastRow = paginationInfo.total;
+          }
+          params.successCallback(rowThisPage, lastRow);
+          setPaginatedData({ ...tableData });
+        } catch (error) {
+          if (error === "Import is already submitted") {
+            onImportAlreadySubmitted();
+          }
         }
-        params.successCallback(rowThisPage, lastRow);
-        setPaginatedData({ ...tableData });
       },
     };
     gridRef.current?.setDatasource?.(dataSource);
@@ -97,14 +121,42 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
 
   useEffect(() => {
     if (!paginatedData?.rows?.[0]?.values) return;
-    if (!columnsOrder) return;
     // Extract ids from columnOrder and preserve the order
-    const orderedIds = Object.values(columnsOrder);
+    let orderedIds;
+    if (!columnsOrder) {
+      if (!schemaless) {
+        const mappedIds = columnsSelected.map((key) => {
+          const matchingObject = template?.columns.find((obj) => obj.key === key);
+          return matchingObject ? matchingObject.id : null;
+        });
+        const filteredIds = mappedIds.filter((id) => id !== null);
+        const extendedArray = filteredIds.map((id) => ({
+          id,
+          index: upload?.upload_columns.findIndex((item) => item.suggested_template_column_id === id),
+        }));
+        const sortedArray = extendedArray.sort((a, b) => a.index - b.index);
+        orderedIds = sortedArray.map((item) => item.id);
+      } else {
+        const schemalessColumnOrder: { [key: string]: string } = {};
+        upload?.upload_columns?.map((column) => {
+          if (column?.suggested_template_column_id) {
+            schemalessColumnOrder[column.id] = column.name
+              ?.replace(/[^a-zA-Z0-9 ]/g, "")
+              .replace(/\s/g, "_")
+              .toLowerCase();
+          }
+          return column;
+        });
+        orderedIds = Object.values(schemalessColumnOrder);
+      }
+    } else {
+      orderedIds = Object.values(columnsOrder);
+    }
 
     // Map over orderedIds to get the corresponding columns from templateCols
     let orderedColumns = [];
     if (template?.columns.length !== 0) {
-      orderedColumns = orderedIds.map((id) => template?.columns?.find((col) => col.id === id)).filter(Boolean) || [];
+      orderedColumns = orderedIds?.map((id) => template?.columns?.find((col) => col.id === id)).filter(Boolean) || [];
     } else {
       // If no columns exist, the upload is schemaless
       orderedColumns = orderedIds.map((id) => ({ name: id, key: id }));
@@ -167,7 +219,6 @@ function ReviewDataTable({ theme, uploadId, filter, template, onCellValueChanged
   useEffect(() => {
     const handleResize = () => {
       setTableWidth((tableRef?.current?.offsetWidth || 1000) - 2);
-      setMaxRows(Math.floor((tableRef?.current?.offsetHeight || 1000) / 41) - 2);
     };
 
     window.addEventListener("resize", handleResize);

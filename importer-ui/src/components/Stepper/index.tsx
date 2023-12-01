@@ -8,6 +8,7 @@ export default function Stepper({ steps, current, clickable, setCurrent }: Stepp
   return (
     <div className={style.stepper}>
       {steps.map((step, i) => {
+        if (step.disabled) return null;
         const done = i < current;
 
         const Element = clickable ? "button" : "div";
