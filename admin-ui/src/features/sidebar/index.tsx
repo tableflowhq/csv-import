@@ -9,9 +9,8 @@ import { AuthContext } from "../../providers/Auth";
 import useLocalStorage from "../../hooks/useLocalStorage";
 import { typedSxMap } from "../../utils/typedSxMap";
 import NavItem from "./components/NavItem";
-import { FiChevronsLeft, FiChevronsRight, FiDatabase, FiHelpCircle, FiHome, FiSettings } from "react-icons/fi";
-import { LuLogOut } from "react-icons/lu";
-import { PiCube, PiFiles } from "react-icons/pi";
+import { FiChevronsLeft, FiChevronsRight, FiHome } from "react-icons/fi";
+import { PiCube, PiFiles, PiGear, PiQuestion, PiSignOut, PiWallet } from "react-icons/pi";
 
 interface LinkItemProps {
   name: string;
@@ -175,15 +174,15 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
 
         {sessionExists && verified && (
           <>
-            <NavItem navSize={navSize} icon={FiHelpCircle} title="Docs" name="docs" url="https://tableflow.com/docs" isExternalLink />
-            <NavItem navSize={navSize} icon={FiSettings} title="Settings" name="settings" url="/settings" isSelected={urlPage.includes("settings")} />
+            <NavItem navSize={navSize} icon={PiQuestion} title="Docs" name="docs" url="https://tableflow.com/docs" isExternalLink />
+            <NavItem navSize={navSize} icon={PiGear} title="Settings" name="settings" url="/settings" isSelected={urlPage.includes("settings")} />
           </>
         )}
 
         {sessionExists && showProfile && (
           <>
-            <NavItem navSize={navSize} icon={FiDatabase} title="Billing" name="billing" url="/billing" isSelected={urlPage.includes("billing")} />
-            <NavItem navSize={navSize} icon={LuLogOut} title="Logout" name="logout" onClick={() => onLogout()} />
+            <NavItem navSize={navSize} icon={PiWallet} title="Billing" name="billing" url="/billing" isSelected={urlPage.includes("billing")} />
+            <NavItem navSize={navSize} icon={PiSignOut} title="Logout" name="logout" onClick={() => onLogout()} />
           </>
         )}
       </Flex>
