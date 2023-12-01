@@ -43,12 +43,13 @@ export default function createTableFlowImporter({
     domElement.setAttribute("id", elementId);
     if (isModal) domElement.addEventListener("click", backdropClick);
   }
-
   domElement.setAttribute("class", domElementClass);
+
+  importerId = importerId === undefined || importerId?.trim() === "" ? "0" : importerId;
 
   // iframe element
   let urlParams = {
-    importerId: importerId === undefined || importerId?.trim() === "" ? "0" : importerId,
+    importerId,
     isModal: isModal ? "true" : "false",
     modalIsOpen: "true",
     template: parseObjectOrStringJSON("template", template),
