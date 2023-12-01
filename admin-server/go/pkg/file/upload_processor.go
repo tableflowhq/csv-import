@@ -46,12 +46,22 @@ func UploadCompleteHandler(event handler.HookEvent) {
 		tf.Log.Warnw("Could not retrieve import metadata", "error", err, "tus_id", event.Upload.ID)
 	}
 
+	// Determine if the upload is schemaless, where no template will be used and the user will define the keys to map their file to
+	schemaless := false
+	schemalessHeader := event.HTTPRequest.Header.Get("X-Import-Schemaless")
+	if len(schemalessHeader) != 0 {
+		schemaless, _ = strconv.ParseBool(schemalessHeader)
+	}
+
 	// Retrieve the template provided from the SDK
 	uploadError := "" // TODO: Refactor this so the upload object is created higher up and other fatal errors can exist
-	uploadTemplate, err := generateUploadTemplate(event.HTTPRequest.Header.Get("X-Import-Template"))
-	if err != nil {
-		tf.Log.Warnw("Could not generate upload template", "error", err, "tus_id", event.Upload.ID)
-		uploadError = fmt.Sprintf("Invalid template: %s", err.Error())
+	uploadTemplate := jsonb.JSONB{}
+	if !schemaless {
+		uploadTemplate, err = generateUploadTemplate(event.HTTPRequest.Header.Get("X-Import-Template"))
+		if err != nil {
+			tf.Log.Warnw("Could not generate upload template", "error", err, "tus_id", event.Upload.ID)
+			uploadError = fmt.Sprintf("Invalid template: %s", err.Error())
+		}
 	}
 
 	// Determine if the header row selection step should be skipped, setting the header row to the first row of the file
@@ -59,13 +69,6 @@ func UploadCompleteHandler(event handler.HookEvent) {
 	skipHeaderRowSelectionHeader := event.HTTPRequest.Header.Get("X-Import-SkipHeaderRowSelection")
 	if len(skipHeaderRowSelectionHeader) != 0 {
 		skipHeaderRowSelection, _ = strconv.ParseBool(skipHeaderRowSelectionHeader)
-	}
-
-	// Determine if the upload is schemaless, where no template will be used and the user will define the keys to map their file to
-	schemaless := false
-	schemalessHeader := event.HTTPRequest.Header.Get("X-Import-Schemaless")
-	if len(schemalessHeader) != 0 {
-		schemaless, _ = strconv.ParseBool(schemalessHeader)
 	}
 
 	upload := &model.Upload{

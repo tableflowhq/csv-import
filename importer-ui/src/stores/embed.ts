@@ -39,7 +39,11 @@ const useEmbedStore = create<ParamsStore>()((set) => ({
   },
   setEmbedParams: (embedParams) =>
     set((state) => ({
-      embedParams: { ...state.embedParams, ...embedParams, importerId: embedParams.importerId ?? "0" },
+      embedParams: {
+        ...state.embedParams,
+        ...embedParams,
+        importerId: embedParams.importerId === undefined || embedParams.importerId?.trim() === "" ? "0" : embedParams.importerId,
+      },
     })),
 }));
 

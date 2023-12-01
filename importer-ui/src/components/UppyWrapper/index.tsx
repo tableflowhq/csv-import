@@ -43,7 +43,9 @@ export default function UppyWrapper({
       tusInstance?.setOptions({
         endpoint,
         onBeforeRequest: (req: any) => {
-          req.setHeader("X-Importer-ID", importerId);
+          if (importerId && importerId !== "0") {
+            req.setHeader("X-Importer-ID", importerId);
+          }
           const importMetadataEncoded = metadata ? btoa(metadata) : "";
           req.setHeader("X-Import-Metadata", importMetadataEncoded);
           req.setHeader("X-Import-SkipHeaderRowSelection", String(skipHeaderRowSelection));

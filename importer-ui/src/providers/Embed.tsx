@@ -39,7 +39,7 @@ export default function Embed({ children }: EmbedProps) {
       const obj = JSON.parse(str);
       return JSON.stringify(obj);
     } catch (e) {
-      console.error(`The parameter ${paramName} could not be parsed as JSON. Please check the documentation for more details.`, e);
+      console.error(`The parameter '${paramName}' could not be parsed as JSON. Please check the documentation for more details.`, e);
       return "";
     }
   };

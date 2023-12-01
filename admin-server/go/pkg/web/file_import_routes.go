@@ -83,7 +83,7 @@ func importerGetImporter(c *gin.Context) {
 	}
 
 	if c.Request.ContentLength == 0 {
-		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No template provided"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "The parameter 'template' is required and must be valid JSON"})
 		return
 	}
 

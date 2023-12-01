@@ -39,6 +39,7 @@ func GetDatabaseSchemaInitSQL() string {
 			name               text             not null,
 			index              int              not null, -- The 0-based position of the column within the file
 			sample_data        text[]           not null,
+			template_column_id uuid,                      -- The ID of the template_column this column will map to when importing
 			unique (upload_id, index),
 			constraint fk_upload_id
 				foreign key (upload_id)
