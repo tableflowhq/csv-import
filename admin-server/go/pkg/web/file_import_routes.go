@@ -95,8 +95,8 @@ func tusPatchFile(h *handler.UnroutedHandler) gin.HandlerFunc {
 //	@Param			body	body	map[string]interface{}	false	"Request body"
 func importerGetImporter(c *gin.Context, getAllowedValidateTypes func(string) map[string]bool) {
 	id := c.Param("id")
-	if len(id) == 0 {
-		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No importer ID provided"})
+	if len(id) == 0 || id == "0" {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "The parameter 'importerId' is required"})
 		return
 	}
 	_, err := uuid.FromString(id)
