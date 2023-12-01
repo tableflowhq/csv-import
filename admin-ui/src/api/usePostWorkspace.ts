@@ -7,7 +7,7 @@ export default function usePostWorkspace(id?: string): UseMutationResult<ApiResp
 
   return useMutation((values) => postWorkspace(values as WorkspaceFormFields), {
     onSettled: () => {
-      queryClient.invalidateQueries(["workspace", id]);
+      queryClient.invalidateQueries(["organization-workspaces"]);
     },
   });
 }
