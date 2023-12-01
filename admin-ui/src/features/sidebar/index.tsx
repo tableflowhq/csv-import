@@ -2,25 +2,16 @@ import { useContext, useEffect, useState } from "react";
 import { IconType } from "react-icons";
 import { useLocation } from "react-router";
 import { Link } from "react-router-dom";
-import {
-  Box,
-  BoxProps,
-  Divider,
-  Drawer,
-  DrawerContent,
-  Flex,
-  IconButton,
-  useColorModeValue,
-  useDisclosure,
-} from "@chakra-ui/react";
+import { Box, BoxProps, Divider, Drawer, DrawerContent, Flex, IconButton, useColorModeValue, useDisclosure } from "@chakra-ui/react";
 import Tableflow from "../../components/Tableflow";
 import ThemeToggle from "../../components/ThemeToggle";
 import { AuthContext } from "../../providers/Auth";
 import useLocalStorage from "../../hooks/useLocalStorage";
 import { typedSxMap } from "../../utils/typedSxMap";
 import NavItem from "./components/NavItem";
-import { FiChevronsLeft, FiChevronsRight, FiCompass, FiDatabase, FiHelpCircle, FiHome, FiSettings, FiTrendingUp } from "react-icons/fi";
+import { FiChevronsLeft, FiChevronsRight, FiDatabase, FiHelpCircle, FiHome, FiSettings } from "react-icons/fi";
 import { LuLogOut } from "react-icons/lu";
+import { PiCube, PiFiles } from "react-icons/pi";
 
 interface LinkItemProps {
   name: string;
@@ -29,8 +20,8 @@ interface LinkItemProps {
   url: string;
 }
 const LinkItems: Array<LinkItemProps> = [
-  { name: "importers", label: "Importers", icon: FiTrendingUp, url: "/importers" },
-  { name: "data", label: "Data", icon: FiCompass, url: "/data" },
+  { name: "importers", label: "Importers", icon: PiCube, url: "/importers" },
+  { name: "data", label: "Data", icon: PiFiles, url: "/data" },
 ];
 
 export default function Sidebar() {
@@ -153,7 +144,14 @@ const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
         </Flex>
 
         {sessionExists && showProfile && (
-          <NavItem navSize={navSize} icon={FiHome} title="Getting started" name="getting" url= "/getting-started" isSelected={urlPage.includes("getting")} />
+          <NavItem
+            navSize={navSize}
+            icon={FiHome}
+            title="Getting started"
+            name="getting"
+            url="/getting-started"
+            isSelected={urlPage.includes("getting")}
+          />
         )}
 
         {LinkItems.map((link) => (

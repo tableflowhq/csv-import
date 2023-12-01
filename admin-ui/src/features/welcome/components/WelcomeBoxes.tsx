@@ -7,11 +7,12 @@ interface StatsCardProps {
   subTitle: string;
   icon: ReactNode;
   path: string;
+  isExternal: boolean;
 }
 
-function WelcomeLink({ title, subTitle, icon, path }: StatsCardProps) {
+function WelcomeLink({ title, subTitle, icon, path, isExternal }: StatsCardProps) {
   return (
-    <Link role="group" href={path} textDecoration={"none"}>
+    <Link role="group" href={path} textDecoration={"none"} isExternal={isExternal}>
       <Stat
         px={{ base: 2, md: 4 }}
         py={"5"}
@@ -52,9 +53,21 @@ function WelcomeLink({ title, subTitle, icon, path }: StatsCardProps) {
 export default function WelcomeBoxes() {
   return (
     <SimpleGrid columns={{ base: 1 }} spacing={{ base: 3, lg: 5 }}>
-      <WelcomeLink title={"Our docs"} subTitle={"First take a look to"} path="https://tableflow.com/docs/" icon={<FiBookOpen size={"3em"} />} />
-      <WelcomeLink title={"Invite your team"} subTitle={"Don't be a loner"} path="/" icon={<FiUsers size={"3em"} />} />
-      <WelcomeLink title={"Book a Call"} subTitle={"Keep in touch"} path="/" icon={<FiVideo size={"3em"} />} />
+      <WelcomeLink
+        title={"Our docs"}
+        subTitle={"Take a look at"}
+        path="https://tableflow.com/docs/"
+        isExternal={true}
+        icon={<FiBookOpen size={"3em"} />}
+      />
+      <WelcomeLink
+        title={"Book a call"}
+        subTitle={"Learn more"}
+        path="https://calendly.com/mitchpatin/30"
+        isExternal={true}
+        icon={<FiVideo size={"3em"} />}
+      />
+      <WelcomeLink title={"Invite your team"} subTitle={"Coming soon!"} path="/" isExternal={false} icon={<FiUsers size={"3em"} />} />
     </SimpleGrid>
   );
 }

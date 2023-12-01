@@ -5,6 +5,7 @@ import Button from "../../components/Button";
 import { AuthContext } from "../../providers/Auth";
 import { typedSxMap } from "../../utils/typedSxMap";
 import WelcomeBoxes from "./components/WelcomeBoxes";
+import { PiArrowSquareOut } from "react-icons/pi";
 
 export default function Welcome() {
   const navigate = useNavigate();
@@ -32,9 +33,9 @@ export default function Welcome() {
   });
   return (
     <Container sx={styles.container}>
-      <Heading lineHeight={1.1} fontWeight={600} fontSize={{ base: "2xl", sm: "4xl", lg: "5xl" }}>
+      <Heading lineHeight={1.1} fontWeight={600} fontSize={{ base: "2xl", sm: "3xl", lg: "3xl" }}>
         <Text as={"span"} position={"relative"}>
-          Welcome to Tableflow
+          Welcome to TableFlow 🚀
         </Text>
       </Heading>
       <Stack sx={styles.stackWrapper} align={"center"} direction={{ base: "column", md: "row" }} justifyContent={"space-between"}>
@@ -65,9 +66,14 @@ export default function Welcome() {
         borderColor={useColorModeValue("gray.800", "gray.500")}
         borderRadius={10}>
         <Text fontSize={"xl"} mb={"0 !important"}>
-          Checkout an example import experience{" "}
+          See an example TableFlow importer in our demo application{" "}
         </Text>
-        <Button variants={["primary"]}>Try out our Importer Demo</Button>
+        <Button
+          icon={<PiArrowSquareOut size={18} />}
+          variants={["primary"]}
+          onClick={() => window.open("https://example-crm.tableflow.com/", "_blank")}>
+          Open Importer Demo
+        </Button>
       </Stack>
     </Container>
   );
