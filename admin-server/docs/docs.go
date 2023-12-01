@@ -232,7 +232,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/file-import/v1/importer": {
+        "/file-import/v1/importer/{id}": {
             "post": {
                 "description": "Get a single importer",
                 "tags": [
@@ -240,6 +240,13 @@ const docTemplate = `{
                 ],
                 "summary": "Get importer",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "0",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
                     {
                         "description": "Request body",
                         "name": "body",

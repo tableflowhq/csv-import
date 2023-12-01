@@ -453,10 +453,15 @@ paths:
       summary: Submit an import by upload ID
       tags:
       - File Import
-  /file-import/v1/importer:
+  /file-import/v1/importer/{id}:
     post:
       description: Get a single importer
       parameters:
+      - description: "0"
+        in: path
+        name: id
+        required: true
+        type: string
       - description: Request body
         in: body
         name: body
