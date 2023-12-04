@@ -35,7 +35,7 @@ const getStepConfig = (skipHeader: boolean) => {
 };
 
 function useStepNavigation(initialStep: number, skipHeader: boolean, importerId: string, tusId: string) {
-  const stepper = useStepper(getStepConfig(skipHeader), StepEnum.Upload);
+  const stepper = useStepper(getStepConfig(skipHeader), StepEnum.Upload, skipHeader);
   const [storageStep, setStorageStep] = useMutableLocalStorage(`tf_steps_${importerId}_${tusId}`, "");
   const [currentStep, setCurrentStep] = useState(initialStep);
 

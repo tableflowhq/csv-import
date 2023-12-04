@@ -82,7 +82,7 @@ export default function Main() {
   useCssOverrides(cssOverrides, isDevelopment ? true : organizationStatus && organizationStatus["feature-css-overrides"]);
 
   // If the skipHeaderRowSelection is not set as a URL param, check the option on the importer
-  const skipHeader = skipHeaderRowSelection != null ? !!skipHeaderRowSelection : importer.skip_header_row_selection;
+  const skipHeader = skipHeaderRowSelection ?? false;
 
   // Header row selection state
   const [selectedHeaderRow, setSelectedHeaderRow] = useState<number | null>(null);

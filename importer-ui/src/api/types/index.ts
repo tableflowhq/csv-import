@@ -18,7 +18,6 @@ export type OrganizationFeatures = {
 export type Importer = {
   id: string;
   name: string;
-  skip_header_row_selection: boolean;
   template: Template;
 };
 
