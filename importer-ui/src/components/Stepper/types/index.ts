@@ -10,4 +10,5 @@ export type StepperProps = {
   setCurrent: (step: number) => void;
   step: Step;
   clickable?: boolean;
+  skipHeader: boolean;
 };
