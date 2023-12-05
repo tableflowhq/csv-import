@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gin-contrib/cors"
-	"github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	"github.com/samber/lo"
 	"github.com/swaggo/files"
@@ -12,78 +11,44 @@ import (
 	"net/http"
 	"os"
 	_ "tableflow/docs"
-	"tableflow/go/pkg/model"
 	"tableflow/go/pkg/tf"
-	"tableflow/go/pkg/types"
 	"tableflow/go/pkg/util"
 	"time"
 )
 
-//	@title						TableFlow API
-//	@version					1.2
-//	@description				The backend API of the TableFlow application.
-//	@termsOfService				https://tableflow.com/terms
-//	@contact.name				TableFlow
-//	@contact.url				https://tableflow.com
-//	@contact.email				support@tableflow.com
-//	@host						localhost:3003
-//	@BasePath					/
-//	@securityDefinitions.apikey	ApiKeyAuth
-//	@in							header
-//	@name						Authorization
+//	@title			TableFlow File Import API
+//	@version		1.2
+//	@description	The backend file import API of the TableFlow application.
+//	@termsOfService	https://tableflow.com/terms
+//	@contact.name	TableFlow
+//	@contact.url	https://tableflow.com
+//	@contact.email	support@tableflow.com
+//	@host			localhost:3003
+//	@BasePath		/
 
 const httpServerReadTimeout = 120 * time.Second
 const httpServerWriteTimeout = 120 * time.Second
-const webServerDefaultPort = 3003
-const adminUIDefaultURL = "http://localhost:3000"
+const fileImportServerDefaultPort = 3003
 const importerUIDefaultURL = "http://localhost:3001"
 
-type ServerConfig struct {
-	Middlewares                    []gin.HandlerFunc
-	AdminAPIAuthValidator          gin.HandlerFunc
-	ExternalAPIAuthValidator       func(c *gin.Context, apiKey string) bool
-	GetWorkspaceUser               func(c *gin.Context, workspaceID string) (string, error)
-	GetUserID                      func(c *gin.Context) string
-	GetAllowedValidateTypes        func(workspaceID string) map[string]bool
-	UploadLimitCheck               func(*model.Upload, *os.File) (int, error)
-	UploadAdditionalStorageHandler func(*model.Upload, *os.File) error
-	UploadChunkHandler             func(upload *model.Upload, chunk [][]string, isLastChunk bool)
-	ShouldWaitForHeaderRowMatch    func(upload *model.Upload) bool
-	GetColumnMatches               func(*types.Upload, []*model.TemplateColumn) map[string]string
-	ImportCompleteHandler          func(imp types.Import, workspaceID string)
-	AdditionalCORSOrigins          []string
-	AdditionalCORSHeaders          []string
-	AdditionalPublicRoutes         func(group *gin.RouterGroup)
-	AdditionalImporterRoutes       func(group *gin.RouterGroup)
-	AdditionalAdminRoutes          func(group *gin.RouterGroup)
-	UseZapLogger                   bool
-}
-
-func StartWebServer(config ServerConfig) *http.Server {
-	tf.Log.Debugw("Starting API server")
+func StartFileImportServer() *http.Server {
+	tf.Log.Debugw("Starting file import server")
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
 
-	webAppURL, err := util.ParseBaseURL(os.Getenv("TABLEFLOW_WEB_APP_URL"))
-	if err != nil {
-		tf.Log.Warnw(fmt.Sprintf("Invalid TABLEFLOW_WEB_APP_URL provided, defaulting to %s. "+
-			"This should be set on the environment to the URL of where clients will access the front end web app", adminUIDefaultURL), "error", err)
-	}
 	importerURL, err := util.ParseBaseURL(os.Getenv("TABLEFLOW_WEB_IMPORTER_URL"))
 	if err != nil {
 		tf.Log.Warnw(fmt.Sprintf("Invalid TABLEFLOW_WEB_IMPORTER_URL provided, defaulting to %s. "+
 			"This should be set on the environment to the URL of where the importer is hosted", importerUIDefaultURL), "error", err)
 	}
-	webAppURL = lo.Ternary(len(webAppURL) != 0, webAppURL, adminUIDefaultURL)
 	importerURL = lo.Ternary(len(importerURL) != 0, importerURL, importerUIDefaultURL)
 	router.Use(cors.New(cors.Config{
-		AllowOrigins: append([]string{webAppURL, importerURL}, config.AdditionalCORSOrigins...),
+		AllowOrigins: []string{importerURL},
 		AllowMethods: []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},
-		AllowHeaders: append([]string{"Accept", "Authorization", "X-Requested-With", "X-Request-ID",
+		AllowHeaders: []string{"Accept", "Authorization", "X-Requested-With", "X-Request-ID",
 			"X-HTTP-Method-Override", "Upload-Length", "Upload-Offset", "Tus-Resumable", "Upload-Metadata",
 			"Upload-Defer-Length", "Upload-Concat", "User-Agent", "Referrer", "Origin", "Content-Type", "Content-Length",
-			"X-Importer-ID", "X-Import-Metadata", "X-Import-SkipHeaderRowSelection", "X-Import-Template", "X-Import-Schemaless"},
-			config.AdditionalCORSHeaders...),
+			"X-Import-Metadata", "X-Import-SkipHeaderRowSelection", "X-Import-Template", "X-Import-Schemaless"},
 		ExposeHeaders: []string{"Upload-Offset", "Location", "Upload-Length", "Tus-Version", "Tus-Resumable",
 			"Tus-Max-Size", "Tus-Extension", "Upload-Metadata", "Upload-Defer-Length", "Upload-Concat", "Location",
 			"Upload-Offset", "Upload-Length"},
@@ -92,21 +57,12 @@ func StartWebServer(config ServerConfig) *http.Server {
 		MaxAge:           12 * time.Hour,
 	}))
 
-	if config.UseZapLogger {
-		ginLogger := tf.Log.Desugar()
-		router.Use(ginzap.Ginzap(ginLogger, time.RFC3339, true))
-		router.Use(ginzap.RecoveryWithZap(ginLogger, true))
-	} else {
-		router.Use(gin.Logger())
-		router.Use(gin.Recovery())
-	}
-	for _, middleware := range config.Middlewares {
-		router.Use(middleware)
-	}
+	router.Use(gin.Logger())
+	router.Use(gin.Recovery())
 
 	port, err := util.ParsePort(os.Getenv("TABLEFLOW_API_SERVER_PORT"))
 	if err != nil {
-		port = webServerDefaultPort
+		port = fileImportServerDefaultPort
 	}
 	server := &http.Server{
 		Addr:           fmt.Sprintf(":%v", port),
@@ -124,89 +80,23 @@ func StartWebServer(config ServerConfig) *http.Server {
 	// Used for external status health checks (i.e. AWS)
 	public.GET("/health", Health)
 
-	/* Additional Routes */
-	if config.AdditionalPublicRoutes != nil {
-		config.AdditionalPublicRoutes(public)
-	}
-
-	/* --------------------------  Importer routes  -------------------------- */
+	/* --------------------------  File import routes  -------------------------- */
 
 	importer := router.Group("/file-import/v1")
-	tusHandler := tusFileHandler(config.UploadAdditionalStorageHandler, config.UploadLimitCheck, config.UploadChunkHandler, config.GetAllowedValidateTypes)
+	tusHandler := tusFileHandler()
 
 	importer.POST("/files", tusPostFile(tusHandler))
 	importer.HEAD("/files/:id", tusHeadFile(tusHandler))
 	importer.PATCH("/files/:id", tusPatchFile(tusHandler))
 
-	importer.POST("/importer/:id", func(c *gin.Context) { importerGetImporter(c, config.GetAllowedValidateTypes) })
-	importer.GET("/upload/:id", func(c *gin.Context) {
-		importerGetUpload(c, config.GetColumnMatches, config.ShouldWaitForHeaderRowMatch)
-	})
-	importer.POST("/upload/:id/set-header-row", func(c *gin.Context) { importerSetHeaderRow(c, config.GetColumnMatches) })
+	importer.POST("/importer/:id", importerGetImporter)
+	importer.GET("/upload/:id", importerGetUpload)
+	importer.POST("/upload/:id/set-header-row", importerSetHeaderRow)
 	importer.POST("/upload/:id/set-column-mapping", importerSetColumnMapping)
 	importer.GET("/import/:id/review", importerReviewImport)
 	importer.GET("/import/:id/rows", importerGetImportRows)
 	importer.POST("/import/:id/cell/edit", importerEditImportCell)
-	importer.POST("/import/:id/submit", func(c *gin.Context) { importerSubmitImport(c, config.ImportCompleteHandler) })
-
-	/* Additional Routes */
-	if config.AdditionalImporterRoutes != nil {
-		config.AdditionalImporterRoutes(importer)
-	}
-
-	/* ---------------------------  Admin routes  ---------------------------- */
-
-	adm := router.Group("/admin/v1")
-	adm.Use(config.AdminAPIAuthValidator)
-
-	/* Organization */
-	adm.GET("/organization-workspaces", func(c *gin.Context) { getOrganizationWorkspaces(c, config.GetUserID) })
-
-	/* Workspace */
-	adm.GET("/workspace/:id", func(c *gin.Context) { getWorkspace(c, config.GetWorkspaceUser) })
-	adm.POST("/workspace/:id", func(c *gin.Context) { editWorkspace(c, config.GetWorkspaceUser) })
-	adm.GET("/workspace/:id/api-key", func(c *gin.Context) { getWorkspaceAPIKey(c, config.GetWorkspaceUser) })
-	adm.POST("/workspace/:id/api-key", func(c *gin.Context) { regenerateWorkspaceAPIKey(c, config.GetWorkspaceUser) })
-	adm.GET("/workspace/:id/datatype-validations", func(c *gin.Context) {
-		getWorkspaceDataTypeValidations(c, config.GetWorkspaceUser, config.GetAllowedValidateTypes)
-	})
-
-	/* Importer */
-	adm.POST("/importer", func(c *gin.Context) { createImporter(c, config.GetWorkspaceUser) })
-	adm.GET("/importer/:id", func(c *gin.Context) { getImporter(c, config.GetWorkspaceUser) })
-	adm.POST("/importer/:id", func(c *gin.Context) { editImporter(c, config.GetWorkspaceUser) })
-	adm.DELETE("/importer/:id", func(c *gin.Context) { deleteImporter(c, config.GetWorkspaceUser) })
-	adm.GET("/importers/:workspace-id", func(c *gin.Context) { getImporters(c, config.GetWorkspaceUser) })
-
-	/* Template */
-	adm.GET("/template/:id", func(c *gin.Context) { getTemplate(c, config.GetWorkspaceUser) })
-	adm.POST("/template-column", func(c *gin.Context) { createTemplateColumn(c, config.GetWorkspaceUser, config.GetAllowedValidateTypes) })
-	adm.POST("/template-column/:id", func(c *gin.Context) { editTemplateColumn(c, config.GetWorkspaceUser, config.GetAllowedValidateTypes) })
-	adm.DELETE("/template-column/:id", func(c *gin.Context) { deleteTemplateColumn(c, config.GetWorkspaceUser) })
-
-	/* Import */
-	adm.GET("/import/:id", func(c *gin.Context) { getImport(c, config.GetWorkspaceUser) })
-	adm.GET("/imports/:workspace-id", func(c *gin.Context) { getImports(c, config.GetWorkspaceUser) })
-
-	/* Upload */
-	adm.GET("/upload/:id", func(c *gin.Context) { getUpload(c, config.GetWorkspaceUser) })
-
-	/* Additional Routes */
-	if config.AdditionalAdminRoutes != nil {
-		config.AdditionalAdminRoutes(adm)
-	}
-
-	/* ---------------------------  API routes  --------------------------- */
-
-	api := router.Group("/v1")
-	api.Use(APIKeyAuthMiddleware(config.ExternalAPIAuthValidator))
-
-	/* Import */
-	api.GET("/import/:id", getImportForExternalAPI)
-	api.GET("/import/:id/rows", getImportRowsForExternalAPI)
-	api.GET("/import/:id/download", downloadImportForExternalAPI)
-	api.POST("/importer", func(c *gin.Context) { createImporterForExternalAPI(c, config.GetAllowedValidateTypes) })
-	api.DELETE("/importer/:id", deleteImporterForExternalAPI)
+	importer.POST("/import/:id/submit", importerSubmitImport)
 
 	// Initialize the server in a goroutine so that it won't block shutdown handling
 	go func() {

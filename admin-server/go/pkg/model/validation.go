@@ -3,7 +3,6 @@ package model
 import (
 	"fmt"
 	"github.com/samber/lo"
-	"gorm.io/gorm"
 	"strings"
 	"tableflow/go/pkg/evaluator"
 	"tableflow/go/pkg/model/jsonb"
@@ -32,9 +31,8 @@ type Validation struct {
 	Options          jsonb.JSONB        `json:"options" swaggertype:"string" example:"true"`
 	Message          string             `json:"message" example:"This column must contain a value"`
 	Severity         ValidationSeverity `json:"severity" swaggertype:"string" example:"error"`
-	DeletedAt        gorm.DeletedAt     `json:"-"`
 
-	Evaluator evaluator.Evaluator `json:"-" gorm:"-"`
+	Evaluator evaluator.Evaluator `json:"-"`
 }
 
 func (v Validation) Evaluate(cell string) (bool, string) {
@@ -83,12 +81,4 @@ func ParseValidationSeverity(severity string) (ValidationSeverity, error) {
 		return "", fmt.Errorf("The validation severity %v is invalid", severity)
 	}
 	return s, nil
-}
-
-func (v *Validation) AfterFind(_ *gorm.DB) error {
-	var err error
-	if v.Evaluator, err = evaluator.Parse(v.Validate, v.Options); err != nil {
-		return err
-	}
-	return nil
 }

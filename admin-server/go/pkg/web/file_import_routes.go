@@ -5,15 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/gofrs/uuid"
 	"github.com/guregu/null"
 	"github.com/samber/lo"
 	"github.com/tus/tusd/pkg/handler"
 	"gorm.io/gorm"
 	"net/http"
-	"net/url"
 	"strconv"
-	"strings"
 	"tableflow/go/pkg/db"
 	"tableflow/go/pkg/file"
 	"tableflow/go/pkg/model"
@@ -22,12 +19,7 @@ import (
 	"tableflow/go/pkg/tf"
 	"tableflow/go/pkg/types"
 	"tableflow/go/pkg/util"
-	"time"
 )
-
-// importServiceMaxNumRowsToPassData If the import has more rows than this value, then don't pass the data back to the
-// frontend callback. It must be retrieved from the API.
-var maxNumRowsForFrontendPassThrough = util.MinInt(10000, scylla.MaxAllRowRetrieval)
 
 // tusPostFile
 //
@@ -37,22 +29,6 @@ var maxNumRowsForFrontendPassThrough = util.MinInt(10000, scylla.MaxAllRowRetrie
 //	@Router			/file-import/v1/files [post]
 func tusPostFile(h *handler.UnroutedHandler) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		importerID := c.Request.Header.Get("X-Importer-ID")
-		if len(importerID) == 0 {
-			c.AbortWithStatusJSON(http.StatusBadRequest, "No importer ID is configured for this importer. Please contact support.")
-			return
-		}
-		importer, err := db.GetImporterWithoutTemplateWithWorkspace(importerID)
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, "Unable to retrieve importer with the provided ID. Please contact support.")
-			return
-		}
-		if len(importer.Workspace.AllowedImportDomains) != 0 {
-			if err = validateAllowedImportDomains(c, importer.Workspace); err != nil {
-				c.AbortWithStatusJSON(http.StatusUnauthorized, types.Res{Err: err.Error()})
-				return
-			}
-		}
 		h.PostFile(c.Writer, c.Request)
 	}
 }
@@ -86,46 +62,18 @@ func tusPatchFile(h *handler.UnroutedHandler) gin.HandlerFunc {
 // importerGetImporter
 //
 //	@Summary		Get importer
-//	@Description	Get a single importer and its template
+//	@Description	Get a single importer
 //	@Tags			File Import
 //	@Success		200	{object}	types.Importer
 //	@Failure		400	{object}	types.Res
 //	@Router			/file-import/v1/importer/{id} [post]
-//	@Param			id		path	string					true	"Importer ID"
+//	@Param			id		path	string					true	"0"
 //	@Param			body	body	map[string]interface{}	false	"Request body"
-func importerGetImporter(c *gin.Context, getAllowedValidateTypes func(string) map[string]bool) {
-	id := c.Param("id")
-	if len(id) == 0 || id == "0" {
-		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "The parameter 'importerId' is required"})
-		return
-	}
-	_, err := uuid.FromString(id)
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Invalid importer ID"})
-		return
-	}
-
-	// If schemaless mode is enabled, return the importer without an attached template
+func importerGetImporter(c *gin.Context) {
+	// If schemaless mode is enabled, return an empty template
 	schemaless, _ := strconv.ParseBool(c.Query("schemaless"))
 	if schemaless {
-		importer, err := db.GetImporterWithoutTemplateWithWorkspace(id)
-		if err != nil {
-			errStr := err.Error()
-			if errors.Is(err, gorm.ErrRecordNotFound) {
-				errStr = "Importer not found. Check the importerId parameter or reach out to support for assistance."
-			}
-			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: errStr})
-			return
-		}
-		if len(importer.Workspace.AllowedImportDomains) != 0 {
-			if err = validateAllowedImportDomains(c, importer.Workspace); err != nil {
-				c.AbortWithStatusJSON(http.StatusUnauthorized, types.Res{Err: err.Error()})
-				return
-			}
-		}
 		importServiceImporter := types.Importer{
-			ID:   importer.ID,
-			Name: importer.Name,
 			Template: &types.Template{
 				TemplateColumns: []*types.TemplateColumn{},
 			},
@@ -134,100 +82,26 @@ func importerGetImporter(c *gin.Context, getAllowedValidateTypes func(string) ma
 		return
 	}
 
-	// If a template is provided in the request, validate and return that instead of the template attached to the importer
-	if c.Request.ContentLength != 0 {
-		importer, err := db.GetImporterWithoutTemplateWithWorkspace(id)
-		if err != nil {
-			errStr := err.Error()
-			if errors.Is(err, gorm.ErrRecordNotFound) {
-				errStr = "Importer not found. Check the importerId parameter or reach out to support for assistance."
-			}
-			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: errStr})
-			return
-		}
-		if len(importer.Workspace.AllowedImportDomains) != 0 {
-			if err = validateAllowedImportDomains(c, importer.Workspace); err != nil {
-				c.AbortWithStatusJSON(http.StatusUnauthorized, types.Res{Err: err.Error()})
-				return
-			}
-		}
-
-		var req map[string]interface{}
-		if err = c.ShouldBindJSON(&req); err != nil {
-			tf.Log.Warnw("Could not bind JSON", "error", err)
-			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("Invalid template provided: %v", err.Error())})
-			return
-		}
-
-		allowedValidateTypes := getAllowedValidateTypes(importer.WorkspaceID.String())
-		requestTemplate, err := types.ConvertRawTemplate(jsonb.FromMap(req), false, allowedValidateTypes, false)
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
-			return
-		}
-		importServiceImporter := types.Importer{
-			ID:       importer.ID,
-			Name:     importer.Name,
-			Template: requestTemplate,
-		}
-		c.JSON(http.StatusOK, importServiceImporter)
+	if c.Request.ContentLength == 0 {
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "The parameter 'template' is required and must be valid JSON"})
 		return
 	}
 
-	template, err := db.GetTemplateByImporterWithImporter(id)
+	// Validate and return the template provided on the request
+	var req map[string]interface{}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		tf.Log.Warnw("Could not bind JSON", "error", err)
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: fmt.Sprintf("Invalid template provided: %v", err.Error())})
+		return
+	}
+
+	requestTemplate, err := types.ConvertRawTemplate(jsonb.FromMap(req), false)
 	if err != nil {
-		errStr := err.Error()
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			errStr = "Importer not found. Check the importerId parameter or reach out to support for assistance."
-		}
-		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: errStr})
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return
-	}
-	if !template.ImporterID.Valid || template.Importer == nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Template not attached to importer"})
-		return
-	}
-	if len(template.Importer.Workspace.AllowedImportDomains) != 0 {
-		if err = validateAllowedImportDomains(c, template.Importer.Workspace); err != nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, types.Res{Err: err.Error()})
-			return
-		}
-	}
-	if len(template.TemplateColumns) == 0 {
-		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No template columns found. Please create at least one template column to use this importer."})
-		return
-	}
-
-	importerTemplateColumns := make([]*types.TemplateColumn, len(template.TemplateColumns))
-	for n, tc := range template.TemplateColumns {
-		importerTemplateColumns[n] = &types.TemplateColumn{
-			ID:          tc.ID,
-			Name:        tc.Name,
-			Key:         tc.Key,
-			Required:    tc.Required,
-			DataType:    string(tc.DataType),
-			Description: tc.Description.String,
-			Validations: lo.Map(tc.Validations, func(v *model.Validation, _ int) *types.Validation {
-				return &types.Validation{
-					ValidationID: v.ID,
-					Validate:     v.Validate,
-					Options:      v.Options,
-					Severity:     string(v.Severity),
-					Message:      v.Message,
-				}
-			}),
-			SuggestedMappings: tc.SuggestedMappings,
-		}
-	}
-	importerTemplate := &types.Template{
-		ID:              template.ID,
-		Name:            template.Name,
-		TemplateColumns: importerTemplateColumns,
 	}
 	importServiceImporter := types.Importer{
-		ID:       template.Importer.ID,
-		Name:     template.Importer.Name,
-		Template: importerTemplate,
+		Template: requestTemplate,
 	}
 	c.JSON(http.StatusOK, importServiceImporter)
 }
@@ -241,7 +115,7 @@ func importerGetImporter(c *gin.Context, getAllowedValidateTypes func(string) ma
 //	@Failure		400	{object}	types.Res
 //	@Router			/file-import/v1/upload/{id} [get]
 //	@Param			id	path	string	true	"tus ID"
-func importerGetUpload(c *gin.Context, getColumnMatches func(*types.Upload, []*model.TemplateColumn) map[string]string, shouldWaitForHeaderRowMatch func(upload *model.Upload) bool) {
+func importerGetUpload(c *gin.Context) {
 	id := c.Param("id")
 	if len(id) == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No upload tus ID provided"})
@@ -255,36 +129,6 @@ func importerGetUpload(c *gin.Context, getColumnMatches func(*types.Upload, []*m
 	if upload.Error.Valid {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: upload.Error.String})
 		return
-	}
-
-	waitForHeaderRowMatch := false
-	// Check to see if we should wait on the service finding a header row match if...
-	//  1. The service is enabled
-	//  2. The header row index has not been set yet (from skip header row selection being enabled or the user going back after selecting a header)
-	//  3. A match has not been set yet from the service (or from a timeout)
-	if shouldWaitForHeaderRowMatch != nil && !upload.HeaderRowIndex.Valid && !upload.MatchedHeaderRowIndex.Valid {
-		waitForHeaderRowMatch = shouldWaitForHeaderRowMatch(upload)
-	}
-	if waitForHeaderRowMatch {
-		// Enforce a timeout on the service finding a match by checking when the upload was stored (the last updated_at)
-		now := time.Now()
-		timeoutLimit := 5 * time.Second
-		if now.After(upload.UpdatedAt.Time.Add(timeoutLimit)) {
-			tf.Log.Warnw("Timeout reached waiting for header row match from service", "upload_id", upload.ID, "time_waited", now.Sub(upload.UpdatedAt.Time).String(), "time_limit", timeoutLimit.String())
-
-			// Cancel subsequent waits by setting the MatchedHeaderRowIndex to -1
-			upload.MatchedHeaderRowIndex = null.IntFrom(-1)
-			err = tf.DB.Save(upload).Error
-			if err != nil {
-				tf.Log.Errorw("Could not update upload in database", "error", err, "upload_id", upload.ID)
-				c.AbortWithStatusJSON(http.StatusInternalServerError, types.Res{Err: err.Error()})
-				return
-			}
-		} else {
-			// Continue waiting for a match to be found or time out by overriding the upload being stored on the response
-			// The importer polls this endpoint until IsStored comes back as true or a max number of attempts has been reached
-			upload.IsStored = false
-		}
 	}
 
 	numRowsToPreview := 25
@@ -322,15 +166,8 @@ func importerGetUpload(c *gin.Context, getColumnMatches func(*types.Upload, []*m
 					//Validations:       nil,
 				})
 			}
-		} else {
-			template, err := db.GetTemplateByImporter(importerUpload.ImporterID.String())
-			if err != nil {
-				c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
-				return
-			}
-			templateColumns = template.TemplateColumns
 		}
-		file.AddColumnMappingSuggestions(importerUpload, templateColumns, getColumnMatches)
+		file.AddColumnMappingSuggestions(importerUpload, templateColumns)
 	}
 
 	c.JSON(http.StatusOK, importerUpload)
@@ -346,7 +183,7 @@ func importerGetUpload(c *gin.Context, getColumnMatches func(*types.Upload, []*m
 //	@Router			/file-import/v1/upload/{id}/set-header-row [post]
 //	@Param			id		path	string							true	"Upload ID"
 //	@Param			body	body	types.UploadHeaderRowSelection	true	"Request body"
-func importerSetHeaderRow(c *gin.Context, getColumnMatches func(*types.Upload, []*model.TemplateColumn) map[string]string) {
+func importerSetHeaderRow(c *gin.Context) {
 	id := c.Param("id")
 	if len(id) == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No upload ID provided"})
@@ -421,15 +258,8 @@ func importerSetHeaderRow(c *gin.Context, getColumnMatches func(*types.Upload, [
 					//Validations:       nil,
 				})
 			}
-		} else {
-			template, err := db.GetTemplateByImporter(importerUpload.ImporterID.String())
-			if err != nil {
-				c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
-				return
-			}
-			templateColumns = template.TemplateColumns
 		}
-		file.AddColumnMappingSuggestions(importerUpload, templateColumns, getColumnMatches)
+		file.AddColumnMappingSuggestions(importerUpload, templateColumns)
 
 		c.JSON(http.StatusOK, importerUpload)
 		return
@@ -500,15 +330,8 @@ func importerSetHeaderRow(c *gin.Context, getColumnMatches func(*types.Upload, [
 				//Validations:       nil,
 			})
 		}
-	} else {
-		template, err := db.GetTemplateByImporter(importerUpload.ImporterID.String())
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
-			return
-		}
-		templateColumns = template.TemplateColumns
 	}
-	file.AddColumnMappingSuggestions(importerUpload, templateColumns, getColumnMatches)
+	file.AddColumnMappingSuggestions(importerUpload, templateColumns)
 
 	c.JSON(http.StatusOK, importerUpload)
 }
@@ -633,10 +456,7 @@ func importerSetColumnMapping(c *gin.Context) {
 		}
 
 		// Generate a template to be used for the import processing
-		template = &model.Template{
-			Name:        importServiceTemplate.Name,
-			WorkspaceID: upload.WorkspaceID,
-		}
+		template = &model.Template{}
 		for _, importColumn := range importServiceTemplate.TemplateColumns {
 			templateColumn := &model.TemplateColumn{
 				ID:   importColumn.ID,
@@ -648,16 +468,13 @@ func importerSetColumnMapping(c *gin.Context) {
 
 	} else if upload.Template.Valid {
 		// A template was set on the upload (SDK-defined template), use that instead of the importer template
-		importServiceTemplate, err := types.ConvertRawTemplate(upload.Template, false, nil, false)
+		importServiceTemplate, err := types.ConvertRawTemplate(upload.Template, false)
 		if err != nil {
 			tf.Log.Warnw("Could not convert upload template to import service template during import", "error", err, "upload_id", upload.ID, "upload_template", upload.Template)
 			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 			return
 		}
-		template = &model.Template{
-			Name:        importServiceTemplate.Name,
-			WorkspaceID: upload.WorkspaceID,
-		}
+		template = &model.Template{}
 		for _, importColumn := range importServiceTemplate.TemplateColumns {
 			templateColumn := &model.TemplateColumn{
 				ID:                importColumn.ID,
@@ -677,12 +494,8 @@ func importerSetColumnMapping(c *gin.Context) {
 			template.TemplateColumns = append(template.TemplateColumns, templateColumn)
 		}
 	} else {
-		// Use the importer template
-		template, err = db.GetTemplateByImporter(upload.ImporterID.String())
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
-			return
-		}
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No template found for import"})
+		return
 	}
 
 	// Validate template columns exist
@@ -799,7 +612,6 @@ func importerReviewImport(c *gin.Context) {
 	importServiceImport := &types.Import{
 		ID:                 imp.ID,
 		UploadID:           imp.UploadID,
-		ImporterID:         imp.ImporterID,
 		NumRows:            imp.NumRows,
 		NumColumns:         imp.NumColumns,
 		NumProcessedValues: imp.NumProcessedValues,
@@ -808,8 +620,6 @@ func importerReviewImport(c *gin.Context) {
 		HasErrors:          imp.HasErrors(),
 		NumErrorRows:       imp.NumErrorRows,
 		NumValidRows:       imp.NumValidRows,
-		CreatedAt:          imp.CreatedAt,
-		UpdatedAt:          imp.UpdatedAt,
 	}
 	if !imp.IsStored {
 		// Don't attempt to retrieve the data in Scylla if it's not stored
@@ -965,7 +775,7 @@ func importerEditImportCell(c *gin.Context) {
 
 	if imp.Upload.Template.Valid {
 		// If the upload uses an SDK-defined template, retrieve any validations from the template on the upload
-		template, err := types.ConvertRawTemplate(imp.Upload.Template, false, nil, false)
+		template, err := types.ConvertRawTemplate(imp.Upload.Template, false)
 		if err != nil {
 			tf.Log.Errorw("Upload template invalid retrieving validations for cell edit", "upload_id", imp.Upload.ID, "error", err)
 			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "The SDK-defined template is invalid"})
@@ -983,13 +793,8 @@ func importerEditImportCell(c *gin.Context) {
 			}
 		}
 	} else {
-		// Retrieve any validations from the db
-		validations, err = db.GetValidationsByImporterAndTemplateColumnKey(imp.ImporterID.String(), cellKey)
-		if err != nil {
-			tf.Log.Errorw("Could not retrieve validations from db for cell edit", "upload_id", imp.Upload.ID, "error", err)
-			c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "An error occurred retrieving the validations for this cell"})
-			return
-		}
+		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "An error occurred retrieving the validations for this cell: no template found on upload"})
+		return
 	}
 
 	failedValidations := make([]model.Validation, 0)
@@ -1147,7 +952,7 @@ func importerEditImportCell(c *gin.Context) {
 //	@Failure		400	{object}	types.Res
 //	@Router			/file-import/v1/import/{id}/submit [post]
 //	@Param			id	path	string	true	"Upload ID"
-func importerSubmitImport(c *gin.Context, importCompleteHandler func(types.Import, string)) {
+func importerSubmitImport(c *gin.Context) {
 	id := c.Param("id")
 	if len(id) == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "No upload ID provided"})
@@ -1182,7 +987,6 @@ func importerSubmitImport(c *gin.Context, importCompleteHandler func(types.Impor
 	importServiceImport := &types.Import{
 		ID:                 imp.ID,
 		UploadID:           imp.UploadID,
-		ImporterID:         imp.ImporterID,
 		NumRows:            imp.NumRows,
 		NumColumns:         imp.NumColumns,
 		NumProcessedValues: imp.NumProcessedValues,
@@ -1191,47 +995,10 @@ func importerSubmitImport(c *gin.Context, importCompleteHandler func(types.Impor
 		HasErrors:          imp.HasErrors(),
 		NumErrorRows:       imp.NumErrorRows,
 		NumValidRows:       imp.NumValidRows,
-		CreatedAt:          imp.CreatedAt,
-		UpdatedAt:          imp.UpdatedAt,
 		Rows:               []types.ImportRowResponse{},
 	}
-	if int(imp.NumRows.Int64) <= maxNumRowsForFrontendPassThrough {
-		rows := scylla.RetrieveAllImportRows(imp)
-		importServiceImport.Rows = types.ConvertImportRowsResponse(rows, imp)
-
-	} else {
-		importServiceImport.Error = null.StringFrom(fmt.Sprintf("This import has %v rows which exceeds the max "+
-			"allowed number of rows to receive in one response (%v). Please use the API to retrieve the data.",
-			imp.NumRows.Int64, maxNumRowsForFrontendPassThrough))
-	}
-
-	if importCompleteHandler != nil {
-		util.SafeGo(func() {
-			importCompleteHandler(*importServiceImport, imp.WorkspaceID.String())
-		}, "import_id", imp.ID)
-	}
+	rows := scylla.RetrieveAllImportRows(imp)
+	importServiceImport.Rows = types.ConvertImportRowsResponse(rows, imp)
 
 	c.JSON(http.StatusOK, importServiceImport)
-}
-
-func validateAllowedImportDomains(c *gin.Context, workspace *model.Workspace) error {
-	referer := c.Request.Referer()
-	uri, err := url.ParseRequestURI(referer)
-	if err != nil || len(uri.Host) == 0 {
-		tf.Log.Errorw("Missing or invalid referer header while checking allowed domains during import", "workspace_id", workspace.ID, "referer", referer)
-		return errors.New("Unable to determine upload origin. Please contact support.")
-	}
-	hostName := uri.Hostname()
-	containsAllowedDomain := false
-	for _, d := range workspace.AllowedImportDomains {
-		if strings.HasSuffix(hostName, strings.ToLower(d)) {
-			containsAllowedDomain = true
-			break
-		}
-	}
-	if !containsAllowedDomain {
-		tf.Log.Infow("Upload request blocked coming from unauthorized domain", "workspace_id", workspace.ID, "referer", referer, "allowed_import_domains", workspace.AllowedImportDomains)
-		return errors.New("Uploads are only allowed from authorized domains. Please contact support.")
-	}
-	return nil
 }

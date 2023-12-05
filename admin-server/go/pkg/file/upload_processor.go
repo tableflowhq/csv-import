@@ -14,7 +14,6 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"tableflow/go/pkg/db"
 	"tableflow/go/pkg/model"
 	"tableflow/go/pkg/model/jsonb"
 	"tableflow/go/pkg/scylla"
@@ -30,15 +29,11 @@ type uploadProcessResult struct {
 }
 
 var maxColumnLimit = int(math.Min(500, math.MaxInt16))
-var maxRowLimit = 1000 * 1000 * 10       // TODO: Store and configure this on the workspace? But keep a max limit to prevent runaways?
+var maxRowLimit = 1000 * 1000 * 10
+
 const UploadColumnSampleDataSize = 1 + 3 // 1 header row + 3 sample rows
 
-func UploadCompleteHandler(event handler.HookEvent,
-	uploadAdditionalStorageHandler func(*model.Upload, *os.File) error,
-	uploadLimitCheck func(*model.Upload, *os.File) (int, error),
-	uploadChunkHandler func(upload *model.Upload, chunk [][]string, isLastChunk bool),
-	getAllowedValidateTypes func(string) map[string]bool) {
-
+func UploadCompleteHandler(event handler.HookEvent) {
 	uploadFileName := event.Upload.MetaData["filename"]
 	uploadFileType := event.Upload.MetaData["filetype"]
 	uploadFileExtension := ""
@@ -46,36 +41,9 @@ func UploadCompleteHandler(event handler.HookEvent,
 		uploadFileExtension = uploadFileName[1+idx:]
 	}
 
-	importerID := event.HTTPRequest.Header.Get("X-Importer-ID")
-	if len(importerID) == 0 {
-		tf.Log.Errorw("No importer ID found on the request headers during upload complete handling", "tus_id", event.Upload.ID)
-		return
-	}
-	importer, err := db.GetImporterWithoutTemplate(importerID)
-	if err != nil {
-		tf.Log.Errorw("Could not retrieve importer from database during upload complete handling", "error", err, "tus_id", event.Upload.ID, "importer_id", importerID)
-		return
-	}
-
 	importMetadata, err := getImportMetadata(event.HTTPRequest.Header.Get("X-Import-Metadata"))
 	if err != nil {
-		tf.Log.Warnw("Could not retrieve import metadata", "error", err, "tus_id", event.Upload.ID, "importer_id", importerID)
-	}
-
-	// If a template is provided from the SDK, use that instead of the template on the importer
-	uploadError := "" // TODO: Refactor this so the upload object is created higher up and other fatal errors can exist
-	allowedValidateTypes := getAllowedValidateTypes(importer.WorkspaceID.String())
-	uploadTemplate, err := generateUploadTemplate(event.HTTPRequest.Header.Get("X-Import-Template"), allowedValidateTypes)
-	if err != nil {
-		tf.Log.Warnw("Could not generate upload template", "error", err, "tus_id", event.Upload.ID, "importer_id", importerID)
-		uploadError = fmt.Sprintf("Invalid template: %s", err.Error())
-	}
-
-	// Determine if the header row selection step should be skipped, setting the header row to the first row of the file
-	skipHeaderRowSelection := false
-	skipHeaderRowSelectionHeader := event.HTTPRequest.Header.Get("X-Import-SkipHeaderRowSelection")
-	if len(skipHeaderRowSelectionHeader) != 0 {
-		skipHeaderRowSelection, _ = strconv.ParseBool(skipHeaderRowSelectionHeader)
+		tf.Log.Warnw("Could not retrieve import metadata", "error", err, "tus_id", event.Upload.ID)
 	}
 
 	// Determine if the upload is schemaless, where no template will be used and the user will define the keys to map their file to
@@ -85,11 +53,27 @@ func UploadCompleteHandler(event handler.HookEvent,
 		schemaless, _ = strconv.ParseBool(schemalessHeader)
 	}
 
+	// Retrieve the template provided from the SDK
+	uploadError := "" // TODO: Refactor this so the upload object is created higher up and other fatal errors can exist
+	uploadTemplate := jsonb.JSONB{}
+	if !schemaless {
+		uploadTemplate, err = generateUploadTemplate(event.HTTPRequest.Header.Get("X-Import-Template"))
+		if err != nil {
+			tf.Log.Warnw("Could not generate upload template", "error", err, "tus_id", event.Upload.ID)
+			uploadError = fmt.Sprintf("Invalid template: %s", err.Error())
+		}
+	}
+
+	// Determine if the header row selection step should be skipped, setting the header row to the first row of the file
+	skipHeaderRowSelection := false
+	skipHeaderRowSelectionHeader := event.HTTPRequest.Header.Get("X-Import-SkipHeaderRowSelection")
+	if len(skipHeaderRowSelectionHeader) != 0 {
+		skipHeaderRowSelection, _ = strconv.ParseBool(skipHeaderRowSelectionHeader)
+	}
+
 	upload := &model.Upload{
 		ID:            model.NewID(),
 		TusID:         event.Upload.ID,
-		ImporterID:    importer.ID,
-		WorkspaceID:   importer.WorkspaceID,
 		FileName:      null.NewString(uploadFileName, len(uploadFileName) > 0),
 		FileType:      null.NewString(uploadFileType, len(uploadFileType) > 0),
 		FileExtension: null.NewString(uploadFileExtension, len(uploadFileExtension) > 0),
@@ -116,18 +100,7 @@ func UploadCompleteHandler(event handler.HookEvent,
 		return
 	}
 
-	limit := 0
-	if uploadLimitCheck != nil {
-		// Check for upload limits on the workspace
-		limit, err = uploadLimitCheck(upload, file)
-		if err != nil {
-			saveUploadError(upload, err.Error())
-			removeUploadFileFromDisk(file, fileName, upload.ID.String())
-			return
-		}
-	}
-
-	uploadResult, err := processAndStoreUpload(upload, file, limit, uploadChunkHandler)
+	uploadResult, err := processAndStoreUpload(upload, file, 0)
 	if err != nil {
 		tf.Log.Errorw("Could not process upload", "error", err, "upload_id", upload.ID)
 		saveUploadError(upload, err.Error())
@@ -175,19 +148,11 @@ func UploadCompleteHandler(event handler.HookEvent,
 		return
 	}
 
-	if uploadAdditionalStorageHandler != nil {
-		util.SafeGo(func() {
-			uploadAdditionalStorageHandler(upload, file)
-			removeUploadFileFromDisk(file, fileName, upload.ID.String())
-			tf.Log.Debugw("Upload complete", "upload_id", upload.ID)
-		}, "upload_id", upload.ID)
-	} else {
-		removeUploadFileFromDisk(file, fileName, upload.ID.String())
-		tf.Log.Debugw("Upload complete", "upload_id", upload.ID)
-	}
+	removeUploadFileFromDisk(file, fileName, upload.ID.String())
+	tf.Log.Debugw("Upload complete", "upload_id", upload.ID)
 }
 
-func processAndStoreUpload(upload *model.Upload, file *os.File, limit int, uploadChunkHandler func(upload *model.Upload, chunk [][]string, isLastChunk bool)) (uploadProcessResult, error) {
+func processAndStoreUpload(upload *model.Upload, file *os.File, limit int) (uploadProcessResult, error) {
 	it, err := util.OpenDataFileIterator(file, upload.FileType.String)
 	defer it.Close()
 	if err != nil {
@@ -210,10 +175,6 @@ func processAndStoreUpload(upload *model.Upload, file *os.File, limit int, uploa
 	}
 	b := scylla.NewBatchInserter()
 	startTime := time.Now()
-
-	chunkCount := 0
-	chunkProcessingComplete := false
-	uploadChunk := make([][]string, 0)
 
 	for i := 0; ; i++ {
 		if i >= maxRowLimit {
@@ -280,11 +241,6 @@ func processAndStoreUpload(upload *model.Upload, file *os.File, limit int, uploa
 			continue
 		}
 
-		// Handle sending chunks to any additional services
-		if uploadChunkHandler != nil && !chunkProcessingComplete {
-			chunkProcessingComplete = handleChunk(upload, row, &chunkCount, &uploadChunk, uploadChunkHandler)
-		}
-
 		numRows++
 		batchCounter++
 		batchSize += approxMutationSize
@@ -304,48 +260,11 @@ func processAndStoreUpload(upload *model.Upload, file *os.File, limit int, uploa
 		}
 	}
 
-	// Handle sending in the last chunk if there are rows left and chunk processing isn't complete
-	if uploadChunkHandler != nil && len(uploadChunk) > 0 && !chunkProcessingComplete {
-		uploadChunkHandler(upload, uploadChunk, true)
-
-		// Reset for sanity and extensibility
-		chunkProcessingComplete = true
-		uploadChunk = make([][]string, 0)
-	}
-
 	close(in)
 	wg.Wait()
 
 	tf.Log.Infow("Upload processing and storage complete", "upload_id", upload.ID, "num_rows", numRows, "time_taken", time.Since(startTime))
 	return uploadProcessResult{NumRows: numRows, SheetList: it.SheetList}, nil
-}
-
-var maxChunks = 1
-var chunkRowLimit = 60
-
-func handleChunk(upload *model.Upload, row []string, chunkCount *int, chunk *[][]string, handler func(*model.Upload, [][]string, bool)) bool {
-	*chunk = append(*chunk, row)
-
-	// If we haven't reached the chunk limit, there's nothing more to do
-	if len(*chunk) < chunkRowLimit+1 {
-		return false
-	}
-
-	*chunkCount++
-
-	// We've reached the chunk limit, so process the chunk
-	isLastChunk := *chunkCount == maxChunks
-	handler(upload, (*chunk)[:chunkRowLimit], isLastChunk)
-
-	// If this is the last chunk we can process, clear the chunk and return true
-	if isLastChunk {
-		*chunk = make([][]string, 0)
-		return true
-	}
-
-	// Otherwise, prepare for the next chunk
-	*chunk = (*chunk)[chunkRowLimit:]
-	return false
 }
 
 func getImportMetadata(importMetadataEncodedStr string) (jsonb.JSONB, error) {
@@ -364,9 +283,9 @@ func getImportMetadata(importMetadataEncodedStr string) (jsonb.JSONB, error) {
 	return importMetadata, nil
 }
 
-func generateUploadTemplate(uploadTemplateEncodedStr string, allowedValidateTypes map[string]bool) (jsonb.JSONB, error) {
+func generateUploadTemplate(uploadTemplateEncodedStr string) (jsonb.JSONB, error) {
 	if len(uploadTemplateEncodedStr) == 0 {
-		return jsonb.JSONB{}, nil
+		return jsonb.JSONB{}, fmt.Errorf("no template provided")
 	}
 
 	uploadTemplateStr, err := util.DecodeBase64(uploadTemplateEncodedStr)
@@ -380,7 +299,7 @@ func generateUploadTemplate(uploadTemplateEncodedStr string, allowedValidateType
 	}
 
 	// Convert the JSON to an importer template object to validate it and generate template column IDs
-	template, err := types.ConvertRawTemplate(uploadTemplate, true, allowedValidateTypes, false)
+	template, err := types.ConvertRawTemplate(uploadTemplate, true)
 	if err != nil {
 		return jsonb.JSONB{}, fmt.Errorf("could not convert upload template: %v", err.Error())
 	}
@@ -483,15 +402,8 @@ func removeUploadFileFromDisk(file *os.File, fileName, uploadID string) {
 }
 
 // AddColumnMappingSuggestions determines the best match between upload and template columns
-func AddColumnMappingSuggestions(upload *types.Upload, templateColumns []*model.TemplateColumn, getColumnMatches func(*types.Upload, []*model.TemplateColumn) map[string]string) {
+func AddColumnMappingSuggestions(upload *types.Upload, templateColumns []*model.TemplateColumn) {
 	// TODO: We should persist these on the upload to avoid having to regenerate them in different scenarios.
-
-	// Call the column mapping service function to get the initial matches, if any
-	serviceMatches := make(map[string]string)
-	if getColumnMatches != nil {
-		serviceMatches = getColumnMatches(upload, templateColumns)
-	}
-
 	potentialBestMatches := make([]MatchScore, len(upload.UploadColumns))
 
 	// First pass: Iterate over the upload columns and store the potential best matches
@@ -504,11 +416,6 @@ func AddColumnMappingSuggestions(upload *types.Upload, templateColumns []*model.
 		// Initialize the priority queue for this upload column
 		pq := make(PriorityMatchQueue, 0)
 		heap.Init(&pq)
-
-		// If a match exists from the service, add to the priority queue
-		if matchedTemplateName, ok := serviceMatches[uploadColumnName]; ok {
-			addMatchToQueueByName(&pq, matchedTemplateName, templateColumns, 0.95)
-		}
 
 		// Add other potential matches to the priority queue
 		for _, tc := range templateColumns {

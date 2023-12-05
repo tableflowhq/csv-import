@@ -1,44 +1,60 @@
 <div align="center">
 <a href="https://tableflow.com"><img src="https://tableflow-assets-cdn.s3.amazonaws.com/TableFlow-readme-header.png" width="600" alt="TableFlow"></a>
 
-<em>The Open Source CSV Importer</em>
-
 <h3>
     <a href="https://tableflow.com/docs">Docs</a> |
+    <a href="https://example-crm.tableflow.com/">Demo</a> |
     <a href="https://join.slack.com/t/tableflow/shared_invite/zt-1psu47idh-vnItf_BaWcIWih8flGZ0fw">Slack</a> |
-    <a href="https://twitter.com/tableflow">Twitter</a> |
     <a href="https://tableflow.com">Website</a> 
 </h3>
 
 </div>
 
-## TableFlow is an open source data import platform
+## The Open Source CSV Importer
 
-* Embeddable import iframe modal
-* No-code importer configuration
+* Drop-in SDK to add CSV import to your application
 * Smart column mapping
+* Data types and validations
 * Frontend callbacks to retrieve data
-* API to retrieve data
-* Webhook notifications
-* Data validation (coming soon)
-
-## How it works
-
-1. Create an Importer and define the columns your users can import
-2. Embed the TableFlow Importer in your app
-3. Your users can upload CSV or Excel files and set the column mapping through the Importer modal
-4. Download the clean, mapped data from TableFlow via a callback, the API, or from the admin app
 
 ![TableFlow Importer Modal](https://tableflow-assets-cdn.s3.amazonaws.com/importer-modal-20230613b.png)
 
-## Get started
+## How It Works
+
+1. Define the columns your users can import
+2. Embed the TableFlow Importer in your app with the [React](https://tableflow.com/docs/sdk/react)
+   or [JS](https://tableflow.com/docs/sdk/javascript) SDK
+3. Your users import their files
+4. Retrieve the cleaned and mapped data from a frontend callback
+
+```jsx
+<TableFlowImporter
+  template={{ // Define the file columns you want to import
+    columns: [
+      {
+        name: "First Name",
+        validations: [
+          {
+            validate: "not_blank",
+            message: "Cell must contain a value",
+          },
+        ],
+      },
+    ],
+    ... // Add other columns, data types, validations, and more
+  }}
+  onComplete={(data) => console.log(data)} // Retrieve the data
+/>
+```
+
+## Get Started
 
 ### ☁️ TableFlow Cloud
 
 The quickest way to get started with TableFlow is signing up for free
-to [TableFlow Cloud](https://app.tableflow.com/signup)
+to [TableFlow Cloud](https://app.tableflow.com/signup).
 
-### 👩‍💻 Self-hosted deploy (local)
+### 👩‍💻 Self-Hosted Deploy (local)
 
 You can run TableFlow locally with Docker:
 
@@ -49,18 +65,16 @@ cp .env.example .env
 docker-compose up -d
 ```
 
-Then open [http://localhost:3000](http://localhost:3000) to access TableFlow.
+Then add the TableFlowImporter in your application with the [React](https://tableflow.com/docs/sdk/react)
+or [JS](https://tableflow.com/docs/sdk/javascript) SDK, setting the `hostUrl` param to `localhost:3001`.
 
-### 🤖 Self-hosted deploy (AWS EC2)
+### 🤖 Self-Hosted Deploy (AWS EC2)
 
 **Important notes:**
 
-1. [x] Make sure the server you use is only accessible within your VPC
-2. [x] Make sure your local machine is able to connect to the server on ports 3000 (the web server)
-3. [x] Update your network settings to allow port 3001 (the importer iframe) and 3003 (the API server) to be accessible
-   from where your users will import data, most likely public
-4. [x] Update `TABLEFLOW_WEB_APP_URL` and `TABLEFLOW_WEB_IMPORTER_URL` in your .env.example file with the correct URLs
-   where you'll access the web applications from
+1. [x] Update your network settings to only allow port 3001 (the importer iframe) and 3003 (the file import server) to
+   be accessible from where your users will import data, most likely public
+2. [x] Update `TABLEFLOW_WEB_IMPORTER_URL` in your .env.example file with the URL where you're hosting TableFlow
 
 One-line install script (for Amazon Linux):
 
@@ -78,13 +92,8 @@ mv .env.example .env && \
 sg docker -c 'docker-compose up -d'
 ```
 
-## Get in touch
+## Get In Touch
 
 Let us know your feedback or feature requests! You can submit a GitHub issue, reach out
 over [Slack](https://join.slack.com/t/tableflow/shared_invite/zt-1psu47idh-vnItf_BaWcIWih8flGZ0fw), or email us
 at [hey@tableflow.com](mailto:hey@tableflow.com)
-
-### DB Webhooks
-
-If you're looking to use DB Webhooks, we've moved the project into its own
-repository [here](https://github.com/tableflowhq/db-webhooks)!

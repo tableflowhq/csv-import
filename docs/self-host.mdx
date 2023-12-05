@@ -15,16 +15,16 @@ cp .env.example .env
 docker-compose up -d
 ```
 
-Then open [http://localhost:3000](http://localhost:3000) to access TableFlow.
+Then add the TableFlowImporter in your application with the [React](https://tableflow.com/docs/sdk/react)
+or [JS](https://tableflow.com/docs/sdk/javascript) SDK, setting the `hostUrl` param to `localhost:3001`.
 
 ## 🤖 Deploy to AWS EC2
 
 **Important notes:**
 
-1. Make sure the server you use is only accessible within your VPC
-2. Make sure your local machine is able to connect to the server on ports 3000 (the web server)
-3. Update your network settings to allow port 3001 (the importer iframe) and 3003 (the API server) to be accessible from where your users will import data, most likely public
-4. Update `TABLEFLOW_WEB_APP_URL` and `TABLEFLOW_WEB_IMPORTER_URL` in your .env.example file with the correct URLs where you'll access the web applications from
+1. Update your network settings to only allow port 3001 (the importer iframe) and 3003 (the file import server) to
+be accessible from where your users will import data, most likely public
+2. Update `TABLEFLOW_WEB_IMPORTER_URL` in your .env.example file with the URL where you're hosting TableFlow
 
 One-line install script (for Amazon Linux):
 

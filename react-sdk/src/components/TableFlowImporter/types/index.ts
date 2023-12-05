@@ -8,7 +8,7 @@ type ModalParams = {
 };
 
 export type TableFlowImporterProps = (HTMLAttributes<HTMLDialogElement> & HTMLAttributes<HTMLDivElement>) & {
-  importerId: string;
+  importerId?: string;
   hostUrl?: string;
   template?: Record<string, unknown> | string;
   darkMode?: boolean;

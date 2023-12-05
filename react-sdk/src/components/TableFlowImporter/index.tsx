@@ -40,6 +40,8 @@ export default function TableFlowImporter({
   const themeClass = darkMode && `${baseClass}-dark`;
   const domElementClass = [`${baseClass}-${isModal ? "dialog" : "div"}`, themeClass, className].filter((i) => i).join(" ");
 
+  importerId = importerId === undefined || importerId?.trim() === "" ? "0" : importerId;
+
   const urlParams = {
     importerId,
     isModal: isModal ? "true" : "false",

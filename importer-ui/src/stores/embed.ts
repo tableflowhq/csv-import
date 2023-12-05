@@ -37,7 +37,14 @@ const useEmbedStore = create<ParamsStore>()((set) => ({
     schemaless: false,
     schemalessReadOnly: false,
   },
-  setEmbedParams: (embedParams) => set({ embedParams }),
+  setEmbedParams: (embedParams) =>
+    set((state) => ({
+      embedParams: {
+        ...state.embedParams,
+        ...embedParams,
+        importerId: embedParams.importerId === undefined || embedParams.importerId?.trim() === "" ? "0" : embedParams.importerId,
+      },
+    })),
 }));
 
 export default useEmbedStore;

@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-export default function useListenMessage(importerId: string, onComplete?: (data: any) => void, modalOnCloseTriggered?: () => void) {
+export default function useListenMessage(importerId?: string, onComplete?: (data: any) => void, modalOnCloseTriggered?: () => void) {
   useEffect(() => {
     let postMessages: string[] = [];
 

@@ -22,20 +22,6 @@ services:
       scylla:
         condition: service_healthy
 
-  admin-ui:
-    depends_on:
-      backend:
-        condition: service_healthy
-    image: registry-1.docker.io/tableflow/admin-ui
-    platform: linux/amd64
-    # Un-comment if using Apple silicon
-    #platform: linux/arm64
-    container_name: admin-ui
-    ports:
-      - "3000:80"
-    networks:
-      - app_network
-
   importer-ui:
     depends_on:
       backend:
