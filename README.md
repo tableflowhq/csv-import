@@ -1,6 +1,8 @@
 <div align="center">
 <a href="https://tableflow.com"><img src="https://tableflow-assets-cdn.s3.amazonaws.com/TableFlow-readme-header.png" width="600" alt="TableFlow"></a>
 
+<em>The Open Source CSV Importer</em>
+
 <h3>
     <a href="https://tableflow.com/docs">Docs</a> |
     <a href="https://example-crm.tableflow.com/">Demo</a> |
@@ -10,7 +12,7 @@
 
 </div>
 
-## The Open Source CSV Importer
+## Features
 
 * Drop-in SDK to add CSV import to your application
 * Smart column mapping
