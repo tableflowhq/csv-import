@@ -19,7 +19,7 @@
 * Data types and validations
 * Frontend callbacks to retrieve data
 
-![TableFlow Importer Modal](https://tableflow-assets-cdn.s3.amazonaws.com/importer-modal-20230613b.png)
+![TableFlow Importer Modal](https://tableflow-assets-cdn.s3.amazonaws.com/importer-review-cover.png)
 
 ## How It Works
 
