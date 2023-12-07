@@ -17,15 +17,17 @@ yarn add @tableflow/js
 ```
 ## Example
 
-```javascript
+<CodeGroup>
+
+```javascript TableFlow Cloud
 import createTableFlowImporter from "@tableflow/js";
 
 const importer = createTableFlowImporter({
-  importerId: "6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353", // Use your importer ID 
+  importerId: "6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353", // Use your importer ID
   modalOnCloseTriggered: () => importer.close(),
   darkMode: true,
-  metadata: {"user_id": 1234}, // Pass through user or import info
-  onComplete: (data) => console.log(data)
+  metadata: { user_id: 1234 }, // Pass through user or import info
+  onComplete: (data) => console.log(data),
 });
 
 const uploadButton = document.getElementById("uploadButton");
@@ -34,34 +36,128 @@ uploadButton.addEventListener("click", () => {
 });
 ```
 
-Or directly in HTML
-```html
+```javascript TableFlow Open Source
+import createTableFlowImporter from "@tableflow/js";
+
+const importer = createTableFlowImporter({
+  hostUrl: "http://localhost:3001", // Make sure this matches the TABLEFLOW_WEB_IMPORTER_URL env when setting up your instance
+  modalOnCloseTriggered: () => importer.close(),
+  darkMode: true,
+  metadata: { user_id: 1234 }, // Pass through user or import info
+  onComplete: (data) => console.log(data),
+  template: {
+    columns: [
+      {
+        name: "First Name",
+        key: "first_name",
+        required: true,
+        description: "The first name of the user",
+        suggested_mappings: ["First", "Name"],
+        data_type: "string",
+        validations: [
+          {
+            validate: "not_blank",
+            message: "Cell must contain a value",
+          },
+        ],
+      },
+      {
+        name: "Age",
+        data_type: "number",
+      },
+    ],
+  },
+});
+
+const uploadButton = document.getElementById("uploadButton");
+uploadButton.addEventListener("click", () => {
+  importer?.showModal();
+});
+```
+
+</CodeGroup>
+
+## Example (In HTML)
+
+<CodeGroup>
+
+```html TableFlow Cloud
 <head>
   <script src="https://unpkg.com/@tableflow/js@latest/build/index.js"></script>
 </head>
 <body>
-<button id="uploadButton">Open TableFlow Importer</button>
-<script>
-  const importer = createTableFlowImporter({
-    importerId: "6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353", // Use your importer ID
-    modalOnCloseTriggered: () => importer.close(),
-    darkMode: true,
-    metadata: {"user_id": 1234}, // Pass through user or import info
-    onComplete: (data) => console.log(data),
-  });
+  <button id="uploadButton">Open TableFlow Importer</button>
+  <script>
+    const importer = createTableFlowImporter({
+      importerId: "6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353", // Use your importer ID
+      modalOnCloseTriggered: () => importer.close(),
+      darkMode: true,
+      metadata: { user_id: 1234 }, // Pass through user or import info
+      onComplete: (data) => console.log(data),
+    });
 
-  const uploadButton = document.getElementById("uploadButton");
-  uploadButton.addEventListener("click", () => {
-    importer?.showModal();
-  });
-</script>
+    const uploadButton = document.getElementById("uploadButton");
+    uploadButton.addEventListener("click", () => {
+      importer?.showModal();
+    });
+  </script>
 </body>
 ```
 
+```html TableFlow Open Source
+<head>
+  <script src="https://unpkg.com/@tableflow/js@latest/build/index.js"></script>
+</head>
+<body>
+  <button id="uploadButton">Open TableFlow Importer</button>
+  <script>
+    const importer = createTableFlowImporter({
+      hostUrl: "http://localhost:3001", // Make sure this matches the TABLEFLOW_WEB_IMPORTER_URL env when setting up your instance
+      modalOnCloseTriggered: () => importer.close(),
+      darkMode: true,
+      metadata: { user_id: 1234 }, // Pass through user or import info
+      onComplete: (data) => console.log(data),
+      template: {
+        columns: [
+          {
+            name: "First Name",
+            key: "first_name",
+            required: true,
+            description: "The first name of the user",
+            suggested_mappings: ["First", "Name"],
+            data_type: "string",
+            validations: [
+              {
+                validate: "not_blank",
+                message: "Cell must contain a value",
+              },
+            ],
+          },
+          {
+            name: "Age",
+            data_type: "number",
+          },
+        ],
+      },
+    });
+
+    const uploadButton = document.getElementById("uploadButton");
+    uploadButton.addEventListener("click", () => {
+      importer?.showModal();
+    });
+  </script>
+</body>
+```
+
+</CodeGroup>
+
 ## Properties
 
-<ResponseField name="importerId" type="string" required>
-  The unique ID for the importer. Obtain from your importer on [TableFlow](https://app.tableflow.com/importers).
+<ResponseField name="importerId" type="string">
+  <Info>Required in <a href="https://tableflow.com/pricing" target="_blank">TableFlow Cloud</a>.</Info>
+  The unique ID for the importer. The SDK used this ID to pull in the template schema that you set up in the Admin
+  Dashboard, or you can override this by adding the template parameter. Obtain from your importer on
+  [TableFlow](https://app.tableflow.com/importers).
 </ResponseField>
 
 <ResponseField name="isModal" type="boolean" default={true}>
@@ -82,9 +178,9 @@ Or directly in HTML
 </ResponseField>
 
 <ResponseField name="template" type="object">
-  Configure the columns used for the import. If provided, this template will override what is defined in your importer
-  on the [TableFlow admin app](https://app.tableflow.com/importers). This can be useful if columns you want your users
-  importing change depending on a condition in your application.
+  Configure the columns used for the import. If provided when using TableFlow Cloud, this template will override what is
+  defined in your importer on the [TableFlow admin app](https://app.tableflow.com/importers). This can be useful if
+  columns you want your users importing change depending on a condition in your application.
 
   See the full schema and available options for [Templates](/templates).
 
@@ -101,16 +197,13 @@ Or directly in HTML
         validations: [
           {
             validate: "not_blank",
-            message: "Cell must contain a value"
-          }
-        ]
-      },
-      {
-        name: "Last Name"
+            message: "Cell must contain a value",
+          },
+        ],
       },
       {
         name: "Age",
-        data_type: "number"
+        data_type: "number",
       },
     ],
   }

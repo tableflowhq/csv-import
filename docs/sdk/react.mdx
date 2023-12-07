@@ -18,9 +18,11 @@ yarn add @tableflow/react
 
 ## Example
 
-```javascript
-import { useState } from "react";
+<CodeGroup>
+
+```javascript TableFlow Cloud
 import { TableFlowImporter } from "@tableflow/react";
+import { useState } from "react";
 
 function MyComponent() {
   const [isOpen, setIsOpen] = useState(false);
@@ -34,7 +36,7 @@ function MyComponent() {
         modalIsOpen={isOpen}
         modalOnCloseTriggered={() => setIsOpen(false)}
         darkMode={true}
-        metadata={{"user_id": 1234}} // Pass through user or import info
+        metadata={{ user_id: 1234 }} // Pass through user or import info
         onComplete={(data) => console.log(data)}
       />
     </>
@@ -42,10 +44,61 @@ function MyComponent() {
 }
 ```
 
+```javascript TableFlow Open Source
+import { useState } from "react";
+import { TableFlowImporter } from "@tableflow/react";
+
+function MyComponent() {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <>
+      <button onClick={() => setIsOpen(true)}>Open TableFlow Importer</button>
+
+      <TableFlowImporter
+        hostUrl={"http://localhost:3001"} // Make sure this matches the TABLEFLOW_WEB_IMPORTER_URL env when setting up your instance
+        modalIsOpen={isOpen}
+        modalOnCloseTriggered={() => setIsOpen(false)}
+        darkMode={true}
+        metadata={{"user_id": 1234}} // Pass through user or import info
+        onComplete={(data) => console.log(data)}
+        template={{
+          columns: [
+            {
+              name: "First Name",
+              key: "first_name",
+              required: true,
+              description: "The first name of the user",
+              suggested_mappings: ["First", "Name"],
+              data_type: "string",
+              validations: [
+                {
+                  validate: "not_blank",
+                  message: "Cell must contain a value",
+                },
+              ],
+            },
+            {
+              name: "Age",
+              data_type: "number",
+            },
+          ],
+        }}
+      />
+    </>
+  );
+}
+```
+
+</CodeGroup>
+
 ## Properties
 
-<ResponseField name="importerId" type="string" required>
-  The unique ID for the importer. Obtain from your importer on [TableFlow](https://app.tableflow.com/importers).
+<ResponseField name="importerId" type="string">
+  <Info>Required in <a href="https://tableflow.com/pricing" target="_blank">TableFlow Cloud</a>.</Info>
+  The unique ID for the importer. The SDK used this ID to pull in the template schema that you set up in the Admin
+  Dashboard, or you can override this by adding the template parameter. Obtain from your importer on
+  [TableFlow](https://app.tableflow.com/importers).
 </ResponseField>
 
 <ResponseField name="isModal" type="boolean" default={true}>
@@ -79,9 +132,9 @@ function MyComponent() {
 </ResponseField>
 
 <ResponseField name="template" type="object">
-  Configure the columns used for the import. If provided, this template will override what is defined in your importer
-  on the [TableFlow admin app](https://app.tableflow.com/importers). This can be useful if columns you want your users
-  importing change depending on a condition in your application.
+  Configure the columns used for the import. If provided when using TableFlow Cloud, this template will override what is
+  defined in your importer on the [TableFlow admin app](https://app.tableflow.com/importers). This can be useful if
+  columns you want your users importing change depending on a condition in your application.
 
   See the full schema and available options for [Templates](/templates).
 
@@ -98,16 +151,13 @@ function MyComponent() {
         validations: [
           {
             validate: "not_blank",
-            message: "Cell must contain a value"
-          }
-        ]
-      },
-      {
-        name: "Last Name"
+            message: "Cell must contain a value",
+          },
+        ],
       },
       {
         name: "Age",
-        data_type: "number"
+        data_type: "number",
       },
     ],
   }}
@@ -293,5 +343,5 @@ function MyComponent() {
 </ResponseField>
 
 <ResponseField name="hostUrl" type="string">
-  The URL of where the importer iframe is hosted. This should only be set when self-hosting TableFlow.
+  The URL of where the importer iframe is hosted. This should only be set when deploying TableFlow Open Source.
 </ResponseField>

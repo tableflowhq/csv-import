@@ -1,0 +1,42 @@
+---
+title: On AWS EC2
+---
+
+This page guides you through deploying TableFlow Open Source on an [Amazon EC2 instance](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/concepts.html) using Amazon Linux or CentOS.
+
+<Info>Update your server network settings to only allow port 3001 (the importer iframe) and 3003 (the file import
+  server) to be accessible from where your users will import data, most likely public.</Info>
+<Info>Don't forget to Update `TABLEFLOW_WEB_IMPORTER_URL` in your .env file with the URL where you're hosting
+  TableFlow.</Info>
+
+### 1. Install packages
+Install docker, docker-compose, and download the docker-compose and .env.example files from TableFlow
+```bash
+sudo yum update -y && \
+sudo yum install -y docker && \
+sudo service docker start && \
+sudo usermod -a -G docker $USER && \
+sudo wget -O /usr/local/bin/docker-compose https://github.com/docker/compose/releases/download/v2.19.1/docker-compose-$(uname -s)-$(uname -m) && \
+sudo mv /usr/local/bin/docker-compose /usr/bin/docker-compose && \
+sudo chmod +x /usr/bin/docker-compose && \
+mkdir tableflow && cd tableflow && \
+wget https://raw.githubusercontent.com/tableflowhq/tableflow/main/{.env.example,docker-compose.yml,docker-compose.base.yml} && \
+mv .env.example .env
+```
+
+### 2. Update your environment
+Edit your .env file to set the `TABLEFLOW_WEB_IMPORTER_URL` variable to the URL where you're hosting TableFlow, i.e. `https://192.0.2.1:3001`
+```bash
+nano .env
+```
+
+### 3. Run TableFlow
+Run the application with docker-compose
+```bash
+sg docker -c 'docker-compose up -d'
+```
+
+### 4. Embed the importer
+[Follow these instructions](/embed-importer#using-tableflow-open-source) to embed the importer in your frontend with
+the [React](https://tableflow.com/docs/sdk/react) or [JS](https://tableflow.com/docs/sdk/javascript) SDK, making sure
+to set the `hostUrl` param to what you provided for `TABLEFLOW_WEB_IMPORTER_URL`.

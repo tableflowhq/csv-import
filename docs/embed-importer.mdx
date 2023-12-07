@@ -7,13 +7,19 @@ After configuring your `importer`, you're ready to embed it inside of your app.
 
 <Info>You can also link to a hosted `importer` using [Shareable Links](/shareable-links)</Info>
 
-TableFlow is designed to be added to your frontend with ease. The [React SDK](/sdk/react) and [JavaScript SDK](/sdk/javascript) allow you to open the importer as a modal or embed it directly inline.
+TableFlow is designed to be easily added to your frontend application. The [React SDK](/sdk/react) and [JavaScript SDK](/sdk/javascript) allow you to open the importer as a modal or embed it directly inline.
+
+### Using TableFlow Cloud
+
+TableFlow Cloud requires you to provide an `importerId` when embedding an importer. The SDK will pull in the template
+schema that you set up in the [Admin Dashboard](https://app.tableflow.com/importers), or you can override this by
+adding the `template` parameter.
 
 <CodeGroup>
 
 ```javascript React
-import { useState } from "react";
 import { TableFlowImporter } from "@tableflow/react";
+import { useState } from "react";
 
 function MyComponent() {
   const [isOpen, setIsOpen] = useState(false);
@@ -27,7 +33,7 @@ function MyComponent() {
         modalIsOpen={isOpen}
         modalOnCloseTriggered={() => setIsOpen(false)}
         darkMode={true}
-        metadata={{"user_id": 1234}} // Pass through user or import info
+        metadata={{ user_id: 1234 }} // Pass through user or import info
         onComplete={(data) => console.log(data)}
       />
     </>
@@ -35,15 +41,15 @@ function MyComponent() {
 }
 ```
 
-```javascript Javascript
+```javascript JavaScript
 import createTableFlowImporter from "@tableflow/js";
 
 const importer = createTableFlowImporter({
-  importerId: "6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353", // Use your importer ID 
+  importerId: "6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353", // Use your importer ID
   modalOnCloseTriggered: () => importer.close(),
   darkMode: true,
-  metadata: {"user_id": 1234}, // Pass through user or import info
-  onComplete: (data) => console.log(data)
+  metadata: { user_id: 1234 }, // Pass through user or import info
+  onComplete: (data) => console.log(data),
 });
 
 const uploadButton = document.getElementById("uploadButton");
@@ -62,11 +68,11 @@ uploadButton.addEventListener("click", () => {
     const importer = createTableFlowImporter({
       importerId: "6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353", // Use your importer ID
       modalOnCloseTriggered: () => importer.close(),
-      darkMode: true, 
-      metadata: {"user_id": 1234}, // Pass through user or import info
+      darkMode: true,
+      metadata: { user_id: 1234 }, // Pass through user or import info
       onComplete: (data) => console.log(data),
     });
-  
+
     const uploadButton = document.getElementById("uploadButton");
     uploadButton.addEventListener("click", () => {
       importer?.showModal();
@@ -78,3 +84,147 @@ uploadButton.addEventListener("click", () => {
 </CodeGroup>
 
 If you want to add additional metadata to your import, such as wanting to know which user ID in your application uploaded a file, you can set the “metadata” property with any data as JSON.
+
+<br/>
+### Using TableFlow Open Source
+
+If you're deploying TableFlow Open Source, the schema of your import is defined using the `template` SDK parameter. You'll also
+need to set the `hostUrl` parameter so the SDK knows where to connect to for data processing.
+
+- [Template reference](/templates)
+- [Deploy instructions](/deploy-tableflow)
+
+
+<CodeGroup>
+
+```javascript React
+import { useState } from "react";
+import { TableFlowImporter } from "@tableflow/react";
+
+function MyComponent() {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <>
+      <button onClick={() => setIsOpen(true)}>Open TableFlow Importer</button>
+
+      <TableFlowImporter
+        hostUrl={"http://localhost:3001"} // Make sure this matches the TABLEFLOW_WEB_IMPORTER_URL env when setting up your instance
+        modalIsOpen={isOpen}
+        modalOnCloseTriggered={() => setIsOpen(false)}
+        darkMode={true}
+        metadata={{"user_id": 1234}} // Pass through user or import info
+        onComplete={(data) => console.log(data)}
+        template={{
+          columns: [
+            {
+              name: "First Name",
+              key: "first_name",
+              required: true,
+              description: "The first name of the user",
+              suggested_mappings: ["First", "Name"],
+              data_type: "string",
+              validations: [
+                {
+                  validate: "not_blank",
+                  message: "Cell must contain a value",
+                },
+              ],
+            },
+            {
+              name: "Age",
+              data_type: "number",
+            },
+          ],
+        }}
+      />
+    </>
+  );
+}
+```
+
+```javascript JavaScript
+import createTableFlowImporter from "@tableflow/js";
+
+const importer = createTableFlowImporter({
+  hostUrl: "http://localhost:3001", // Make sure this matches the TABLEFLOW_WEB_IMPORTER_URL env when setting up your instance
+  modalOnCloseTriggered: () => importer.close(),
+  darkMode: true,
+  metadata: { user_id: 1234 }, // Pass through user or import info
+  onComplete: (data) => console.log(data),
+  template: {
+    columns: [
+      {
+        name: "First Name",
+        key: "first_name",
+        required: true,
+        description: "The first name of the user",
+        suggested_mappings: ["First", "Name"],
+        data_type: "string",
+        validations: [
+          {
+            validate: "not_blank",
+            message: "Cell must contain a value",
+          },
+        ],
+      },
+      {
+        name: "Age",
+        data_type: "number",
+      },
+    ],
+  },
+});
+
+const uploadButton = document.getElementById("uploadButton");
+uploadButton.addEventListener("click", () => {
+  importer?.showModal();
+});
+```
+
+```html HTML
+<head>
+  <script src="https://unpkg.com/@tableflow/js@latest/build/index.js"></script>
+</head>
+<body>
+  <button id="uploadButton">Open TableFlow Importer</button>
+  <script>
+    const importer = createTableFlowImporter({
+      hostUrl: "http://localhost:3001", // Make sure this matches the TABLEFLOW_WEB_IMPORTER_URL env when setting up your instance
+      modalOnCloseTriggered: () => importer.close(),
+      darkMode: true,
+      metadata: { user_id: 1234 }, // Pass through user or import info
+      onComplete: (data) => console.log(data),
+      template: {
+        columns: [
+          {
+            name: "First Name",
+            key: "first_name",
+            required: true,
+            description: "The first name of the user",
+            suggested_mappings: ["First", "Name"],
+            data_type: "string",
+            validations: [
+              {
+                validate: "not_blank",
+                message: "Cell must contain a value",
+              },
+            ],
+          },
+          {
+            name: "Age",
+            data_type: "number",
+          },
+        ],
+      },
+    });
+
+    const uploadButton = document.getElementById("uploadButton");
+    uploadButton.addEventListener("click", () => {
+      importer?.showModal();
+    });
+  </script>
+</body>
+```
+
+</CodeGroup>

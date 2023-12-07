@@ -3,16 +3,18 @@ title: Configure Importer
 icon: circle-1
 ---
 
-To get started with TableFlow, you'll first  configure an `importer`. This defines the columns, validations, and settings for how users import data. There are three options for configuration.
+To get started with TableFlow, you'll first configure an `importer`. This defines the columns, validations, and settings for how users import data. There are three options for configuration.
 
-### Option 1: Admin Dashboard
+### Option 1: SDK
+This option allows you to configure the `importer` directly inside your front-end code. Step 2, [Embed Importer](/embed-importer), will describe how to use this option.
+
+### Option 2: Admin Dashboard
+<Info>Feature available in <a href="https://tableflow.com/pricing" target="_blank">TableFlow Cloud</a>.</Info>
 This no-code option is the quickest way to configure a new `importer`. Navigate to [app.tableflow.com/importers](https://app.tableflow.com/importers) and create a new importer.
 <Frame>
-    ![Create Importer](assets/create-importer.jpg)
+  ![Create Importer](assets/create-importer.jpg)
 </Frame>
 
-### Option 2: SDK
-This option allows developers to configure the `importer` directly inside their front-end code. Step 2, [Embed Importer](/embed-importer), will describe how to leverage this option.
-
 ### Option 3: API
-Using the API, developers can create and update the `importer` object programmatically from their backend. The [Create Importer](/api-reference/create-importer) endpoint provides details.
+<Info>Feature available in <a href="https://tableflow.com/pricing" target="_blank">TableFlow Cloud</a>.</Info>
+Using the Cloud API, you can create and update the `importer` object programmatically from their backend. The [Create Importer](/api-reference/create-importer) endpoint provides details.

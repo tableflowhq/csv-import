@@ -71,8 +71,15 @@
         "validations",
         "webhooks",
         "slack-notifications",
-        "self-host",
-        "shareable-links"
+        "shareable-links",
+        {
+          "group": "Deploy TableFlow",
+          "pages": [
+            "deploy-tableflow/introduction",
+            "deploy-tableflow/on-your-local-machine",
+            "deploy-tableflow/on-aws-ec2"
+          ]
+        }
       ]
     },
     {

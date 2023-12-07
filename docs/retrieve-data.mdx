@@ -3,24 +3,18 @@ title: Retrieve Data
 icon: circle-3
 ---
 
-After a user completes a CSV or Excel file import, you have three options for how to retrieve the cleaned and mapped data.
+After a user completes a CSV or Excel file import, you have a few options for how to retrieve the cleaned and mapped data.
 
-### Option 1: Admin Dashboard
-
-The easiest way to access imported data is right within [admin dashboard](app.tableflow.com) under the “Data” tab. Here you can download the files directly as a CSV. While this is useful for testing, you’ll likely want to use the one of the other options for production systems.
-
-<Frame>
-    ![Retrieve Data](assets/retrieve-data.jpg)
-</Frame>
-
-### Option 2: SDK
-The SDKs have an `onComplete` event that is triggered when an import is completed. The `data` object contains the actual row data along with information about the completed import such as the number of rows imported. It's important to note that there is a 10,000 row limit when using frontend callbacks.
+### Option 1: SDK
+The [React](/sdk/react) and [JavaScript](/sdk/javascript) SDKs have an `onComplete` event that is triggered when an import is completed. The `data` object contains the actual row data along with information about the completed import such as the number of rows imported. It's important to note that there is a 10,000 row limit when using frontend callbacks.
 
 ```javascript
 onComplete: (data) => console.log(data)
 ```
 
-### Option 3: API & Webhooks
+### Option 2: Webhooks & API
+
+<Info>Feature available in <a href="https://tableflow.com/pricing" target="_blank">TableFlow Cloud</a>.</Info>
 
 TableFlow provides an API to paginate the row data of an import, view metadata about an import, or download an import directly as a CSV.
 
@@ -29,3 +23,15 @@ TableFlow provides an API to paginate the row data of an import, view metadata a
 - [Download Import CSV](/api-reference/download-import)
 
 You can also use [Webhooks](/webhooks) to get notified when an import has been completed. This allows your backend application to load the imported data as soon as an import has completed.
+
+
+### Option 3: Admin Dashboard
+
+<Info>Feature available in <a href="https://tableflow.com/pricing" target="_blank">TableFlow Cloud</a>.</Info>
+
+The easiest way to access imported data is right within [admin dashboard](app.tableflow.com) under the “Data” tab. Here you can download the files directly as a CSV. While this is useful for testing, you’ll likely want to use the one of the other options for production systems.
+
+<Frame>
+  ![Retrieve Data](assets/retrieve-data.jpg)
+</Frame>
+
