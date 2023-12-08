@@ -157,6 +157,12 @@ export default function Main() {
     postMessage(message);
   }, []);
 
+  useEffect(() => {
+    if (review && !reviewIsLoading && reviewIsStored && enabledReview) {
+      goNext();
+    }
+  }, [review, reviewIsLoading, reviewIsStored, enabledReview]);
+
   const requestClose = () => {
     if (!isEmbeddedInIframe || !isModal) return;
     const message = {
@@ -245,7 +251,6 @@ export default function Main() {
             onSuccess={(_, columnsValues) => {
               setEnabledReview(true);
               setColumnsOrder(columnsValues);
-              goNext();
             }}
             skipHeaderRowSelection={skipHeader}
             onCancel={skipHeader ? reload : () => goBack(StepEnum.RowSelection)}
