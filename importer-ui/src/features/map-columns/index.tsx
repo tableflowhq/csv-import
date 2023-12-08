@@ -20,8 +20,15 @@ export default function MapColumns({
   isLoading,
   onLoad,
 }: MapColumnsProps) {
-  const { rows, formValues } = useMapColumnsTable(upload?.upload_columns, template?.columns, schemaless, schemalessReadOnly, columnsValues);
   const { mutate, error, isSuccess, isLoading: isLoadingPost } = usePostUpload(upload?.id || "");
+  const { rows, formValues } = useMapColumnsTable(
+    upload?.upload_columns,
+    template?.columns,
+    schemaless,
+    schemalessReadOnly,
+    columnsValues,
+    isLoadingPost
+  );
   const [selectedColumns, setSelectedColumns] = useState<any>([]);
 
   const onSubmit = (e: FormEvent<HTMLFormElement>) => {

@@ -18,7 +18,8 @@ export default function useMapColumnsTable(
   templateColumns: TemplateColumn[] = [],
   schemaless?: boolean,
   schemalessReadOnly?: boolean,
-  columnsValues: { [key: string]: Include } = {}
+  columnsValues: { [key: string]: Include } = {},
+  isLoading?: boolean
 ) {
   useEffect(() => {
     Object.keys(columnsValues).map((mapColData) => {
@@ -118,14 +119,14 @@ export default function useMapColumnsTable(
           content: (
             <Checkbox
               checked={suggestion.use}
-              disabled={(schemaless && schemalessReadOnly) || !suggestion.template}
+              disabled={(schemaless && schemalessReadOnly) || !suggestion.template || isLoading}
               onChange={(e) => handleUseChange(id, e.target.checked)}
             />
           ),
         },
       };
     });
-  }, [values]);
+  }, [values, isLoading]);
   return { rows, formValues: values };
 }
 
