@@ -27,7 +27,7 @@ export default function MapColumns({
     schemaless,
     schemalessReadOnly,
     columnsValues,
-    isLoadingPost
+    isLoading || isLoadingPost
   );
   const [selectedColumns, setSelectedColumns] = useState<any>([]);
 
