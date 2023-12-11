@@ -21,34 +21,27 @@ export default function MapColumns({
   onLoad,
 }: MapColumnsProps) {
   const { mutate, error, isSuccess, isLoading: isLoadingPost } = usePostUpload(upload?.id || "");
-  const [isDisabledControl, setIsDisabledControl] = useState(false);
   const { rows, formValues } = useMapColumnsTable(
     upload?.upload_columns,
     template?.columns,
     schemaless,
     schemalessReadOnly,
     columnsValues,
-    isDisabledControl
+    isLoadingPost
   );
   const [selectedColumns, setSelectedColumns] = useState<any>([]);
 
   const onSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsDisabledControl(true);
-    try {
-      setColumnsValues(formValues);
-      const columns = Object.keys(formValues).reduce((acc, key) => {
-        const { template, use } = formValues[key];
-        return { ...acc, ...(use ? { [key]: template } : {}) };
-      }, {});
-      setSelectedColumns(columns);
 
-      mutate(columns);
-    } catch (error) {
-      setIsDisabledControl(false);
-    } finally {
-      setIsDisabledControl(false);
-    }
+    setColumnsValues(formValues);
+    const columns = Object.keys(formValues).reduce((acc, key) => {
+      const { template, use } = formValues[key];
+      return { ...acc, ...(use ? { [key]: template } : {}) };
+    }, {});
+    setSelectedColumns(columns);
+
+    mutate(columns);
   };
 
   useEffect(() => {
