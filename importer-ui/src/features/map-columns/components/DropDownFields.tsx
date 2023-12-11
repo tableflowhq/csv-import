@@ -9,9 +9,18 @@ type DropdownFieldsProps = {
   onChange: (value: string) => void;
   selectedValues: { template: string; selected: boolean | undefined }[];
   updateSelectedValues: (updatedValues: { template: string; selected: boolean | undefined }[]) => void;
+  isDisabled?: boolean;
 };
 
-export default function DropdownFields({ options, value, placeholder, onChange, selectedValues, updateSelectedValues }: DropdownFieldsProps) {
+export default function DropdownFields({
+  options,
+  value,
+  placeholder,
+  onChange,
+  selectedValues,
+  updateSelectedValues,
+  isDisabled,
+}: DropdownFieldsProps) {
   const [selectedOption, setSelectedOption] = useState(value);
   const [filteredOptions, setFilteredOptions] = useState<{ [key: string]: InputOption }>({});
 
@@ -57,7 +66,7 @@ export default function DropdownFields({ options, value, placeholder, onChange, 
       placeholder={placeholder}
       variants={["small"]}
       onChange={handleInputChange}
-      disabled={Object.keys(filteredOptions).length === 0}
+      disabled={Object.keys(filteredOptions).length === 0 || isDisabled}
     />
   );
 }

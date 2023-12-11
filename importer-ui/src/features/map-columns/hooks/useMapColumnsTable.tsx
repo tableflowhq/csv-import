@@ -68,6 +68,8 @@ export default function useMapColumnsTable(
     setValues((prev) => ({ ...prev, [id]: { ...prev[id], template: value, use: !!value } }));
   };
 
+  const [isDisabled, setIsDisabled] = useState(isLoading);
+
   const rows = useMemo(() => {
     return items.map((item) => {
       const { id, name, sample_data } = item;
@@ -111,6 +113,7 @@ export default function useMapColumnsTable(
               onChange={(template: string) => handleTemplateChange(id, template)}
               selectedValues={selectedValues}
               updateSelectedValues={setSelectedValues}
+              isDisabled={isDisabled}
             />
           ),
         },
@@ -119,7 +122,7 @@ export default function useMapColumnsTable(
           content: (
             <Checkbox
               checked={suggestion.use}
-              disabled={(schemaless && schemalessReadOnly) || !suggestion.template || isLoading}
+              disabled={(schemaless && schemalessReadOnly) || !suggestion.template || isDisabled}
               onChange={(e) => handleUseChange(id, e.target.checked)}
             />
           ),
