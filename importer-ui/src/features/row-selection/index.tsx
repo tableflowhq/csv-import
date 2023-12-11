@@ -25,10 +25,6 @@ export default function RowSelection({ upload, onSuccess, onCancel, selectedHead
     }
   }, []);
 
-  useEffect(() => {
-    console.log(isLoading);
-  }, [isLoading]);
-
   const dataWithRadios = upload?.upload_rows?.map((row) => {
     const nameWithRadio = (
       <span>
