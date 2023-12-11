@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Alert } from "@chakra-ui/alert";
 import { Button } from "@chakra-ui/button";
 import Errors from "../../components/Errors";
@@ -11,7 +11,6 @@ import { PiWarningCircle } from "react-icons/pi";
 
 export default function RowSelection({ upload, onSuccess, onCancel, selectedHeaderRow, setSelectedHeaderRow }: RowSelectionProps) {
   const { mutate, error, isSuccess, isLoading, data } = usePostSetHeader(upload?.id || "");
-  const [isRadioDisabled, setIsRadioDisabled] = useState(false);
   const handleRadioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedHeaderRow(Number(e.target.value));
   };
@@ -26,6 +25,10 @@ export default function RowSelection({ upload, onSuccess, onCancel, selectedHead
     }
   }, []);
 
+  useEffect(() => {
+    console.log(isLoading);
+  }, [isLoading]);
+
   const dataWithRadios = upload?.upload_rows?.map((row) => {
     const nameWithRadio = (
       <span>
@@ -37,7 +40,7 @@ export default function RowSelection({ upload, onSuccess, onCancel, selectedHead
           value={row.index}
           checked={selectedHeaderRow === row.index}
           onChange={handleRadioChange}
-          disabled={isRadioDisabled}
+          disabled={isLoading}
         />
         {row.values?.[0]}
       </span>
@@ -63,14 +66,8 @@ export default function RowSelection({ upload, onSuccess, onCancel, selectedHead
 
   const handleNextClick = (e: any) => {
     e.preventDefault();
-    setIsRadioDisabled(true);
 
-    try {
-      mutate({ selectedHeaderRow: selectedHeaderRow });
-    } catch (error) {
-    } finally {
-      setIsRadioDisabled(false);
-    }
+    mutate({ selectedHeaderRow: selectedHeaderRow });
   };
 
   useEffect(() => {
