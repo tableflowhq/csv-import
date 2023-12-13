@@ -12,7 +12,9 @@ import { PiWarningCircle } from "react-icons/pi";
 export default function RowSelection({ upload, onSuccess, onCancel, selectedHeaderRow, setSelectedHeaderRow }: RowSelectionProps) {
   const { mutate, error, isSuccess, isLoading, data } = usePostSetHeader(upload?.id || "");
   const handleRadioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSelectedHeaderRow(Number(e.target.value));
+    if (!isLoading) {
+      setSelectedHeaderRow(Number(e.target.value));
+    }
   };
 
   useEffect(() => {
@@ -98,7 +100,7 @@ export default function RowSelection({ upload, onSuccess, onCancel, selectedHead
                 background="zebra"
                 columnWidths={columnWidths}
                 columnAlignments={Array(numberOfColumns).fill("left")}
-                onRowClick={(row) => setSelectedHeaderRow(dataWithRadios?.indexOf(row) || 0)}
+                onRowClick={(row) => !isLoading && setSelectedHeaderRow(dataWithRadios?.indexOf(row) || 0)}
               />
             </div>
           </>
