@@ -17,7 +17,7 @@ export default function useApi(importerId: string, sdkDefinedTemplate: string, c
     isLoading: importerIsLoading,
     error: importerError,
   } = useGetImporter(importerId, sdkDefinedTemplate, schemaless);
-  const { template = {} as Template } = importer;
+  let { template = {} as Template } = importer;
 
   const { data: organizationStatus, isLoading: statusIsLoading = {} } = useGetOrganization(importerId, checkOrganizationStatus);
 
@@ -37,8 +37,8 @@ export default function useApi(importerId: string, sdkDefinedTemplate: string, c
   });
   const reviewIsStored = enabledReview ? review?.is_stored || false : false;
 
-  if (importer?.template?.is_sdk_defined && upload?.is_stored && upload?.template) {
-    importer.template = upload.template;
+  if (template?.is_sdk_defined && upload?.is_stored && upload?.template) {
+    template = upload.template;
   }
 
   return {
