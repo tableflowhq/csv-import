@@ -79,6 +79,10 @@ type UploadHeaderRowSelection struct {
 	Index *int `json:"index" example:"0"`
 }
 
+type UploadColumnMapping struct {
+	TemplateColumnID string `json:"template_column_id" example:"a1ed136d-33ce-4b7e-a7a4-8a5ccfe54cd5"`
+}
+
 type UploadRow struct {
 	Index  int            `json:"index" example:"0"`
 	Values map[int]string `json:"values"`

@@ -260,6 +260,12 @@ definitions:
         example: a1ed136d-33ce-4b7e-a7a4-8a5ccfe54cd5
         type: string
     type: object
+  types.UploadColumnMapping:
+    properties:
+      template_column_id:
+        example: a1ed136d-33ce-4b7e-a7a4-8a5ccfe54cd5
+        type: string
+    type: object
   types.UploadHeaderRowSelection:
     properties:
       index:
@@ -518,7 +524,7 @@ paths:
         required: true
         schema:
           additionalProperties:
-            type: string
+            $ref: '#/definitions/types.UploadColumnMapping'
           type: object
       responses:
         "200":

@@ -328,7 +328,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
-                                "type": "string"
+                                "$ref": "#/definitions/types.UploadColumnMapping"
                             }
                         }
                     }
@@ -782,6 +782,15 @@ const docTemplate = `{
                     ]
                 },
                 "suggested_template_column_id": {
+                    "type": "string",
+                    "example": "a1ed136d-33ce-4b7e-a7a4-8a5ccfe54cd5"
+                }
+            }
+        },
+        "types.UploadColumnMapping": {
+            "type": "object",
+            "properties": {
+                "template_column_id": {
                     "type": "string",
                     "example": "a1ed136d-33ce-4b7e-a7a4-8a5ccfe54cd5"
                 }

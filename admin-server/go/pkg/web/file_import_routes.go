@@ -344,8 +344,8 @@ func importerSetHeaderRow(c *gin.Context) {
 //	@Success		200	{object}	types.Res
 //	@Failure		400	{object}	types.Res
 //	@Router			/file-import/v1/upload/{id}/set-column-mapping [post]
-//	@Param			id		path	string				true	"Upload ID"
-//	@Param			body	body	map[string]string	true	"Request body"
+//	@Param			id		path	string									true	"Upload ID"
+//	@Param			body	body	map[string]types.UploadColumnMapping	true	"Request body"
 func importerSetColumnMapping(c *gin.Context) {
 	id := c.Param("id")
 	if len(id) == 0 {
@@ -353,13 +353,18 @@ func importerSetColumnMapping(c *gin.Context) {
 		return
 	}
 
-	// Non-schemaless: Upload column ID -> Template column ID
-	// Schemaless:     Upload column ID -> User-provided key (i.e. first_name) (only from the request, this will be updated to IDs after the template is generated)
-	columnMapping := make(map[string]string)
-	if err := c.ShouldBindJSON(&columnMapping); err != nil {
+	columnMappingRequest := make(map[string]types.UploadColumnMapping)
+	if err := c.ShouldBindJSON(&columnMappingRequest); err != nil {
 		tf.Log.Warnw("Could not bind JSON", "error", err)
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: err.Error()})
 		return
+	}
+
+	// Non-schemaless: Upload column ID -> Template column ID
+	// Schemaless:     Upload column ID -> User-provided key (i.e. first_name) (only from the request, this will be updated to IDs after the template is generated)
+	columnMapping := make(map[string]string)
+	for k, mappingSelection := range columnMappingRequest {
+		columnMapping[k] = mappingSelection.TemplateColumnID
 	}
 	if len(columnMapping) == 0 {
 		c.AbortWithStatusJSON(http.StatusBadRequest, types.Res{Err: "Please select at least one destination column"})
