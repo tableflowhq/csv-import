@@ -12,6 +12,7 @@ type EmbedParams = {
   skipHeaderRowSelection?: boolean;
   schemaless?: boolean;
   schemalessReadOnly?: boolean;
+  schemalessDataTypes?: boolean;
   showDownloadTemplateButton: boolean;
   customStyles?: string;
   cssOverrides?: string;
@@ -22,7 +23,7 @@ type ParamsStore = {
   setEmbedParams: (embedParams: EmbedParams) => void;
 };
 
-const useEmbedStore = create<ParamsStore>()((set) => ({
+const useEmbedStore = create<ParamsStore>((set) => ({
   embedParams: {
     importerId: "",
     metadata: "",
@@ -36,15 +37,24 @@ const useEmbedStore = create<ParamsStore>()((set) => ({
     cssOverrides: "",
     schemaless: false,
     schemalessReadOnly: false,
+    schemalessDataTypes: false,
   },
-  setEmbedParams: (embedParams) =>
+  setEmbedParams: (embedParams) => {
+    const { schemaless, ...params } = embedParams;
+    const updatedParams = {
+      ...params,
+      schemaless,
+      schemalessReadOnly: schemaless ? embedParams.schemalessReadOnly : false,
+      schemalessDataTypes: schemaless ? embedParams.schemalessDataTypes : false,
+    };
+
     set((state) => ({
       embedParams: {
         ...state.embedParams,
-        ...embedParams,
-        importerId: embedParams.importerId === undefined || embedParams.importerId?.trim() === "" ? "0" : embedParams.importerId,
+        ...updatedParams,
+        importerId: updatedParams.importerId === undefined || updatedParams.importerId?.trim() === "" ? "0" : updatedParams.importerId,
       },
-    })),
+    }));
+  },
 }));
-
 export default useEmbedStore;

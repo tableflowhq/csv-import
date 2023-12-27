@@ -2,7 +2,8 @@ import { FormEvent, useEffect, useState } from "react";
 import { Button } from "@chakra-ui/button";
 import Errors from "../../components/Errors";
 import Table from "../../components/Table";
-import usePostUpload from "../../api/usePostUpload";
+import { ColumnAlignment } from "../../components/Table/types";
+import usePostUploadSetColumnMapping from "../../api/usePostUploadSetColumnMapping";
 import useMapColumnsTable from "./hooks/useMapColumnsTable";
 import { MapColumnsProps } from "./types";
 import style from "./style/MapColumns.module.scss";
@@ -15,13 +16,21 @@ export default function MapColumns({
   skipHeaderRowSelection,
   schemaless,
   schemalessReadOnly,
+  schemalessDataTypes,
   setColumnsValues,
   columnsValues,
   isLoading,
   onLoad,
 }: MapColumnsProps) {
-  const { rows, formValues } = useMapColumnsTable(upload?.upload_columns, template?.columns, schemaless, schemalessReadOnly, columnsValues);
-  const { mutate, error, isSuccess, isLoading: isLoadingPost } = usePostUpload(upload?.id || "");
+  const { rows, formValues } = useMapColumnsTable(
+    upload?.upload_columns,
+    template?.columns,
+    schemaless,
+    schemalessReadOnly,
+    schemalessDataTypes,
+    columnsValues
+  );
+  const { mutate, error, isSuccess, isLoading: isLoadingPost } = usePostUploadSetColumnMapping(upload?.id || "");
   const [selectedColumns, setSelectedColumns] = useState<any>([]);
 
   const onSubmit = (e: FormEvent<HTMLFormElement>) => {
@@ -48,13 +57,19 @@ export default function MapColumns({
   }, [isSuccess, error, isLoading, isLoadingPost]);
 
   if (!rows || !rows?.length) return null;
+  let columnWidths = ["20%", "30%", "30%", "20%"];
+  let columnAlignments: ColumnAlignment[] = ["", "", "", "center"];
+  if (schemalessDataTypes) {
+    columnWidths = ["20%", "23%", "23%", "22%", "12%"];
+    columnAlignments = ["", "", "", "", "center"];
+  }
 
   return (
     <div className={style.content}>
       <form onSubmit={onSubmit}>
         {upload ? (
           <div className={style.tableWrapper}>
-            <Table data={rows} background="dark" fixHeader columnWidths={["20%", "30%", "30%", "20%"]} columnAlignments={["", "", "", "center"]} />
+            <Table data={rows} background="dark" fixHeader columnWidths={columnWidths} columnAlignments={columnAlignments} />
           </div>
         ) : (
           <>Loading...</>

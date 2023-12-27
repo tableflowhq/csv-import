@@ -44,6 +44,7 @@ export default function Main() {
     template: sdkDefinedTemplate,
     schemaless,
     schemalessReadOnly,
+    schemalessDataTypes,
     showDownloadTemplateButton,
     customStyles,
     cssOverrides,
@@ -256,6 +257,7 @@ export default function Main() {
             onCancel={skipHeader ? reload : () => goBack(StepEnum.RowSelection)}
             schemaless={schemaless}
             schemalessReadOnly={schemalessReadOnly}
+            schemalessDataTypes={schemalessDataTypes}
             setColumnsValues={seColumnsValues}
             columnsValues={columnsValues}
             isLoading={reviewIsLoading || (!reviewIsStored && enabledReview)}

@@ -23,6 +23,7 @@ export default function Embed({ children }: EmbedProps) {
     cssOverrides,
     schemaless,
     schemalessReadOnly,
+    schemalessDataTypes,
     showDownloadTemplateButton,
   } = useSearchParams();
 
@@ -58,6 +59,7 @@ export default function Embed({ children }: EmbedProps) {
       isModal: strToDefaultBoolean(isModal, true),
       schemaless: strToOptionalBoolean(schemaless),
       schemalessReadOnly: strToOptionalBoolean(schemalessReadOnly),
+      schemalessDataTypes: strToOptionalBoolean(schemalessDataTypes),
       showDownloadTemplateButton: strToDefaultBoolean(showDownloadTemplateButton, true),
       customStyles: validateJSON(customStyles, "customStyles"),
       cssOverrides: validateJSON(cssOverrides, "cssOverrides"),

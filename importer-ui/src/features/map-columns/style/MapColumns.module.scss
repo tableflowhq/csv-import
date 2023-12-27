@@ -29,7 +29,7 @@
   line-height: 1;
   white-space: nowrap;
 
-  &>small {
+  & > small {
     background-color: var(--color-input-background);
     font-family: monospace;
     padding: var(--m-xxxxs);
@@ -37,7 +37,7 @@
     font-size: var(--font-size-xs);
     display: inline-block;
 
-    &+small {
+    & + small {
       margin-left: var(--m-xxxxs);
     }
   }
@@ -54,4 +54,8 @@
   display: flex;
   justify-content: center;
   max-width: 60vw;
+}
+
+.schemalessTextInput {
+  width: 210px;
 }

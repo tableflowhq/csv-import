@@ -11,6 +11,7 @@ type Include = {
   template: string;
   use: boolean;
   selected?: boolean;
+  dataType?: string;
 };
 
 export default function useMapColumnsTable(
@@ -18,6 +19,7 @@ export default function useMapColumnsTable(
   templateColumns: TemplateColumn[] = [],
   schemaless?: boolean,
   schemalessReadOnly?: boolean,
+  schemalessDataTypes?: boolean,
   columnsValues: { [key: string]: Include } = {}
 ) {
   useEffect(() => {
@@ -27,6 +29,13 @@ export default function useMapColumnsTable(
     });
   }, []);
 
+  const dataTypes: { [key: string]: InputOption } = {
+    Text: { value: "string", required: false },
+    Number: { value: "number", required: false },
+    Date: { value: "date", required: false },
+    "True/False": { value: "boolean", required: false },
+  };
+
   const [values, setValues] = useState<{ [key: string]: Include }>(() => {
     return items.reduce(
       (acc, uc) => ({
@@ -35,6 +44,7 @@ export default function useMapColumnsTable(
           template: uc?.suggested_template_column_id || "",
           use: !!uc?.suggested_template_column_id,
           selected: !!uc?.suggested_template_column_id,
+          dataType: "string",
         },
       }),
       {}
@@ -67,6 +77,16 @@ export default function useMapColumnsTable(
     setValues((prev) => ({ ...prev, [id]: { ...prev[id], template: value, use: !!value } }));
   };
 
+  const handleDataTypeChange = (id: string, dataType: string) => {
+    setValues((prev) => ({
+      ...prev,
+      [id]: {
+        ...prev[id],
+        dataType,
+      },
+    }));
+  };
+
   const rows = useMemo(() => {
     return items.map((item) => {
       const { id, name, sample_data } = item;
@@ -76,8 +96,12 @@ export default function useMapColumnsTable(
         .replace(/\s/g, "_")
         .replace(/[^a-zA-Z0-9_]/g, "")
         .toLowerCase();
+      let suggestedDataType = "string";
+      if (suggestion.dataType && suggestion.dataType !== "") {
+        suggestedDataType = suggestion.dataType;
+      }
 
-      return {
+      const result: any = {
         "Your File Column": {
           raw: name || false,
           content: name || <em>- empty -</em>,
@@ -113,6 +137,23 @@ export default function useMapColumnsTable(
             />
           ),
         },
+        ...(schemalessDataTypes
+          ? {
+              "Data Type": {
+                raw: "",
+                content: (
+                  <DropdownFields
+                    options={dataTypes}
+                    value={suggestedDataType}
+                    placeholder=""
+                    onChange={(dataType: string) => handleDataTypeChange(id, dataType)}
+                    selectedValues={[]} // [{ template: "string", selected: true }]
+                    updateSelectedValues={() => {}}
+                  />
+                ),
+              },
+            }
+          : {}),
         Include: {
           raw: false,
           content: (
@@ -124,6 +165,7 @@ export default function useMapColumnsTable(
           ),
         },
       };
+      return result;
     });
   }, [values]);
   return { rows, formValues: values };
@@ -144,5 +186,5 @@ const SchemalessInput = ({ value, setValues, readOnly }: { value: string; setVal
     setValues(transformedValue);
   };
 
-  return <Input value={inputValue} variants={["small"]} onChange={handleOnChange} disabled={readOnly} />;
+  return <Input className={style.schemalessTextInput} value={inputValue} variants={["small"]} onChange={handleOnChange} disabled={readOnly} />;
 };
