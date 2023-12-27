@@ -37,13 +37,19 @@ export default function MapColumns({
     e.preventDefault();
 
     setColumnsValues(formValues);
-    const columns = Object.keys(formValues).reduce((acc, key) => {
-      const { template, use } = formValues[key];
-      return { ...acc, ...(use ? { [key]: template } : {}) };
-    }, {});
+
+    const columns: any = {};
+    const columnsToSubmit: any = {};
+    Object.keys(formValues).forEach((key) => {
+      const { template, use, dataType } = formValues[key];
+      if (use) {
+        columns[key] = template;
+        columnsToSubmit[key] = { template_column_id: template, data_type: schemalessDataTypes ? dataType : "" };
+      }
+    });
     setSelectedColumns(columns);
 
-    mutate(columns);
+    mutate(columnsToSubmit);
   };
 
   useEffect(() => {

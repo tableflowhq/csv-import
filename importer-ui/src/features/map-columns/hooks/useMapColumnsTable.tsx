@@ -44,7 +44,7 @@ export default function useMapColumnsTable(
           template: uc?.suggested_template_column_id || "",
           use: !!uc?.suggested_template_column_id,
           selected: !!uc?.suggested_template_column_id,
-          dataType: "string",
+          dataType: uc?.suggested_data_type || "string",
         },
       }),
       {}

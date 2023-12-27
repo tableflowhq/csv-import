@@ -89,7 +89,7 @@ export default function Main() {
   const [selectedHeaderRow, setSelectedHeaderRow] = useState<number | null>(null);
   const [uploadFromHeaderRowSelection, setUploadFromHeaderRowSelection] = useState<any | null>(null);
   const [columnsOrder, setColumnsOrder] = useState<ColumnsOrder>();
-  const [columnsValues, seColumnsValues] = useState({});
+  const [columnsValues, setColumnsValues] = useState({});
 
   // Stepper handler
   const { currentStep, setStep, goNext, goBack, stepper, setStorageStep } = useStepNavigation(StepEnum.Upload, skipHeader, importerId, tusId);
@@ -258,7 +258,7 @@ export default function Main() {
             schemaless={schemaless}
             schemalessReadOnly={schemalessReadOnly}
             schemalessDataTypes={schemalessDataTypes}
-            setColumnsValues={seColumnsValues}
+            setColumnsValues={setColumnsValues}
             columnsValues={columnsValues}
             isLoading={reviewIsLoading || (!reviewIsStored && enabledReview)}
             onLoad={() => setEnabledReview(false)}
