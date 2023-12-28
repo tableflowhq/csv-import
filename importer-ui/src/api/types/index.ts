@@ -91,7 +91,6 @@ export type Import = {
   num_columns: number;
   num_processed_values: number;
   num_rows: number;
-  upload_id: string;
   workspace_id: string;
   importer?: Importer;
 };
