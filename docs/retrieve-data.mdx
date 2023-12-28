@@ -16,10 +16,10 @@ onComplete: (data) => console.log(data)
 
 <Info>Feature available in <a href="https://tableflow.com/pricing" target="_blank">TableFlow Cloud</a>.</Info>
 
-TableFlow provides an API to paginate the row data of an import, view metadata about an import, or download an import directly as a CSV.
+TableFlow provides an API to retrieve import data, paginate the row data of an import (used for large imports), or download an import directly as a CSV.
 
+- [Get Import](/api-reference/get-import)
 - [Get Import Rows](/api-reference/get-import-rows)
-- [Get Import Metadata](/api-reference/get-import)
 - [Download Import CSV](/api-reference/download-import)
 
 You can also use [Webhooks](/webhooks) to get notified when an import has been completed. This allows your backend application to load the imported data as soon as an import has completed.

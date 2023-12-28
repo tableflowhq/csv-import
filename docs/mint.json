@@ -92,8 +92,8 @@
     {
       "group": "API",
       "pages": [
-        "api-reference/get-import-rows",
         "api-reference/get-import",
+        "api-reference/get-import-rows",
         "api-reference/download-import",
         "api-reference/create-importer",
         "api-reference/delete-importer"
