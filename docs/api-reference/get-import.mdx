@@ -2,3 +2,57 @@
 title: "Get Import"
 openapi: "GET /import/{id}"
 ---
+
+Retrieve the row data, column definitions, and other information about the import.
+
+<Info>The number of rows included is limited to 10,000. If there are more than 10,000 rows, an `error` will be set and
+  the data should be retrieved using the [/rows](/api-reference/get-import-rows) endpoint.</Info>
+
+### Example Response
+
+```json
+{
+  "id": "da5554e3-6c87-41b2-9366-5449a2f15b53",
+  "importer_id": "6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353",
+  "created_at": 1703791355,
+  "num_columns": 3,
+  "num_processed_values": 5,
+  "num_rows": 2,
+  "metadata": {},
+  "columns": [
+    {
+      "data_type": "string",
+      "key": "email",
+      "name": "Email"
+    },
+    {
+      "data_type": "string",
+      "key": "first_name",
+      "name": "First Name"
+    },
+    {
+      "data_type": "string",
+      "key": "last_name",
+      "name": "Last Name"
+    }
+  ],
+  "rows": [
+    {
+      "index": 0,
+      "values": {
+        "email": "laura@example.com",
+        "first_name": "Laura",
+        "last_name": "Smith"
+      }
+    },
+    {
+      "index": 1,
+      "values": {
+        "email": "craig@example.com",
+        "first_name": "Craig",
+        "last_name": "Johnson"
+      }
+    }
+  ]
+}
+```

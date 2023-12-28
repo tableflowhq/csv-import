@@ -3,8 +3,31 @@ title: "Get Import Rows"
 openapi: "GET /import/{id}/rows"
 ---
 
-Retrieve the rows of an import as JSON. This endpoint supports pagination by using a limit/offset. If the limit and offset are not provided, it will return the first 1000 rows of the import.
+Retrieve the rows of an import as JSON. This endpoint supports pagination by using a limit/offset. If the limit and offset are not provided, it will return the first 1,000 rows of the import.
 
 To use the limit/offset, start by setting the offset to 0 and the limit to 100 to get the first 100 rows of data. To get the next 100 rows, set the offset to 100 while keeping the limit the same. Continue increasing the offset by 100 until no more rows are returned.
 
-Note: the max limit is 1000.
+<Info>The maximum `limit` is 1000.</Info>
+
+### Example Response
+
+```json
+[
+  {
+    "index": 0,
+    "values": {
+      "email": "laura@example.com",
+      "first_name": "Laura",
+      "last_name": "Smith"
+    }
+  },
+  {
+    "index": 1,
+    "values": {
+      "email": "craig@example.com",
+      "first_name": "Craig",
+      "last_name": "Johnson"
+    }
+  }
+]
+```
