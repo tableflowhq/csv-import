@@ -24,6 +24,7 @@ export default function createTableFlowImporter({
   cssOverrides,
   schemaless,
   schemalessReadOnly,
+  schemalessDataTypes,
 }: TableFlowImporterProps) {
   // CSS classes
   const baseClass = "TableFlowImporter";
@@ -65,6 +66,7 @@ export default function createTableFlowImporter({
     skipHeaderRowSelection: parseOptionalBoolean(skipHeaderRowSelection),
     schemaless: parseOptionalBoolean(schemaless),
     schemalessReadOnly: parseOptionalBoolean(schemalessReadOnly),
+    schemalessDataTypes: parseOptionalBoolean(schemalessDataTypes),
   };
 
   const uploaderUrl = getUploaderUrl(urlParams, hostUrl);
