@@ -44,6 +44,7 @@ export default function Main() {
     template: sdkDefinedTemplate,
     schemaless,
     schemalessReadOnly,
+    schemalessDataTypes,
     showDownloadTemplateButton,
     customStyles,
     cssOverrides,
@@ -88,7 +89,7 @@ export default function Main() {
   const [selectedHeaderRow, setSelectedHeaderRow] = useState<number | null>(null);
   const [uploadFromHeaderRowSelection, setUploadFromHeaderRowSelection] = useState<any | null>(null);
   const [columnsOrder, setColumnsOrder] = useState<ColumnsOrder>();
-  const [columnsValues, seColumnsValues] = useState({});
+  const [columnsValues, setColumnsValues] = useState({});
 
   // Stepper handler
   const { currentStep, setStep, goNext, goBack, stepper, setStorageStep } = useStepNavigation(StepEnum.Upload, skipHeader, importerId, tusId);
@@ -256,7 +257,8 @@ export default function Main() {
             onCancel={skipHeader ? reload : () => goBack(StepEnum.RowSelection)}
             schemaless={schemaless}
             schemalessReadOnly={schemalessReadOnly}
-            setColumnsValues={seColumnsValues}
+            schemalessDataTypes={schemalessDataTypes}
+            setColumnsValues={setColumnsValues}
             columnsValues={columnsValues}
             isLoading={reviewIsLoading || (!reviewIsStored && enabledReview)}
             onLoad={() => setEnabledReview(false)}

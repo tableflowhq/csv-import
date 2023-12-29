@@ -21,4 +21,5 @@ export type TableFlowImporterProps = HTMLDialogElement & {
   skipHeaderRowSelection?: boolean;
   schemaless?: boolean;
   schemalessReadOnly?: boolean;
+  schemalessDataTypes?: boolean;
 } & ModalParams;

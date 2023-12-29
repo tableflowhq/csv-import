@@ -24,6 +24,7 @@ export default function TableFlowImporter({
   cssOverrides,
   schemaless,
   schemalessReadOnly,
+  schemalessDataTypes,
   ...props
 }: TableFlowImporterProps) {
   const ref = useRef(null);
@@ -59,6 +60,7 @@ export default function TableFlowImporter({
     skipHeaderRowSelection: parseOptionalBoolean(skipHeaderRowSelection),
     schemaless: parseOptionalBoolean(schemaless),
     schemalessReadOnly: parseOptionalBoolean(schemalessReadOnly),
+    schemalessDataTypes: parseOptionalBoolean(schemalessDataTypes),
   };
   const searchParams = new URLSearchParams(urlParams);
   const defaultImporterUrl = "https://importer.tableflow.com";

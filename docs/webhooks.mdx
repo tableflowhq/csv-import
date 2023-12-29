@@ -4,11 +4,13 @@ title: Webhooks
 
 <Info>Feature available in <a href="https://tableflow.com/pricing" target="_blank">TableFlow Cloud</a>.</Info>
 
-TableFlow uses webhooks to push real-time notifications about your data imports. For example, you can use webhooks on TableFlow to get notified when a user completes a file import:
+TableFlow uses webhooks to push real-time notifications for your data imports. For example, you can use webhooks on TableFlow to get notified when a user completes a file import:
 
 1. Your user imports a CSV or Excel file using the embedded TableFlow importer on your web app
 2. TableFlow notifies your system, via a webhook, that a data import has been completed
-3. Your system can use the API to [paginate through the imported data](/api-reference/get-import-rows), or [download the data directly as a CSV file](/api-reference/download-import).
+3. The webhook will contain the row data, column definitions, and other information about the import
+
+<Info>The number of rows included is limited to 10,000. If there are more than 10,000 rows, an `error` will be set and the data should be retrieved using the [API](/api-reference/get-import-rows).</Info>
 
 ## Configure your application to receive webhooks
 
@@ -39,3 +41,44 @@ You’ll be able to see the webhook received on [Svix Play](https://play.svix.co
 </Frame>
 
 After configuring your application to receive webhooks, all subscribed events will be sent to the endpoint. You can now import a file to test out your new webhook!
+
+## Transforming and filtering webhooks
+
+You can use the transformations feature to modify the payload of webhooks or cancel it entirely based on data in the payload.
+
+To add a transformation, select "Enable" and "Edit transformation" under the "Advanced" tab of an endpoint:
+<Frame>
+![Transformations](/assets/webhooks-transformations.jpg)
+</Frame>
+
+#### Transform
+
+You can use transformations to modify the payload to be in the format you need, or add additional parameters.
+
+<Frame>
+![Transformations](/assets/webhooks-transformations-transform.jpg)
+</Frame>
+
+```javascript
+function handler(webhook) {
+  webhook.payload.myExtraProperty = 'Foo';
+  return webhook;
+}
+```
+
+#### Filter
+
+To filter webhooks from being sent to an endpoint, you just need to set `webhook.cancel = true`. In this example we filter webhooks to an endpoint based on the import `metadata` (a parameter you can provide the [SDK](/sdk/react#properties)):
+
+<Frame>
+![Transformations](/assets/webhooks-transformations-filter.jpg)
+</Frame>
+
+```javascript
+function handler(webhook) {
+  if (webhook.payload.metadata?.environment !== 'development') {
+    webhook.cancel = true;
+  }
+  return webhook;
+}
+```

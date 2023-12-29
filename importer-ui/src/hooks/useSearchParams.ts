@@ -15,6 +15,7 @@ type SearchParams = Record<
   | "cssOverrides"
   | "schemaless"
   | "schemalessReadOnly"
+  | "schemalessDataTypes"
   | "showDownloadTemplateButton",
   string
 >;

@@ -4,7 +4,7 @@ import { post } from "./api";
 
 type ColumnMap = { [key: string]: string };
 
-export default function usePostUpload(uploadId: string): UseMutationResult<ApiResponse<any>> {
+export default function usePostUploadSetColumnMapping(uploadId: string): UseMutationResult<ApiResponse<any>> {
   return useMutation((columns: any) => mutateColumnMap(uploadId, columns));
 }
 
