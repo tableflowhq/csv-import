@@ -1,0 +1,20 @@
+.errors {
+  color: var(--color-text-error);
+  margin: var(--m-xxs) 0;
+
+  p {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--m-xxs);
+    text-align: left;
+  }
+}
+
+.centered {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  height: 100%;
+}

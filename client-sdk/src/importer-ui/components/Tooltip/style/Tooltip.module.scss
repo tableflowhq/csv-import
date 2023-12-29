@@ -1,0 +1,51 @@
+$side: var(--m-xxxs);
+$height: calc($side * 1.732);
+
+.tooltip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--m-xs);
+
+  .icon {
+    position: relative;
+    display: block;
+    cursor: pointer;
+  }
+
+  &.multiline .message {
+    width: 260px;
+    white-space: normal;
+  }
+}
+
+.message {
+  position: absolute;
+  transform: translateX(-50%);
+  background-color: var(--color-background-modal);
+  z-index: 3;
+  padding: var(--m-xxs) var(--m-xs);
+  border-radius: var(--border-radius);
+  margin-top: var(--m-xs);
+  box-shadow: 0 0 0 1px var(--color-border), 0 5px 15px rgba(0, 0, 0, 0.2);
+  max-width: 300px;
+
+  &::after,
+  &::before {
+    position: absolute;
+    top: calc($height * -1);
+    left: 50%;
+    border-left: $side solid transparent;
+    border-right: $side solid transparent;
+    border-bottom: $height solid var(--color-border);
+    content: "";
+    font-size: 0;
+    line-height: 0;
+    width: 0;
+    transform: translateX(-50%);
+  }
+
+  &::after {
+    top: calc($height * -1 + 2px);
+    border-bottom: $height solid var(--color-background-modal);
+  }
+}
