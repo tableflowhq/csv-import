@@ -13,13 +13,23 @@ Retrieve the row data, column definitions, and other information about the impor
 ```json
 {
   "id": "da5554e3-6c87-41b2-9366-5449a2f15b53",
-  "importer_id": "6de452a2-bd1f-4cb3-b29b-0f8a2e3d9353",
-  "created_at": 1703791355,
+  "importer_id": "a0fadb1d-9888-4fcb-b185-25b984bcb227",
+  "num_rows": 2,
   "num_columns": 3,
   "num_processed_values": 5,
-  "num_rows": 2,
-  "metadata": {},
+  "metadata": {
+    "user_id": 1234,
+    "user_email": "user@example.com",
+    "environment": "staging"
+  },
+  "created_at": 1698172312,
+  "error": null,
   "columns": [
+    {
+      "data_type": "number",
+      "key": "age",
+      "name": "Age"
+    },
     {
       "data_type": "string",
       "key": "email",
@@ -29,28 +39,23 @@ Retrieve the row data, column definitions, and other information about the impor
       "data_type": "string",
       "key": "first_name",
       "name": "First Name"
-    },
-    {
-      "data_type": "string",
-      "key": "last_name",
-      "name": "Last Name"
     }
   ],
   "rows": [
     {
       "index": 0,
       "values": {
-        "email": "laura@example.com",
-        "first_name": "Laura",
-        "last_name": "Smith"
+        "age": 23,
+        "email": "maria@example.com",
+        "first_name": "Maria"
       }
     },
     {
       "index": 1,
       "values": {
-        "email": "craig@example.com",
-        "first_name": "Craig",
-        "last_name": "Johnson"
+        "age": 32,
+        "email": "robert@example.com",
+        "first_name": "Robert"
       }
     }
   ]
