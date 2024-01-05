@@ -1,82 +1,95 @@
 import { useEffect, useMemo, useState } from "react";
 import Checkbox from "../../../components/Checkbox";
-import Input from "../../../components/Input";
 import { InputOption } from "../../../components/Input/types";
 import DropdownFields from "../components/DropDownFields";
 import { TemplateColumn, UploadColumn } from "../../../api/types";
 import style from "../style/MapColumns.module.scss";
-import useTransformValue from "./useNameChange";
-
-type Include = {
-  template: string;
-  use: boolean;
-  selected?: boolean;
-};
+import { TemplateColumnMapping } from "../types";
+import stringsSimilarity from "../../../utils/stringSimilarity";
 
 export default function useMapColumnsTable(
-  items: UploadColumn[] = [],
+  uploadColumns: UploadColumn[],
   templateColumns: TemplateColumn[] = [],
-  schemaless?: boolean,
-  schemalessReadOnly?: boolean,
-  columnsValues: { [key: string]: Include } = {},
+  columnsValues: { [uploadColumnIndex: number]: TemplateColumnMapping },
   isLoading?: boolean
 ) {
   useEffect(() => {
-    Object.keys(columnsValues).map((mapColData) => {
-      const template = columnsValues[mapColData].template;
-      handleTemplateChange(mapColData, template);
+    Object.keys(columnsValues).map((uploadColumnIndexStr) => {
+      const uploadColumnIndex = Number(uploadColumnIndexStr);
+      const templateKey = columnsValues[uploadColumnIndex].key;
+      handleTemplateChange(uploadColumnIndex, templateKey);
     });
   }, []);
 
-  const [values, setValues] = useState<{ [key: string]: Include }>(() => {
-    return items.reduce(
-      (acc, uc) => ({
-        ...acc,
-        [uc.id]: {
-          template: uc?.suggested_template_column_id || "",
-          use: !!uc?.suggested_template_column_id,
-          selected: !!uc?.suggested_template_column_id,
-        },
-      }),
-      {}
-    );
+  const checkSimilarity = (templateColumnKey: string, uploadColumnName: string) => {
+    const templateColumnKeyFormatted = templateColumnKey.replace(/_/g, " ");
+    return stringsSimilarity(templateColumnKeyFormatted, uploadColumnName.toLowerCase()) > 0.9;
+  };
+
+  const isSuggestedMapping = (templateColumn: TemplateColumn, uploadColumnName: string) => {
+    if (!templateColumn?.suggested_mappings) {
+      return false;
+    }
+    return templateColumn.suggested_mappings.some((suggestion) => suggestion.toLowerCase() === uploadColumnName.toLowerCase());
+  };
+
+  const [values, setValues] = useState<{ [key: number]: TemplateColumnMapping }>(() => {
+    const usedTemplateColumns = new Set<string>();
+    const initialObject: { [key: number]: TemplateColumnMapping } = {};
+
+    return uploadColumns.reduce((acc, uc) => {
+      const matchedSuggestedTemplateColumn = templateColumns?.find((tc) => isSuggestedMapping(tc, uc.name));
+
+      if (matchedSuggestedTemplateColumn && matchedSuggestedTemplateColumn.key) {
+        usedTemplateColumns.add(matchedSuggestedTemplateColumn.key);
+        acc[uc.index] = { key: matchedSuggestedTemplateColumn.key, include: true };
+        return acc;
+      }
+
+      const similarTemplateColumn = templateColumns?.find((tc) => {
+        if (tc.key && !usedTemplateColumns.has(tc.key) && checkSimilarity(tc.key, uc.name)) {
+          usedTemplateColumns.add(tc.key);
+          return true;
+        }
+        return false;
+      });
+
+      acc[uc.index] = {
+        key: similarTemplateColumn?.key || "",
+        include: !!similarTemplateColumn?.key,
+        selected: !!similarTemplateColumn?.key,
+      };
+      return acc;
+    }, initialObject);
   });
 
-  const [selectedValues, setSelectedValues] = useState<{ template: string; selected: boolean | undefined }[]>(
-    Object.values(values).map(({ template, selected }) => ({ template, selected }))
+  const [selectedValues, setSelectedValues] = useState<{ key: string; selected: boolean | undefined }[]>(
+    Object.values(values).map(({ key, selected }) => ({ key, selected }))
   );
 
   const templateFields: { [key: string]: InputOption } = useMemo(
-    () => templateColumns.reduce((acc, field) => ({ ...acc, [field.name]: { value: field.id, required: field.required } }), {}),
+    () => templateColumns.reduce((acc, tc) => ({ ...acc, [tc.name]: { value: tc.key, required: tc.required } }), {}),
     [JSON.stringify(templateColumns)]
   );
 
-  const handleTemplateChange = (id: string, template: string) => {
+  const handleTemplateChange = (uploadColumnIndex: number, key: string) => {
     setValues((prev) => {
-      const templatesFields = { ...prev, [id]: { ...prev[id], template, use: !!template, selected: !!template } };
-      const templateFieldsObj = Object.values(templatesFields).map(({ template, selected }) => ({ template, selected }));
+      const templatesFields = { ...prev, [uploadColumnIndex]: { ...prev[uploadColumnIndex], key: key, include: !!key, selected: !!key } };
+      const templateFieldsObj = Object.values(templatesFields).map(({ key, selected }) => ({ key, selected }));
       setSelectedValues(templateFieldsObj);
       return templatesFields;
     });
   };
 
-  const handleUseChange = (id: string, value: boolean) => {
-    setValues((prev) => ({ ...prev, [id]: { ...prev[id], use: !!prev[id].template && value } }));
-  };
-
-  const handleValueChange = (id: string, value: string) => {
-    setValues((prev) => ({ ...prev, [id]: { ...prev[id], template: value, use: !!value } }));
+  const handleUseChange = (id: number, value: boolean) => {
+    setValues((prev) => ({ ...prev, [id]: { ...prev[id], include: !!prev[id].key && value } }));
   };
 
   const rows = useMemo(() => {
-    return items.map((item) => {
-      const { id, name, sample_data } = item;
-      const suggestion = values?.[id] || {};
+    return uploadColumns.map((uc, index) => {
+      const { name, sample_data } = uc;
+      const suggestion = values?.[index] || {};
       const samples = sample_data.filter((d) => d);
-      const transformedName = name
-        .replace(/\s/g, "_")
-        .replace(/[^a-zA-Z0-9_]/g, "")
-        .toLowerCase();
 
       return {
         "Your File Column": {
@@ -95,20 +108,12 @@ export default function useMapColumnsTable(
         },
         "Destination Column": {
           raw: "",
-          content: schemaless ? (
-            <SchemalessInput
-              value={transformedName}
-              setValues={(value) => {
-                handleValueChange(id, value);
-              }}
-              readOnly={!!schemalessReadOnly}
-            />
-          ) : (
+          content: (
             <DropdownFields
               options={templateFields}
-              value={suggestion.template}
+              value={suggestion.key}
               placeholder="- Select one -"
-              onChange={(template: string) => handleTemplateChange(id, template)}
+              onChange={(key: string) => handleTemplateChange(index, key)}
               selectedValues={selectedValues}
               updateSelectedValues={setSelectedValues}
             />
@@ -118,9 +123,9 @@ export default function useMapColumnsTable(
           raw: false,
           content: (
             <Checkbox
-              checked={suggestion.use}
-              disabled={(schemaless && schemalessReadOnly) || !suggestion.template || isLoading}
-              onChange={(e) => handleUseChange(id, e.target.checked)}
+              checked={suggestion.include}
+              disabled={!suggestion.key || isLoading}
+              onChange={(e) => handleUseChange(index, e.target.checked)}
             />
           ),
         },
@@ -129,21 +134,3 @@ export default function useMapColumnsTable(
   }, [values, isLoading]);
   return { rows, formValues: values };
 }
-
-const SchemalessInput = ({ value, setValues, readOnly }: { value: string; setValues: (value: string) => void; readOnly: boolean }) => {
-  const { transformedValue, transformValue } = useTransformValue(value);
-  const [inputValue, setInputValue] = useState(transformedValue);
-
-  useEffect(() => {
-    setInputValue(transformedValue);
-    setValues(transformedValue);
-  }, [transformedValue]);
-
-  const handleOnChange = (e: any) => {
-    transformValue(e.target.value);
-    setInputValue(e.target.value);
-    setValues(transformedValue);
-  };
-
-  return <Input value={inputValue} variants={["small"]} onChange={handleOnChange} disabled={readOnly} />;
-};

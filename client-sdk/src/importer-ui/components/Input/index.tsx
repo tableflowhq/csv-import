@@ -68,11 +68,8 @@ function Select({ options = {}, placeholder, ...props }: InputProps) {
   const selectedKey = Object.keys(options).find((k) => options[k].value === props.value) || "";
 
   const [setRef, size, updateRect] = useRect();
-
   const [setRefPortal, sizePortal, updatePortalRect] = useRect();
-
   const windowSize = useWindowSize();
-
   const top = size.y + sizePortal.height > windowSize[1] - 4 ? windowSize[1] - sizePortal.height - 4 : size.y + 4;
 
   const optionsPosition = {
@@ -92,7 +89,6 @@ function Select({ options = {}, placeholder, ...props }: InputProps) {
   };
 
   const ref = useRef(null);
-
   useClickOutside(ref, onBlur);
 
   return (

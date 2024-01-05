@@ -7,8 +7,8 @@ type DropdownFieldsProps = {
   value: string;
   placeholder: string;
   onChange: (value: string) => void;
-  selectedValues: { template: string; selected: boolean | undefined }[];
-  updateSelectedValues: (updatedValues: { template: string; selected: boolean | undefined }[]) => void;
+  selectedValues: { key: string; selected: boolean | undefined }[];
+  updateSelectedValues: (updatedValues: { key: string; selected: boolean | undefined }[]) => void;
 };
 
 export default function DropdownFields({ options, value, placeholder, onChange, selectedValues, updateSelectedValues }: DropdownFieldsProps) {
@@ -26,9 +26,9 @@ export default function DropdownFields({ options, value, placeholder, onChange, 
   const handleInputChange = (event: any) => {
     const newValue = event;
     const updatedSelectedValues = selectedValues.map((item) => {
-      if (item.template === selectedOption) {
+      if (item.key === selectedOption) {
         return { ...item, selected: false };
-      } else if (item.template === newValue) {
+      } else if (item.key === newValue) {
         return { ...item, selected: true };
       }
       return item;
@@ -42,7 +42,7 @@ export default function DropdownFields({ options, value, placeholder, onChange, 
     const newFilteredOptions: { [key: string]: InputOption } = {};
     for (const key in options) {
       const option = options[key];
-      const isSelected = selectedValues.some((item) => item.template === option?.value && item.selected && option.value !== value);
+      const isSelected = selectedValues.some((item) => item.key === option?.value && item.selected && option.value !== value);
       if (!isSelected) {
         newFilteredOptions[key] = option;
       }

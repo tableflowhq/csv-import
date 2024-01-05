@@ -1,10 +1,7 @@
 import { useEffect } from "react";
 
-export default function useCustomStyles(customStyles?: string, enabled?: boolean) {
+export default function useCustomStyles(customStyles?: string) {
   useEffect(() => {
-    if (!enabled) {
-      return;
-    }
     if (customStyles) {
       const parsedStyles = JSON.parse(customStyles);
       if (parsedStyles) {
@@ -15,5 +12,5 @@ export default function useCustomStyles(customStyles?: string, enabled?: boolean
         });
       }
     }
-  }, [customStyles, enabled]);
+  }, [customStyles]);
 }

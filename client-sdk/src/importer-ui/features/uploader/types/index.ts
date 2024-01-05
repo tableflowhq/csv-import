@@ -1,12 +1,10 @@
 import { Template } from "../../../api/types";
+import { Dispatch, SetStateAction } from "react";
 
 export type UploaderProps = {
   template: Template;
-  metadata: string;
-  importerId: string;
   skipHeaderRowSelection: boolean;
-  endpoint: string;
-  onSuccess: (tusId: string) => void;
-  schemaless?: boolean;
+  onSuccess: (file: File) => void;
   showDownloadTemplateButton?: boolean;
+  setDataError: Dispatch<SetStateAction<string | null>>;
 };

@@ -1,54 +1,16 @@
 import { Button } from "@chakra-ui/button";
 import Table from "../../components/Table";
-import UppyWrapper from "../../components/UppyWrapper/UppyWrapperMock";
 import useThemeStore from "../../stores/theme";
 import useTemplateTable from "./hooks/useTemplateTable";
 import { UploaderProps } from "./types";
 import style from "./style/Uploader.module.scss";
 import { PiDownloadSimple } from "react-icons/pi";
+import UploaderWrapper from "../../components/UploaderWrapper/UploaderWrapper";
 
-export default function Uploader({
-  template,
-  importerId,
-  metadata,
-  skipHeaderRowSelection,
-  endpoint,
-  onSuccess,
-  schemaless,
-  showDownloadTemplateButton,
-}: UploaderProps) {
+export default function Uploader({ template, skipHeaderRowSelection, onSuccess, showDownloadTemplateButton, setDataError }: UploaderProps) {
   const fields = useTemplateTable(template.columns);
-
   const theme = useThemeStore((state) => state.theme);
-
-  const onFileUpload = (result: any) => {
-    // Get tusId from the uploadURL
-    const tusId = result?.successful?.[0]?.response?.uploadURL?.split("/").pop() || "";
-    console.log(result);
-    onSuccess(tusId);
-  };
-
-  let sdkDefinedTemplate;
-  if (template.is_sdk_defined) {
-    // Only pass in the template to the UppyWrapper if it is defined from the SDK, as this is the only time we need to
-    // persist the template with the upload
-    sdkDefinedTemplate = template;
-  }
-
-  const uppyWrapper = (
-    <UppyWrapper
-      onSuccess={onFileUpload}
-      importerId={importerId}
-      metadata={metadata}
-      skipHeaderRowSelection={skipHeaderRowSelection}
-      endpoint={endpoint}
-      sdkDefinedTemplate={sdkDefinedTemplate}
-      schemaless={schemaless}
-    />
-  );
-  if (schemaless) {
-    return <div className={style.content}>{uppyWrapper}</div>;
-  }
+  const uploaderWrapper = <UploaderWrapper onSuccess={onSuccess} skipHeaderRowSelection={skipHeaderRowSelection} setDataError={setDataError} />;
 
   function downloadTemplate() {
     const { columns } = template;
@@ -73,7 +35,7 @@ export default function Uploader({
 
   return (
     <div className={style.content}>
-      {uppyWrapper}
+      {uploaderWrapper}
       <div className={style.box}>
         <div className={style.tableContainer}>
           <Table fixHeader data={fields} background="dark" columnWidths={["65%", "35%"]} columnAlignments={["", "center"]} />

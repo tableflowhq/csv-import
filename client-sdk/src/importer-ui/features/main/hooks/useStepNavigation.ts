@@ -7,7 +7,7 @@ export const StepEnum = {
   Upload: 0,
   RowSelection: 1,
   MapColumns: 2,
-  Review: 3,
+  Complete: 3,
 };
 
 const calculateNextStep = (nextStep: number, skipHeader: boolean) => {
@@ -17,7 +17,7 @@ const calculateNextStep = (nextStep: number, skipHeader: boolean) => {
       case StepEnum.RowSelection:
         return StepEnum.MapColumns;
       case StepEnum.MapColumns:
-        return StepEnum.Review;
+        return StepEnum.Complete;
       default:
         return nextStep;
     }
@@ -30,13 +30,12 @@ const getStepConfig = (skipHeader: boolean) => {
     { label: "Upload", id: Steps.Upload },
     { label: "Select Header", id: Steps.RowSelection, disabled: skipHeader },
     { label: "Map Columns", id: Steps.MapColumns },
-    { label: "Review", id: Steps.Review },
   ];
 };
 
-function useStepNavigation(initialStep: number, skipHeader: boolean, importerId: string, tusId: string) {
+function useStepNavigation(initialStep: number, skipHeader: boolean) {
   const stepper = useStepper(getStepConfig(skipHeader), StepEnum.Upload, skipHeader);
-  const [storageStep, setStorageStep] = useMutableLocalStorage(`tf_steps_${importerId}_${tusId}`, "");
+  const [storageStep, setStorageStep] = useMutableLocalStorage(`tf_steps`, "");
   const [currentStep, setCurrentStep] = useState(initialStep);
 
   const goBack = (backStep = 0) => {

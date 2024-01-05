@@ -5,6 +5,7 @@ import useEmbedStore from "../stores/embed";
 import useThemeStore from "../stores/theme";
 import { EmbedProps } from "./types";
 
+// TODO (client-sdk): Migrate this component
 export default function Embed({ children }: EmbedProps) {
   const {
     importerId,
@@ -46,21 +47,21 @@ export default function Embed({ children }: EmbedProps) {
 
   useEffect(() => {
     setEmbedParams({
-      importerId,
-      metadata: validateJSON(metadata, "metadata"),
+      // importerId,
+      // metadata: validateJSON(metadata, "metadata"),
       template: validateJSON(template, "template"),
       // If only the deprecated isOpen is provided, use that. Else, use modalIsOpen
       modalIsOpen: strToBoolean(modalIsOpen === "" && isOpen !== "" ? isOpen : modalIsOpen),
       onComplete: strToBoolean(onComplete),
       waitOnComplete: strToBoolean(waitOnComplete),
-      showImportLoadingStatus: strToBoolean(showImportLoadingStatus),
+      // showImportLoadingStatus: strToBoolean(showImportLoadingStatus),
       skipHeaderRowSelection: strToOptionalBoolean(skipHeaderRowSelection),
       isModal: strToDefaultBoolean(isModal, true),
-      schemaless: strToOptionalBoolean(schemaless),
-      schemalessReadOnly: strToOptionalBoolean(schemalessReadOnly),
+      // schemaless: strToOptionalBoolean(schemaless),
+      // schemalessReadOnly: strToOptionalBoolean(schemalessReadOnly),
       showDownloadTemplateButton: strToDefaultBoolean(showDownloadTemplateButton, true),
       customStyles: validateJSON(customStyles, "customStyles"),
-      cssOverrides: validateJSON(cssOverrides, "cssOverrides"),
+      // cssOverrides: validateJSON(cssOverrides, "cssOverrides"),
     });
   }, [importerId, metadata]);
 

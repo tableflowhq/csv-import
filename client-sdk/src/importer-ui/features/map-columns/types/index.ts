@@ -1,25 +1,19 @@
-import { Dispatch, SetStateAction } from "react";
-import { Template, Upload } from "../../../api/types";
+import { Template } from "../../../api/types";
+import { FileData } from "../../main/types";
 
-type Include = {
-  template: string;
-  use: boolean;
+export type TemplateColumnMapping = {
+  key: string;
+  include: boolean;
+  selected?: boolean;
 };
-export interface FormValues {
-  [key: string]: Include;
-}
 
 export type MapColumnsProps = {
-  upload?: Upload;
   template: Template;
-  onSuccess: (uploadId: string, columnsValues: any) => void;
-  onCancel: () => void;
-  showImportLoadingStatus?: boolean;
+  data: FileData;
+  columnMapping: { [index: number]: TemplateColumnMapping };
+  selectedHeaderRow: number | null;
   skipHeaderRowSelection?: boolean;
-  schemaless?: boolean;
-  schemalessReadOnly?: boolean;
-  setColumnsValues: Dispatch<SetStateAction<FormValues>>;
-  columnsValues: FormValues;
-  isLoading?: boolean;
-  onLoad?: () => void;
+  onSuccess: (columnMapping: { [index: number]: TemplateColumnMapping }) => void;
+  onCancel: () => void;
+  isSubmitting: boolean;
 };

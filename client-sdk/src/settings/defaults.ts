@@ -1,21 +1,26 @@
-import { TableFlowImporterProps } from "../components/types";
+import { TableFlowImporterProps } from "../types";
 
 const defaults: TableFlowImporterProps = {
-  importerId: "e3702fa2-e075-4e88-b0f3-a3c4e77f1e97",
-  hostUrl: "http://localhost:3001", // https://importer.tableflow.com
-  metadata: { userId: 1234, userEmail: "test@example.com" },
-  // template: {
-  //   columns: [
-  //     {
-  //       name: "First",
-  //       key: "first_name",
-  //       required: false,
-  //       description: "The first name of the user",
-  //     },
-  //   ],
-  // },
-  // schemaless: false,
-  // schemalessReadOnly: true,
+  template: {
+    columns: [
+      {
+        name: "First Name",
+        key: "first_name",
+        required: true,
+        description: "The first name of the user",
+        suggested_mappings: ["first", "mame"],
+      },
+      {
+        name: "Last Name",
+        suggested_mappings: ["last"],
+      },
+      {
+        name: "Email",
+        required: true,
+        description: "The email of the user",
+      },
+    ],
+  },
   darkMode: true,
   onComplete: (data) => console.log("onComplete", data),
   // customStyles: {
@@ -41,23 +46,6 @@ const defaults: TableFlowImporterProps = {
   //   "color-input-background-soft": "white",
   //   "color-background-menu-hover": "bisque",
   //   "color-green-ui": "darkGreen",
-  // },
-  // cssOverrides: {
-  //   Main_content: "height: auto",
-  //   Main_wrapper: "justify-content: flex-start; padding-top: var(--m)",
-  //   Main_header: "margin-bottom: var(--m-xxs)",
-  //   "Stepper-module_stepper": "gap: var(--m-l)",
-  //   "Stepper-module_step": "flex-direction: column",
-  //   "Stepper-module_step:before": "display: none",
-  //   "Default-module_td span": "font-size: 0.875rem",
-  //   "Input-module_small Input-module_inputWrapper": "font-size: 0.875rem",
-  //   "Checkbox-module_container input[type=checkbox]": "width: var(--m-s); height: var(--m-s)",
-  //   "Checkbox-module_container input[type=checkbox]::before": "width: var(--m-xxs); height: var(--m-xxs)",
-  //   Uploader_box: "display: none",
-  //   ".uppy-Dashboard-AddFiles": "border: none",
-  //   ".uppy-Container .uppy-Dashboard-AddFiles-title": "font-size: 18px",
-  //   "MapColumns Default_td:nth-child(2)": "display: none",
-  //   "MapColumns Default_td:nth-child(1)": "width: 50% !important",
   // },
   isModal: true,
   modalCloseOnOutsideClick: true,

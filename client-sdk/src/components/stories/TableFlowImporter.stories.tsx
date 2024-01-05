@@ -1,10 +1,9 @@
 import Providers from "../../importer-ui/providers";
 import defaults from "../../settings/defaults";
-import queryClient from "../../utils/queryClient";
 import ImporterComponent from "../index";
-import { TableFlowImporterProps } from "../types";
+import { TableFlowImporterProps } from "../../types";
 import { ComponentMeta, ComponentStory } from "@storybook/react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export default {
   title: "User Interface/Importer",
@@ -19,9 +18,7 @@ export default {
   },
 } as ComponentMeta<typeof ImporterComponent>;
 
-const Template: ComponentStory<typeof ImporterComponent> = (
-  args: TableFlowImporterProps
-) => {
+const Template: ComponentStory<typeof ImporterComponent> = (args: TableFlowImporterProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const { isModal } = args;
@@ -29,9 +26,7 @@ const Template: ComponentStory<typeof ImporterComponent> = (
   const props = {
     ...(isModal ? { modalIsOpen: isOpen } : {}),
     ...(isModal ? { modalOnCloseTriggered: () => setIsOpen(false) } : {}),
-    ...(isModal
-      ? { modalCloseOnOutsideClick: args.modalCloseOnOutsideClick }
-      : {}),
+    ...(isModal ? { modalCloseOnOutsideClick: args.modalCloseOnOutsideClick } : {}),
     ...args,
   };
 

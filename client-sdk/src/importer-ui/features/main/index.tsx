@@ -1,245 +1,189 @@
 import { useEffect, useState } from "react";
-import { Button, IconButton } from "@chakra-ui/button";
-import Errors from "../../components/Errors";
+import { IconButton } from "@chakra-ui/button";
 import Stepper from "../../components/Stepper";
-import TableLoading from "../../components/TableLoading";
-import { defaultImporterHost, getAPIBaseURL } from "../../api/api";
-import useCssOverrides from "../../hooks/useCssOverrides";
 import useCustomStyles from "../../hooks/useCustomStyles";
-import useDelayedLoader from "../../hooks/useDelayLoader";
 import useRevealApp from "../../hooks/useRevealApp";
-import useEmbedStore from "../../stores/embed";
-import classes from "../../utils/classes";
-import { providedJSONString } from "../../utils/cssInterpreter";
 import postMessage from "../../utils/postMessage";
-import { ColumnsOrder } from "../review/types";
-// import useApi from "./hooks/useApi";
 import useStepNavigation, { StepEnum } from "./hooks/useStepNavigation";
 import style from "./style/Main.module.scss";
-import MapColumns from "../map-columns";
-import Review from "../review";
-import RowSelection from "../row-selection";
 import Uploader from "../uploader";
-import { PiArrowCounterClockwise, PiX } from "react-icons/pi";
-import useApiMock from "./hooks/useApiMock";
+import { PiX } from "react-icons/pi";
+import { TableFlowImporterProps } from "../../../types";
+import { parseObjectOrStringJSON } from "../../utils/utils";
+import * as XLSX from "xlsx";
+import Papa from "papaparse";
+import RowSelection from "../row-selection";
+import { FileData, FileRow } from "./types";
+import MapColumns from "../map-columns";
+import { TemplateColumnMapping } from "../map-columns/types";
+import Complete from "../complete";
+import Errors from "../../components/Errors";
+import { Template } from "../../api/types";
+import { convertRawTemplate } from "../../utils/template";
 
-const TUS_ENDPOINT = getAPIBaseURL("v1") + "files";
-
-export default function Main({sdkImporterId}: {sdkImporterId?: string}) {
+export default function Main(props: TableFlowImporterProps) {
   useRevealApp();
 
-  const isHosted = window.location.host.indexOf(defaultImporterHost) === 0;
-  const isDevelopment = window.location.hostname === "localhost";
-  const isEmbeddedInIframe = window?.top !== window?.self;
-
-  // Get iframe URL params
   const {
-    importerId,
-    isModal,
-    modalIsOpen,
-    metadata,
-    onComplete,
-    waitOnComplete,
-    showImportLoadingStatus,
-    skipHeaderRowSelection,
-    template: sdkDefinedTemplate,
-    schemaless,
-    schemalessReadOnly,
-    showDownloadTemplateButton,
-    customStyles,
-    cssOverrides,
-  } = useEmbedStore((state) => state.embedParams);
-
-  // Async data & state
-  const {
-    tusId,
-    setTusId,
-    importer,
-    importerIsLoading,
-    importerError,
-    organizationStatus,
-    statusIsLoading,
+    isModal = true,
+    modalIsOpen = true,
+    modalOnCloseTriggered = () => null,
+    modalCloseOnOutsideClick,
     template,
-    upload,
-    uploadIsLoading,
-    uploadError,
-    uploadIsStored,
-    review,
-    reviewIsLoading,
-    reviewIsStored,
-    enabledReview,
-    setEnabledReview,
-  } = useApiMock(
-    sdkImporterId ?? importerId,
-    schemaless ? "" : sdkDefinedTemplate, // Don't pass in a template if schemaless is enabled
-    isHosted && (providedJSONString(customStyles) || providedJSONString(cssOverrides)),
-    schemaless
-  );
-
-  // Apply custom styles
-  useCustomStyles(customStyles, isDevelopment ? true : organizationStatus && organizationStatus["feature-custom-styles"]);
-
-  // Apply CSS overrides
-  useCssOverrides(cssOverrides, isDevelopment ? true : organizationStatus && organizationStatus["feature-css-overrides"]);
-
-  // If the skipHeaderRowSelection is not set as a URL param, check the option on the importer
+    onComplete,
+    customStyles,
+    showDownloadTemplateButton,
+    skipHeaderRowSelection,
+  } = props;
   const skipHeader = skipHeaderRowSelection ?? false;
 
-  // Header row selection state
-  const [selectedHeaderRow, setSelectedHeaderRow] = useState<number | null>(null);
-  const [uploadFromHeaderRowSelection, setUploadFromHeaderRowSelection] = useState<any | null>(null);
-  const [columnsOrder, setColumnsOrder] = useState<ColumnsOrder>();
-  const [columnsValues, seColumnsValues] = useState({});
+  // Apply custom styles
+  useCustomStyles(parseObjectOrStringJSON("customStyles", customStyles));
 
   // Stepper handler
-  const { currentStep, setStep, goNext, goBack, stepper, setStorageStep } = useStepNavigation(StepEnum.Upload, skipHeader, importerId, tusId);
+  const { currentStep, setStep, goNext, goBack, stepper, setStorageStep } = useStepNavigation(StepEnum.Upload, skipHeader);
 
-  // There was an error the last time they tried to upload a file. Reload to clear stored tusId
-  // TODO: This doesn't work, fix it
-  // useEffect(() => {
-  //   if (uploadError && tusWasStored) reload();
-  // }, [uploadError]);
+  // Error handling
+  const [initializationError, setInitializationError] = useState<string | null>(null);
+  const [dataError, setDataError] = useState<string | null>(null);
 
-  // Handle initial page loads using a small delay so the screen doesn't flash when loading different states
-  const [initialPageLoaded, setInitialPageLoaded] = useState<boolean>(false);
+  // File data
+  const emptyData = {
+    fileName: "",
+    rows: [],
+    sheetList: [],
+    errors: [],
+  };
+  const [data, setData] = useState<FileData>(emptyData);
+
+  // Header row selection state
+  const [selectedHeaderRow, setSelectedHeaderRow] = useState<number | null>(0);
+
+  // Map of upload column index -> TemplateColumnMapping
+  const [columnMapping, setColumnMapping] = useState<{ [index: number]: TemplateColumnMapping }>({});
+
+  // Used in the final step to show a loading indicator while the data is submitting
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
+  // TODO (client-sdk): Parse the provided template and display any errors
+  const [parsedTemplate, setParsedTemplate] = useState<Template>({
+    columns: [],
+  });
+
   useEffect(() => {
-    const interval = setTimeout(() => {
-      setInitialPageLoaded(!importerIsLoading && !statusIsLoading && !uploadIsLoading);
-    }, 250);
-    return () => clearInterval(interval);
-  }, [importerIsLoading, statusIsLoading, uploadIsLoading]);
-
-  // Handle the upload loading indicator
-  const [showUploadSpinner, setShowUploadSpinner] = useState<boolean>(false);
-  const displayUploadSpinner = useDelayedLoader(showUploadSpinner, 250);
+    const [parsedTemplate, parsedTemplateError] = convertRawTemplate(template);
+    if (parsedTemplateError) {
+      setInitializationError(parsedTemplateError);
+    } else if (parsedTemplate) {
+      setParsedTemplate(parsedTemplate);
+    }
+  }, [template]);
 
   useEffect(() => {
-    const isUploadLoading = tusId && !uploadError && !uploadIsStored;
-    setShowUploadSpinner(isUploadLoading);
-  }, [tusId, uploadIsStored, uploadError, currentStep]);
-
-  // Handle jumping to the right step from page reloads or upload errors
-  useEffect(() => {
-    // If we're not on the first step, the page wasn't reloaded or an error would have been already handled
-    if (currentStep !== StepEnum.Upload) {
-      return;
+    // TODO (client-sdk): Have the importer continue where left off if closed
+    // Temporary solution to reload state if closed and opened again
+    if (data.rows.length === 0 && currentStep !== StepEnum.Upload) {
+      reload();
     }
-    const isUploadSuccess = tusId && !uploadError && uploadIsStored;
-    if (uploadError) {
-      setStep(StepEnum.Upload);
-      return;
-    }
-
-    if (isUploadSuccess) {
-      if (currentStep === StepEnum.MapColumns) {
-        setUploadFromHeaderRowSelection(upload);
-        setSelectedHeaderRow(upload?.header_row_index);
-        setStep(currentStep);
-      } else {
-        goNext();
-      }
-    }
-  }, [tusId, uploadIsStored, uploadError, currentStep]);
+  }, [data]);
 
   // Actions
   const reload = () => {
-    setTusId("");
+    setData(emptyData);
+    setSelectedHeaderRow(0);
+    setColumnMapping({});
+    setDataError(null);
     setStep(StepEnum.Upload);
-    location.reload();
   };
 
-  // Send messages to parent (SDK iframe)
-  useEffect(() => {
-    if (!isEmbeddedInIframe) return;
-    const message = {
-      type: "start",
-      importerId,
-    };
-    postMessage(message);
-  }, []);
-
-  useEffect(() => {
-    if (review && !reviewIsLoading && reviewIsStored && enabledReview) {
-      goNext();
-    }
-  }, [review, reviewIsLoading, reviewIsStored, enabledReview]);
-
+  // TODO (client-sdk): Make modal closing work, probably not in this component, not with postMessage
   const requestClose = () => {
-    if (!isEmbeddedInIframe || !isModal) return;
-    const message = {
-      type: "close",
-      importerId,
-    };
-    postMessage(message);
-    // TODO: If waitOnComplete and in the last stage of the import, should we setTusId("") to reset the importer here?
-    if (!waitOnComplete) {
-      setTusId("");
+    if (!isModal) {
+      return;
     }
+    // const message = {
+    //   type: "close",
+    //   // importerId,
+    // };
+    // postMessage(message);
   };
 
-  const handleComplete = (data: any) => {
-    if (isEmbeddedInIframe && onComplete) {
-      const message = {
-        data,
-        type: "complete",
-        importerId,
-      };
-      postMessage(message);
-    }
-  };
+  // TODO (client-sdk): Make this work
 
-  const handleCancelReview = () => {
-    if (currentStep === StepEnum.MapColumns) {
-      setUploadFromHeaderRowSelection(upload);
-    }
-    goBack();
-  };
-
-  if (!initialPageLoaded) {
+  if (initializationError) {
     return (
       <div className={style.wrapper}>
-        <div className={style.content}>
-          <TableLoading hideBorder />
-        </div>
-      </div>
-    );
-  }
-
-  if (importerError) {
-    return (
-      <div className={isEmbeddedInIframe ? style.wrapper : classes([style.wrapper, style.wrapperLink])}>
-        <Errors error={importerError.toString()} centered />
+        <Errors error={initializationError} centered />
       </div>
     );
   }
 
   const renderContent = () => {
-    if (displayUploadSpinner) {
-      return <TableLoading hideBorder>Processing your file...</TableLoading>;
-    }
     switch (currentStep) {
       case StepEnum.Upload:
         return (
           <Uploader
-            template={template}
-            importerId={importerId}
-            metadata={metadata}
+            template={parsedTemplate}
             skipHeaderRowSelection={skipHeader || false}
-            onSuccess={setTusId}
-            endpoint={""}
             showDownloadTemplateButton={showDownloadTemplateButton}
-            schemaless={schemaless}
+            setDataError={setDataError}
+            onSuccess={async (file: File) => {
+              setDataError(null);
+              const fileType = file.name.slice(file.name.lastIndexOf(".") + 1);
+              if (!["csv", "xls", "xlsx"].includes(fileType)) {
+                setDataError("Only CSV, XLS, and XLSX files can be uploaded");
+                // TODO (client-sdk): Surface incorrect file type error
+                return;
+              }
+              const reader = new FileReader();
+              const isNotBlankRow = (row: string[]) => row.some((cell) => cell.trim() !== "");
+              reader.onload = async (e) => {
+                const bstr = e?.target?.result;
+                if (!bstr) {
+                  return;
+                }
+                switch (fileType) {
+                  case "csv":
+                    Papa.parse(bstr.toString(), {
+                      complete: function (results) {
+                        const csvData = results.data as Array<Array<string>>;
+                        const rows: FileRow[] = csvData.filter(isNotBlankRow).map((row: string[], index: number) => ({ index, values: row }));
+                        setData({
+                          fileName: file.name,
+                          rows: rows,
+                          sheetList: [],
+                          errors: results.errors.map((error) => error.message),
+                        });
+                        goNext();
+                      },
+                    });
+                    break;
+                  case "xlsx":
+                  case "xls":
+                    const workbook = XLSX.read(bstr as string, { type: "binary" });
+                    const sheetList = workbook.SheetNames;
+                    const data = XLSX.utils.sheet_to_json(workbook.Sheets[sheetList[0]], { header: 1 }) as Array<Array<string>>;
+                    const rows: FileRow[] = data.filter(isNotBlankRow).map((row: string[], index: number) => ({ index, values: row }));
+                    setData({
+                      fileName: file.name,
+                      rows: rows,
+                      sheetList: sheetList,
+                      errors: [], // TODO: Handle any parsing errors
+                    });
+                    goNext();
+                    break;
+                }
+              };
+              reader.readAsBinaryString(file);
+            }}
           />
         );
       case StepEnum.RowSelection:
         return (
           <RowSelection
-            upload={upload}
+            data={data}
             onCancel={reload}
-            onSuccess={(upload: any) => {
-              setUploadFromHeaderRowSelection(upload);
-              goNext();
-            }}
+            onSuccess={() => goNext()}
             selectedHeaderRow={selectedHeaderRow}
             setSelectedHeaderRow={setSelectedHeaderRow}
           />
@@ -247,62 +191,84 @@ export default function Main({sdkImporterId}: {sdkImporterId?: string}) {
       case StepEnum.MapColumns:
         return (
           <MapColumns
-            template={template}
-            upload={uploadFromHeaderRowSelection || upload}
-            onSuccess={(_, columnsValues) => {
-              setEnabledReview(true);
-              setColumnsOrder(columnsValues);
-            }}
+            template={parsedTemplate}
+            data={data}
+            columnMapping={columnMapping}
             skipHeaderRowSelection={skipHeader}
+            selectedHeaderRow={selectedHeaderRow}
+            onSuccess={(columnMapping) => {
+              setIsSubmitting(true);
+              setColumnMapping(columnMapping);
+
+              // TODO (client-sdk): Move this type, add other data attributes (i.e. column definitions), and move the data processing to a function
+              type MappedRow = {
+                index: number;
+                values: Record<string, number | string>;
+              };
+              const startIndex = (selectedHeaderRow || 0) + 1;
+
+              const mappedRows: MappedRow[] = [];
+              data.rows.slice(startIndex).forEach((row: FileRow) => {
+                const resultingRow: MappedRow = {
+                  index: row.index - startIndex,
+                  values: {},
+                };
+                row.values.forEach((value: string, valueIndex: number) => {
+                  const mapping = columnMapping[valueIndex];
+                  if (mapping && mapping.include) {
+                    resultingRow.values[mapping.key] = value;
+                  }
+                });
+                mappedRows.push(resultingRow);
+              });
+
+              const includedColumns = Object.values(columnMapping).filter(({ include }) => include);
+
+              const onCompleteData = {
+                num_rows: mappedRows.length,
+                num_columns: includedColumns.length,
+                error: null,
+                // TODO (client-sdk): Either remove "name" or change it to the be the name of the original upload column
+                columns: includedColumns.map(({ key }) => ({ key, name: key })),
+                rows: mappedRows,
+              };
+
+              onComplete && onComplete(onCompleteData);
+
+              setIsSubmitting(false);
+              goNext();
+            }}
+            isSubmitting={isSubmitting}
             onCancel={skipHeader ? reload : () => goBack(StepEnum.RowSelection)}
-            schemaless={schemaless}
-            schemalessReadOnly={schemalessReadOnly}
-            setColumnsValues={seColumnsValues}
-            columnsValues={columnsValues}
-            isLoading={reviewIsLoading || (!reviewIsStored && enabledReview)}
-            onLoad={() => setEnabledReview(false)}
           />
         );
-      case StepEnum.Review:
-        return (
-          <Review
-            template={template}
-            onCancel={handleCancelReview}
-            close={requestClose}
-            onComplete={handleComplete}
-            waitOnComplete={waitOnComplete}
-            upload={upload}
-            reload={reload}
-            showImportLoadingStatus={showImportLoadingStatus}
-            columnsOrder={columnsOrder}
-            review={review}
-            schemaless={schemaless}
-          />
-        );
+      case StepEnum.Complete:
+        return <Complete reload={reload} close={close} isModal={isModal} />;
       default:
         return null;
     }
   };
 
   return (
-    <div className={isEmbeddedInIframe ? style.wrapper : classes([style.wrapper, style.wrapperLink])}>
+    <div className={style.wrapper}>
       <div className={style.header}>
         <Stepper {...stepper} />
       </div>
 
       <div className={style.content}>{renderContent()}</div>
 
-      {!!uploadError && (
+      {!!dataError && (
         <div className={style.status}>
           <div></div>
-          <Errors error={uploadError.toString()} centered />
-          <Button onClick={reload} colorScheme="primary" leftIcon={<PiArrowCounterClockwise />}>
-            Reload
-          </Button>
+          <Errors error={dataError} centered />
+          <div></div>
+          {/*<Button onClick={reload} colorScheme="primary" leftIcon={<PiArrowCounterClockwise />}>*/}
+          {/*  Reload*/}
+          {/*</Button>*/}
         </div>
       )}
 
-      {isEmbeddedInIframe && isModal && (
+      {isModal && (
         <IconButton isRound className={style.close} colorScheme="secondary" aria-label="Close" icon={<PiX />} onClick={() => requestClose()} />
       )}
     </div>

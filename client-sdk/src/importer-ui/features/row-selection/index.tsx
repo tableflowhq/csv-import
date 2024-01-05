@@ -1,32 +1,20 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Alert } from "@chakra-ui/alert";
 import { Button } from "@chakra-ui/button";
-import Errors from "../../components/Errors";
 import Table from "../../components/Table";
 import Tooltip from "../../components/Tooltip";
-import usePostSetHeader from "../../api/usePostSetHeader";
 import { RowSelectionProps } from "./types";
 import style from "./style/RowSelection.module.scss";
 import { PiWarningCircle } from "react-icons/pi";
 
-export default function RowSelection({ upload, onSuccess, onCancel, selectedHeaderRow, setSelectedHeaderRow }: RowSelectionProps) {
-  const { mutate, error, isSuccess, isLoading, data } = usePostSetHeader(upload?.id || "");
-  const [isRadioDisabled, setIsRadioDisabled] = useState(false);
+export default function RowSelection({ data, onSuccess, onCancel, selectedHeaderRow, setSelectedHeaderRow }: RowSelectionProps) {
+  const [isLoading, setIsLoading] = useState(false);
   const handleRadioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedHeaderRow(Number(e.target.value));
   };
+  const rowLimit = 50;
 
-  useEffect(() => {
-    if (selectedHeaderRow === null) {
-      if (upload?.matched_header_row_index && upload?.matched_header_row_index > -1) {
-        setSelectedHeaderRow(upload?.matched_header_row_index);
-      } else {
-        setSelectedHeaderRow(0);
-      }
-    }
-  }, []);
-
-  const dataWithRadios = upload?.upload_rows?.map((row) => {
+  const dataWithRadios = data.rows.slice(0, rowLimit).map((row) => {
     const nameWithRadio = (
       <span>
         <input
@@ -37,7 +25,6 @@ export default function RowSelection({ upload, onSuccess, onCancel, selectedHead
           value={row.index}
           checked={selectedHeaderRow === row.index}
           onChange={handleRadioChange}
-          disabled={isRadioDisabled}
         />
         {row.values?.[0]}
       </span>
@@ -54,41 +41,31 @@ export default function RowSelection({ upload, onSuccess, onCancel, selectedHead
     });
     return Object.fromEntries(mappedRow);
   });
+
   const maxNumberOfColumns = 7;
-  const uploadRow = upload?.upload_rows?.[0] ?? { values: {} };
+  const uploadRow = data.rows[0] ?? { values: {} };
   const numberOfColumns = Math.min(Object.keys(uploadRow.values).length, maxNumberOfColumns);
   const widthPercentage = 100 / numberOfColumns;
   const columnWidths = Array(numberOfColumns).fill(`${widthPercentage}%`);
-  const hasMultipleExcelSheets = (upload?.sheet_list?.length ?? 0) > 1;
+  const hasMultipleExcelSheets = (data.sheetList.length ?? 0) > 1;
 
   const handleNextClick = (e: any) => {
     e.preventDefault();
-    setIsRadioDisabled(true);
-
-    try {
-      mutate({ selectedHeaderRow: selectedHeaderRow });
-    } catch (error) {
-    } finally {
-      setIsRadioDisabled(false);
-    }
+    setIsLoading(true);
+    onSuccess();
+    setIsLoading(false);
   };
-
-  useEffect(() => {
-    if (isSuccess && !error && !isLoading && upload) {
-      onSuccess(data.data);
-    }
-  }, [isSuccess]);
 
   return (
     <div className={style.content}>
       <form>
-        {upload ? (
+        {data ? (
           <>
             {hasMultipleExcelSheets ? (
               <Alert status="info">
                 <PiWarningCircle className={style.warningIcon} />
-                Only the first sheet (&quot;{upload?.sheet_list?.[0]}&quot;) of the Excel file will be imported. To import multiple sheets, please
-                upload each sheet individually.
+                Only the first sheet (&quot;{data.sheetList[0]}&quot;) of the Excel file will be imported. To import multiple sheets, please upload
+                each sheet individually.
               </Alert>
             ) : null}
             <div className={style.tableWrapper}>
@@ -121,11 +98,11 @@ export default function RowSelection({ upload, onSuccess, onCancel, selectedHead
             Continue
           </Button>
         </div>
-        {!isLoading && !!error && (
-          <div className={style.errorContainer}>
-            <Errors error={error} />
-          </div>
-        )}
+        {/*{!isLoading && !!error && (*/}
+        {/*  <div className={style.errorContainer}>*/}
+        {/*    <Errors error={error} />*/}
+        {/*  </div>*/}
+        {/*)}*/}
       </form>
     </div>
   );
