@@ -3,7 +3,6 @@ import { IconButton } from "@chakra-ui/button";
 import Stepper from "../../components/Stepper";
 import useCustomStyles from "../../hooks/useCustomStyles";
 import useRevealApp from "../../hooks/useRevealApp";
-import postMessage from "../../utils/postMessage";
 import useStepNavigation, { StepEnum } from "./hooks/useStepNavigation";
 import style from "./style/Main.module.scss";
 import Uploader from "../uploader";
@@ -26,9 +25,7 @@ export default function Main(props: TableFlowImporterProps) {
 
   const {
     isModal = true,
-    modalIsOpen = true,
     modalOnCloseTriggered = () => null,
-    modalCloseOnOutsideClick,
     template,
     onComplete,
     customStyles,
@@ -65,7 +62,6 @@ export default function Main(props: TableFlowImporterProps) {
   // Used in the final step to show a loading indicator while the data is submitting
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-  // TODO (client-sdk): Parse the provided template and display any errors
   const [parsedTemplate, setParsedTemplate] = useState<Template>({
     columns: [],
   });
@@ -96,19 +92,12 @@ export default function Main(props: TableFlowImporterProps) {
     setStep(StepEnum.Upload);
   };
 
-  // TODO (client-sdk): Make modal closing work, probably not in this component, not with postMessage
   const requestClose = () => {
     if (!isModal) {
       return;
     }
-    // const message = {
-    //   type: "close",
-    //   // importerId,
-    // };
-    // postMessage(message);
+    modalOnCloseTriggered && modalOnCloseTriggered();
   };
-
-  // TODO (client-sdk): Make this work
 
   if (initializationError) {
     return (
@@ -262,9 +251,6 @@ export default function Main(props: TableFlowImporterProps) {
           <div></div>
           <Errors error={dataError} centered />
           <div></div>
-          {/*<Button onClick={reload} colorScheme="primary" leftIcon={<PiArrowCounterClockwise />}>*/}
-          {/*  Reload*/}
-          {/*</Button>*/}
         </div>
       )}
 

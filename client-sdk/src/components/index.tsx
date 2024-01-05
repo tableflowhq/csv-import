@@ -1,8 +1,11 @@
-import ImporterUI from "../importer-ui/features/main";
+import Importer from "../importer-ui/features/main";
 import React, { useEffect, useRef } from "react";
 import "./style/tableflow-importer.css";
 import "../importer-ui/style/index.scss";
 import { TableFlowImporterProps } from "../types";
+import useThemeStore from "../importer-ui/stores/theme";
+import { useColorMode } from "@chakra-ui/react";
+import { darkenColor, isValidColor } from "../importer-ui/utils/utils";
 
 export default function TableFlowImporter(importerProps: TableFlowImporterProps) {
   const {
@@ -12,7 +15,7 @@ export default function TableFlowImporter(importerProps: TableFlowImporterProps)
     modalCloseOnOutsideClick,
     template,
     darkMode = false,
-    primaryColor = "#7a5ef8", // TODO (client-sdk): Apply primary color
+    primaryColor = "#7a5ef8",
     className,
     onComplete,
     customStyles,
@@ -36,6 +39,25 @@ export default function TableFlowImporter(importerProps: TableFlowImporterProps)
   const themeClass = darkMode && `${baseClass}-dark`;
   const domElementClass = [`${baseClass}-${isModal ? "dialog" : "div"}`, themeClass, className].filter((i) => i).join(" ");
 
+  // Set Light/Dark mode
+  const setTheme = useThemeStore((state) => state.setTheme);
+  const { colorMode, toggleColorMode } = useColorMode();
+
+  useEffect(() => {
+    setTheme(darkMode ? "dark" : "light");
+    if (darkMode && colorMode === "light") toggleColorMode();
+    if (!darkMode && colorMode === "dark") toggleColorMode();
+  }, [darkMode]);
+
+  // Apply primary color
+  useEffect(() => {
+    if (primaryColor && isValidColor(primaryColor)) {
+      const root = document.documentElement;
+      root.style.setProperty("--color-primary", primaryColor);
+      root.style.setProperty("--color-primary-hover", darkenColor(primaryColor, 20));
+    }
+  }, [primaryColor]);
+
   // TODO (client-sdk): This triggers when anything is clicked if modalCloseOnOutsideClick is true
 
   const backdropClick = () => modalCloseOnOutsideClick && modalOnCloseTriggered();
@@ -49,11 +71,11 @@ export default function TableFlowImporter(importerProps: TableFlowImporterProps)
 
   return isModal ? (
     <dialog {...elementProps}>
-      <ImporterUI {...importerProps} />
+      <Importer {...importerProps} />
     </dialog>
   ) : (
     <div {...elementProps}>
-      <ImporterUI {...importerProps} />
+      <Importer {...importerProps} />
     </div>
   );
 }
