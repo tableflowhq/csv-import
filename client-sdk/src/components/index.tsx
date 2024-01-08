@@ -60,7 +60,11 @@ export default function TableFlowImporter(importerProps: TableFlowImporterProps)
 
   // TODO (client-sdk): This triggers when anything is clicked if modalCloseOnOutsideClick is true
 
-  const backdropClick = () => modalCloseOnOutsideClick && modalOnCloseTriggered();
+  const backdropClick = (event: { target: any; }) => {
+    if (modalCloseOnOutsideClick && event.target === current) {
+      modalOnCloseTriggered();
+    }
+  };
 
   const elementProps = {
     ref,

@@ -27,15 +27,6 @@
   filter: brightness(1.2);
 }
 
-.TableFlowImporter-dialog {
-  /* background-color: transparent; */
-  border-radius: 1rem;
-  border: none;
-  position: fixed;
-  inset: 0;
-  padding: 0;
-}
-
 .TableFlowImporter-dialog::backdrop {
   background-color: rgba(0, 0, 0, 0.85);
 }
@@ -46,7 +37,9 @@
   height: 100vh;
   min-width: 907px;
   border: none;
-  color-scheme: none;
+  position: fixed;
+  inset: 0;
+  padding: 0;
 }
 
 .TableFlowImporter-div {
