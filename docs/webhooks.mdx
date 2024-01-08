@@ -8,9 +8,9 @@ TableFlow uses webhooks to push real-time notifications for your data imports. F
 
 1. Your user imports a CSV or Excel file using the embedded TableFlow importer on your web app
 2. TableFlow notifies your system, via a webhook, that a data import has been completed
-3. The webhook will contain the row data, column definitions, and other information about the import
+3. The webhook will contain the column definitions and other information about the import
 
-<Info>The number of rows included is limited to 10,000 or 300 KB of data. If either of these limits are exceeded, an `error` will be set and the data should be retrieved using the [API](/api-reference/get-import-rows).</Info>
+<Info>Once a webhook is received, the row data should be retrieved using the [API](/api-reference/get-import-rows).</Info>
 
 ## Configure your application to receive webhooks
 
