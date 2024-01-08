@@ -55,7 +55,7 @@ export default function Tooltip<T extends keyof AsMap>({ as, className, title, c
       {children}
       <span className={style.icon} onMouseEnter={showTooltip} onMouseLeave={hideTooltip} ref={targetRef}>
         {icon}
-        {ReactDOM.createPortal(tooltipMessage, tooltipContainer.current)}
+        {tooltipMessage}
       </span>
     </Tag>
   );

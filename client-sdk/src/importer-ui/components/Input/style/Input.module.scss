@@ -158,7 +158,7 @@
 }
 
 .options {
-  position: absolute;
+  position: fixed;
   top: 100%;
   right: 0;
   left: 0;
@@ -176,6 +176,7 @@
     max-height: calc(100vh - 8px);
     overflow-y: auto;
     margin-top: var(--m-xxxxs);
+    width: 100%;
   }
 
   .option {

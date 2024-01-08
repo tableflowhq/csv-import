@@ -6,7 +6,6 @@ import { MapColumnsProps, TemplateColumnMapping } from "./types";
 import style from "./style/MapColumns.module.scss";
 import { Template, UploadColumn } from "../../api/types";
 import Errors from "../../components/Errors";
-import template from "../../demo/template";
 
 export default function MapColumns({
   template,

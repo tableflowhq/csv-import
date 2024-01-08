@@ -3,10 +3,10 @@ import useClickOutside from "../../hooks/useClickOutside";
 import useRect from "../../hooks/useRect";
 import useWindowSize from "../../hooks/useWindowSize";
 import classes from "../../utils/classes";
-import Portal from "../Portal/index";
 import { InputProps } from "./types";
 import style from "./style/Input.module.scss";
 import { PiCaretDown, PiInfo } from "react-icons/pi";
+import { Portal } from '@chakra-ui/react'
 
 export default function Input({ as = "input", label, icon, iconAfter, error, options, className, variants = [], children, ...props }: InputProps) {
   const Element = as;
@@ -62,6 +62,8 @@ function Select({ options = {}, placeholder, ...props }: InputProps) {
   const onChangeOption = (e: any) => {
     const { value } = e.target;
     props?.onChange && props?.onChange(value);
+    e.stopPropagation();
+    e.preventDefault();
     onBlur();
   };
 
@@ -105,7 +107,6 @@ function Select({ options = {}, placeholder, ...props }: InputProps) {
       <div className={style.optionsRef} ref={setRef} />
 
       {open && (
-        <Portal>
           <div className={style.options} style={optionsPosition} ref={setRefPortal}>
             <div className={style.inner} ref={ref}>
               {placeholder && (
@@ -126,7 +127,6 @@ function Select({ options = {}, placeholder, ...props }: InputProps) {
               ))}
             </div>
           </div>
-        </Portal>
       )}
     </>
   );
