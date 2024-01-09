@@ -9,7 +9,7 @@
 ## How It Works
 
 1. Embed the CSV Importer in your app with the [React](https://www.npmjs.com/package/csv-import-react)
-   or [JavaScript](https://www.npmjs.com/package/csv-import-javascript) SDK
+   or [JavaScript](https://www.npmjs.com/package/csv-import-js) SDK
 2. Define the columns your users can import (via the `template` parameter)
 3. Your users import their files in your app
 4. Retrieve the imported data from the `onComplete` event
@@ -21,7 +21,7 @@
 ### 1. Install SDK
 
 Use NPM or Yarn to install the SDK for [React](https://www.npmjs.com/package/csv-import-react)
-or [JavaScript](https://www.npmjs.com/package/csv-import-javascript).
+or [JavaScript](https://www.npmjs.com/package/csv-import-js).
 
 **NPM**
 
