@@ -1,11 +1,11 @@
-import Importer from "../importer-ui/features/main";
+import Importer from "../../importer-ui/features/main";
 import React, { useEffect, useRef } from "react";
 import "./style/tableflow-importer.css";
-import "../importer-ui/style/index.scss";
-import { TableFlowImporterProps } from "../types";
-import useThemeStore from "../importer-ui/stores/theme";
+import "../../importer-ui/style/index.scss";
+import { TableFlowImporterProps } from "./types";
+import useThemeStore from "../../importer-ui/stores/theme";
 import { useColorMode } from "@chakra-ui/react";
-import { darkenColor, isValidColor } from "../importer-ui/utils/utils";
+import { darkenColor, isValidColor } from "../../importer-ui/utils/utils";
 
 export default function TableFlowImporter(importerProps: TableFlowImporterProps) {
   const {

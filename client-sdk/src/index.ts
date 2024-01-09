@@ -1,3 +1,3 @@
-import TableFlowImporter from "./components/index";
+import TableFlowImporter from "./components/TableFlowImporter";
 
 export { TableFlowImporter };

@@ -47,7 +47,6 @@ $cellHeight: 44px;
 
   .thead {
     .tr {
-
       .td {
         font-weight: 400;
         white-space: nowrap;
@@ -73,8 +72,8 @@ $cellHeight: 44px;
         padding: var(--m-xxxs) var(--m-s);
         font-weight: 400;
 
-        &>span,
-        &>small {
+        & > span,
+        & > small {
           text-overflow: ellipsis;
           white-space: nowrap;
           display: block;
@@ -143,7 +142,6 @@ $cellHeight: 44px;
     .thead {
       background-color: var(--color-background-modal);
     }
-
     .tbody {
       .tr {
         &:hover {
@@ -162,8 +160,6 @@ $cellHeight: 44px;
           box-shadow: none;
           position: static;
         }
-
-        .td {}
 
         &:first-of-type .td {
           padding-top: var(--m-s);

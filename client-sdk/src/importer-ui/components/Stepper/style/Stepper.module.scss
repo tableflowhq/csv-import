@@ -42,7 +42,7 @@ $transition: all 0.3s ease-out;
       &:before {
         content: "";
         height: 1px;
-        width: min(140px, 4vw);
+        width: calc(min(140px, 4vw));
         background-color: var(--color-border);
         border-radius: 2px;
         margin-right: var(--m-xs);
@@ -53,7 +53,7 @@ $transition: all 0.3s ease-out;
   .stepWide {
     &:not(:first-of-type) {
       &:before {
-        width: min(120px, 10vw);
+        width: calc(min(120px, 10vw));
       }
     }
   }

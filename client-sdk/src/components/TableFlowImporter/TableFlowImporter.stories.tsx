@@ -1,7 +1,7 @@
 import Providers from "../../importer-ui/providers";
 import defaults from "../../settings/defaults";
-import ImporterComponent from "../index";
-import { TableFlowImporterProps } from "../../types";
+import ImporterComponent from "./index";
+import { TableFlowImporterProps } from "./types";
 import { ComponentMeta, ComponentStory } from "@storybook/react";
 import { useState } from "react";
 
@@ -17,6 +17,27 @@ export default {
     },
   },
 } as ComponentMeta<typeof ImporterComponent>;
+
+const template = {
+    columns: [
+      {
+        name: "First Name",
+        key: "first_name",
+        required: true,
+        description: "The first name of the user",
+        suggested_mappings: ["first", "mame"],
+      },
+      {
+        name: "Last Name",
+        suggested_mappings: ["last"],
+      },
+      {
+        name: "Email",
+        required: true,
+        description: "The email of the user",
+      },
+    ],
+  };
 
 const Template: ComponentStory<typeof ImporterComponent> = (args: TableFlowImporterProps) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -43,4 +64,5 @@ const Template: ComponentStory<typeof ImporterComponent> = (args: TableFlowImpor
 export const Importer = Template.bind({});
 Importer.args = {
   ...defaults,
+  template: template,
 };
