@@ -139,6 +139,17 @@ $cellHeight: 44px;
     background-color: var(--color-background-modal);
   }
 
+  &.transparent {
+    .tbody {
+      .tr {
+        &:hover {
+          box-shadow: none;
+          position: static;
+        }
+      }
+    }
+  }
+
   &.dark,
   &.light {
     .tbody {
