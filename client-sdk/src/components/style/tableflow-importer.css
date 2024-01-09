@@ -46,7 +46,8 @@
   border: none;
   display: block;
   width: 100%;
-  /* min-height: 700px; */
+  height: 98vh;
+  overflow-y: hidden;
 }
 
 @media (max-width: 768px) {

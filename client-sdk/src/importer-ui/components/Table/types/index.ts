@@ -28,7 +28,7 @@ export type TableProps = {
     hideColumns?: string[];
     emptyState?: ReactElement;
     heading?: ReactElement;
-    background?: "zebra" | "dark" | "light";
+    background?: "zebra" | "dark" | "light" | "transparent";
     columnWidths?: string[];
     columnAlignments?: ("left" | "center" | "right" | "")[];
     fixHeader?: boolean;
