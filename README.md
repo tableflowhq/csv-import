@@ -2,7 +2,7 @@
 
 <img src="https://tableflow-assets-cdn.s3.amazonaws.com/csv-import.jpg" width="600" alt="CSV Import">
 
-<em>Open-source CSV and XLS file importer</em>
+<em>Open-source CSV and XLS/XLSX file importer for React and JavaScript</em>
 
 </div>
 
@@ -41,6 +41,7 @@ yarn add csv-import-js
 
 ### 2. Add the importer to your application
 
+#### Using React:
 ```javascript
 import {useState} from "react";
 import {CSVImporter} from "csv-import-react";
@@ -76,6 +77,43 @@ function MyComponent() {
     </>
   );
 }
+```
+
+#### Using JavaScript:
+```html
+<head>
+  <script src="https://unpkg.com/csv-import-js@latest/build/index.js"></script>
+</head>
+<body>
+  <button id="uploadButton">Open CSV Importer</button>
+  <script>
+    const importer = createCSVImporter({
+      modalOnCloseTriggered: () => importer.close(),
+      onComplete: (data) => console.log(data),
+      darkMode: true,
+      template: {
+        columns: [
+          {
+            name: "First Name",
+            key: "first_name",
+            required: true,
+            description: "The first name of the user",
+            suggested_mappings: ["First", "Name"],
+          },
+          {
+            name: "Age",
+            data_type: "number",
+          },
+        ],
+      },
+    });
+
+    const uploadButton = document.getElementById("uploadButton");
+    uploadButton.addEventListener("click", () => {
+      importer?.showModal();
+    });
+  </script>
+</body>
 ```
 
 ## SDK Reference
@@ -217,6 +255,5 @@ When set to `true`, the importer will not display and skip the Header Row Select
 
 ## Get In Touch
 
-Let us know your feedback or feature requests! You can submit
-a [GitHub issue](https://github.com/tableflowhq/csv-import/issues/new) or email us
-at [hey@tableflow.com](mailto:hey@tableflow.com)
+Let us know your feedback or feature requests! Submit a GitHub
+issue [here](https://github.com/tableflowhq/csv-import/issues/new).
