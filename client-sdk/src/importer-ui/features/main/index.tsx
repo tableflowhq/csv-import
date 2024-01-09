@@ -114,7 +114,7 @@ export default function Main(props: TableFlowImporterProps) {
           <Uploader
             template={parsedTemplate}
             skipHeaderRowSelection={skipHeader || false}
-            showDownloadTemplateButton={showDownloadTemplateButton}
+            showDownloadTemplateButton
             setDataError={setDataError}
             onSuccess={async (file: File) => {
               setDataError(null);

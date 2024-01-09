@@ -28,7 +28,12 @@ export default function Uploader({ template, skipHeaderRowSelection, onSuccess, 
       leftIcon={<PiDownloadSimple />}
       onClick={downloadTemplate}
       colorScheme={"secondary"}
-      variant={theme === "light" ? "outline" : "solid"}>
+      variant={theme === "light" ? "outline" : "solid"}
+      _hover={theme === "light" ? {
+        background: "var(--color-border)",
+        color: "var(--color-text)"
+      } : undefined}
+    >
       Download Template
     </Button>
   ) : null;
@@ -38,7 +43,7 @@ export default function Uploader({ template, skipHeaderRowSelection, onSuccess, 
       {uploaderWrapper}
       <div className={style.box}>
         <div className={style.tableContainer}>
-          <Table fixHeader data={fields} background="dark" columnWidths={["65%", "35%"]} columnAlignments={["", "center"]} />
+          <Table fixHeader data={fields} background="transparent" columnWidths={["65%", "35%"]} columnAlignments={["", "center"]} />
         </div>
         {downloadTemplateButton}
       </div>
