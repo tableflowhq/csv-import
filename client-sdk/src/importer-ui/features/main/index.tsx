@@ -97,6 +97,9 @@ export default function Main(props: TableFlowImporterProps) {
       return;
     }
     modalOnCloseTriggered && modalOnCloseTriggered();
+    if (currentStep === StepEnum.Complete) {
+      reload();
+    }
   };
 
   if (initializationError) {
@@ -121,7 +124,6 @@ export default function Main(props: TableFlowImporterProps) {
               const fileType = file.name.slice(file.name.lastIndexOf(".") + 1);
               if (!["csv", "xls", "xlsx"].includes(fileType)) {
                 setDataError("Only CSV, XLS, and XLSX files can be uploaded");
-                // TODO (client-sdk): Surface incorrect file type error
                 return;
               }
               const reader = new FileReader();
@@ -232,7 +234,7 @@ export default function Main(props: TableFlowImporterProps) {
           />
         );
       case StepEnum.Complete:
-        return <Complete reload={reload} close={close} isModal={isModal} />;
+        return <Complete reload={reload} close={requestClose} isModal={isModal} />;
       default:
         return null;
     }
@@ -254,9 +256,7 @@ export default function Main(props: TableFlowImporterProps) {
         </div>
       )}
 
-      {isModal && (
-        <IconButton isRound className={style.close} colorScheme="secondary" aria-label="Close" icon={<PiX />} onClick={() => requestClose()} />
-      )}
+      {isModal && <IconButton isRound className={style.close} colorScheme="secondary" aria-label="Close" icon={<PiX />} onClick={requestClose} />}
     </div>
   );
 }

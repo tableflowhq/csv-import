@@ -24,8 +24,6 @@ export default function TableFlowImporter(importerProps: TableFlowImporterProps)
     ...props
   } = importerProps;
 
-  // TODO (client-sdk): Get modal-related props working
-
   const ref = useRef(null);
   const current = ref.current as any;
 
@@ -57,8 +55,6 @@ export default function TableFlowImporter(importerProps: TableFlowImporterProps)
       root.style.setProperty("--color-primary-hover", darkenColor(primaryColor, 20));
     }
   }, [primaryColor]);
-
-  // TODO (client-sdk): This triggers when anything is clicked if modalCloseOnOutsideClick is true
 
   const backdropClick = (event: { target: any; }) => {
     if (modalCloseOnOutsideClick && event.target === current) {
