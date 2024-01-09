@@ -1,24 +1,24 @@
+import Papa from "papaparse";
 import { useEffect, useState } from "react";
+import * as XLSX from "xlsx";
 import { IconButton } from "@chakra-ui/button";
+import Errors from "../../components/Errors";
 import Stepper from "../../components/Stepper";
+import { TableFlowImporterProps } from "../../../types";
+import { Template } from "../../api/types";
 import useCustomStyles from "../../hooks/useCustomStyles";
 import useRevealApp from "../../hooks/useRevealApp";
+import { convertRawTemplate } from "../../utils/template";
+import { parseObjectOrStringJSON } from "../../utils/utils";
+import { TemplateColumnMapping } from "../map-columns/types";
 import useStepNavigation, { StepEnum } from "./hooks/useStepNavigation";
+import { FileData, FileRow } from "./types";
 import style from "./style/Main.module.scss";
+import Complete from "../complete";
+import MapColumns from "../map-columns";
+import RowSelection from "../row-selection";
 import Uploader from "../uploader";
 import { PiX } from "react-icons/pi";
-import { TableFlowImporterProps } from "../../../types";
-import { parseObjectOrStringJSON } from "../../utils/utils";
-import * as XLSX from "xlsx";
-import Papa from "papaparse";
-import RowSelection from "../row-selection";
-import { FileData, FileRow } from "./types";
-import MapColumns from "../map-columns";
-import { TemplateColumnMapping } from "../map-columns/types";
-import Complete from "../complete";
-import Errors from "../../components/Errors";
-import { Template } from "../../api/types";
-import { convertRawTemplate } from "../../utils/template";
 
 export default function Main(props: TableFlowImporterProps) {
   useRevealApp();
@@ -242,7 +242,7 @@ export default function Main(props: TableFlowImporterProps) {
 
   return (
     <div className={style.wrapper}>
-      <div className={style.header}>
+      <div>
         <Stepper {...stepper} />
       </div>
 
