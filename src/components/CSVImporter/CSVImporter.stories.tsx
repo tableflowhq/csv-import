@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ComponentMeta, ComponentStory } from "@storybook/react";
-import Providers from "../../importer-ui/providers";
+import Providers from "../../importer/providers";
 import defaults from "../../settings/defaults";
 import { CSVImporterProps } from "../../types";
 import ImporterComponent from "./index";

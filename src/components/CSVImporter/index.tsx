@@ -1,10 +1,10 @@
 import React, { useEffect, useRef } from "react";
 import { useColorMode } from "@chakra-ui/react";
-import Importer from "../../importer-ui/features/main";
-import useThemeStore from "../../importer-ui/stores/theme";
-import { darkenColor, isValidColor } from "../../importer-ui/utils/utils";
+import Importer from "../../importer/features/main";
+import useThemeStore from "../../importer/stores/theme";
+import { darkenColor, isValidColor } from "../../importer/utils/utils";
 import { CSVImporterProps } from "../../types";
-import "../../importer-ui/style/index.scss";
+import "../../importer/style/index.scss";
 import "./style/csv-importer.css";
 
 export default function CSVImporter(importerProps: CSVImporterProps) {
