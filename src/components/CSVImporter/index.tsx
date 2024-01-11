@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { useColorMode } from "@chakra-ui/react";
 import Importer from "../../importer/features/main";
+import Providers from "../../importer/providers";
 import useThemeStore from "../../importer/stores/theme";
 import { darkenColor, isValidColor } from "../../importer/utils/utils";
 import { CSVImporterProps } from "../../types";
@@ -69,13 +70,19 @@ export default function CSVImporter(importerProps: CSVImporterProps) {
     ...props,
   };
 
+  const ImporterComponent = () => (
+    <Providers>
+      <Importer {...importerProps} />
+    </Providers>
+  );
+
   return isModal ? (
     <dialog {...elementProps}>
-      <Importer {...importerProps} />
+      <ImporterComponent />
     </dialog>
   ) : (
     <div {...elementProps}>
-      <Importer {...importerProps} />
+      <ImporterComponent />
     </div>
   );
 }

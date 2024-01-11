@@ -1,4 +1,4 @@
-import { CSVImporter } from "client-sdk";
+import { CSVImporter } from "csv-import";
 import "./App.css";
 
 function App() {

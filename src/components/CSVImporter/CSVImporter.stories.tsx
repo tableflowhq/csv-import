@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { ComponentMeta, ComponentStory } from "@storybook/react";
-import Providers from "../../importer/providers";
 import defaults from "../../settings/defaults";
 import { CSVImporterProps } from "../../types";
 import ImporterComponent from "./index";
@@ -54,9 +53,7 @@ const Template: ComponentStory<typeof ImporterComponent> = (args: CSVImporterPro
   return (
     <div>
       {args.isModal && <button onClick={() => setIsOpen(true)}>Import</button>}
-      <Providers>
         <ImporterComponent key={props.isModal?.toString()} {...props} />
-      </Providers>
     </div>
   );
 };
