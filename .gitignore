@@ -21,16 +21,10 @@ vendor/
 build/
 .yarn/
 .pnp*
-/yarn.lock
 
 .DS_Store
 .idea
 .vscode
-
-/admin-server/build
-/importer-ui/build/
-/react-sdk/build/
-/js-sdk/build/
 
 /coverage
 /.next/
