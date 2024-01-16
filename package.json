@@ -33,6 +33,8 @@
     "build:react": "rollup --config rollup.config.js",
     "publish:local:js": "cd build && yalc publish",
     "publish:local:react": "yalc publish",
+    "publish:js": "cd build && npm publish",
+    "publish:react": "npm publish",
     "build:watch": "rollup -c -w",
     "test": "jest",
     "test:watch": "jest --watch",
