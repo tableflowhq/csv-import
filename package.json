@@ -1,6 +1,6 @@
 {
   "name": "csv-import-react",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Open-source CSV and XLS/XLSX file importer for React and JavaScript",
   "main": "build/index.js",
   "module": "build/index.esm.js",
@@ -31,10 +31,10 @@
   "scripts": {
     "build:js": "rollup --config rollup.config-js.js && cp package-js.json build/package.json",
     "build:react": "rollup --config rollup.config.js",
-    "publish:local:js": "cd build && yalc publish",
-    "publish:local:react": "yalc publish",
-    "publish:js": "cd build && npm publish",
-    "publish:react": "npm publish",
+    "publish:local:js": "yarn build:js && cd build && yalc publish",
+    "publish:local:react": "yarn build:react && yalc publish",
+    "publish:js": "yarn build:js && cd build && npm publish",
+    "publish:react": "yarn build:react && npm publish",
     "build:watch": "rollup -c -w",
     "test": "jest",
     "test:watch": "jest --watch",
