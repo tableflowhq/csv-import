@@ -1,4 +1,5 @@
-import { CSVImporter } from "csv-import";
+import { CSVImporter } from "csv-import-react";
+import { useState } from "react";
 import "./App.css";
 
 function App() {
@@ -22,9 +23,21 @@ function App() {
       },
     ],
   };
+  const [isOpen, setIsOpen] = useState(false);
   return (
     <div className="App">
-      <CSVImporter isModal={false} darkMode={true} template={template} />
+      <button className="button" onClick={() => setIsOpen((prev) => !prev)}>
+        Open
+      </button>
+
+      <CSVImporter
+        isModal={true}
+        modalIsOpen={isOpen}
+        darkMode={true}
+        template={template}
+        modalOnCloseTriggered={() => setIsOpen(false)}
+        modalCloseOnOutsideClick={true}
+      />
     </div>
   );
 }
