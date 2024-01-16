@@ -8,7 +8,7 @@ import { CSVImporterProps } from "../../types";
 import "../../importer/style/index.scss";
 import "./style/csv-importer.css";
 
-const CSVImporter = forwardRef((importerProps: CSVImporterProps, ref: any) => {
+const CSVImporter = forwardRef((importerProps: CSVImporterProps, forwardRef?: any) => {
   const {
     isModal = true,
     modalIsOpen = true,
@@ -24,8 +24,9 @@ const CSVImporter = forwardRef((importerProps: CSVImporterProps, ref: any) => {
     skipHeaderRowSelection,
     ...props
   } = importerProps;
+  const ref = forwardRef ?? useRef(null);
 
-  const current = ref.current as any;
+  const current = ref?.current as any;
 
   useEffect(() => {
     if (isModal && current) {
@@ -61,6 +62,10 @@ const CSVImporter = forwardRef((importerProps: CSVImporterProps, ref: any) => {
       modalOnCloseTriggered();
     }
   };
+
+  current?.addEventListener("cancel", () => {
+    modalOnCloseTriggered();
+  });
 
   const elementProps = {
     ref,

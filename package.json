@@ -116,6 +116,7 @@
     "@uppy/react": "^3.2.1",
     "@uppy/status-bar": "^3.2.5",
     "axios": "^1.6.4",
+    "csv-import-react": "^1.0.1",
     "framer-motion": "^10.17.12",
     "papaparse": "^5.4.1",
     "react-dropzone": "^14.2.3",

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ComponentMeta, ComponentStory } from "@storybook/react";
+import { ComponentMeta, ComponentStory, Story } from "@storybook/react";
 import defaults from "../../settings/defaults";
 import { CSVImporterProps } from "../../types";
 import ImporterComponent from "./index";
@@ -38,7 +38,7 @@ const template = {
   ],
 };
 
-const Template: ComponentStory<typeof ImporterComponent> = (args: CSVImporterProps) => {
+const Template: Story<typeof ImporterComponent> = (args: CSVImporterProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const { isModal } = args;
@@ -53,7 +53,7 @@ const Template: ComponentStory<typeof ImporterComponent> = (args: CSVImporterPro
   return (
     <div>
       {args.isModal && <button onClick={() => setIsOpen(true)}>Import</button>}
-        <ImporterComponent key={props.isModal?.toString()} {...props} />
+      <ImporterComponent key={props.isModal?.toString()} {...props} />
     </div>
   );
 };
