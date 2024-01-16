@@ -1,5 +1,5 @@
 {
-  "name": "csv-import-react",
+  "name": "csv-import-js",
   "version": "1.0.0",
   "description": "Open-source CSV and XLS/XLSX file importer for React and JavaScript",
   "main": "build/index.js",
@@ -28,19 +28,6 @@
   },
   "homepage": "https://github.com/tableflowhq/csv-import#readme",
   "types": "build/index.d.ts",
-  "scripts": {
-    "build:js": "rollup --config rollup.config-js.js",
-    "build:react": "rollup --config rollup.config.js",
-    "publish:local:js": "cd build && yalc publish",
-    "publish:local:react": "yalc publish",
-    "build:watch": "rollup -c -w",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "storybook": "storybook dev -p 6006",
-    "storybook:export": "build-storybook",
-    "generate": "node ./util/create-component",
-    "build-storybook": "storybook build"
-  },
   "peerDependencies": {
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
@@ -52,7 +39,6 @@
     "@rollup/plugin-commonjs": "^17.1.0",
     "@rollup/plugin-image": "^2.1.1",
     "@rollup/plugin-node-resolve": "^11.2.1",
-    "@rollup/plugin-replace": "^5.0.5",
     "@storybook/addon-essentials": "7.0.18",
     "@storybook/addon-interactions": "7.0.18",
     "@storybook/addon-links": "7.0.18",

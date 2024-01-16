@@ -10,6 +10,7 @@
     "constants": "^0.0.2",
     "crypto": "^1.0.1",
     "csv-import": "file:.yalc/csv-import",
+    "csv-import-react": "file:.yalc/csv-import-react",
     "fs": "^0.0.1-security",
     "http": "^0.0.1-security",
     "https": "^1.0.0",
