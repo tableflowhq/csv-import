@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { forwardRef, useEffect, useRef } from "react";
 import { useColorMode } from "@chakra-ui/react";
 import Importer from "../../importer/features/main";
 import Providers from "../../importer/providers";
@@ -8,7 +8,7 @@ import { CSVImporterProps } from "../../types";
 import "../../importer/style/index.scss";
 import "./style/csv-importer.css";
 
-export default function CSVImporter(importerProps: CSVImporterProps) {
+const CSVImporter = forwardRef((importerProps: CSVImporterProps, ref: any) => {
   const {
     isModal = true,
     modalIsOpen = true,
@@ -25,7 +25,6 @@ export default function CSVImporter(importerProps: CSVImporterProps) {
     ...props
   } = importerProps;
 
-  const ref = useRef(null);
   const current = ref.current as any;
 
   useEffect(() => {
@@ -85,4 +84,6 @@ export default function CSVImporter(importerProps: CSVImporterProps) {
       <ImporterComponent />
     </div>
   );
-}
+});
+
+export default CSVImporter;

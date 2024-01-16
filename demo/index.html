@@ -10,7 +10,7 @@
 <body>
   <div id="app"></div>
   <!-- Include the UMD bundle -->
-  <script src="node_modules/csv-import-js/index.js"></script>
+  <script src="https://unpkg.com/csv-import-js@latest/index.js"></script>
 
   <script>
     const template = {
@@ -34,10 +34,10 @@
       ],
     };
 
-    const rootElement = document.getElementById("app");
+    const domElement = document.getElementById("app");
 
     const importer = CSVImporter.createCSVImporter({
-      // rootElement,
+      // domElement,
       isModal: false,
       darkMode: true,
       template: template

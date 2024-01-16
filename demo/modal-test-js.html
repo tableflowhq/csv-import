@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <script src="https://unpkg.com/csv-import-js@latest/index.js"></script>
+</head>
+
+<body>
+  <button id="uploadButton">Open CSV Importer</button>
+  <div id="app"></div>
+  <script>
+    const domElement = document.getElementById("app");
+    const importer = CSVImporter.createCSVImporter({
+      domElement,
+      modalOnCloseTriggered: () => importer?.closeModal(),
+      onComplete: (data) => console.log(data),
+      darkMode: true,
+      template: {
+        columns: [
+          {
+            name: "First Name",
+            key: "first_name",
+            required: true,
+            description: "The first name of the user",
+            suggested_mappings: ["First", "Name"],
+          },
+          {
+            name: "Age",
+            data_type: "number",
+          },
+        ],
+      },
+    });
+
+    const uploadButton = document.getElementById("uploadButton");
+    uploadButton.addEventListener("click", () => {
+      importer?.showModal();
+    });
+  </script>
+</body>
+
+</html>
