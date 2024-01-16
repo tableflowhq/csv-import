@@ -1,16 +1,17 @@
 import { Button } from "@chakra-ui/button";
 import Table from "../../components/Table";
+import UploaderWrapper from "../../components/UploaderWrapper/UploaderWrapper";
 import useThemeStore from "../../stores/theme";
 import useTemplateTable from "./hooks/useTemplateTable";
 import { UploaderProps } from "./types";
 import style from "./style/Uploader.module.scss";
 import { PiDownloadSimple } from "react-icons/pi";
-import UploaderWrapper from "../../components/UploaderWrapper/UploaderWrapper";
 
 export default function Uploader({ template, skipHeaderRowSelection, onSuccess, showDownloadTemplateButton, setDataError }: UploaderProps) {
   const fields = useTemplateTable(template.columns);
   const theme = useThemeStore((state) => state.theme);
   const uploaderWrapper = <UploaderWrapper onSuccess={onSuccess} skipHeaderRowSelection={skipHeaderRowSelection} setDataError={setDataError} />;
+  showDownloadTemplateButton = showDownloadTemplateButton ?? true;
 
   function downloadTemplate() {
     const { columns } = template;
@@ -29,11 +30,14 @@ export default function Uploader({ template, skipHeaderRowSelection, onSuccess, 
       onClick={downloadTemplate}
       colorScheme={"secondary"}
       variant={theme === "light" ? "outline" : "solid"}
-      _hover={theme === "light" ? {
-        background: "var(--color-border)",
-        color: "var(--color-text)"
-      } : undefined}
-    >
+      _hover={
+        theme === "light"
+          ? {
+              background: "var(--color-border)",
+              color: "var(--color-text)",
+            }
+          : undefined
+      }>
       Download Template
     </Button>
   ) : null;
