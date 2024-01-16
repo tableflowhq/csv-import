@@ -29,7 +29,7 @@
   "homepage": "https://github.com/tableflowhq/csv-import#readme",
   "types": "build/index.d.ts",
   "scripts": {
-    "build:js": "rollup --config rollup.config-js.js",
+    "build:js": "rollup --config rollup.config-js.js && cp package-js.json build/package.json",
     "build:react": "rollup --config rollup.config.js",
     "publish:local:js": "cd build && yalc publish",
     "publish:local:react": "yalc publish",
