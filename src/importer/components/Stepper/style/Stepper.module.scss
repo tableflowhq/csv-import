@@ -1,0 +1,60 @@
+$transition: all 0.3s ease-out;
+
+.stepper {
+  display: flex;
+  gap: var(--m);
+  margin: var(--m-xs) auto;
+  justify-content: center;
+
+  .step {
+    display: flex;
+    gap: var(--m-xxs);
+    align-items: center;
+    transition: $transition;
+
+    .badge {
+      border-radius: 50%;
+      border: 1px solid var(--color-border);
+      aspect-ratio: 1;
+      width: 2em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: $transition;
+    }
+
+    &.active {
+      color: var(--color-primary);
+
+      .badge {
+        background-color: var(--color-primary);
+        color: var(--color-text-on-primary);
+        border: none;
+      }
+    }
+    &.done {
+      .badge {
+        border-color: var(--color-primary);
+      }
+    }
+
+    &:not(:first-of-type) {
+      &:before {
+        content: "";
+        height: 1px;
+        width: calc(min(140px, 4vw));
+        background-color: var(--color-border);
+        border-radius: 2px;
+        margin-right: var(--m-xs);
+      }
+    }
+  }
+
+  .stepWide {
+    &:not(:first-of-type) {
+      &:before {
+        width: calc(min(120px, 10vw));
+      }
+    }
+  }
+}

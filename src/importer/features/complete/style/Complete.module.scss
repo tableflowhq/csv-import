@@ -1,0 +1,67 @@
+.content.content {
+  max-width: 1000px;
+  padding-top: var(--m);
+  height: 100%;
+  flex: 1 0 100px;
+  box-shadow: none;
+  background-color: transparent;
+  align-self: center;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-xl);
+  flex-direction: column;
+  gap: var(--m);
+  text-align: center;
+  position: relative;
+
+  .icon {
+    width: 64px;
+    height: 64px;
+    isolation: isolate;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background-color: var(--color-green-ui);
+      z-index: -1;
+    }
+
+    svg {
+      width: 38%;
+      height: 38%;
+      object-fit: contain;
+      color: var(--color-text-on-primary);
+    }
+  }
+
+  .actions {
+    display: flex;
+    gap: var(--m-l);
+    align-items: center;
+    justify-content: center;
+    margin-top: var(--m-xxl);
+
+    & > * {
+      flex: 1 0 190px;
+    }
+
+    button {
+      width: 50%;
+    }
+  }
+}
+
+.spinner {
+  border: 1px solid var(--color-border);
+  margin-top: var(--m);
+  padding: var(--m);
+  border-radius: var(--border-radius-1);
+}
