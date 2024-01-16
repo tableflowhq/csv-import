@@ -82,12 +82,12 @@ function MyComponent() {
 #### Using JavaScript:
 ```html
 <head>
-  <script src="https://unpkg.com/csv-import-js@latest/build/index.js"></script>
+  <script src="https://unpkg.com/csv-import-js@latest/index.js"></script>
 </head>
 <body>
   <button id="uploadButton">Open CSV Importer</button>
   <script>
-    const importer = createCSVImporter({
+    const importer = CSVImporter.createCSVImporter({
       modalOnCloseTriggered: () => importer.close(),
       onComplete: (data) => console.log(data),
       darkMode: true,
