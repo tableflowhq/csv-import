@@ -86,8 +86,10 @@ function MyComponent() {
 </head>
 <body>
   <button id="uploadButton">Open CSV Importer</button>
+  <div id="app"></div>
   <script>
     const importer = CSVImporter.createCSVImporter({
+      domElement: document.getElementById("app"),
       modalOnCloseTriggered: () => importer.close(),
       onComplete: (data) => console.log(data),
       darkMode: true,
