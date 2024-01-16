@@ -69,7 +69,7 @@ const CSVImporter = forwardRef((importerProps: CSVImporterProps, forwardRef?: an
 
   const elementProps = {
     ref,
-    ...(isModal ? { onClick: backdropClick, onclose } : {}),
+    ...(isModal ? { onClick: backdropClick } : {}),
     className: domElementClass,
     ...props,
   };
