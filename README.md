@@ -90,7 +90,7 @@ function MyComponent() {
   <script>
     const importer = CSVImporter.createCSVImporter({
       domElement: document.getElementById("app"),
-      modalOnCloseTriggered: () => importer.close(),
+      modalOnCloseTriggered: () => importer?.closeModal(),
       onComplete: (data) => console.log(data),
       darkMode: true,
       template: {
@@ -126,7 +126,7 @@ When set to `true` (default value), the importer will behave as a modal with its
 ### modalIsOpen (_boolean_, default: `false`)
 Only used when `isModal` is `true`: Controls the importer modal being open or closed.
 \
-**React SDK Only**: For the JavaScript SDK, use `.showModal()` and `.close()` to operate the modal.
+**React SDK Only**: For the JavaScript SDK, use `.showModal()` and `.closeModal()` to operate the modal.
 
 ### modalOnCloseTriggered (_function_)
 Only used when `isModal` is `true`: A function called when the user clicks the close button or clicks outside of (when used with `modalCloseOnOutsideClick`) the importer. `useState` can be used to control the importer modal opening and closing.
