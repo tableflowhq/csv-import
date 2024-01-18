@@ -44,8 +44,8 @@
     "build-storybook": "storybook build"
   },
   "peerDependencies": {
-    "react": ">=18.0.0",
-    "react-dom": ">=18.0.0"
+    "react": ">=17.0.0",
+    "react-dom": ">=17.0.0"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.22.4",
@@ -108,20 +108,10 @@
     "@emotion/react": "^11.11.3",
     "@emotion/styled": "^11.11.0",
     "@rollup/plugin-json": "^6.1.0",
-    "@uppy/core": "^3.8.0",
-    "@uppy/dashboard": "^3.7.1",
-    "@uppy/drag-drop": "^3.0.3",
-    "@uppy/file-input": "^3.0.4",
-    "@uppy/progress-bar": "^3.0.4",
-    "@uppy/react": "^3.2.1",
-    "@uppy/status-bar": "^3.2.5",
-    "axios": "^1.6.4",
-    "csv-import-react": "^1.0.1",
     "framer-motion": "^10.17.12",
     "papaparse": "^5.4.1",
     "react-dropzone": "^14.2.3",
     "react-icons": "^4.12.0",
-    "react-query": "^3.39.3",
     "xlsx": "^0.18.5",
     "zustand": "^4.4.7"
   },

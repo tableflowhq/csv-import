@@ -33,7 +33,7 @@ function App() {
       <CSVImporter
         isModal={true}
         modalIsOpen={isOpen}
-        darkMode={true}
+        // darkMode={false}
         template={template}
         modalOnCloseTriggered={() => setIsOpen(false)}
         modalCloseOnOutsideClick={true}
