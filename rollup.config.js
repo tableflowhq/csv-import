@@ -21,6 +21,15 @@ export default {
       format: "esm",
       sourcemap: true,
     },
+    {
+      file: packageJson.umd,
+      format: "umd",
+      name: "CSVImporter",
+      globals: {
+        react: "React",
+      },
+      sourcemap: true,
+    },
   ],
   plugins: [
     peerDepsExternal(),
