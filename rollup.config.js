@@ -5,6 +5,7 @@ import commonjs from "@rollup/plugin-commonjs";
 import image from "@rollup/plugin-image";
 import json from "@rollup/plugin-json";
 import resolve from "@rollup/plugin-node-resolve";
+import replace from "@rollup/plugin-replace";
 
 const packageJson = require("./package.json");
 
@@ -21,20 +22,15 @@ export default {
       format: "esm",
       sourcemap: true,
     },
-    {
-      file: packageJson.umd,
-      format: "umd",
-      name: "CSVImporter",
-      globals: {
-        react: "React",
-      },
-      sourcemap: true,
-    },
   ],
   plugins: [
     peerDepsExternal(),
     resolve({
       browser: true,
+    }),
+    replace({
+      "import.meta.env": false,
+      preventAssignment: true,
     }),
     commonjs(),
     typescript({ useTsconfigDeclarationDir: true }),
