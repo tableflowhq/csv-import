@@ -1,6 +1,6 @@
-import { defineStyleConfig } from "@chakra-ui/styled-system";
+import { extendTheme } from "@chakra-ui/react";
 
-const Button = defineStyleConfig({
+const Button = extendTheme({
   // The styles all buttons have in common
   baseStyle: {
     fontWeight: "normal",
@@ -24,7 +24,7 @@ const Button = defineStyleConfig({
   },
 
   variants: {
-    solid: (props) => {
+    solid: (props: { colorScheme: string; }) => {
       if (props.colorScheme === "secondary") {
         return {
           color: "var(--color-text-on-secondary)",
