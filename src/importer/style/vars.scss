@@ -1,4 +1,4 @@
-.csv-importer {
+:root {
   // DIMENSIONS
 
   // margins and paddings
@@ -17,7 +17,6 @@
 
   // FONTS
 
-  --font-size: 14;
   --font-size-xs: calc(var(--font-size) * 16 / 17);
   --font-size-s: calc(var(--font-size) * 13 / 14);
   --font-size: 0.875rem;
