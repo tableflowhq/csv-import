@@ -40,6 +40,7 @@
   position: fixed;
   inset: 0;
   padding: 0;
+  margin: auto;
 }
 
 .CSVImporter-div {
