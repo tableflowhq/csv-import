@@ -8,19 +8,6 @@ html {
   color-scheme: dark light;
 }
 
-body {
-  font-family: var(--font-family-1);
-  background-color: var(--color-background);
-  color: var(--color-text);
-  font-size: var(--font-size);
-  font-weight: 500;
-  line-height: 1.5;
-
-  &:has([data-layout="main"]) {
-    background-color: var(--color-background-main);
-  }
-}
-
 .docs-story {
   background-color: var(--color-background);
 }
@@ -29,7 +16,7 @@ body {
   transition: filter ease-out var(--speed), transform ease-out var(--speed);
 }
 
-body.modal [data-root] {
+.modal [data-root] {
   filter: blur(var(--blurred));
   transform: scale(0.99);
 }
