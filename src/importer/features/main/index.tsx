@@ -6,7 +6,6 @@ import Errors from "../../components/Errors";
 import Stepper from "../../components/Stepper";
 import { CSVImporterProps } from "../../../types";
 import useCustomStyles from "../../hooks/useCustomStyles";
-import useRevealApp from "../../hooks/useRevealApp";
 import { Template } from "../../types";
 import { convertRawTemplate } from "../../utils/template";
 import { parseObjectOrStringJSON } from "../../utils/utils";
@@ -21,7 +20,6 @@ import Uploader from "../uploader";
 import { PiX } from "react-icons/pi";
 
 export default function Main(props: CSVImporterProps) {
-  useRevealApp();
 
   const {
     isModal = true,

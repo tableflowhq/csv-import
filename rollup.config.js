@@ -23,6 +23,7 @@ export default {
       sourcemap: true,
     },
   ],
+  external: ["react", "react-dom", "react/jsx-runtime", "@emotion/react"],
   plugins: [
     peerDepsExternal(),
     resolve({
