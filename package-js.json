@@ -1,25 +1,14 @@
 {
   "name": "csv-import-js",
-  "version": "1.0.4",
+  "version": "1.0.6",
   "description": "Open-source CSV and XLS/XLSX file importer for React and JavaScript",
   "main": "index.js",
-  "files": [
-    "."
-  ],
+  "files": ["."],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/tableflowhq/csv-import.git"
   },
-  "keywords": [
-    "csv",
-    "import",
-    "excel",
-    "data",
-    "importer",
-    "react",
-    "tableflow",
-    "csv-import"
-  ],
+  "keywords": ["csv", "import", "excel", "data", "importer", "react", "tableflow", "csv-import"],
   "author": "TableFlow",
   "license": "MIT",
   "bugs": {
@@ -38,6 +27,7 @@
     "@rollup/plugin-commonjs": "^17.1.0",
     "@rollup/plugin-image": "^2.1.1",
     "@rollup/plugin-node-resolve": "^11.2.1",
+    "@rollup/plugin-replace": "^5.0.5",
     "@storybook/addon-essentials": "7.0.18",
     "@storybook/addon-interactions": "7.0.18",
     "@storybook/addon-links": "7.0.18",
@@ -91,19 +81,10 @@
     "@emotion/react": "^11.11.3",
     "@emotion/styled": "^11.11.0",
     "@rollup/plugin-json": "^6.1.0",
-    "@uppy/core": "^3.8.0",
-    "@uppy/dashboard": "^3.7.1",
-    "@uppy/drag-drop": "^3.0.3",
-    "@uppy/file-input": "^3.0.4",
-    "@uppy/progress-bar": "^3.0.4",
-    "@uppy/react": "^3.2.1",
-    "@uppy/status-bar": "^3.2.5",
-    "axios": "^1.6.4",
     "framer-motion": "^10.17.12",
     "papaparse": "^5.4.1",
     "react-dropzone": "^14.2.3",
     "react-icons": "^4.12.0",
-    "react-query": "^3.39.3",
     "xlsx": "^0.18.5",
     "zustand": "^4.4.7"
   },
