@@ -12,7 +12,11 @@
   font-weight: 500;
   line-height: 1.5;
 
-  & > {
-    @import "globals";
+  * {
+    box-sizing: border-box;
+  }
+  .container {
+    max-width: 1300px;
+    margin: 0 auto;
   }
 }
