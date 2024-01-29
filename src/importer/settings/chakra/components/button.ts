@@ -8,6 +8,8 @@ const Button = defineStyleConfig({
     height: "auto",
     lineHeight: "1",
     fontSize: "inherit",
+    border: "none",
+    cursor: "pointer",
   },
 
   sizes: {
@@ -27,11 +29,18 @@ const Button = defineStyleConfig({
     solid: (props) => {
       if (props.colorScheme === "secondary") {
         return {
+          _hover: {
+            backgroundColor: "var(--external-colors-secondary-300)",
+          },
+
           color: "var(--color-text-on-secondary)",
         };
       }
       return {
         color: "var(--color-text-on-primary)",
+        _hover: {
+          backgroundColor: "var(--external-colors-primary-300)",
+        },
       };
     },
   },

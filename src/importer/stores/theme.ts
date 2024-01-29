@@ -15,7 +15,7 @@ const useThemeStore = create<themeStoreType>()(
       setTheme: (newTheme) =>
         set((state) => {
           const theme = newTheme || (state.theme === "light" ? "dark" : "light");
-          setTheme(theme);
+          // setTheme(theme);
           return { theme };
         }),
     }),

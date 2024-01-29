@@ -1,6 +1,22 @@
-@import "globals";
-@import "vars";
 @import "design-system/colors";
+@import "vars";
 @import "themes/common";
 @import "themes/dark";
 @import "themes/light";
+
+.csv-importer {
+  font-family: var(--font-family-1);
+  background-color: var(--color-background);
+  color: var(--color-text);
+  font-size: var(--font-size);
+  font-weight: 500;
+  line-height: 1.5;
+
+  * {
+    box-sizing: border-box;
+  }
+  .container {
+    max-width: 1300px;
+    margin: 0 auto;
+  }
+}

@@ -36,7 +36,7 @@ export default function UploaderWrapper({ onSuccess, setDataError, ...props }: U
   return (
     <Box
       padding="15px"
-      outline="1px solid var(--color-border)"
+      border="1px solid var(--color-border)"
       borderRadius="var(--border-radius-2)"
     >
       <Box 
@@ -48,7 +48,7 @@ export default function UploaderWrapper({ onSuccess, setDataError, ...props }: U
         alignItems="center" 
         flexDirection="column" 
         flex={1}
-        outline="2px dashed var(--color-border)"
+        border="2px dashed var(--color-border)"
         borderRadius="var(--border-radius-2)"
       >
         <input {...getInputProps()}/>

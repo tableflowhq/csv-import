@@ -13,6 +13,19 @@
       cursor: default;
     }
   }
+
+  & > label {
+    font: inherit;
+    color: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+    background-color: transparent;
+    border: none;
+    text-align: inherit;
+    padding: 0;
+    font-size: inherit;
+    accent-color: var(--color-primary);
+  }
 }
 
 .label {
@@ -103,6 +116,10 @@
     background-color: transparent;
     flex-grow: 1;
     color: var(--color-text);
+    font: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+    accent-color: var(--color-primary);
 
     @include placeholder {
       color: var(--color-text-soft);
@@ -182,6 +199,8 @@
   .option {
     padding: var(--m-xxs) var(--m-xxs);
     border-radius: var(--border-radius-2);
+    background-color: transparent;
+    border: none;
 
     &[disabled] {
       color: var(--color-text-soft);

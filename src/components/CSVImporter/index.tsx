@@ -35,8 +35,8 @@ const CSVImporter = forwardRef((importerProps: CSVImporterProps, forwardRef?: an
     }
   }, [isModal, modalIsOpen, current]);
   const baseClass = "CSVImporter";
-  const themeClass = darkMode && `${baseClass}-dark`;
-  const domElementClass = [`${baseClass}-${isModal ? "dialog" : "div"}`, themeClass, className].filter((i) => i).join(" ");
+  const themeClass = darkMode ? `${baseClass}-dark` : `${baseClass}-light`;
+  const domElementClass = ["csv-importer", `${baseClass}-${isModal ? "dialog" : "div"}`, themeClass, className].filter((i) => i).join(" ");
 
   // Set Light/Dark mode
   const setTheme = useThemeStore((state) => state.setTheme);
@@ -81,9 +81,11 @@ const CSVImporter = forwardRef((importerProps: CSVImporterProps, forwardRef?: an
   );
 
   return isModal ? (
-    <dialog {...elementProps}>
-      <ImporterComponent />
-    </dialog>
+    <div className="csvImporter">
+      <dialog {...elementProps}>
+        <ImporterComponent />
+      </dialog>
+    </div>
   ) : (
     <div {...elementProps}>
       <ImporterComponent />
