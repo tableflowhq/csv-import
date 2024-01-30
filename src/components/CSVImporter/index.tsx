@@ -1,8 +1,9 @@
-import React, { forwardRef, useEffect, useRef } from "react";
-import { useColorMode } from "@chakra-ui/react";
+import React, { forwardRef, useEffect, useRef, useState } from "react";
+import { useColorMode, useStatStyles } from "@chakra-ui/react";
 import Importer from "../../importer/features/main";
 import Providers from "../../importer/providers";
 import useThemeStore from "../../importer/stores/theme";
+import { setClassTheme } from "../../importer/utils/setTheme";
 import { darkenColor, isValidColor } from "../../importer/utils/utils";
 import { CSVImporterProps } from "../../types";
 import "../../importer/style/index.scss";
@@ -43,9 +44,8 @@ const CSVImporter = forwardRef((importerProps: CSVImporterProps, forwardRef?: an
   const { colorMode, toggleColorMode } = useColorMode();
 
   useEffect(() => {
-    setTheme(darkMode ? "dark" : "light");
-    if (darkMode && colorMode === "light") toggleColorMode();
-    if (!darkMode && colorMode === "dark") toggleColorMode();
+    const theme = darkMode ? "dark" : "light";
+    setTheme(theme);
   }, [darkMode]);
 
   // Apply primary color
@@ -71,6 +71,8 @@ const CSVImporter = forwardRef((importerProps: CSVImporterProps, forwardRef?: an
     ref,
     ...(isModal ? { onClick: backdropClick } : {}),
     className: domElementClass,
+    "data-theme": darkMode ? "dark" : "light",
+    style: { colorScheme: darkMode ? "dark" : "light" },
     ...props,
   };
 
