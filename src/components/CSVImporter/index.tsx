@@ -3,7 +3,6 @@ import { useColorMode, useStatStyles } from "@chakra-ui/react";
 import Importer from "../../importer/features/main";
 import Providers from "../../importer/providers";
 import useThemeStore from "../../importer/stores/theme";
-import { setClassTheme } from "../../importer/utils/setTheme";
 import { darkenColor, isValidColor } from "../../importer/utils/utils";
 import { CSVImporterProps } from "../../types";
 import "../../importer/style/index.scss";
@@ -41,7 +40,6 @@ const CSVImporter = forwardRef((importerProps: CSVImporterProps, forwardRef?: an
 
   // Set Light/Dark mode
   const setTheme = useThemeStore((state) => state.setTheme);
-  const { colorMode, toggleColorMode } = useColorMode();
 
   useEffect(() => {
     const theme = darkMode ? "dark" : "light";
