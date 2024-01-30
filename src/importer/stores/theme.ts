@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import setTheme from "../utils/setTheme";
 import { persist } from "zustand/middleware";
 
 type Theme = "dark" | "light";
@@ -8,19 +7,20 @@ type themeStoreType = {
   setTheme: (theme?: Theme) => void;
 };
 
+const STORAGE_KEY = "csv-importer-theme";
+
 const useThemeStore = create<themeStoreType>()(
   persist(
     (set) => ({
-      theme: window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light",
+      theme: localStorage.getItem(STORAGE_KEY) as Theme,
       setTheme: (newTheme) =>
         set((state) => {
           const theme = newTheme || (state.theme === "light" ? "dark" : "light");
-          // setTheme(theme);
           return { theme };
         }),
     }),
     {
-      name: "theme",
+      name: STORAGE_KEY,
     }
   )
 );
