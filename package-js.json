@@ -1,6 +1,6 @@
 {
   "name": "csv-import-js",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Open-source CSV and XLS/XLSX file importer for React and JavaScript",
   "main": "index.js",
   "files": ["."],
