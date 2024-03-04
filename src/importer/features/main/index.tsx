@@ -135,7 +135,6 @@ export default function Main(props: CSVImporterProps) {
                     Papa.parse(bstr.toString(), {
                       complete: function (results) {
                         const csvData = results.data as Array<Array<string>>;
-                        console.log(csvData);
                         const rows: FileRow[] = csvData.filter(isNotBlankRow).map((row: string[], index: number) => ({ index, values: row }));
                         setData({
                           fileName: file.name,
