@@ -20,7 +20,6 @@ import Uploader from "../uploader";
 import { PiX } from "react-icons/pi";
 
 export default function Main(props: CSVImporterProps) {
-
   const {
     isModal = true,
     modalOnCloseTriggered = () => null,
@@ -136,6 +135,7 @@ export default function Main(props: CSVImporterProps) {
                     Papa.parse(bstr.toString(), {
                       complete: function (results) {
                         const csvData = results.data as Array<Array<string>>;
+                        console.log(csvData);
                         const rows: FileRow[] = csvData.filter(isNotBlankRow).map((row: string[], index: number) => ({ index, values: row }));
                         setData({
                           fileName: file.name,
@@ -163,7 +163,7 @@ export default function Main(props: CSVImporterProps) {
                     break;
                 }
               };
-              reader.readAsBinaryString(file);
+              reader.readAsText(file, "utf-8");
             }}
           />
         );
