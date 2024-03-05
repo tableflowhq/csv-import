@@ -20,7 +20,6 @@ import Uploader from "../uploader";
 import { PiX } from "react-icons/pi";
 
 export default function Main(props: CSVImporterProps) {
-
   const {
     isModal = true,
     modalOnCloseTriggered = () => null,
@@ -163,7 +162,7 @@ export default function Main(props: CSVImporterProps) {
                     break;
                 }
               };
-              reader.readAsBinaryString(file);
+              reader.readAsText(file, "utf-8");
             }}
           />
         );
