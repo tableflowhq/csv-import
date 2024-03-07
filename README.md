@@ -210,7 +210,7 @@ Example `data`:
 }
 ```
 
-### darkMode (_boolean_, default: `false`)
+### darkMode (_boolean_, default: Depends on your browser darkmode. `false` if undefined.)
 Toggle between dark mode (`true`) and light mode (`false`).
 
 ### primaryColor (_string_)
