@@ -1,11 +1,12 @@
 import { FormEvent, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@chakra-ui/button";
+import Errors from "../../components/Errors";
 import Table from "../../components/Table";
+import { Template, UploadColumn } from "../../types";
 import useMapColumnsTable from "./hooks/useMapColumnsTable";
 import { MapColumnsProps, TemplateColumnMapping } from "./types";
 import style from "./style/MapColumns.module.scss";
-import { Template, UploadColumn } from "../../types";
-import Errors from "../../components/Errors";
 
 export default function MapColumns({
   template,
@@ -20,6 +21,8 @@ export default function MapColumns({
   if (data.rows.length === 0) {
     return null;
   }
+
+  const { t } = useTranslation();
   const headerRowIndex = selectedHeaderRow ? selectedHeaderRow : 0;
   let sampleDataRows = data.rows.slice(headerRowIndex + 1, headerRowIndex + 4);
 
@@ -57,7 +60,7 @@ export default function MapColumns({
 
     const isRequiredColumnsIncluded = verifyRequiredColumns(template, formValues);
     if (!isRequiredColumnsIncluded) {
-      setError("Please include all required columns");
+      setError(t("Please include all required columns"));
       return;
     }
 
@@ -72,12 +75,12 @@ export default function MapColumns({
             <Table data={rows} background="dark" fixHeader columnWidths={["20%", "30%", "30%", "20%"]} columnAlignments={["", "", "", "center"]} />
           </div>
         ) : (
-          <>Loading...</>
+          <>{t("Loading...")}</>
         )}
 
         <div className={style.actions}>
           <Button type="button" colorScheme="secondary" onClick={onCancel} isDisabled={isSubmitting}>
-            {skipHeaderRowSelection ? "Cancel" : "Back"}
+            {skipHeaderRowSelection ? t("Cancel") : t("Back")}
           </Button>
           {!!error && (
             <div className={style.errorContainer}>
@@ -85,7 +88,7 @@ export default function MapColumns({
             </div>
           )}
           <Button colorScheme="primary" isLoading={isSubmitting} type="submit">
-            Submit
+            {t("Submit")}
           </Button>
         </div>
       </form>

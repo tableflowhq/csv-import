@@ -1,6 +1,6 @@
 import React, { forwardRef, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import "../../i18n";
+import "../../i18tn/i18n";
 import Importer from "../../importer/features/main";
 import Providers from "../../importer/providers";
 import useThemeStore from "../../importer/stores/theme";
@@ -99,7 +99,6 @@ const CSVImporter = forwardRef((importerProps: CSVImporterProps, forwardRef?: an
   return isModal ? (
     <div className="csvImporter">
       <dialog {...elementProps}>
-        <h1>{t("Welcome to React")}</h1>
         <ImporterComponent />
       </dialog>
     </div>
