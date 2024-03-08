@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import Tooltip from "../../../components/Tooltip";
 import { TemplateColumn } from "../../../types";
 import { PiCheckBold } from "react-icons/pi";
@@ -7,9 +8,12 @@ export default function useTemplateTable(fields: TemplateColumn[] = []) {
   if (!fields) {
     return [];
   }
+  const { t } = useTranslation();
+  const expectedColumnKey = t("Expected Column");
+  const requiredKey = t("Required");
   const result = useMemo(() => {
     return fields.map((item) => ({
-      "Expected Column": item?.description
+      [expectedColumnKey]: item?.description
         ? {
             raw: item.name,
             content: (
@@ -19,7 +23,7 @@ export default function useTemplateTable(fields: TemplateColumn[] = []) {
             ),
           }
         : item.name,
-      Required: { raw: item?.required ? 1 : 0, content: item?.required ? <PiCheckBold /> : <></> },
+      [requiredKey]: { raw: item?.required ? 1 : 0, content: item?.required ? <PiCheckBold /> : <></> },
     }));
   }, [fields]);
 

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Button } from "@chakra-ui/button";
 import Table from "../../components/Table";
 import UploaderWrapper from "../../components/UploaderWrapper/UploaderWrapper";
@@ -7,11 +8,13 @@ import { UploaderProps } from "./types";
 import style from "./style/Uploader.module.scss";
 import { PiDownloadSimple } from "react-icons/pi";
 
+
 export default function Uploader({ template, skipHeaderRowSelection, onSuccess, showDownloadTemplateButton, setDataError }: UploaderProps) {
   const fields = useTemplateTable(template.columns);
   const theme = useThemeStore((state) => state.theme);
   const uploaderWrapper = <UploaderWrapper onSuccess={onSuccess} skipHeaderRowSelection={skipHeaderRowSelection} setDataError={setDataError} />;
   showDownloadTemplateButton = showDownloadTemplateButton ?? true;
+  const { t } = useTranslation();
 
   function downloadTemplate() {
     const { columns } = template;
@@ -38,7 +41,7 @@ export default function Uploader({ template, skipHeaderRowSelection, onSuccess, 
             }
           : undefined
       }>
-      Download Template
+      {t("Download Template")}
     </Button>
   ) : null;
 
