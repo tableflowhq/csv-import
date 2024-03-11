@@ -1,6 +1,6 @@
 import React, { forwardRef, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import "../../i18tn/i18n";
+import "../../i18n/i18n";
 import Importer from "../../importer/features/main";
 import Providers from "../../importer/providers";
 import useThemeStore from "../../importer/stores/theme";
