@@ -1,21 +1,17 @@
 import i18, { Resource } from "i18next";
 import { initReactI18next } from "react-i18next";
-import esTranslations from "./es";
+import esTranslation from "./es";
+import frTranslation from "./fr";
 
-// TODO: move this into a separate file(s)
-console.log(esTranslations);
 const resources: Resource = {
   en: {
     translation: {},
   },
   fr: {
-    translation: {
-      Upload: "Télécharger",
-      "Download Template": "Télécharger le modèle",
-    },
+    translation: frTranslation,
   },
   es: {
-    translation: esTranslations,
+    translation: esTranslation,
   },
 };
 

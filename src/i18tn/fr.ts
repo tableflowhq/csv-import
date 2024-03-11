@@ -1,0 +1,35 @@
+// Translations in french
+//TODO:  Double the translations
+const translations = {
+  Upload: "Télécharger",
+  "Select Header": "Sélectionner l'en-tête",
+  "Map Columns": "Mapper les colonnes",
+  "Expected Column": "Colonne attendue",
+  Required: "Requis",
+  "Drop your file here": "Déposez votre fichier ici",
+  or: "ou",
+  "Browse files": "Parcourir les fichiers",
+  "Download Template": "Télécharger le modèle",
+  "Only CSV, XLS, and XLSX files can be uploaded": "Seuls les fichiers CSV, XLS et XLSX peuvent être téléchargés",
+  "Select Header Row": "Sélectionner la ligne d'en-tête",
+  "Select the row which contains the column headers": "Sélectionnez la ligne qui contient les en-têtes de colonne",
+  "Only the first sheet (&quot;{{sheet}}&quot;) of the Excel file will be imported. To import multiple sheets, please upload each sheet individually.": "Seule la première feuille (&quot;{{sheet}}&quot;) du fichier Excel sera importée. Pour importer plusieurs feuilles, veuillez télécharger chaque feuille individuellement.",
+  "Cancel": "Annuler",
+  "Continue": "Continuer",
+  "Your File Column": "Votre colonne de fichier",
+  "Your Sample Data": "Vos données d'échantillon",
+  "Destination Column": "Colonne de destination",
+  "Include": "Inclure",
+  "Submit": "Soumettre",
+  "Loading...": "Chargement...",
+  "Please include all required columns": "Veuillez inclure toutes les colonnes requises",
+  "Back": "Retour",
+  "- Select one -": "- Sélectionnez un -",
+  "- empty -": "- vide -",
+  "Import Successful": "Importation réussie",
+  "Upload Successful": "Téléchargement réussi",
+  "Done": "Terminé",
+  "Upload another file": "Télécharger un autre fichier",
+};
+
+export default translations;

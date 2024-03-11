@@ -27,6 +27,7 @@ const translations = {
   "Import Successful": "Importación exitosa",
   "Upload Successful": "Se ha subido con éxito",
   "Done": "Listo",
+  "Upload another file": "Subir otro archivo",
 };
 
 export default translations;
