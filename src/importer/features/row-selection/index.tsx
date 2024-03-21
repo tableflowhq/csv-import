@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Alert } from "@chakra-ui/alert";
 import { Button } from "@chakra-ui/button";
 import Table from "../../components/Table";
@@ -8,6 +9,7 @@ import style from "./style/RowSelection.module.scss";
 import { PiWarningCircle } from "react-icons/pi";
 
 export default function RowSelection({ data, onSuccess, onCancel, selectedHeaderRow, setSelectedHeaderRow }: RowSelectionProps) {
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const handleRadioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedHeaderRow(Number(e.target.value));
@@ -64,8 +66,10 @@ export default function RowSelection({ data, onSuccess, onCancel, selectedHeader
             {hasMultipleExcelSheets ? (
               <Alert status="info">
                 <PiWarningCircle className={style.warningIcon} />
-                Only the first sheet (&quot;{data.sheetList[0]}&quot;) of the Excel file will be imported. To import multiple sheets, please upload
-                each sheet individually.
+                {t(
+                  "Only the first sheet (&quot;{{sheet}}&quot;) of the Excel file will be imported. To import multiple sheets, please upload each sheet individually.",
+                  { sheet: data.sheetList[0] }
+                )}
               </Alert>
             ) : null}
             <div className={style.tableWrapper}>
@@ -75,7 +79,7 @@ export default function RowSelection({ data, onSuccess, onCancel, selectedHeader
                 data={dataWithRadios || []}
                 heading={
                   <div className={style.headingCaption}>
-                    <Tooltip title="Select the row which contains the column headers">Select Header Row</Tooltip>
+                    <Tooltip title={t("Select the row which contains the column headers")}>{t("Select Header Row")}</Tooltip>
                   </div>
                 }
                 keyAsId="index"
@@ -87,15 +91,15 @@ export default function RowSelection({ data, onSuccess, onCancel, selectedHeader
             </div>
           </>
         ) : (
-          <>Loading...</>
+          <>{t("Loading...")}</>
         )}
 
         <div className={style.actions}>
           <Button type="button" colorScheme="secondary" onClick={onCancel} isDisabled={isLoading}>
-            Cancel
+            {t("Cancel")}
           </Button>
           <Button colorScheme="primary" onClick={handleNextClick} isLoading={isLoading} type="submit">
-            Continue
+            {t("Continue")}
           </Button>
         </div>
         {/*{!isLoading && !!error && (*/}

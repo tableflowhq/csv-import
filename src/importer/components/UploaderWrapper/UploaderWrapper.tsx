@@ -1,14 +1,16 @@
 import { useState } from "react";
-import { UploaderWrapperProps } from "./types";
 import { useDropzone } from "react-dropzone";
-import { Box, Text } from "@chakra-ui/react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@chakra-ui/button";
-import { PiArrowCounterClockwise, PiFile } from "react-icons/pi";
+import { Box, Text } from "@chakra-ui/react";
 import useThemeStore from "../../stores/theme";
+import { UploaderWrapperProps } from "./types";
+import { PiArrowCounterClockwise, PiFile } from "react-icons/pi";
 
 export default function UploaderWrapper({ onSuccess, setDataError, ...props }: UploaderWrapperProps) {
   const [loading, setLoading] = useState(false);
   const theme = useThemeStore((state) => state.theme);
+  const { t } = useTranslation();
 
   const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
     noClick: true,
@@ -34,44 +36,42 @@ export default function UploaderWrapper({ onSuccess, setDataError, ...props }: U
   });
 
   return (
-    <Box
-      padding="15px"
-      border="1px solid var(--color-border)"
-      borderRadius="var(--border-radius-2)"
-    >
-      <Box 
-        {...getRootProps()} 
-        width="100%" 
+    <Box padding="15px" border="1px solid var(--color-border)" borderRadius="var(--border-radius-2)">
+      <Box
+        {...getRootProps()}
+        width="100%"
         height="100%"
-        display="flex" 
-        justifyContent="center" 
-        alignItems="center" 
-        flexDirection="column" 
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        flexDirection="column"
         flex={1}
         border="2px dashed var(--color-border)"
-        borderRadius="var(--border-radius-2)"
-      >
-        <input {...getInputProps()}/>
+        borderRadius="var(--border-radius-2)">
+        <input {...getInputProps()} />
         {isDragActive ? (
-          <Text>Drop your file here</Text>
+          <Text>{t("Drop your file here")}</Text>
         ) : loading ? (
-          <Text>Loading...</Text>
+          <Text>{t("Loading...")}</Text>
         ) : (
           <>
-            <Text>Drop your file here</Text>
-            <Text>or</Text>
-            <Button 
-              leftIcon={<PiFile />} 
-              onClick={open} 
-              mt="6px" 
-              colorScheme={"secondary"} 
+            <Text>{t("Drop your file here")}</Text>
+            <Text>{t("or")}</Text>
+            <Button
+              leftIcon={<PiFile />}
+              onClick={open}
+              mt="6px"
+              colorScheme={"secondary"}
               variant={theme === "light" ? "outline" : "solid"}
-              _hover={theme === "light" ? {
-                background: "var(--color-border)",
-                color: "var(--color-text)"
-              } : undefined}
-            >
-              Browse files
+              _hover={
+                theme === "light"
+                  ? {
+                      background: "var(--color-border)",
+                      color: "var(--color-text)",
+                    }
+                  : undefined
+              }>
+              {t("Browse files")}
             </Button>
           </>
         )}

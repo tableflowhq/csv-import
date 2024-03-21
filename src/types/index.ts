@@ -1,3 +1,4 @@
+import { Resource } from "i18next";
 import { HTMLAttributes } from "react";
 
 type ModalParams = {
@@ -17,4 +18,6 @@ export type CSVImporterProps = (HTMLAttributes<HTMLDialogElement> & HTMLAttribut
   customStyles?: Record<string, string> | string;
   showDownloadTemplateButton?: boolean;
   skipHeaderRowSelection?: boolean;
+  language?: string;
+  customTranslations?: Resource;
 } & ModalParams;
