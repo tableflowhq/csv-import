@@ -124,7 +124,7 @@ export default function Main(props: CSVImporterProps) {
                 return;
               }
               const reader = new FileReader();
-              const isNotBlankRow = (row: string[]) => row.some((cell) => cell.trim() !== "");
+              const isNotBlankRow = (row: string[]) => row.some((cell) => cell.toString().trim() !== "");
               reader.onload = async (e) => {
                 const bstr = e?.target?.result;
                 if (!bstr) {
@@ -162,6 +162,7 @@ export default function Main(props: CSVImporterProps) {
                     break;
                 }
               };
+
               switch (fileType) {
                 case "csv":
                   reader.readAsText(file, "utf-8");
