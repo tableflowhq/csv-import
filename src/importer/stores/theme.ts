@@ -12,7 +12,7 @@ const STORAGE_KEY = "csv-importer-theme";
 const useThemeStore = create<themeStoreType>()(
   persist(
     (set) => ({
-      theme: localStorage.getItem(STORAGE_KEY) as Theme,
+      theme: typeof window !== "undefined" ? (localStorage.getItem(STORAGE_KEY) as Theme) : "light",
       setTheme: (newTheme) =>
         set((state) => {
           const theme = newTheme || (state.theme === "light" ? "dark" : "light");
