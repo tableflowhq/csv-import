@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import Checkbox from "../../../components/Checkbox";
 import { InputOption } from "../../../components/Input/types";
 import DropdownFields from "../components/DropDownFields";
 import { TemplateColumn, UploadColumn } from "../../../types";
-import style from "../style/MapColumns.module.scss";
-import { TemplateColumnMapping } from "../types";
 import stringsSimilarity from "../../../utils/stringSimilarity";
+import { TemplateColumnMapping } from "../types";
+import style from "../style/MapColumns.module.scss";
 
 export default function useMapColumnsTable(
   uploadColumns: UploadColumn[],
@@ -13,6 +14,7 @@ export default function useMapColumnsTable(
   columnsValues: { [uploadColumnIndex: number]: TemplateColumnMapping },
   isLoading?: boolean
 ) {
+  const { t } = useTranslation();
   useEffect(() => {
     Object.keys(columnsValues).map((uploadColumnIndexStr) => {
       const uploadColumnIndex = Number(uploadColumnIndexStr);
@@ -85,6 +87,11 @@ export default function useMapColumnsTable(
     setValues((prev) => ({ ...prev, [id]: { ...prev[id], include: !!prev[id].key && value } }));
   };
 
+  const yourFileColumn = t("Your File Column");
+  const yourSampleData = t("Your Sample Data");
+  const destinationColumn = t("Destination Column");
+  const include = t("Include");
+
   const rows = useMemo(() => {
     return uploadColumns.map((uc, index) => {
       const { name, sample_data } = uc;
@@ -92,11 +99,11 @@ export default function useMapColumnsTable(
       const samples = sample_data.filter((d) => d);
 
       return {
-        "Your File Column": {
+        [yourFileColumn]: {
           raw: name || false,
-          content: name || <em>- empty -</em>,
+          content: name || <em>{t("- empty -")}</em>,
         },
-        "Your Sample Data": {
+        [yourSampleData]: {
           raw: "",
           content: (
             <div title={samples.join(", ")} className={style.samples}>
@@ -106,20 +113,20 @@ export default function useMapColumnsTable(
             </div>
           ),
         },
-        "Destination Column": {
+        [destinationColumn]: {
           raw: "",
           content: (
             <DropdownFields
               options={templateFields}
               value={suggestion.key}
-              placeholder="- Select one -"
+              placeholder={t("- Select one -")}
               onChange={(key: string) => handleTemplateChange(index, key)}
               selectedValues={selectedValues}
               updateSelectedValues={setSelectedValues}
             />
           ),
         },
-        Include: {
+        [include]: {
           raw: false,
           content: (
             <Checkbox

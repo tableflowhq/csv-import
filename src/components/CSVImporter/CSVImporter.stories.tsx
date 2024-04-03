@@ -60,6 +60,17 @@ const Template: Story<typeof ImporterComponent> = (args: CSVImporterProps) => {
 
 export const Importer = Template.bind({});
 Importer.args = {
+  language: "en",
   ...defaults,
   template: template,
+  customTranslations: {
+    jp: {
+      Upload: "アップロード",
+      "Browse files": "ファイルを参照",
+    },
+    pt: {
+      Upload: "Carregar",
+      "Browse files": "Procurar arquivos",
+    },
+  },
 };
