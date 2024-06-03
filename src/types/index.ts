@@ -14,6 +14,7 @@ export type CSVImporterProps = (HTMLAttributes<HTMLDialogElement> & HTMLAttribut
   className?: string;
   onComplete?: (data: any) => void;
   waitOnComplete?: boolean;
+  onCSVHeadersMapped?: (data: any) => Promise<void>;
   customStyles?: Record<string, string> | string;
   showDownloadTemplateButton?: boolean;
   skipHeaderRowSelection?: boolean;
