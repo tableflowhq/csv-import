@@ -25,6 +25,7 @@ export default function Main(props: CSVImporterProps) {
     modalOnCloseTriggered = () => null,
     template,
     onComplete,
+    onCSVHeadersMapped,
     customStyles,
     showDownloadTemplateButton,
     skipHeaderRowSelection,
@@ -196,6 +197,13 @@ export default function Main(props: CSVImporterProps) {
             onSuccess={(columnMapping) => {
               setIsSubmitting(true);
               setColumnMapping(columnMapping);
+              if (onCSVHeadersMapped) {
+                onCSVHeadersMapped(columnMapping).then(() => {
+                  setIsSubmitting(false);
+                  goNext();
+                });
+                return;
+              }
 
               // TODO (client-sdk): Move this type, add other data attributes (i.e. column definitions), and move the data processing to a function
               type MappedRow = {
