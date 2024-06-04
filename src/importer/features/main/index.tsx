@@ -202,7 +202,7 @@ export default function Main(props: CSVImporterProps) {
               setIsSubmitting(true);
               setColumnMapping(columnMapping);
               if (onHeadersMapped) {
-                onHeadersMapped(columnMapping, originalFile)
+                onHeadersMapped(selectedHeaderRow, columnMapping, originalFile)
                   .then(() => {
                     setIsSubmitting(false);
                     goNext();
