@@ -210,6 +210,12 @@ Example `data`:
 }
 ```
 
+### onHeadersMapped (_function_)
+Callback function that fires when headers have been mapped (when you dont want to wait for onComplete and you just want the mapped headers and the original uploaded file). It returns `mappedHeaders`, an object that contains the mapping definitions and `originalFile` which is the `File` object representing the original uploaded file without any modifications to it.
+```jsx
+onHeadersMapped={(mappedHeaders, originalFile) => console.log(data)}
+```
+
 ### darkMode (_boolean_, default: `false`)
 Toggle between dark mode (`true`) and light mode (`false`).
 
