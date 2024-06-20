@@ -210,6 +210,13 @@ Example `data`:
 }
 ```
 
+### onHeadersMapped (_function_)
+Callback function that fires when headers have been mapped (when you dont want to wait for onComplete and you just want the mapped headers and the original uploaded file). It returns `selectedHeaderRow` which tells which row was selected as a header row in the previous step, `mappedHeaders` an object that contains the mapping definitions and  `originalFile` which is the `File` object representing the original uploaded file without any modifications to it.
+When `onHeadersMapped` is defined, `onComplete` callback will not be fired.
+```jsx
+onHeadersMapped={(selectedHeaderRow, mappedHeaders, originalFile) => console.log(mappedHeaders)}
+```
+
 ### darkMode (_boolean_, default: `false`)
 Toggle between dark mode (`true`) and light mode (`false`).
 

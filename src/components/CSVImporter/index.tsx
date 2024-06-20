@@ -22,6 +22,7 @@ const CSVImporter = forwardRef((importerProps: CSVImporterProps, forwardRef?: an
     customStyles,
     showDownloadTemplateButton,
     skipHeaderRowSelection,
+    onHeadersMapped,
     ...props
   } = importerProps;
   const ref = forwardRef ?? useRef(null);
