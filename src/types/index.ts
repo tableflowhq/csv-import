@@ -17,4 +17,5 @@ export type CSVImporterProps = (HTMLAttributes<HTMLDialogElement> & HTMLAttribut
   customStyles?: Record<string, string> | string;
   showDownloadTemplateButton?: boolean;
   skipHeaderRowSelection?: boolean;
+  file?: File;
 } & ModalParams;

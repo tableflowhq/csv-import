@@ -52,7 +52,18 @@ const Template: Story<typeof ImporterComponent> = (args: CSVImporterProps) => {
 
   return (
     <div>
-      {args.isModal && <button onClick={() => setIsOpen(true)}>Import</button>}
+      {args.isModal && (
+        <>
+          <button onClick={() => setIsOpen(true)}>Import</button>
+          <input
+            type="file"
+            onChange={(e) => {
+              args.file = e.target.files?.[0];
+              setIsOpen(true);
+            }}
+          />
+        </>
+      )}
       <ImporterComponent key={props.isModal?.toString()} {...props} />
     </div>
   );

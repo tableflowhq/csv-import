@@ -28,6 +28,7 @@ export default function Main(props: CSVImporterProps) {
     customStyles,
     showDownloadTemplateButton,
     skipHeaderRowSelection,
+    file,
   } = props;
   const skipHeader = skipHeaderRowSelection ?? false;
 
@@ -80,6 +81,10 @@ export default function Main(props: CSVImporterProps) {
     }
   }, [data]);
 
+  useEffect(() => {
+    if (file) processFile(file);
+  }, [file]);
+
   // Actions
   const reload = () => {
     setData(emptyData);
@@ -107,6 +112,64 @@ export default function Main(props: CSVImporterProps) {
     );
   }
 
+  const processFile = async (file: File) => {
+    setDataError(null);
+    const fileType = file.name.slice(file.name.lastIndexOf(".") + 1);
+    if (!["csv", "xls", "xlsx"].includes(fileType)) {
+      setDataError("Only CSV, XLS, and XLSX files can be uploaded");
+      return;
+    }
+    const reader = new FileReader();
+    const isNotBlankRow = (row: string[]) => row.some((cell) => cell.toString().trim() !== "");
+    reader.onload = async (e) => {
+      const bstr = e?.target?.result;
+      if (!bstr) {
+        return;
+      }
+      switch (fileType) {
+        case "csv":
+          Papa.parse(bstr.toString(), {
+            complete: function (results) {
+              const csvData = results.data as Array<Array<string>>;
+              const rows: FileRow[] = csvData.filter(isNotBlankRow).map((row: string[], index: number) => ({ index, values: row }));
+              setData({
+                fileName: file.name,
+                rows: rows,
+                sheetList: [],
+                errors: results.errors.map((error) => error.message),
+              });
+              goNext();
+            },
+          });
+          break;
+        case "xlsx":
+        case "xls":
+          const workbook = XLSX.read(bstr as string, { type: "binary" });
+          const sheetList = workbook.SheetNames;
+          const data = XLSX.utils.sheet_to_json(workbook.Sheets[sheetList[0]], { header: 1 }) as Array<Array<string>>;
+          const rows: FileRow[] = data.filter(isNotBlankRow).map((row: string[], index: number) => ({ index, values: row }));
+          setData({
+            fileName: file.name,
+            rows: rows,
+            sheetList: sheetList,
+            errors: [], // TODO: Handle any parsing errors
+          });
+          goNext();
+          break;
+      }
+    };
+
+    switch (fileType) {
+      case "csv":
+        reader.readAsText(file, "utf-8");
+        break;
+      case "xlsx":
+      case "xls":
+        reader.readAsBinaryString(file);
+        break;
+    }
+  };
+
   const renderContent = () => {
     switch (currentStep) {
       case StepEnum.Upload:
@@ -116,63 +179,7 @@ export default function Main(props: CSVImporterProps) {
             skipHeaderRowSelection={skipHeader || false}
             showDownloadTemplateButton={showDownloadTemplateButton}
             setDataError={setDataError}
-            onSuccess={async (file: File) => {
-              setDataError(null);
-              const fileType = file.name.slice(file.name.lastIndexOf(".") + 1);
-              if (!["csv", "xls", "xlsx"].includes(fileType)) {
-                setDataError("Only CSV, XLS, and XLSX files can be uploaded");
-                return;
-              }
-              const reader = new FileReader();
-              const isNotBlankRow = (row: string[]) => row.some((cell) => cell.toString().trim() !== "");
-              reader.onload = async (e) => {
-                const bstr = e?.target?.result;
-                if (!bstr) {
-                  return;
-                }
-                switch (fileType) {
-                  case "csv":
-                    Papa.parse(bstr.toString(), {
-                      complete: function (results) {
-                        const csvData = results.data as Array<Array<string>>;
-                        const rows: FileRow[] = csvData.filter(isNotBlankRow).map((row: string[], index: number) => ({ index, values: row }));
-                        setData({
-                          fileName: file.name,
-                          rows: rows,
-                          sheetList: [],
-                          errors: results.errors.map((error) => error.message),
-                        });
-                        goNext();
-                      },
-                    });
-                    break;
-                  case "xlsx":
-                  case "xls":
-                    const workbook = XLSX.read(bstr as string, { type: "binary" });
-                    const sheetList = workbook.SheetNames;
-                    const data = XLSX.utils.sheet_to_json(workbook.Sheets[sheetList[0]], { header: 1 }) as Array<Array<string>>;
-                    const rows: FileRow[] = data.filter(isNotBlankRow).map((row: string[], index: number) => ({ index, values: row }));
-                    setData({
-                      fileName: file.name,
-                      rows: rows,
-                      sheetList: sheetList,
-                      errors: [], // TODO: Handle any parsing errors
-                    });
-                    goNext();
-                    break;
-                }
-              };
-
-              switch (fileType) {
-                case "csv":
-                  reader.readAsText(file, "utf-8");
-                  break;
-                case "xlsx":
-                case "xls":
-                  reader.readAsBinaryString(file);
-                  break;
-              }
-            }}
+            onSuccess={processFile}
           />
         );
       case StepEnum.RowSelection:
