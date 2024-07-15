@@ -41,7 +41,8 @@ yarn add csv-import-js
 
 ### 2. Add the importer to your application
 
-#### Using React:
+#### Using React
+
 ```javascript
 import {useState} from "react";
 import {CSVImporter} from "csv-import-react";
@@ -79,7 +80,8 @@ function MyComponent() {
 }
 ```
 
-#### Using JavaScript:
+#### Using JavaScript
+
 ```html
 <head>
   <script src="https://unpkg.com/csv-import-js@latest/index.js"></script>
@@ -121,18 +123,23 @@ function MyComponent() {
 ## SDK Reference
 
 ### isModal (_boolean_, default: `true`)
+
 When set to `true` (default value), the importer will behave as a modal with its open state controlled by `modalIsOpen`. When set to `false`, the importer will be embedded directly in your page.
 
 ### modalIsOpen (_boolean_, default: `false`)
+
 Only used when `isModal` is `true`: Controls the importer modal being open or closed.
 \
 **React SDK Only**: For the JavaScript SDK, use `.showModal()` and `.closeModal()` to operate the modal.
 
 ### modalOnCloseTriggered (_function_)
+
 Only used when `isModal` is `true`: A function called when the user clicks the close button or clicks outside of (when used with `modalCloseOnOutsideClick`) the importer. `useState` can be used to control the importer modal opening and closing.
+
 ```javascript
 const [isOpen, setIsOpen] = useState(false);
 ```
+
 ```jsx
 <button onClick={() => setIsOpen(true)}>Open CSV Importer</button>
 <CSVImporter
@@ -143,10 +150,13 @@ const [isOpen, setIsOpen] = useState(false);
 ```
 
 ### modalCloseOnOutsideClick (_boolean_, default: `false`)
+
   Only used when `isModal` is `true`: Clicking outside the modal will call the `modalOnCloseTriggered` function.
 
 ### template (_object_)
+
 Configure the columns used for the import.
+
 ```jsx
 template={{
   columns: [
@@ -166,11 +176,15 @@ template={{
  ```
 
 ### onComplete (_function_)
+
 Callback function that fires when a user completes an import. It returns `data`, an object that contains the row data, column definitions, and other information about the import.
+
 ```jsx
 onComplete={(data) => console.log(data)}
 ```
+
 Example `data`:
+
 ```json
 {
   "num_rows": 2,
@@ -211,17 +225,22 @@ Example `data`:
 ```
 
 ### darkMode (_boolean_, default: `false`)
+
 Toggle between dark mode (`true`) and light mode (`false`).
 
 ### primaryColor (_string_)
+
 Specifies the primary color for the importer in hex format. Use `customStyles` to customize the UI in more detail.
+
 ```jsx
 primaryColor="#7A5EF8"
 ```
 
 ### customStyles (_object_)
+
 Apply custom styles to the importer with an object containing CSS properties and values. Note that custom style properties will override `primaryColor` and any default styles from `darkMode`.
 Available options:
+
 ```jsx
 customStyles={{
   "font-family": "cursive",
@@ -250,10 +269,63 @@ customStyles={{
 ```
 
 ### showDownloadTemplateButton (_boolean_, default: `true`)
+
 When set to `false`, hide the Download Template button on the first screen of the importer.
 
 ### skipHeaderRowSelection (_boolean_, default: `false`)
+
 When set to `true`, the importer will not display and skip the Header Row Selection step and always choose the first row in the file as the header.
+
+## Contributing
+
+### Setting Up the Project
+
+To set up the project locally, follow these steps:
+
+1. **Clone the repository:**
+
+   ```bash
+   git clone https://github.com/tableflowhq/csv-import.git
+   cd csv-import
+   ```
+
+2. **Install dependencies:**
+
+   ```bash
+   yarn install
+   ```
+
+3. **Build the project:**
+
+   ```bash
+    yarn build
+   ```
+
+### Running Storybook
+
+To run Storybook locally, follow these steps:
+
+1. **Start Storybook:**
+
+   ```bash
+    yarn storybook
+   ```
+
+2. **Open Storybook in your browser:**
+
+   Storybook should automatically open in your default browser. If it doesn't, navigate to [http://localhost:6006](http://localhost:6006).
+
+### Modifying the Project and testing with the demo app
+
+The project includes a demo app that you can use to test your changes. The demo app has its own `README.md` file with detailed instructions on how to set it up and run it.
+
+1. Make your changes in the codebase.
+2. Follow the instructions in the demo app's `README.md` to set up and run the demo app. This will help you verify that your changes work as expected in a real application.
+3. Commit your changes and push them to your forked repository.
+4. Create a pull request to the main repository.
+
+
+
 
 ## Get In Touch
 
