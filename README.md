@@ -267,19 +267,19 @@ customStyles={{
 
 ```javascript
 // Set up custom translations
-const  customTranslations: {
-    jp: {
-      Upload: "アップロード",
-      "Browse files": "ファイルを参照",
-    },
-    pt: {
-      Upload: "Carregar",
-      "Browse files": "Procurar arquivos",
-    }
-  }
+const customTranslations = {
+  jp: {
+    Upload: "アップロード",
+    "Browse files": "ファイルを参照",
+  },
+  pt: {
+    Upload: "Carregar",
+    "Browse files": "Procurar arquivos",
+  },
+};
 
 return (
-  <CSVImporter language="jp" translations={customTranslations}  ...props />
+  <CSVImporter language="jp" customTranslations={customTranslations} ...props />
 )
 
 ```
