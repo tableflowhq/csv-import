@@ -44,8 +44,8 @@ yarn add csv-import-js
 #### Using React
 
 ```javascript
-import {useState} from "react";
-import {CSVImporter} from "csv-import-react";
+import { CSVImporter } from "csv-import-react";
+import { useState } from "react";
 
 function MyComponent() {
   const [isOpen, setIsOpen] = useState(false);
@@ -151,7 +151,7 @@ const [isOpen, setIsOpen] = useState(false);
 
 ### modalCloseOnOutsideClick (_boolean_, default: `false`)
 
-  Only used when `isModal` is `true`: Clicking outside the modal will call the `modalOnCloseTriggered` function.
+Only used when `isModal` is `true`: Clicking outside the modal will call the `modalOnCloseTriggered` function.
 
 ### template (_object_)
 
@@ -173,7 +173,7 @@ template={{
     },
   ],
 }}
- ```
+```
 
 ### onComplete (_function_)
 
@@ -270,14 +270,13 @@ customStyles={{
 
 ## Internationalization
 
-
 ### Predefined languages
 - Out-of-the-box support for various languages.
 - Common languages are available through the language prop (i.e., `language="fr"` for French).
 - Available predefined languages:
-    - en
-    - es
-    - fr
+  - en
+  - es
+  - fr
 
 ### Customizable language
 - Language keys can be exported and overridden.
@@ -317,40 +316,34 @@ When set to `true`, the importer will not display and skip the Header Row Select
 
 To set up the project locally, follow these steps:
 
-1. **Clone the repository:**
+1. **Clone the repository**
+```bash
+git clone https://github.com/tableflowhq/csv-import.git
+cd csv-import
+```
 
-   ```bash
-   git clone https://github.com/tableflowhq/csv-import.git
-   cd csv-import
-   ```
+2. **Install dependencies**
+```bash
+yarn install
+```
 
-2. **Install dependencies:**
-
-   ```bash
-   yarn install
-   ```
-
-3. **Build the project:**
-
-   ```bash
-    yarn build
-   ```
+3. **Build the project**
+```bash
+yarn build
+```
 
 ### Running Storybook
-
 To run Storybook locally, follow these steps:
 
-1. **Start Storybook:**
-
-   ```bash
-    yarn storybook
-   ```
+1. **Start Storybook**
+```bash
+yarn storybook
+```
 
 2. **Open Storybook in your browser:**
+Storybook should automatically open in your default browser. If it doesn't, navigate to [http://localhost:6006](http://localhost:6006).
 
-   Storybook should automatically open in your default browser. If it doesn't, navigate to [http://localhost:6006](http://localhost:6006).
-
-### Modifying the Project and testing with the demo app
+### Modifying the project and testing with the demo app
 
 The project includes a demo app that you can use to test your changes. The demo app has its own `README.md` file with detailed instructions on how to set it up and run it.
 
@@ -358,9 +351,6 @@ The project includes a demo app that you can use to test your changes. The demo 
 2. Follow the instructions in the demo app's `README.md` to set up and run the demo app. This will help you verify that your changes work as expected in a real application.
 3. Commit your changes and push them to your forked repository.
 4. Create a pull request to the main repository.
-
-
-
 
 ## Get In Touch
 
