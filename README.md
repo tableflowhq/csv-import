@@ -249,6 +249,41 @@ customStyles={{
 }}
 ```
 
+## Internationalization
+
+
+### Predefined languages
+- Out-of-the-box support for various languages.
+- Common languages are available through the language prop (i.e., `language="fr"` for French).
+- Available predefined languages:
+    - en
+    - es
+    - fr
+
+### Customizable language
+- Language keys can be exported and overridden.
+- Labels and messages can be customized to any text.
+- Translations key examples can be found in `src/i18n/es.ts`
+
+```javascript
+// Set up custom translations
+const  customTranslations: {
+    jp: {
+      Upload: "アップロード",
+      "Browse files": "ファイルを参照",
+    },
+    pt: {
+      Upload: "Carregar",
+      "Browse files": "Procurar arquivos",
+    }
+  }
+
+return (
+  <CSVImporter language="jp" translations={customTranslations}  ...props />
+)
+
+```
+
 ### showDownloadTemplateButton (_boolean_, default: `true`)
 When set to `false`, hide the Download Template button on the first screen of the importer.
 

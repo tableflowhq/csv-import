@@ -18,6 +18,7 @@ import MapColumns from "../map-columns";
 import RowSelection from "../row-selection";
 import Uploader from "../uploader";
 import { PiX } from "react-icons/pi";
+import { useTranslation } from "react-i18next";
 
 export default function Main(props: CSVImporterProps) {
   const {
@@ -30,6 +31,8 @@ export default function Main(props: CSVImporterProps) {
     skipHeaderRowSelection,
   } = props;
   const skipHeader = skipHeaderRowSelection ?? false;
+
+  const { t } = useTranslation();
 
   // Apply custom styles
   useCustomStyles(parseObjectOrStringJSON("customStyles", customStyles));
@@ -120,7 +123,7 @@ export default function Main(props: CSVImporterProps) {
               setDataError(null);
               const fileType = file.name.slice(file.name.lastIndexOf(".") + 1);
               if (!["csv", "xls", "xlsx"].includes(fileType)) {
-                setDataError("Only CSV, XLS, and XLSX files can be uploaded");
+                setDataError(t("Only CSV, XLS, and XLSX files can be uploaded"));
                 return;
               }
               const reader = new FileReader();
