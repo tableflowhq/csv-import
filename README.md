@@ -253,17 +253,17 @@ customStyles={{
 
 
 ### Predefined languages
-- Out-of-the-box support for various languages, having English as default.
-- Common languages are readily available for selection through the new language prop (e.g., `language="fr"` for French).
+- Out-of-the-box support for various languages.
+- Common languages are available through the language prop (i.e., `language="fr"` for French).
 - Available predefined languages:
     - en
     - es
     - fr
 
 ### Customizable language
-- For maximum flexibility, language keys can be exported and overridden. This removes the need for the project to support all languages directly.
-- Users can tailor labels and rephrase messages to suit their specific needs.
-- Translations keys example can be found in `src/i18n/es.ts`
+- Language keys can be exported and overridden.
+- Labels and messages can be customized to any text.
+- Translations key examples can be found in `src/i18n/es.ts`
 
 ```javascript
 // Set up custom translations
