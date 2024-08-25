@@ -2,7 +2,7 @@ import i18, { Resource } from "i18next";
 import { initReactI18next } from "react-i18next";
 import esTranslation from "./es";
 import frTranslation from "./fr";
-
+import itTranslations from "./it";
 const resources: Resource = {
   en: {
     translation: {},
@@ -12,6 +12,9 @@ const resources: Resource = {
   },
   es: {
     translation: esTranslation,
+  },
+  it: {
+    translation: itTranslations,
   },
 };
 
