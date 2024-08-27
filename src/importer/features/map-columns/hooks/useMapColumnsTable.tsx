@@ -8,6 +8,7 @@ import stringsSimilarity from "../../../utils/stringSimilarity";
 import { TemplateColumnMapping } from "../types";
 import style from "../style/MapColumns.module.scss";
 
+
 export default function useMapColumnsTable(
   uploadColumns: UploadColumn[],
   templateColumns: TemplateColumn[] = [],
@@ -25,14 +26,14 @@ export default function useMapColumnsTable(
 
   const checkSimilarity = (templateColumnKey: string, uploadColumnName: string) => {
     const templateColumnKeyFormatted = templateColumnKey.replace(/_/g, " ");
-    return stringsSimilarity(templateColumnKeyFormatted, uploadColumnName.toLowerCase()) > 0.9;
+    return stringsSimilarity(templateColumnKeyFormatted, uploadColumnName.toString().toLowerCase()) > 0.9;
   };
 
   const isSuggestedMapping = (templateColumn: TemplateColumn, uploadColumnName: string) => {
     if (!templateColumn?.suggested_mappings) {
       return false;
     }
-    return templateColumn.suggested_mappings.some((suggestion) => suggestion.toLowerCase() === uploadColumnName.toLowerCase());
+    return templateColumn.suggested_mappings.some((suggestion) => suggestion.toLowerCase() === uploadColumnName.toString().toLowerCase());
   };
 
   const [values, setValues] = useState<{ [key: number]: TemplateColumnMapping }>(() => {
