@@ -20,4 +20,5 @@ export type CSVImporterProps = (HTMLAttributes<HTMLDialogElement> & HTMLAttribut
   skipHeaderRowSelection?: boolean;
   language?: string;
   customTranslations?: Resource;
+  saveProperties?: boolean;
 } & ModalParams;

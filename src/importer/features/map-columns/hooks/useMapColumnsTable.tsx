@@ -12,6 +12,7 @@ export default function useMapColumnsTable(
   uploadColumns: UploadColumn[],
   templateColumns: TemplateColumn[] = [],
   columnsValues: { [uploadColumnIndex: number]: TemplateColumnMapping },
+  saveProperties?: boolean,
   isLoading?: boolean
 ) {
   const { t } = useTranslation();
@@ -48,22 +49,30 @@ export default function useMapColumnsTable(
         return acc;
       }
 
-      const similarTemplateColumn = templateColumns?.find((tc) => {
-        if (tc.key && !usedTemplateColumns.has(tc.key) && checkSimilarity(tc.key, uc.name)) {
-          usedTemplateColumns.add(tc.key);
-          return true;
-        }
-        return false;
-      });
+      // const similarTemplateColumn = templateColumns?.find((tc) => {
+      //   if (tc.key && !usedTemplateColumns.has(tc.key) && checkSimilarity(tc.key, uc.name)) {
+      //     usedTemplateColumns.add(tc.key);
+      //     return true;
+      //   }
+      //   return false;
+      // });
 
       acc[uc.index] = {
-        key: similarTemplateColumn?.key || "",
-        include: !!similarTemplateColumn?.key,
-        selected: !!similarTemplateColumn?.key,
+        key: uc.name,
+        include: false,
+        selected: false,
       };
       return acc;
     }, initialObject);
   });
+
+  const [initialFormValues, setInitialFormValues] = useState<{ [key: number]: TemplateColumnMapping }>(values)
+
+  useEffect(() => {
+    if (Object.keys(initialFormValues).length === 0) {
+      setInitialFormValues(values)
+    }
+  }, [values]);
 
   const [selectedValues, setSelectedValues] = useState<{ key: string; selected: boolean | undefined }[]>(
     Object.values(values).map(({ key, selected }) => ({ key, selected }))
@@ -76,7 +85,12 @@ export default function useMapColumnsTable(
 
   const handleTemplateChange = (uploadColumnIndex: number, key: string) => {
     setValues((prev) => {
-      const templatesFields = { ...prev, [uploadColumnIndex]: { ...prev[uploadColumnIndex], key: key, include: !!key, selected: !!key } };
+      let templatesFields: {[p: number]: TemplateColumnMapping}
+      if (saveProperties && !key) {
+        templatesFields = { ...prev, [uploadColumnIndex]: { ...initialFormValues[uploadColumnIndex] } };
+      } else {
+        templatesFields = { ...prev, [uploadColumnIndex]: { ...prev[uploadColumnIndex], key: key, include: !!key, selected: !!key } };
+      }
       const templateFieldsObj = Object.values(templatesFields).map(({ key, selected }) => ({ key, selected }));
       setSelectedValues(templateFieldsObj);
       return templatesFields;
