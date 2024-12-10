@@ -4,6 +4,7 @@ import esTranslation from "./es";
 import frTranslation from "./fr";
 import itTranslations from "./it";
 import deTranslations from "./de";
+import csTranslations from "./cs";
 
 const resources: Resource = {
   en: {
@@ -20,6 +21,9 @@ const resources: Resource = {
   },
   de: {
     translation: deTranslations,
+  },
+  cs: {
+    translation: csTranslations,
   },
 };
 
