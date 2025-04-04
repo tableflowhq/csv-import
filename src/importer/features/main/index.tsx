@@ -122,8 +122,8 @@ export default function Main(props: CSVImporterProps) {
             onSuccess={async (file: File) => {
               setDataError(null);
               const fileType = file.name.slice(file.name.lastIndexOf(".") + 1);
-              if (!["csv", "xls", "xlsx"].includes(fileType)) {
-                setDataError(t("Only CSV, XLS, and XLSX files can be uploaded"));
+              if (!["csv"].includes(fileType)) {
+                setDataError(t("Only CSV files can be uploaded"));
                 return;
               }
               const reader = new FileReader();

@@ -18,8 +18,6 @@ export default function UploaderWrapper({ onSuccess, setDataError, ...props }: U
     maxFiles: 1,
     // maxSize: 1 * Math.pow(1024, 3),
     accept: {
-      "application/vnd.ms-excel": [".xls"],
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [".xlsx"],
       "text/csv": [".csv"],
     },
     onDropRejected: (fileRejections) => {
