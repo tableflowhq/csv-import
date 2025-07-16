@@ -21,6 +21,7 @@ export default function UploaderWrapper({ onSuccess, setDataError, ...props }: U
       "application/vnd.ms-excel": [".xls"],
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [".xlsx"],
       "text/csv": [".csv"],
+      "text/tab-separated-values": [".tsv"],
     },
     onDropRejected: (fileRejections) => {
       setLoading(false);

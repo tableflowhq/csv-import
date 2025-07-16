@@ -1,7 +1,7 @@
 {
   "name": "csv-import-js",
-  "version": "1.0.13",
-  "description": "Open-source CSV and XLS/XLSX file importer for React and JavaScript",
+  "version": "1.0.14",
+  "description": "Open-source CSV, TSV, and XLS/XLSX file importer for React and JavaScript",
   "main": "index.js",
   "files": ["."],
   "repository": {
@@ -85,7 +85,7 @@
     "papaparse": "^5.4.1",
     "react-dropzone": "^14.2.3",
     "react-icons": "^4.12.0",
-    "xlsx": "^0.18.5",
+    "xlsx": "^0.19.3",
     "zustand": "^4.4.7"
   },
   "type": "module"

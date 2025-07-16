@@ -9,7 +9,7 @@ const translations = {
   or: "oppure",
   "Browse files": "Sfoglia file",
   "Download Template": "Scarica il modello",
-  "Only CSV, XLS, and XLSX files can be uploaded": "Solo i file CSV, XLS e XLSX possono essere caricati",
+  "Only CSV, TSV, XLS, and XLSX files can be uploaded": "Solo i file CSV, TSV, XLS e XLSX possono essere caricati",
   "Select Header Row": "Seleziona la riga di intestazione",
   "Select the row which contains the column headers": "Seleziona la riga che contiene le intestazioni delle colonne",
   "Only the first sheet (&quot;{{sheet}}&quot;) of the Excel file will be imported. To import multiple sheets, please upload each sheet individually.": "Solo il primo foglio (&quot;{{sheet}}&quot;) del file Excel verrà importato. Per importare più fogli, carica ogni foglio singolarmente.",

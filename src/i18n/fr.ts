@@ -10,7 +10,7 @@ const translations = {
   or: "ou",
   "Browse files": "Parcourir les fichiers",
   "Download Template": "Télécharger le modèle",
-  "Only CSV, XLS, and XLSX files can be uploaded": "Seuls les fichiers CSV, XLS et XLSX peuvent être téléchargés",
+  "Only CSV, TSV, XLS, and XLSX files can be uploaded": "Seuls les fichiers CSV, TSV, XLS et XLSX peuvent être téléchargés",
   "Select Header Row": "Sélectionner la ligne d'en-tête",
   "Select the row which contains the column headers": "Sélectionnez la ligne qui contient les en-têtes de colonne",
   "Only the first sheet (&quot;{{sheet}}&quot;) of the Excel file will be imported. To import multiple sheets, please upload each sheet individually.": "Seule la première feuille (&quot;{{sheet}}&quot;) du fichier Excel sera importée. Pour importer plusieurs feuilles, veuillez télécharger chaque feuille individuellement.",
