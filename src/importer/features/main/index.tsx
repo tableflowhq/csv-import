@@ -122,8 +122,8 @@ export default function Main(props: CSVImporterProps) {
             onSuccess={async (file: File) => {
               setDataError(null);
               const fileType = file.name.slice(file.name.lastIndexOf(".") + 1);
-              if (!["csv", "xls", "xlsx"].includes(fileType)) {
-                setDataError(t("Only CSV, XLS, and XLSX files can be uploaded"));
+              if (!["csv", "tsv", "xls", "xlsx"].includes(fileType)) {
+                setDataError(t("Only CSV, TSV, XLS, and XLSX files can be uploaded"));
                 return;
               }
               const reader = new FileReader();
@@ -135,6 +135,7 @@ export default function Main(props: CSVImporterProps) {
                 }
                 switch (fileType) {
                   case "csv":
+                  case "tsv":
                     Papa.parse(bstr.toString(), {
                       complete: function (results) {
                         const csvData = results.data as Array<Array<string>>;
@@ -168,6 +169,7 @@ export default function Main(props: CSVImporterProps) {
 
               switch (fileType) {
                 case "csv":
+                case "tsv":
                   reader.readAsText(file, "utf-8");
                   break;
                 case "xlsx":

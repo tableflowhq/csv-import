@@ -2,7 +2,7 @@
 
 <img src="https://tableflow-assets-cdn.s3.amazonaws.com/csv-import.jpg" width="600" alt="CSV Import">
 
-<em>Open-source CSV and XLS/XLSX file importer for React and JavaScript</em>
+<em>Open-source CSV, TSV, and XLS/XLSX file importer for React and JavaScript</em>
 
 </div>
 

@@ -1,7 +1,7 @@
 {
   "name": "csv-import-react",
   "version": "1.0.14",
-  "description": "Open-source CSV and XLS/XLSX file importer for React and JavaScript",
+  "description": "Open-source CSV, TSV, and XLS/XLSX file importer for React and JavaScript",
   "main": "build/index.js",
   "module": "build/index.esm.js",
   "files": [
